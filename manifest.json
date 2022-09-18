@@ -1,0 +1,35 @@
+{
+    "manifest_version":3,
+    "name": "igp extended",
+    "description": "extend your gaming experience",
+    "version":"0.7.2",
+     "icons":{
+         "16": "./images/racing.png",
+         "32": "./images/racing.png",
+         "48": "./images/racing.png",
+         "128": "./images/racing.png"
+     },
+     "background": {
+         "service_worker": "background.js"
+     },
+     "action":{
+         "default_popup": "popup.html",
+         "default_icons":{
+            "16": "./images/racing.png",
+            "32": "./images/racing.png",
+            "48": "./images/racing.png",
+            "128": "./images/racing.png"
+         }
+     },
+     
+     "permissions":[
+         "activeTab",
+         "tabs",
+         "storage",
+         "scripting"
+     ],
+
+     "host_permissions": [
+         "*://igpmanager.com/*"
+     ]
+}
