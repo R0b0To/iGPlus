@@ -1,10 +1,9 @@
 colorPicker = document.getElementsByClassName("colorPicker")[0];
 new_colorPicker = document.createElement("input");
+new_colorPicker.setAttribute("style","width:32px; height: 32px");
  new_colorPicker.type = "color";
  new_colorPicker.value = colorPicker.value;
- new_colorPicker.style.width = "32px";
- new_colorPicker.style.height = "32px";
- new_colorPicker.addEventListener("change",update)
+ new_colorPicker.addEventListener("change",update);
 
 
 
@@ -15,27 +14,18 @@ parent.append(new_colorPicker);
 
 if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     {
-        ///new_colorPicker.style.gridColumn ="1 / span 1";
-        parent.style.display="grid";
-        parent.style.alignItems="center";
-        parent.style.justifyContent="start";
-        text_input = document.createElement("input");
-        text_input.style.gridColumn ="2 / span 1";
-        text_input.maxLength = "7";
-        text_input.style.width = "64px";
-        text_input.placeholder = colorPicker.value;
-        validate = document.createElement("a");
-        validate.style.background = "#689954";
-        validate.style.borderRadius="4px";
         
-        validate.style.textAlign = "center";
-        validate.style.fontFamily="RobotoCondensedBold";
-        validate.style.color = 'white';
+        parent.setAttribute("style","display:grid; align-items: center; justify-content: start");
+       
+        text_input = document.createElement("input");
+        text_input.setAttribute("style","grid-Column: 2/span 1; width:64px;");
+        text_input.placeholder = colorPicker.value;
+
+        validate = document.createElement("a");
+        validate.setAttribute("style","width:32px; height:32px; background:#689954; border-radius:4px; text-align:center; font-family:RobotoCondensedBold; color:white; grid-column: 3/span 1; display:grid; align-content:center;");
         validate.innerText = "ok";
-        validate.style.gridColumn ="3 / span 1";
-        validate.style.width = "32px";
-        validate.style.height = "32px";
         validate.addEventListener("click",confirm);
+
         parent.append(text_input);
         parent.append(validate);
     }
