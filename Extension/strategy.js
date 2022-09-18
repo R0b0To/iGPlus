@@ -260,11 +260,7 @@ function inject_advanced_stint(){
 function inject_estimated(){
   placement = document.getElementById("fuelLapsPrediction");
   fuel= document.getElementsByClassName("igpNum m")[0].innerText;
-  //console.log("changing");
-  //console.log("estimated: "+fuel/f);
   placement.textContent = Math.floor(fuel/eco[0]*100)/100;
-  
-
 }
 
 async function league_multiplier()
@@ -373,11 +369,7 @@ function update_stint()
 async function inject_fuel_info() {
     
     elem = document.createElement("div");
-    elem.style.color = 'white';
-    
-    elem.style.fontFamily="RobotoCondensedBold";
-    elem.style.fontSize =".9em";
-    
+    ele.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
     race_laps = parseInt(document.getElementById("raceLaps").innerHTML);
     elem.innerHTML = "Fuel: "+Math.floor(eco[0]*1000)/1000*race_laps;
     placement = document.getElementById("d1TotalLaps").parentElement; //location of the elem

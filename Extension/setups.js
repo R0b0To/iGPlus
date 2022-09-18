@@ -29,26 +29,13 @@ if(value>=170)
 function inject_button() {
     
     button = document.createElement("button");
+    button.setAttribute("style","color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%; background-color:#689954");
     button.innerText= "update";
-    button.style.color = 'white';
-    button.style.height = '20px';
-    button.style.borderRadius="4px";
-    button.style.textAlign="center";
-    button.style.border="0px";
-    button.style.fontFamily="RobotoCondensedBold";
-    //button.style.padding="10px";
-    button.style.width="100%";
     button.id = 'update_button';
-    button.style.backgroundColor=" #689954";
     button.addEventListener('click', update_button);
     
- 
-    
- 
- 
- 
     placement = document.getElementsByClassName("pic-name")[0].parentElement; //location of the button
-   // console.log(placement);
+
  
     if(placement.childElementCount == 2)
     {  
@@ -115,18 +102,13 @@ function setCar(suspen,car_height, value_2,n){
     
     if(ride_height.childElementCount == 2){  
       x = document.createElement("td");
-      x.style.textAlign = ("center");
-      x.style.background = ("#f0f1f2");
-      x.style.color = ("#477337");
-      x.style.fontSize = ("20px");
-      x.style.fontFamily = ("RobotoCondensedBold");
+      x.setAttribute("style","text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;");
       height= document.createTextNode(car_height);
       x.appendChild(height);
       ride_height.insertBefore(x, ride_height.childNodes[0]);
     }
     else{
         new_ride_heigth = document.querySelector("#d1setup > table.acp.linkFill.pad > tbody > tr:nth-child(2) > td:nth-child(1)")
-        //console.log(new_ride_heigth.innerHTML);
         new_ride_heigth.innerHTML= car_height;
     }   
      
@@ -134,11 +116,7 @@ function setCar(suspen,car_height, value_2,n){
     wing = document.querySelector("#d"+n+"setup > table.acp.linkFill.pad > tbody > tr:nth-child(3)");
     if(wing.childElementCount == 2){
     x = document.createElement("td");
-    x.style.textAlign = ("center");
-    x.style.background = ("#f0f1f2");
-    x.style.color = ("#477337");
-    x.style.fontSize = ("20px");
-    x.style.fontFamily = ("RobotoCondensedBold");
+    x.setAttribute("style","text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;");
     wing_height= document.createTextNode(value_2);
     x.appendChild(wing_height);
      wing.insertBefore(x, wing.childNodes[0]);
@@ -148,10 +126,7 @@ function setCar(suspen,car_height, value_2,n){
     if(suspension.childElementCount == 2)
     {
     x = document.createElement("td");
-    x.style.textAlign = ("center");
-    x.style.background = ("#f0f1f2");
-    x.style.fontSize = ("14.44px");
-    x.style.fontFamily = ("RobotoCondensedBold");
+    x.setAttribute("style","text-align:center; background:#f0f1f2; font-size:14.44px; font-family:RobotoCondensedBold;");
     suspen_value = document.createTextNode(suspen);
     x.appendChild(suspen_value);
     suspension.insertBefore(x, suspension.childNodes[0]);
@@ -317,7 +292,7 @@ function request(url) {
 
 
   
-//code esecution ==>
+//code execution ==>
     inject_button();
     get_drivers_id();
 

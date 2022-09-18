@@ -9,7 +9,7 @@ function inject_attributes_details(){
 try {
     title = document.querySelector("#carResearch > thead > tr");
     values = document.createElement("th");
-    values_gap = document.createElement("th");  
+    values_gap = document.createElement("th"); 
     values.style.width ="80px";
     values_gap.style.width ="50px";
     description = document.createTextNode("Detailed");
@@ -58,34 +58,42 @@ function get_attribute_value(attr){
 
     switch(attr) {
         case 0:
+            //acceleration
           best_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(1) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
           my_attr =   parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(1) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 1:
+            //braking
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(2) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(2) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 2:
+            //cooling
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(3) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(3) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 3:
+            //downforce
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(4) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(4) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 4:
+            //fuel economy
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(5) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(5) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 5:
+            //handling
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(6) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(6) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 6:
+            //reliability
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(7) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(7) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;
         case 7:
+            //tyre economy
             best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(8) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
             my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(8) > td:nth-child(3) > div > div").outerHTML))*200/100;
         break;

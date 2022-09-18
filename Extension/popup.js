@@ -1,12 +1,11 @@
 
 document.addEventListener('DOMContentLoaded', function() {
-    //var startButton = document.getElementById('start');
+
     var deleteButton = document.getElementById('delete');
     var select_data = document.getElementById('select');
     var newButton = document.getElementById('new');
     var recapButton = document.getElementById('recap');
     var averageButton = document.getElementById('average');
-    //var reporttext = document.getElementById('reportArea'); 
     var pitButton = document.getElementById('pit'); 
 
 //get names of save data
@@ -69,14 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
  
     //SELECT CHANGE
     function select_change(){
-    /*  current_data = "";
-      chrome.storage.local.get('current_data', function(current_data,) {
-        current_data = current_data
-      });*/
-  
-        
-        
-        
+ 
       
       chrome.storage.local.get(null, function(data,) {
         //console.log(data);

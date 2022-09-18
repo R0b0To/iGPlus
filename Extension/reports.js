@@ -6,22 +6,10 @@ inject_button();
 function inject_button() {
     
    button = document.createElement("button");
+   button.setAttribute("style","color: white; margin-left: 20px; border-radius:4px; border:0px; font-family:RobotoCondensedBold; padding:10px; background:#d66e67;");
    button.innerText= "extract";
-   button.style.color = 'white';
-   button.style.marginLeft = '20px';
-   button.style.borderRadius="4px";
-   button.style.border="0px";
-   button.style.fontFamily="RobotoCondensedBold";
-   button.style.padding="10px";
    button.id = 'extract_button';
-   button.style.backgroundColor=" #d66e67";
    button.addEventListener('click', button_function);
-   
-
-   
-
-
-
    title_location = document.getElementsByClassName("dialog-head"); //location of the button
 
    if(title_location[0].childElementCount == 1)
@@ -34,29 +22,25 @@ function inject_button() {
 function progress(){
   
   progress_div = document.createElement("div");
-  progress_div.style.backgroundColor="#ddd";
-  progress_div.style.height= "10px";
+  progress_div.setAttribute("style","background-color:#ddd; height:10px; border-radius:4px;");
   progress_div.id='progress';
-  progress_div.style.borderRadius="4px";
+
   bar_div = document.createElement("div");
-  bar_div.style.backgroundColor="#4CAF50";
-  bar_div.style.width="1%";
-  bar_div.style.height= "10px";
-  bar_div.style.borderRadius="4px";
+  bar_div.setAttribute("style","background-color:#4CAF50; width:1%; height:10px; border-radius:4px;");
   bar_div.id = 'bar';
   progress_div.appendChild(bar_div);
   return progress_div;
 }
 
 
-function button_function(e){
+function button_function(){
     
-    b = document.getElementById("extract_button");
-    b_parent = b.parentElement; 
-    b.remove();
+    b_parent = this.parentElement; 
+    this.remove();
     b_parent.appendChild(progress());
     race_results = document.querySelector("#race").childNodes[1].childNodes[1];
     quali_results = document.querySelector("#qualifying").childNodes[0].childNodes[1];
+   
 
   
     
