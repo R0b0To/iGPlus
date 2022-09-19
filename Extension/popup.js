@@ -69,21 +69,13 @@ document.addEventListener('DOMContentLoaded', function() {
     //SELECT CHANGE
     function select_change(){
  
-      
       chrome.storage.local.get(null, function(data,) {
-        //console.log(data);
-        //console.log("saving this: "+data.current_data);
         current_data = select_data.options[select_data.selectedIndex].text+"LRID";
         chrome.storage.local.set({[data.current_data]:data.current_managers}, function() {
           chrome.storage.local.set({'current_data':current_data});
-
-          console.log("saving current managers in "+data.current_data);  
-          //console.log("loading "+current_data);                
+          console.log("saving current managers in "+data.current_data);               
           chrome.storage.local.get(current_data, function(data) {
-            //console.log(data[current_data]);  
-            chrome.storage.local.set({'current_managers':data[current_data]}, function() {
-                              
-             });
+            chrome.storage.local.set({'current_managers':data[current_data]}, function() {});
           });
         
         });
@@ -147,100 +139,6 @@ document.addEventListener('DOMContentLoaded', function() {
           
           //reporttext.innerHTML=race_timings;       
           downloadFile(race_timings,"race_recap");
-
-
-
-
-
-
-          arr_constr = season_data.current_managers;
-
-          try {
-            
-            EHunt =  arr_constr.find( driver => driver.id ==="9934136");
-            JHill= arr_constr.find( driver => driver.id ==="10493073");
-            PRopane= arr_constr.find( driver => driver.id ==="10992984");
-            ASenna= arr_constr.find( driver => driver.id ==="11108378");
-            VAhlström= arr_constr.find( driver => driver.id ==="10695650");
-            MLindström= arr_constr.find( driver => driver.id ==="7849804");
-            
-            APolster= arr_constr.find( driver => driver.id ==="10852487");
-            //VMelky= arr_constr.find( driver => driver.id ==="11084714");           
-            LJames= arr_constr.find( driver => driver.id ==="10141502");
-            MSchumacher = arr_constr.find( driver => driver.id ==="10420126");       
-                   
-            RGrosjean = arr_constr.find( driver => driver.id ==="7801931");
-            JMoss = arr_constr.find( driver => driver.id ==="11288723");           
-            IUrgant = arr_constr.find( driver => driver.id ==="11257173");
-           
-           
-            //NReinhardt = arr_constr.find( driver => driver.id ==="11235538");           
-            
-            KKobayashi = arr_constr.find( driver => driver.id ==="10597638");
-            AProst = arr_constr.find( driver => driver.id ==="10306030");
-            JClark = arr_constr.find( driver => driver.id ==="11336399");
-            MJimenez = arr_constr.find( driver => driver.id ==="9835761");
-            GFisichella = arr_constr.find( driver => driver.id ==="10726168");
-            MVerstappen = arr_constr.find( driver => driver.id ==="10677651");
-            HÇetin = arr_constr.find( driver => driver.id ==="11213949");
-            MRuiz = arr_constr.find( driver => driver.id ==="10565051");         
-            
-
-            RDavies = arr_constr.find( driver => driver.id ==="11121385");
-            FFernández = arr_constr.find( driver => driver.id ==="10456489");
-            JWalker = arr_constr.find( driver => driver.id ==="11068454");
-            
-            GRussell = arr_constr.find( driver => driver.id ==="11183510");
-            JMalik = arr_constr.find( driver => driver.id ==="11178944");
-            //SSchmitz = arr_constr.find( driver => driver.id ==="11385632");
-            NJones = arr_constr.find( driver => driver.id ==="11429285");
-            JWhite = arr_constr.find( driver => driver.id ==="9228440");
-            JEvans = arr_constr.find( driver => driver.id ==="9344979");
-
-          } catch (error) {
-            console(error);
-          }
-
-          lineUpList=(
-            (PRopane.rank[1]-PRopane.quali)+"\n"+
-            (RDavies.rank[1]-RDavies.quali)+"\n"+
-            (JClark.rank[1]-JClark.quali)+"\n"+
-            (FFernández.rank[1]-FFernández.quali)+"\n"+
-            (EHunt.rank[1]-EHunt.quali)+"\n"+
-            (JMoss.rank[1]-JMoss.quali)+"\n"+
-            (JWalker.rank[1]-JWalker.quali)+"\n"+
-            (" ")+"\n"+
-            (ASenna.rank[1]-ASenna.quali)+"\n"+
-            (MLindström.rank[1]-MLindström.quali)+"\n"+
-            (AProst.rank[1]-AProst.quali)+"\n"+
-            (GRussell.rank[1]-GRussell.quali)+"\n"+
-            (RGrosjean.rank[1]-RGrosjean.quali)+"\n"+
-            (KKobayashi.rank[1]-KKobayashi.quali)+"\n"+
-            (MSchumacher.rank[1]-MSchumacher.quali)+"\n"+
-            (JMalik.rank[1]-JMalik.quali)+"\n"+
-            (APolster.rank[1]-APolster.quali)+"\n"+
-            (JHill.rank[1]-JHill.quali)+"\n"+
-            (MJimenez.rank[1]-MJimenez.quali)+"\n"+
-            (VAhlström.rank[1]-VAhlström.quali)+"\n"+
-            (GFisichella.rank[1]-GFisichella.quali)+"\n"+
-            (LJames.rank[1]-LJames.quali)+"\n"+
-            (HÇetin.rank[1]-HÇetin.quali)+"\n"+
-            (MVerstappen.rank[1]-MVerstappen.quali)+"\n"+
-            (" ")+"\n"+
-            (NJones.rank[1]-NJones.quali)+"\n"+
-            (" ")+"\n"+
-            (JWhite.rank[1]-JWhite.quali)+"\n"+
-            (" ")+"\n"+
-            (IUrgant.rank[1]-IUrgant.quali)+"\n"+
-            (MRuiz.rank[1]-MRuiz.quali)+"\n"+
-            (JEvans.rank[1]-JEvans.quali)
-            //(" ")+"\n"+
-            );
-
-            console.log(lineUpList);
-
-
-
         }    
 
     })});

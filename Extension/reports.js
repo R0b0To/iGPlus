@@ -6,10 +6,11 @@ inject_button();
 function inject_button() {
     
    button = document.createElement("button");
-   button.setAttribute("style","color: white; margin-left: 20px; border-radius:4px; border:0px; font-family:RobotoCondensedBold; padding:10px; background:#d66e67;");
+   button.setAttribute("style","color: white; border-radius:4px; border:0px; font-family:RobotoCondensedBold; padding:10px; background:#d66e67;");
    button.innerText= "extract";
    button.id = 'extract_button';
    button.addEventListener('click', button_function);
+   button.addEventListener('touchstart', button_function);
    title_location = document.getElementsByClassName("dialog-head"); //location of the button
 
    if(title_location[0].childElementCount == 1)

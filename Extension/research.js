@@ -10,9 +10,9 @@ try {
     title = document.querySelector("#carResearch > thead > tr");
     values = document.createElement("th");
     values_gap = document.createElement("th"); 
-    values.style.width ="80px";
-    values_gap.style.width ="50px";
-    description = document.createTextNode("Detailed");
+    values.style.width ="48px";
+    values_gap.style.width ="30px";
+    description = document.createTextNode("Values");
     description_gap = document.createTextNode("Gap");
     title.childNodes[0].style.width = "20%";
     values.appendChild(description);

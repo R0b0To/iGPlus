@@ -33,7 +33,7 @@ function inject_button() {
     button.innerText= "update";
     button.id = 'update_button';
     button.addEventListener('click', update_button);
-    
+    button.addEventListener('touchstart', update_button);
     placement = document.getElementsByClassName("pic-name")[0].parentElement; //location of the button
 
  

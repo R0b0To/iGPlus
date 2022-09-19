@@ -283,22 +283,27 @@ async function league_multiplier()
 
 function add_mutation_observer(){
 
+  function addEvent()
+  {
+    change_fuel = document.getElementsByClassName("igpNum m")[0];
+    change_fuel.addEventListener("click",inject_estimated);
+    change_fuel.addEventListener("touchstart",inject_estimated);
+    inject_estimated();
+  }
+
   const config = { attributes: true, attributeFilter : ['style'] };
   const callback = (mutationList, observer) => {
     for (const mutation of mutationList) {
       if (mutation.type === 'attributes') {
-        //console.log(document.URL);
+        
+
         if(document.URL=="https://igpmanager.com/app/p=race&tab=strategy")
         {
-          change_fuel = document.getElementsByClassName("igpNum m")[0];
-          change_fuel.addEventListener("click",inject_estimated);
-          inject_estimated();
+          addEvent();
         }
         if(document.URL=="https://igpmanager.com/app/p=race")
         {
-          change_fuel = document.getElementsByClassName("igpNum m")[0];
-          change_fuel.addEventListener("click",inject_estimated);
-          inject_estimated();
+          addEvent();
           update_stint();
         }
         
@@ -324,9 +329,13 @@ async function main(){
   
   //add event listeners
   add_mutation_observer();
+  document.getElementById("beginner-d1PitsWrap").addEventListener("touchstart",update_stint);
   document.getElementById("beginner-d1PitsWrap").addEventListener("click",update_stint);
-  if(document.getElementsByClassName("fuel").length>1)
-  document.querySelector("#d2strategy > div").addEventListener("click",update_stint);
+  if(document.getElementsByClassName("fuel").length>1){
+    document.querySelector("#d2strategy > div").addEventListener("touchstart",update_stint);
+    document.querySelector("#d2strategy > div").addEventListener("click",update_stint);
+  }
+  
   
   inject_fuel_info();
   inject_advanced_stint();
@@ -369,7 +378,7 @@ function update_stint()
 async function inject_fuel_info() {
     
     elem = document.createElement("div");
-    ele.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
+    elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
     race_laps = parseInt(document.getElementById("raceLaps").innerHTML);
     elem.innerHTML = "Fuel: "+Math.floor(eco[0]*1000)/1000*race_laps;
     placement = document.getElementById("d1TotalLaps").parentElement; //location of the elem
