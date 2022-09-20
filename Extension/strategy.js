@@ -276,7 +276,7 @@ async function league_multiplier()
   if(league_lenght==75)
   return 1.33;
   if(league_lenght==50)
-  return 1.75;
+  return 1.5;
   if(league_lenght==25)
   return 3;
 }
@@ -379,8 +379,8 @@ async function inject_fuel_info() {
     
     elem = document.createElement("div");
     elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
-    race_laps = parseInt(document.getElementById("raceLaps").innerHTML);
-    elem.innerHTML = "Fuel: "+Math.floor(eco[0]*1000)/1000*race_laps;
+    race_laps = parseInt(document.getElementById("raceLaps").textContent);
+    elem.innerHTML = "Fuel: "+Math.floor(eco[0]*100)/100*race_laps;
     placement = document.getElementById("d1TotalLaps").parentElement; //location of the elem
 
     if(placement.childElementCount == 1)  
