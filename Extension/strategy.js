@@ -380,7 +380,7 @@ async function inject_fuel_info() {
     elem = document.createElement("div");
     elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
     race_laps = parseInt(document.getElementById("raceLaps").textContent);
-    elem.innerHTML = "Fuel: "+Math.floor(eco[0]*100)/100*race_laps;
+    elem.innerHTML = "Fuel: "+Math.floor(eco[0]*1000)/1000*race_laps;
     placement = document.getElementById("d1TotalLaps").parentElement; //location of the elem
 
     if(placement.childElementCount == 1)  
