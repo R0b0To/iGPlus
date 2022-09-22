@@ -30,7 +30,7 @@ function inject_button() {
     
     button = document.createElement("button");
     button.setAttribute("style","color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%; background-color:#689954");
-    button.innerText= "update";
+    button.textContent= "update";
     button.id = 'update_button';
     button.addEventListener('click', update_button);
     button.addEventListener('touchstart', update_button);
@@ -109,7 +109,7 @@ function setCar(suspen,car_height, value_2,n){
     }
     else{
         new_ride_heigth = document.querySelector("#d1setup > table.acp.linkFill.pad > tbody > tr:nth-child(2) > td:nth-child(1)")
-        new_ride_heigth.innerHTML= car_height;
+        new_ride_heigth.textContent= car_height;
     }   
      
     
@@ -229,7 +229,7 @@ function circuit_setup(height,n){
         break;
         case "cn": //china
             setCar("Neutral",2+height,15,n);
-            setPitTime(21,n);
+            setPitTime(27,n);
         break;
         case "fr": //france
             setCar("Neutral",25+height,15,n);

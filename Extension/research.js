@@ -10,7 +10,7 @@ try {
     title = document.querySelector("#carResearch > thead > tr");
     values = document.createElement("th");
     values_gap = document.createElement("th"); 
-    values.style.width ="48px";
+    values.style.width ="7%";
     values_gap.style.width ="30px";
     description = document.createTextNode("Values");
     description_gap = document.createTextNode("Gap");

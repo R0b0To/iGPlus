@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
                       
                     }
           
-          //reporttext.innerHTML=race_timings;       
+          //reporttext.textContent=race_timings;       
           downloadFile(race_timings,"race_recap");
         }    
 

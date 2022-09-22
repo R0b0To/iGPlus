@@ -2,7 +2,7 @@
     "manifest_version":3,
     "name": "igp extended",
     "description": "extend your gaming experience",
-    "version":"0.7.31",
+    "version":"0.7.34",
      "icons":{
          "16": "./images/racing.png",
          "32": "./images/racing.png",

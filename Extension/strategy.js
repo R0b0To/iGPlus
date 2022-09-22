@@ -21,6 +21,7 @@ function request(url) {
 
 async function get_eco()
   {
+    //request car design
     url = "https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=";
     response = await request(url);
     eco_vars = JSON.parse(response);
@@ -179,10 +180,9 @@ switch (tyre) {
   break;
 }
 
+//calculate wear after stint 
 stint = Math.exp(1)**((-t/100*1.18)*laps)*100;
 stint2 = (1-(1*((t)+(0.0212*laps-0.00926)*track[0])/100));
-
-
 for(j=1 ; j<laps ; j++)
 {
   stint2 = (stint2-(stint2*((t)+(0.0212*j-0.00926)*track[0])/100));
@@ -206,7 +206,7 @@ function inject_advanced_stint(){
     elem = document.createElement("tr");
     elem.id = id;
     row_name = document.createElement("th");
-    row_name.innerHTML=name;
+    row_name.textContent=name;
     row_name.style.fontSize =".8em";
     
     elem.appendChild(row_name);
@@ -219,12 +219,12 @@ function inject_advanced_stint(){
       if(name=="Wear")
       {
         tyre = placement[car].previousElementSibling.childNodes[i].childNodes[0].value;
-        laps = placement[car].childNodes[i].innerText;
+        laps = placement[car].childNodes[i].textContent;
         w = wear_calc(tyre,laps);
         stint = document.createElement("td");
         
         stint.style.visibility = placement[car].childNodes[i].style.visibility;
-        stint.innerHTML=Math.floor(w*100)/100;
+        stint.textContent= w.toFixed(2);
       }
       
       try {
@@ -239,7 +239,7 @@ function inject_advanced_stint(){
   }
 
   function stint_fuel(stint_number){
-    return Math.floor((eco[0]*placement[0].childNodes[stint_number].innerText)*100)/100;
+    return (eco[0]*placement[0].childNodes[stint_number].textContent).toFixed(2);
   }
   
   if(placement.length>1)
@@ -259,19 +259,22 @@ function inject_advanced_stint(){
 
 function inject_estimated(){
   placement = document.getElementById("fuelLapsPrediction");
-  fuel= document.getElementsByClassName("igpNum m")[0].innerText;
-  placement.textContent = Math.floor(fuel/eco[0]*100)/100;
+  fuel= document.getElementsByClassName("igpNum m")[0].textContent;
+  placement.textContent = (fuel/eco[0]).toFixed(2);
 }
 
 async function league_multiplier()
 {
+  //extract league id from page
   league = document.querySelector("#mLeague").href;
   league_id= /(?<=id=).*/gm.exec(league)[0];
+  //request league page
   league_info = await request("https://igpmanager.com/index.php?action=fetch&p=league&id="+league_id+"&csrfName=&csrfToken=");
-  league_info = league_info.replace(/\\/g,"");
-  league_lenght = /(?<=chronometer<\/icon> ).\d+/gm.exec(league_info)[0];
+  rules = JSON.parse(league_info).vars.rules;
+  league_lenght = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
 
-  if(league_lenght==100)
+  //wear multiplier (testing)
+  if(league_lenght==100) //correct
   return 1;
   if(league_lenght==75)
   return 1.33;
@@ -355,21 +358,22 @@ function update_stint()
   function stint_wear(stint_number,car){
 
     tyre = placement[car].previousElementSibling.childNodes[stint_number].childNodes[0].value;
-    laps = placement[car].childNodes[stint_number].innerText;
+    laps = placement[car].childNodes[stint_number].textContent;
     return wear_calc(tyre,laps);
   }
+  
 
   if(placement.length>1)
 {
-
+  
   t_stint = document.getElementById("tyre wear2");
   for(i=1 ; i<6 ;i++)
-    t_stint.childNodes[i].innerText = Math.floor(stint_wear(i,1)*100)/100;
+    t_stint.childNodes[i].textContent = (stint_wear(i,1)).toFixed(2);
   
 }
   t_stint = document.getElementById("tyre wear");
   for(i=1 ; i<6 ;i++)
-    t_stint.childNodes[i].innerText = Math.floor(stint_wear(i,0)*100)/100;
+    t_stint.childNodes[i].textContent = (stint_wear(i,0)).toFixed(2);
   
 
 
@@ -380,7 +384,10 @@ async function inject_fuel_info() {
     elem = document.createElement("div");
     elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
     race_laps = parseInt(document.getElementById("raceLaps").textContent);
-    elem.innerHTML = "Fuel: "+Math.floor(eco[0]*1000)/1000*race_laps;
+
+
+
+    elem.textContent = "Fuel: "+(eco[0]*race_laps).toFixed(2);
     placement = document.getElementById("d1TotalLaps").parentElement; //location of the elem
 
     if(placement.childElementCount == 1)  
@@ -394,7 +401,7 @@ async function inject_fuel_info() {
  league_lenght = 100;
  league_info = 0;
  eco = [0,0];
-  main();
+ main();
 
 
 

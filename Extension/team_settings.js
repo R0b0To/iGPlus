@@ -23,7 +23,7 @@ if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigat
 
         validate = document.createElement("a");
         validate.setAttribute("style","width:32px; height:32px; background:#689954; border-radius:4px; text-align:center; font-family:RobotoCondensedBold; color:white; grid-column: 3/span 1; display:grid; align-content:center;");
-        validate.innerText = "ok";
+        validate.textContent = "ok";
         validate.addEventListener("click",confirm);
 
         parent.append(text_input);
