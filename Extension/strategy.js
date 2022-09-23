@@ -65,7 +65,7 @@ function circuit_info(){
       "az":{"length":6.049,"wear":45},//Azerbaijan
       "mc":{"length":4.015,"wear":20},//Monaco
       "cn":{"length": 5.442,"wear":80},//China
-      "fr":{"length":5.881,"wear":80},//France
+      "fr":{"length":5.881,"wear":80}//France
   }
 
      return [t[code].length,t[code].wear];
