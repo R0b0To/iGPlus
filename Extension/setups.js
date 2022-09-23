@@ -21,7 +21,6 @@ function request(url) {
 
 //How much ride hight needs to be increased
 function height_Convertion(value){   
-    console.log(value);
 if(value>=190)
     return 0;
 if(value>=185)
@@ -58,34 +57,41 @@ function inject_button() {
    
  }
  async function update_button(){
-
-            drivers = document.getElementsByClassName("staffImage");
-            url = "https://igpmanager.com/index.php?action=fetch&d=driver&id="+drivers[0].attributes[1].value+"&csrfName=&csrfToken=";
-            result = await request(url[0]);
-            result = JSON.parse(result);
-            driver1_height = /[0-9.]+/gm.exec(result.vars.sHeight)[0];
-            setup_value = height_Convertion(driver1_height);
-           
-            t = getTrack();
-            //get other driver if present
-            if(drivers.length>2){
-                driver_number=2;
-                url ="https://igpmanager.com/index.php?action=fetch&d=driver&id="+drivers[1].attributes[1].value+"&csrfName=&csrfToken=";
-                result = await request(url);
-                result = JSON.parse(result);
             
-                driver2_height = /[0-9.]+/gm.exec(result.vars.sHeight)[0]*100;
-                setup_value2 = height_Convertion(driver2_height);
+            h1 = request_driver_heigth(0);
+            setup_value = height_Convertion(h1);
+            
+            t = getTrack();
+            setCar(t.suspension,t.ride+setup_value,t.wing,1);
+            setPitTime(t.pit); 
+            
+            //get other driver if present
+            drivers = document.getElementsByClassName("staffImage");
+            if(drivers.length>2)
+            {
+                driver_number=2;
+                h2 = request_driver_heigth(1);
+                setup_value = height_Convertion(h2);
     
                 setCar(t.suspension,t.ride+setup_value2,t.wing,2);
                 //setPitTime(t.pit); 
-        
-                chrome.storage.local.set({'driver2h':setup_value2}, function() { });   
+                chrome.storage.local.set({'driver2h':setup_value});   
             }
-            console.log(t.ride+setup_value);
-                setCar(t.suspension,t.ride+setup_value,t.wing,1);
-                setPitTime(t.pit); 
-            chrome.storage.local.set({'driver1h':setup_value}, function() { });   
+           
+                
+            
+                chrome.storage.local.set({'driver1h':setup_value});   
+
+
+async function request_driver_heigth(n)
+{
+    url = "https://igpmanager.com/index.php?action=fetch&d=driver&id="+drivers[n].attributes[1].value+"&csrfName=&csrfToken=";
+    result = await request(url);
+    result = JSON.parse(result);
+    height = /[0-9.]+/gm.exec(result.vars.sHeight)[0];
+    return height;
+}
+
 }
 
  //inject pit time
@@ -103,8 +109,14 @@ function setPitTime(time){
 
 }
 
-//Inject car setup suggestion
-function setCar(suspen,car_height, value_2,n){
+ /**
+ * Inject html elements into setup page
+ * @param {string} s The suspension setup value.
+ * @param {number} r The ride heigth setup value.
+ * @param {number} w The wing setup value.
+ * @param {number} n The driver number.
+ */
+function setCar(s,r,w,n){
 
     if(driver_number==2)
     {
@@ -119,13 +131,13 @@ function setCar(suspen,car_height, value_2,n){
     if(ride_height.childElementCount == 2){  
       x = document.createElement("td");
       x.setAttribute("style","text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;");
-      height= document.createTextNode(car_height);
+      height= document.createTextNode(r);
       x.appendChild(height);
       ride_height.insertBefore(x, ride_height.childNodes[0]);
     }
     else{
         new_ride_heigth = document.querySelector("#d1setup > table.acp.linkFill.pad > tbody > tr:nth-child(2) > td:nth-child(1)")
-        new_ride_heigth.textContent= car_height;
+        new_ride_heigth.textContent= r;
     }   
      
     // wing element
@@ -133,7 +145,7 @@ function setCar(suspen,car_height, value_2,n){
     if(wing.childElementCount == 2){
     x = document.createElement("td");
     x.setAttribute("style","text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;");
-    wing_height= document.createTextNode(value_2);
+    wing_height= document.createTextNode(w);
     x.appendChild(wing_height);
      wing.insertBefore(x, wing.childNodes[0]);
     } 
@@ -144,7 +156,7 @@ function setCar(suspen,car_height, value_2,n){
     {
     x = document.createElement("td");
     x.setAttribute("style","text-align:center; background:#f0f1f2; font-size:14.44px; font-family:RobotoCondensedBold;");
-    suspen_value = document.createTextNode(suspen);
+    suspen_value = document.createTextNode(s);
     x.appendChild(suspen_value);
     suspension.insertBefore(x, suspension.childNodes[0]);
     }
@@ -192,7 +204,7 @@ function getTrack(){
 
 
 
-  async function get_drivers_id()
+  async function getDrivers()
   {
     
     drivers = document.getElementsByClassName("staffImage");
@@ -201,12 +213,14 @@ function getTrack(){
         
         if(data.driver1h==null)
         {
-
+            //if no driver is found update cuurrent driver
             update_button();  
      
         }else
         {
             t = getTrack(); 
+
+            //check if manager has 2 drivers for the race
             if(drivers.length>2)
             {
                 driver_number = 2;
@@ -229,7 +243,7 @@ function getTrack(){
 //code execution ==>
     driver_number=1;
     inject_button();
-    get_drivers_id();
+    getDrivers();
 
    
 

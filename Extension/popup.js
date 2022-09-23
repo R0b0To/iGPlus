@@ -273,6 +273,7 @@ function downloadFile(data,download_name){
 
       try {
         opt = select_data.options[select_data.selectedIndex].text+"LRID";
+        
       } catch (error) {
         alert("nothing to delete");
         return;
@@ -284,14 +285,15 @@ function downloadFile(data,download_name){
         try {
           opt = select_data.options[select_data.selectedIndex].text+"LRID";
         } catch (error) {
-          chrome.storage.local.remove("current_managers", function() {});
+          chrome.storage.local.remove("current_managers");
           return;
         }
-        
-        
-        chrome.storage.local.set({'current_managers':data[opt]}, function() {
-                              
+          chrome.storage.local.get(opt, function(data) {
+          chrome.storage.local.set({'current_data':opt,'current_managers':data[opt]});
         });
+        
+        
+        
       });
 
 
