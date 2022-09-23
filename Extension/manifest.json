@@ -1,8 +1,8 @@
 {
     "manifest_version":3,
-    "name": "igp extended",
-    "description": "extend your gaming experience",
-    "version":"0.7.4",
+    "name": "iGP Extended",
+    "description": "Enhance your iGPmanager experience",
+    "version":"0.7.41",
      "icons":{
          "16": "./images/racing.png",
          "32": "./images/racing.png",
