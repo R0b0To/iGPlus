@@ -19,142 +19,74 @@ function request(url) {
     })
 } 
 
+
+function fuel_calc(f){
+  return ((f** -0.085)*0.671);}
+
 async function get_eco()
   {
     //request car design
     url = "https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=";
     response = await request(url);
-    eco_vars = JSON.parse(response);
-    fuel_eco = eco_vars.vars.fuel_economyBar;
-    tyre_eco = eco_vars.vars.tyre_economyBar;
-
-    fuel_lap = fuel_calc(fuel_eco)*circuit_info()[0];
- 
-    
+    car_design = JSON.parse(response);
+    fuel_eco = car_design.vars.fuel_economyBar;
+    tyre_eco = car_design.vars.tyre_economyBar;
+    fuel_lap = fuel_calc(fuel_eco)*track[0];
     eco = [fuel_lap, tyre_eco];
-    return eco;
-    
+    return eco;   
 }
   
 function circuit_info(){
     
     circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-    track = /[^-]+(?=">)/g.exec(circuit)[0];
+    code = /[^-]+(?=">)/g.exec(circuit)[0];
 
-    switch(track) {
-        case "be"://Belgium
-        length= 7.041;
-        wear=60;
-        break;
-        case "it":// Italy;
-        length= 5.401;
-        wear=35;
-        break;
-        case "sg": //singapore
-        length= 5.049;
-        wear=45;
-        break;
-        case "my" : //malaysia
-        length= 5.536;
-        wear=85;
-        break;
-        case "jp": //japan
-        length= 5.058;
-        wear=70;
-        break;
-        case "us": //usa
-        length= 4.602;
-        wear=65;
-        break;
-        case "mx": //mexico
-        length= 4.308;
-        wear=60;
-        break;
-        case "br": //brazil
-        length= 3.971;
-        wear=60;
-        break;
-        case "ae": //abuda
-        length= 5.41;
-        wear= 50;
-        break;
-        case "bh": //bahra
-        length= 4.726;
-        wear= 60 ; 
-        break;
-        case "eu": //europe
-        length= 5.59;
-        wear= 45  ;
-        break;
-        case "de": //germany
-        length= 4.179;
-        wear= 50  ;
-        break;
-        case "es": //spain
-        length= 4.457;
-        wear= 85  ;
-        break;
-        case "ru": //russia
-        length= 6.077;
-        wear= 50;
-        break;
-        case "tr": //turkey
-        length= 5.162;
-        wear= 90 ;
-        break;
-        case "au": //australia
-        length= 5.301;
-        wear= 40 ;
-        break;
-        case "at": //austria
-        length= 4.044;
-        wear=  60 ;
-        break;
-        case "hu": //hungary
-        length= 3.498;
-        wear=  30 ;
-        break;
-        case "gb": //gran bre
-        length= 5.751;
-        wear=  65;
-        break;
-        case "ca": //canada
-        length= 4.341;
-        wear=  45 ;
-        break;
-        case "az": //azerb
-        length= 6.049;
-        wear=  45 ;
-        break;
-        case "mc": //monaco
-        length= 4.015;
-        wear=  20 ;
-        break;
-        case "cn": //china
-        length=  5.442;
-        wear= 80;
-        break;
-        case "fr": //france
-        length= 5.881;
-        wear= 80 ; 
-        break;
-        default:
-          // code block
-      }
+    t ={
+      "be":{"length":7.041,"wear":60},//Belgium
+      "it":{"length":5.401,"wear":35},//Italy
+      "sg":{"length":5.049,"wear":45},//Singapore
+      "my":{"length":5.536,"wear":85},//Malaysia
+      "jp":{"length":5.058,"wear":70},//Japan
+      "us":{"length":4.602,"wear":65},//USA
+      "mx":{"length":4.308,"wear":60},//Mexico
+      "br":{"length":3.971,"wear":60},//Brazil
+      "ae":{"length":5.41 ,"wear":50},//AbuDhabi
+      "bh":{"length":4.726,"wear":60},//Bahrain
+      "eu":{"length":5.59 ,"wear":45},//Europe
+      "de":{"length":4.179,"wear":50},//Germany
+      "es":{"length":4.457,"wear":85},//Spain
+      "ru":{"length":6.077,"wear":50},//Russia
+      "tr":{"length":5.162,"wear":90},//Turkey
+      "au":{"length":5.301,"wear":40},//Australia
+      "at":{"length":4.044,"wear":60},//Austria
+      "hu":{"length":3.498,"wear":30},//Hungary
+      "gb":{"length":5.751,"wear":65},//Great Britain
+      "ca":{"length":4.341,"wear":45},//Canada
+      "az":{"length":6.049,"wear":45},//Azerbaijan
+      "mc":{"length":4.015,"wear":20},//Monaco
+      "cn":{"length": 5.442,"wear":80},//China
+      "fr":{"length":5.881,"wear":80},//France
+  }
 
-     info = [length,wear];
-     return info;
-}
-
-function fuel_calc(f){
-fuel_km = ((f** -0.085)*0.671);
-return fuel_km;
+     return [t[code].length,t[code].wear];
 }
 
 
-function wear_calc(tyre,laps){
-  track = circuit_info();
-
+ /**
+ * Returns stint wear after n laps.
+ *
+ * @param {string} tyre The tyre.
+ * @param {number} laps The number of laps.
+ * @return {array} tyre wear after laps.
+ */
+function getWear(tyre,laps){
+ 
+  /**tyre wear formula, 
+   * eco[1] is car tyre economy
+   * track[1] is track wear
+   * track[0] is track length
+   * multiplier is league length scaling
+  */
   medium_wear =(1.43 *eco[1]  ** -0.0778) * (0.00364 *track[1] +0.354) *track[0]  * 1.384612 * multiplier;
   
   soft_wear = medium_wear*1.338;
@@ -180,7 +112,7 @@ switch (tyre) {
   break;
 }
 
-//calculate wear after stint 
+//calculate stint wear
 stint = Math.exp(1)**((-t/100*1.18)*laps)*100;
 stint2 = (1-(1*((t)+(0.0212*laps-0.00926)*track[0])/100));
 for(j=1 ; j<laps ; j++)
@@ -220,13 +152,13 @@ function inject_advanced_stint(){
       {
         tyre = placement[car].previousElementSibling.childNodes[i].childNodes[0].value;
         laps = placement[car].childNodes[i].textContent;
-        w = wear_calc(tyre,laps);
+        w = getWear(tyre,laps);
         stint = document.createElement("td");
         
         stint.style.visibility = placement[car].childNodes[i].style.visibility;
         stint.textContent= w.toFixed(2);
       }
-      
+     
       try {
         elem.appendChild(stint);
       } catch (error) {
@@ -325,9 +257,9 @@ function add_mutation_observer(){
 async function main(){
  
   try {
+
+    eco = await get_eco();
   
-  //get tyre and fuel economy points and league lenght
-  eco= await get_eco();
   multiplier = await league_multiplier();
   
   //add event listeners
@@ -359,7 +291,7 @@ function update_stint()
 
     tyre = placement[car].previousElementSibling.childNodes[stint_number].childNodes[0].value;
     laps = placement[car].childNodes[stint_number].textContent;
-    return wear_calc(tyre,laps);
+    return getWear(tyre,laps);
   }
   
 
@@ -396,11 +328,10 @@ async function inject_fuel_info() {
 
  }
 
-
+//global variables
  multiplier = 1;
- league_lenght = 100;
- league_info = 0;
- eco = [0,0];
+ track = circuit_info(); //return [0]length and [1]wear
+ eco = [];
  main();
 
 
