@@ -4,7 +4,7 @@
     "description": "Enhance your iGPmanager experience",
     "version":"0.7.42",
      "icons":{
-         "128": "./images/racing.png"
+         "128": "./images/racing128.png"
      },
      "background": {
          "scripts": ["background.js"]
