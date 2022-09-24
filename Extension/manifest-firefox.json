@@ -2,11 +2,8 @@
     "manifest_version":2,
     "name": "iGP Extended",
     "description": "Enhance your iGPmanager experience",
-    "version":"0.7.41",
+    "version":"0.7.42",
      "icons":{
-         "16": "./images/racing.png",
-         "32": "./images/racing.png",
-         "48": "./images/racing.png",
          "128": "./images/racing.png"
      },
      "background": {
@@ -16,10 +13,7 @@
      "browser_action":{
          "default_popup": "popup.html",
          "default_icons":{
-            "16": "./images/racing.png",
-            "32": "./images/racing.png",
-            "48": "./images/racing.png",
-            "128": "./images/racing.png"
+            "128": "./images/racing128.png"
          }
      },
      "options_page": "options.html",
