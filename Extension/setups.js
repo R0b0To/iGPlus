@@ -21,6 +21,7 @@ function request(url) {
 
 //How much ride hight needs to be increased
 function height_Convertion(value){   
+
 if(value>=190)
     return 0;
 if(value>=185)
@@ -58,7 +59,7 @@ function inject_button() {
  }
  async function update_button(){
             
-            h1 = request_driver_heigth(0);
+            h1 = await request_driver_heigth(0);
             setup_value = height_Convertion(h1);
             
             t = getTrack();
@@ -70,7 +71,7 @@ function inject_button() {
             if(drivers.length>2)
             {
                 driver_number=2;
-                h2 = request_driver_heigth(1);
+                h2 = await request_driver_heigth(1);
                 setup_value = height_Convertion(h2);
     
                 setCar(t.suspension,t.ride+setup_value2,t.wing,2);
