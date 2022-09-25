@@ -1,14 +1,17 @@
 
 document.addEventListener('DOMContentLoaded', function() {
 
+     startOvertakes = document.getElementById('start');
      deleteButton = document.getElementById('delete');
      select_data = document.getElementById('select');
      newButton = document.getElementById('new');
      recapButton = document.getElementById('recap');
      averageButton = document.getElementById('average');
      pitButton = document.getElementById('pit'); 
-    
-     //start_overtakes = document.getElementById('start');
+     text = document.getElementById('text'); 
+     downloadButton= document.getElementById('down'); 
+     copyButton= document.getElementById('copy'); 
+
     is_save_empty = true;
 
     function toggleButtons()
@@ -18,14 +21,37 @@ document.addEventListener('DOMContentLoaded', function() {
         recapButton.disabled = true;
         averageButton.disabled = true;
         pitButton.disabled = true;
+        startOvertakes.disabled= true;
       }
       else{
         recapButton.disabled = false;
         averageButton.disabled = false;
         pitButton.disabled = false;
+        startOvertakes.disabled= false;
       }
     }
-
+   // setText("hey");
+    
+    function setText(string){
+       toggleText(true);
+        text.textContent=string;  
+    }
+    function toggleText(b)
+    {
+      if(b)
+      {
+        text.style.display = 'block';
+        copyButton.style.display = 'block';
+        downloadButton.style.display = 'block';
+      }
+      else
+      {
+        text.style.display = 'none';
+        copyButton.style.display = 'none';
+        downloadButton.style.display = 'none';
+      }
+        
+    }
 
 
 //get names of save data
@@ -88,23 +114,54 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 
-    
-  /*  start_overtakes.addEventListener('click',function(){
+      copyButton.addEventListener('click',function(){
+      navigator.clipboard.writeText(text.textContent).then(() => {
+        //clipboard successfully set
+    }, () => {
+        //clipboard write failed, use fallback
+    });
+  
+    });
+
+
+
+
+  downloadButton.addEventListener('click',function(){
+
+
+    downloadFile(text.textContent);
+
+  });
+  
+  startOvertakes.addEventListener('click',function(){
       chrome.storage.local.get('current_managers', function(data) {
-        if(is_data_loaded)
-        {
-            
-                
-        }else{
         
+        manager = data.current_managers;
+
+        const sortObject = manager => Object.keys(manager).sort().reduce((r, k) => (r[k] = o[k], r), {})
+       
+        console.log(sortObject);
+        string="";
+        manager.forEach(element => {
+          string+=element.name+": "+get_places_gained(element)+"\n";
+        });
+
+
+        function get_places_gained(driver)
+        {
+          try {
+            return driver.rank[1]-driver.quali;
+          } catch (error) {
+            //console.log("failed");
+          }
         }
 
-
+        setText(string);
 
       });
 
 
-    });*/
+    });
     
     
     
@@ -112,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
  
     //SELECT CHANGE
     function select_change(){
- 
+      toggleText(false);
       chrome.storage.local.get(null, function(data,) {
         selection_opt = select_data.options[select_data.selectedIndex].text+"LRID";
         chrome.storage.local.set({[data.selection_opt]:data.current_managers}, function() {
@@ -183,8 +240,9 @@ document.addEventListener('DOMContentLoaded', function() {
                       
                     }
           
-          //reporttext.textContent=race_timings;       
-          downloadFile(race_timings,"race_recap"); 
+          //reporttext.textContent=race_timings; 
+          setText(race_timings);      
+         // downloadFile(race_timings,"race_recap"); 
           
 
     });
@@ -210,7 +268,8 @@ document.addEventListener('DOMContentLoaded', function() {
             string_format+="\n";
             
           }
-          downloadFile(string_format,"pit_history");
+          setText(string_format);
+         // downloadFile(string_format,"pit_history");
     });
       
     });
@@ -234,8 +293,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
             });
   
-            console.log(string);
-           downloadFile(string,"lap_trend");  
+            setText(string);
+          // downloadFile(string,"lap_trend");  
       });
       
     });
@@ -245,7 +304,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       leagueName = prompt("enter league name");
       leagueNameId =leagueName+"LRID"; //LRID is to avoid naming conflicts
-      
+      toggleText(false);
       //save before creating new data
       chrome.storage.local.get(null, function(data) { 
         if(!typeof data.current_data === 'undefined')
@@ -276,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     //DELETE BUTTON
     deleteButton.addEventListener('click', function(){
-
+      toggleText(false);
       try {
         opt = select_data.options[select_data.selectedIndex].text+"LRID";
       } catch (error) { 

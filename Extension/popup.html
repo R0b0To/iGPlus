@@ -2,7 +2,7 @@
 <html lang="eng">
     <style>
        
-        .button {
+.button {
   
   border: none;
   color: white;
@@ -16,82 +16,39 @@
   cursor: pointer;
 }
 .grid-container {
-  width: 200px;
+  min-width:200px;
   margin: 1px;
   display: grid;
   gap: 5px;
   background-color: #212533;
   padding: 5px;
+  height: fit-content;
 }
 
-.deleteButton {background-color: #d66e67;
-  border-radius: 4px;
-  grid-column: 1/ span 1;
-  grid-row: 4;
-  text-align: center;
-  display: inline-block;
-  width:95px;
+.button1 {background-color: #d66e67;border-radius:4px;grid-column:1/span 1;grid-row: 4;height: auto;} 
+.button2{background-color:#7ab542;border-radius:4px;grid-column:2/span 1;grid-row:4;} 
+.button3{background-color:#7ab54294;border-radius:4px;grid-column:2/span 1;grid-row:3;}
+.button4 {background-color: #7ab54294;border-radius:4px;grid-column:1/span 1;grid-row:2;}
+.button5 {background-color: #7ab54294;border-radius: 4px;grid-column:1/span 1;grid-row:3;}
+.button6 {background-color: #7ab54294;border-radius:4px;grid-column:2/span 1;grid-row:2;}
+.button7 {background-color: #7ab54294;border-radius:4px;grid-column:2/span 1;grid-row:6;display: none;}
+.button8 {background-color: #7ab54294;border-radius: 4px;grid-column:1/span 1;grid-row:6;display: none;}
+.item1{grid-column:1/span 2;grid-row: 1;}
+.textarea{
+  grid-column: 1 / span 2;
+  grid-row: 5;
+  color: black;
+  resize: none;
+  display: none;
+  height: auto;
 }
-  
-.button2 {background-color: #7ab542; /* Green */
-  border-radius: 4px; 
-  grid-column: 2 / span 1;
-  grid-row: 4;
-  display: inline-block;
-  width:95px;
-}
-  
-.button3 {background-color: #7ab54294;
-	border-radius: 4px;grid-column: 2 / span 1;
-  grid-row: 3;
-  }
-  .button4 {background-color: #7ab54294;
-	border-radius: 4px;grid-column: 1 / span 2;
-  grid-row: 2;}
-  
-   .button5 {background-color: #7ab54294;
-	border-radius: 4px;grid-column: 1 / span 1;
-  grid-row: 3;}
-  
-  .item1{grid-column: 1 / span 2;
-  grid-row: 1;
-  }
-  .textarea{grid-column: 1 / span 2;
-  grid-row: 2;
-   overflow: hidden;
-   
-  }
- .textarea {
-  border: 1px solid #ccc;
-
- 
-}
-.width-machine {
-  /*   Sort of a magic number to add extra space for number spinner */
-  padding: 0 1rem;
-}
-
-.textarea {
-  display: block;
-  width: 98%;
-  overflow: hidden;
-  
-  min-height: 40px;
-  line-height: 20px;
-   color: white;
-   resize: none;
-}
-
-.textarea[contenteditable]:empty::before {
-  content: "";
-  color: white;
-}
-
 *:disabled {
     background-color: dimgrey;
     color: linen;
     opacity: 1;
 }
+
+
 
 
     </style>
@@ -108,20 +65,20 @@
 
         
         <select class="item1" id= "select"></select>
-        
+        <button class="button button4"id="recap">Race Report</button>
+        <button class="button button6" id="start" >Start Overtake Report</button><br>
         <button class="button button5" id="pit">Pit Report</button><br>
         <button class="button button3" id="average">Average Report</button><br>
-        
-        <button class="button button4"id="recap">Race Report</button>
-        
-
-        
-          
-          <button class="button deleteButton" id="delete">Delete</button>
-          <button class="button button2"id="new" >New race</button>
-
+        <button class="button button1" id="delete">Delete</button>
+        <button class="button button2"id="new" >New race</button>
+        <button class="button button7"id="down" >Download</button>
+        <button class="button button8"id="copy" >Copy</button>
+        <textarea class= "textarea" id="text" rows="10" cols="50" readonly="readonly">
+    	example text
+		</textarea>
 
         </body>
+      
     <script src="popup.js"></script>
 
 
