@@ -42,30 +42,30 @@ function circuit_info(){
     code = /[^-]+(?=">)/g.exec(circuit)[0];
 
     t ={
-      "be":{"length":7.041,"wear":60},//Belgium
-      "it":{"length":5.401,"wear":35},//Italy
-      "sg":{"length":5.049,"wear":45},//Singapore
-      "my":{"length":5.536,"wear":85},//Malaysia
-      "jp":{"length":5.058,"wear":70},//Japan
-      "us":{"length":4.602,"wear":65},//USA
-      "mx":{"length":4.308,"wear":60},//Mexico
-      "br":{"length":3.971,"wear":60},//Brazil
-      "ae":{"length":5.41 ,"wear":50},//AbuDhabi
-      "bh":{"length":4.726,"wear":60},//Bahrain
-      "eu":{"length":5.59 ,"wear":45},//Europe
-      "de":{"length":4.179,"wear":50},//Germany
-      "es":{"length":4.457,"wear":85},//Spain
-      "ru":{"length":6.077,"wear":50},//Russia
-      "tr":{"length":5.162,"wear":90},//Turkey
-      "au":{"length":5.301,"wear":40},//Australia
-      "at":{"length":4.044,"wear":60},//Austria
-      "hu":{"length":3.498,"wear":30},//Hungary
-      "gb":{"length":5.751,"wear":65},//Great Britain
-      "ca":{"length":4.341,"wear":45},//Canada
-      "az":{"length":6.049,"wear":45},//Azerbaijan
-      "mc":{"length":4.015,"wear":20},//Monaco
-      "cn":{"length": 5.442,"wear":80},//China
-      "fr":{"length":5.881,"wear":80}//France
+      "au":{"length":5.3017135,"wear":40},//Australia
+      "my":{"length":5.5358276,"wear":85},//Malaysia
+      "cn":{"length":5.4417996,"wear":80},//China
+      "bh":{"length":4.7273,"wear":60},//Bahrain
+      "es":{"length":4.4580207,"wear":85},//Spain
+      "mc":{"length":4.0156865,"wear":20},//Monaco
+      "tr":{"length":5.1630893,"wear":90},//Turkey
+      "de":{"length":4.1797523,"wear":50},//Germany
+      "hu":{"length":3.4990127,"wear":30},//Hungary
+      "eu":{"length":5.5907145,"wear":45},//Europe
+      "be":{"length":7.0406127,"wear":60},//Belgium
+      "it":{"length":5.4024186,"wear":35},//Italy
+      "sg":{"length":5.049042,"wear":45},//Singapore
+      "jp":{"length":5.0587635,"wear":70},//Japan
+      "br":{"length":3.9715014,"wear":60},//Brazil
+      "ae":{"length":5.412688,"wear":50},//AbuDhabi
+      "gb":{"length":5.75213,"wear":65},//Great Britain
+      "fr":{"length":5.882508,"wear":80},//France
+      "at":{"length":4.044372,"wear":60},//Austria
+      "ca":{"length":4.3413563,"wear":45},//Canada
+      "az":{"length":6.053212,"wear":45},//Azerbaijan
+      "mx":{"length":4.3076024,"wear":60},//Mexico
+      "ru":{"length":6.078335,"wear":50},//Russia
+      "us":{"length":4.60296,"wear":65}//USA    
   }
 
      return [t[code].length,t[code].wear];

@@ -1,9 +1,8 @@
-
 document.addEventListener('DOMContentLoaded', function() {
 
      startOvertakes = document.getElementById('start');
      deleteButton = document.getElementById('delete');
-     select_data = document.getElementById('select');
+     select = document.getElementById('select');
      newButton = document.getElementById('new');
      recapButton = document.getElementById('recap');
      averageButton = document.getElementById('average');
@@ -11,13 +10,14 @@ document.addEventListener('DOMContentLoaded', function() {
      text = document.getElementById('text'); 
      downloadButton= document.getElementById('down'); 
      copyButton= document.getElementById('copy'); 
+     
+     driver = 0;
+     is_save_empty = true;
 
-    is_save_empty = true;
-
-    function toggleButtons()
+   async function disableButton(yes)
     {
-        
-     if(is_save_empty){
+
+     if(yes){
         recapButton.disabled = true;
         averageButton.disabled = true;
         pitButton.disabled = true;
@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function() {
         startOvertakes.disabled= false;
       }
     }
-   // setText("hey");
     
     function setText(string){
        toggleText(true);
@@ -54,12 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
 
-//get names of save data
+//-------------------------------------------------------------------------------Popup initialization-------------------------------------------
     chrome.storage.local.get(null, function(data) {
 
-        if(typeof data.current_managers === 'undefined')
+        if(data.active == null)
         {            
           console.log("data not found");
+          disableButton(true);
         }else{
           storage_list = Object.keys(data);
           valid_saves = storage_list.filter(name => name.includes('LRID'));
@@ -68,21 +68,13 @@ document.addEventListener('DOMContentLoaded', function() {
           if(valid_saves.length==0)
           {
 
-            chrome.storage.local.get('current_managers', function(season_data) {
-              if(typeof season_data.current_managers === 'undefined')
-              {    
-                  console.log("no data");
-              }else{
-                option = document.createElement("option");
-                option.textContent = "default";
-                current_data = "defaultLRID";
-                chrome.storage.local.set({'current_data':current_data}, function() {
-                }); 
-                select_data.appendChild(option);              
-              }
-
-
-            });
+            chrome.storage.local.set({'RaceLRID':data.active}); 
+            option = document.createElement("option");
+            option.textContent = "Race";
+            //set 
+            chrome.storage.local.set({'active_option':"RaceLRID"}); 
+            select.appendChild(option);              
+  
          }
 
          //generate selection menu with stored data
@@ -90,30 +82,23 @@ document.addEventListener('DOMContentLoaded', function() {
           {
             option = document.createElement("option"); 
             option.textContent = valid_saves[i].replace('LRID','');
-            if(data.current_data == valid_saves[i]){
+            if(data.active_option == valid_saves[i])
               option.selected = true;
-            }
             
-            select_data.appendChild(option);
+            select.appendChild(option);
           }
           
-          chrome.storage.local.set({[data.current_data]:data.current_managers}, function() {
-            console.log(data);
-            if(data.current_managers==0)
-            is_save_empty = true;
-            else{
-              is_save_empty = false;
-            }
-            
-            
-            toggleButtons();
-          }); 
-    
+          if(data.active==0)
+            disableButton(true);
+            else
+            disableButton(false);
+       
+            driver = data.active;
         }     
      
     });
 
-
+//-------------------------------------------------------------------------------copy button-------------------------------------------
       copyButton.addEventListener('click',function(){
       navigator.clipboard.writeText(text.textContent).then(() => {
         //clipboard successfully set
@@ -125,84 +110,76 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
-
+//-------------------------------------------------------------------------------download button-------------------------------------------
   downloadButton.addEventListener('click',function(){
-
-
-    downloadFile(text.textContent);
+    
+    function downloadFile(data,download_name){
+      var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+      if (navigator.msSaveBlob) { // IE 10+
+          navigator.msSaveBlob(blob, "test");
+      } else {
+          var link = document.createElement("a");
+          if (link.download !== undefined) { // feature detection
+              // Browsers that support HTML5 download attribute
+              var url = URL.createObjectURL(blob);
+              link.setAttribute("href", url);
+              link.setAttribute("download", download_name);
+              link.style.visibility = 'hidden';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+          }
+      }
+    }
+    downloadFile(text.textContent,"report");
 
   });
   
+
+  //-------------------------------------------------------------------------------start overtakes-------------------------------------------
   startOvertakes.addEventListener('click',function(){
-      chrome.storage.local.get('current_managers', function(data) {
-        
-        manager = data.current_managers;
-
-        const sortObject = manager => Object.keys(manager).sort().reduce((r, k) => (r[k] = o[k], r), {})
-       
-        console.log(sortObject);
-        string="";
-        manager.forEach(element => {
-          string+=element.name+": "+get_places_gained(element)+"\n";
-        });
-
-
-        function get_places_gained(driver)
-        {
-          try {
-            return driver.rank[1]-driver.quali;
-          } catch (error) {
-            //console.log("failed");
-          }
-        }
-
-        setText(string);
-
-      });
-
-
+    //returns rank position at the end of lap 2 - quali position
+    function getOvertakes(d){return d.rank[1]-d.quali;}    
+    //sort by overtakes
+    driver.sort((a, b) => {return getOvertakes(a)-getOvertakes(b);});  
+    string_result="";
+    driver.forEach(ele => {string_result+=ele.name+": "+getOvertakes(ele)+"\n";});
+    //display result
+    setText(string_result);
     });
     
     
-    
-    select_data.addEventListener('change', select_change);
- 
-    //SELECT CHANGE
-    function select_change(){
+   //------------------------------------------------------------------------------select change---------------------------------------------- 
+    select.addEventListener('change',async function(){
       toggleText(false);
-      chrome.storage.local.get(null, function(data,) {
-        selection_opt = select_data.options[select_data.selectedIndex].text+"LRID";
-        chrome.storage.local.set({[data.selection_opt]:data.current_managers}, function() {
-          chrome.storage.local.set({'current_data':selection_opt});
-          console.log("saving current managers in "+data.current_data);               
-          chrome.storage.local.get(selection_opt, function(data) {
-            chrome.storage.local.set({'current_managers':data[selection_opt]}, function() {
-              
-              if(data[selection_opt]==0)
-                is_save_empty = true;
-                else
-                is_save_empty = false;
-
-                toggleButtons();
-            });
-          });
+      //new option of the select
+      opt = select[select.selectedIndex].text+"LRID";
+      //get state before the select was changed
+      data = await chrome.storage.local.get(["active","active_option",opt]);
+      //save the active data in the previous option 
+      chrome.storage.local.set({[data["active_option"]]:data["active"]});
+      //update the active data with the new selected option and save option state
+      chrome.storage.local.set({"active_option":opt,"active":data[opt]},function(d)
+      {
+        if(data[opt]==0)
+        disableButton(true);
+        else
+        disableButton(false);
         
-        });
+        driver = data[opt];
       });
 
-      
+    });
+ 
 
-
-    }
-
-    //RECAP BUTTON
+    //------------------------------------------------------------------------------Race report---------------------------------------------- 
     recapButton.addEventListener('click', function(){
 
      
-        chrome.storage.local.get('current_managers', function(season_data) {
+        
 
-               //sorting managers by quali
-          sortQuali = season_data.current_managers.sort((a,b) =>{
+          //sorting managers by quali
+          sortQuali = driver.sort((a,b) =>{
             if(a.quali > b.quali)
             return 1
             else
@@ -247,38 +224,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     });
         
-    });
+   
 
-    //PIT BUTTON
+    //------------------------------------------------------------------------------pit report---------------------------------------------- 
     pitButton.addEventListener('click',function(){
 
-      
-          chrome.storage.local.get('current_managers', function(season_data) {
-          season_data.current_managers.sort((a, b) => {
+      //sort bt race finish
+          driver.sort((a, b) => {
             return a.race_finish - b.race_finish;
         });
           string_format ="";
-          for(i=0 ; i< season_data.current_managers.length; i++)
+          for(i=0 ; i< driver.length; i++)
           {
             string_format+=(i+1);
             string_format+=") ";
-            string_format+=season_data.current_managers[i].name;
+            string_format+=driver[i].name;
             string_format+=", ";
-            string_format+=season_data.current_managers[i].pit_stop.toString();
+            string_format+=driver[i].pit_stop.toString();
             string_format+="\n";
             
           }
           setText(string_format);
-         // downloadFile(string_format,"pit_history");
-    });
-      
+
     });
 
-     //Driver Average
+     //------------------------------------------------------------------------------driver average position---------------------------------------------- 
     averageButton.addEventListener('click',function(){
 
-        chrome.storage.local.get('current_managers', function(data) {
-          manager = data.current_managers;
+        chrome.storage.local.get('active', function(data) {
+          manager = data.active;
             string = "Driver/Rank,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32\n";
   
              manager.forEach(driver => {
@@ -299,45 +273,50 @@ document.addEventListener('DOMContentLoaded', function() {
       
     });
 
-    //NEW RACE BUTTON
+    //------------------------------------------------------------------------------new race---------------------------------------------- 
     newButton.addEventListener('click', function(){
       
       leagueName = prompt("enter league name");
+      if(leagueName==null)
+      return
+      
       leagueNameId =leagueName+"LRID"; //LRID is to avoid naming conflicts
+      
       toggleText(false);
       //save before creating new data
-      chrome.storage.local.get(null, function(data) { 
-        if(!typeof data.current_data === 'undefined')
+      chrome.storage.local.get("active", function(data) { 
+
+        if(!typeof data.active === 'undefined')
         {
-          chrome.storage.local.set({[data.current_data]:data.current_managers}, function() { 
-            console.log("saving :"+data.current_data);
+          chrome.storage.local.set({[data.active_option]:data.active}, function() { 
+          console.log("saving :"+data.active_option);
           }); //saving selected
 
 
         }
 
-          // = select_data.options[select_data.selectedIndex].text+"LRID";
+          // = select.options[select.selectedIndex].text+"LRID";
          
-          current_data = leagueNameId;
+        
           option = document.createElement("option");
           option.textContent = leagueName;
           option.selected = true;
-          select_data.appendChild(option);
+          select.appendChild(option);
        
-          chrome.storage.local.set({[leagueNameId]:0, 'current_managers':0, 'current_data':current_data}, function() {
-            is_save_empty = true;
-            toggleButtons();
+          chrome.storage.local.set({[leagueNameId]:0, 'active':0, 'active_option':leagueNameId}, function() {
+         
+            disableButton(true);
           });                   
                  
       });
 
     });
 
-    //DELETE BUTTON
+    //------------------------------------------------------------------------------delete---------------------------------------------- 
     deleteButton.addEventListener('click', function(){
       toggleText(false);
       try {
-        opt = select_data.options[select_data.selectedIndex].text+"LRID";
+        opt = select.options[select.selectedIndex].text+"LRID";
       } catch (error) { 
         alert("nothing to delete");
         return;
@@ -345,13 +324,13 @@ document.addEventListener('DOMContentLoaded', function() {
      
      
       chrome.storage.local.remove(opt, function() {
-        select_data.remove(select_data.selectedIndex); 
+        select.remove(select.selectedIndex); 
         try {
           //after removing try to pick the next element from the html selection
-          opt = select_data.options[select_data.selectedIndex].text+"LRID";
+          opt = select.options[select.selectedIndex].text+"LRID";
         } catch (error) {
           //it means the selection list is empty
-          chrome.storage.local.remove("current_managers");
+          chrome.storage.local.remove("active");
           return;
         }
           chrome.storage.local.get(opt, function(data) {
@@ -364,8 +343,8 @@ document.addEventListener('DOMContentLoaded', function() {
             
             
 
-          chrome.storage.local.set({'current_data':opt,'current_managers':data[opt]},function(){
-            toggleButtons();
+          chrome.storage.local.set({'active_option':opt,'active':data[opt]},function(){
+            disableButton(is_save_empty);
           });
 
         });
@@ -380,24 +359,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
 
-      //DOWNLOAD DATA
-function downloadFile(data,download_name){
-  var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
-  if (navigator.msSaveBlob) { // IE 10+
-      navigator.msSaveBlob(blob, "test");
-  } else {
-      var link = document.createElement("a");
-      if (link.download !== undefined) { // feature detection
-          // Browsers that support HTML5 download attribute
-          var url = URL.createObjectURL(blob);
-          link.setAttribute("href", url);
-          link.setAttribute("download", download_name);
-          link.style.visibility = 'hidden';
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-      }
-  }
-}
+
+
   
   

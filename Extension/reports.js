@@ -225,7 +225,7 @@ async function update_managers(table,index)
         
 
         //save manager
-        chrome.storage.local.set({'current_managers': manager}, function() {
+        chrome.storage.local.set({'active': manager}, function() {
                  console.log("saved "+manager[index].name);                    
         });
        

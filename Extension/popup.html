@@ -15,6 +15,15 @@
   margin: 4px 2px;
   cursor: pointer;
 }
+
+.button:enabled:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+.button:disabled {
+  opacity: 0.5;
+}
 .grid-container {
   min-width:200px;
   margin: 1px;
@@ -24,6 +33,7 @@
   padding: 5px;
   height: fit-content;
 }
+
 
 .button1 {background-color: #d66e67;border-radius:4px;grid-column:1/span 1;grid-row: 4;height: auto;} 
 .button2{background-color:#7ab542;border-radius:4px;grid-column:2/span 1;grid-row:4;} 
@@ -45,7 +55,7 @@
 *:disabled {
     background-color: dimgrey;
     color: linen;
-    opacity: 1;
+    
 }
 
 
