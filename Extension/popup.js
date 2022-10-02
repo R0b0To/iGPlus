@@ -83,15 +83,21 @@ document.addEventListener('DOMContentLoaded', function() {
             option = document.createElement("option"); 
             option.textContent = valid_saves[i].replace('LRID','');
             if(data.active_option == valid_saves[i])
+            {
               option.selected = true;
+              chrome.storage.local.set({[data.active_option]:data.active});
+            }
+              
             
             select.appendChild(option);
           }
           
           if(data.active==0)
             disableButton(true);
-            else
-            disableButton(false);
+          else
+              disableButton(false);
+            
+            
        
             driver = data.active;
         }     
@@ -278,8 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
       
       leagueName = prompt("enter league name");
       if(leagueName==null)
-      return
-      
+      {
+        return
+      }
+     
       leagueNameId =leagueName+"LRID"; //LRID is to avoid naming conflicts
       
       toggleText(false);
