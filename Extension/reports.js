@@ -166,10 +166,9 @@ function decode_result(data){
   string = /<table.*table>/gm.exec(data)[0];
   table = string.replace(/\\n/g, "");
   table = table.replace(/\\/g, "");
-  t = document.createElement("table");
-  t.innerHTML =table;
-  
-  return t;
+  //t = document.createElement("table");
+  t = new DOMParser().parseFromString(table, "text/html");
+  return t.body.childNodes[0];
 
 }
         
