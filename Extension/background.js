@@ -53,7 +53,7 @@ if(tab_status === "complete"){
        // console.log("starting extraction");
         chrome.scripting.executeScript({
             target: { tabId: tabId },
-            files: ["./reports.js"]
+            files: ["./reports.js","./purify.js"]
         })
          .then(()=> {
                 //console.log("hello");

@@ -2,7 +2,6 @@ manager = [] ;
 progress_status = 0;
 inject_button();
 
-
 function inject_button() {
     
    button = document.createElement("button");
@@ -162,13 +161,15 @@ function request(url) {
       
 //get only the table from the response
 function decode_result(data){
-  
-  string = /<table.*table>/gm.exec(data)[0];
-  table = string.replace(/\\n/g, "");
-  table = table.replace(/\\/g, "");
-  //t = document.createElement("table");
-  t = new DOMParser().parseFromString(table, "text/html");
-  return t.body.childNodes[0];
+
+  results = JSON.parse(data).vars.results;
+  table = /<table.*<\/table>/gms.exec(results)[0]
+  t = document.createElement("table");
+  //sanitizing the data
+  let cleanHTML = DOMPurify.sanitize(table);
+  t.innerHTML = cleanHTML;
+
+  return t;
 
 }
         
