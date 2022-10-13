@@ -243,9 +243,9 @@ document.addEventListener('DOMContentLoaded', function() {
           for(i=0 ; i< driver.length; i++)
           {
             string_format+=(i+1);
-            string_format+=") ";
+            string_format+=",";
             string_format+=driver[i].name;
-            string_format+=", ";
+            string_format+=",";
             string_format+=driver[i].pit_stop.toString();
             string_format+="\n";
             

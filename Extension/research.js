@@ -1,7 +1,4 @@
-function useRegex(input) {
-    let regex = /[0-9]+%/g;
-    return regex.exec(input)[0];
-}
+
 
 function inject_attributes_details(){
 
@@ -53,6 +50,11 @@ for(i=0; i<8 ; i++)
 }
 
 function get_attribute_value(attr){
+
+    function useRegex(input) {
+        let regex = /[0-9]+%/g;
+        return regex.exec(input)[0];
+    }
     
     attribute_values=[];
 
@@ -106,6 +108,7 @@ function get_attribute_value(attr){
             return attribute_values;
 
 }
+
 
 done = false;
 inject_attributes_details();

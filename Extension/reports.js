@@ -196,7 +196,7 @@ async function update_managers(table,index)
                 pit_lap = race_table.rows[i-1].childNodes[0].textContent;
                 pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent.split(" ")[0];
                
-                manager[index].pit_stop+="("+(pit_lap-last_pit_lap)+")"+pit_lap+",  "+pit_tyre;
+                manager[index].pit_stop+=","+(pit_lap-last_pit_lap)+","+pit_tyre;
 
                 last_pit_lap = pit_lap;
               
@@ -215,7 +215,7 @@ async function update_managers(table,index)
         }
 
         last_lap_completed = race_table.rows[race_table.tBodies[0].rows.length].childNodes[0].innerHTML;
-        manager[index].pit_stop+="("+(last_lap_completed-last_pit_lap)+")"+(last_lap_completed);
+        manager[index].pit_stop+=","+(last_lap_completed-last_pit_lap);
 
 
 

@@ -191,8 +191,15 @@ function inject_advanced_stint(){
 
 function inject_estimated(){
   placement = document.getElementById("fuelLapsPrediction");
-  fuel= document.getElementsByClassName("igpNum m")[0].textContent;
-  placement.textContent = (fuel/eco[0]).toFixed(2);
+  if(placement.childElementCount<1){
+    fuel= document.getElementsByClassName("igpNum m")[0].textContent;
+    real = document.createElement("span");
+    real.style.color = "darkcyan";
+    real.textContent= " ("+(fuel/eco[0]).toFixed(2)+")";
+    placement.appendChild(real);
+    //placement.textContent = ;
+  }
+  
 }
 
 async function league_multiplier()
@@ -218,30 +225,51 @@ async function league_multiplier()
 
 function add_mutation_observer(){
 
+  //add eventlistener to the opened dialog and inject first estimate
   function addEvent()
   {
     change_fuel = document.getElementsByClassName("igpNum m")[0];
     change_fuel.addEventListener("click",inject_estimated);
     change_fuel.addEventListener("touchstart",inject_estimated);
     inject_estimated();
+
+  }
+
+  function removeObserver(observer){
+    console.log(document.URL);
+    if(document.URL!="https://igpmanager.com/app/p=race" && document.URL!="https://igpmanager.com/app/p=race&tab=strategy")
+        {
+          observer.disconnect();
+          console.log("removed");
+        }
   }
 
   const config = { attributes: true, attributeFilter : ['style'] };
   const callback = (mutationList, observer) => {
-    for (const mutation of mutationList) {
+    for (const mutation of mutationList) {     
       if (mutation.type === 'attributes') {
         
-
-        if(document.URL=="https://igpmanager.com/app/p=race&tab=strategy")
-        {
-          addEvent();
-        }
+        console.log(mutation.target.style.visibility);
+      if(mutation.target.style.visibility=="visible"){
         if(document.URL=="https://igpmanager.com/app/p=race")
         {
           addEvent();
           update_stint();
+        }else if(document.URL=="https://igpmanager.com/app/p=race&tab=strategy")
+        {
+          addEvent();
+        }else{
+          //remove mutation observer when opening the dialog from a different page
+          observer.disconnect();       
         }
+      }else{
+        update_stint();
+        //page double refresh when changing tabs, wait for final page
+        //remove mutation observer when user is not doing the strategy
+        setTimeout(removeObserver,300,observer);
         
+      }
+      
       }
     }
   };
@@ -328,10 +356,15 @@ async function inject_fuel_info() {
 
  }
 
+ console.log("test");
+
+
+
 //global variables
  multiplier = 1;
  track = circuit_info(); //return [0]length and [1]wear
  eco = [];
+
  main();
 
 
