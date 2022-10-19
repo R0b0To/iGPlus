@@ -65,6 +65,7 @@ function button_function(){
             "report_id": "",          
             "rank" : [],
             "race_time" : [],
+            "lap_time" :[],
             "pit_stop" : ""
         }
 
@@ -163,7 +164,7 @@ function request(url) {
 function decode_result(data){
 
   results = JSON.parse(data).vars.results;
-  table = /<table.*<\/table>/gms.exec(results)[0]
+  table = /<table.*<\/table>/gms.exec(results)[0];
   t = document.createElement("table");
   //sanitizing the data
   let cleanHTML = DOMPurify.sanitize(table);
@@ -191,7 +192,7 @@ async function update_managers(table,index)
         
         for(i=2; i<=laps_done ; i++){
 
-            if(race_table.rows[i].childNodes[0].textContent=="PIT")
+            if(isNaN(race_table.rows[i].childNodes[0].textContent))
             {
                 pit_lap = race_table.rows[i-1].childNodes[0].textContent;
                 pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent.split(" ")[0];
@@ -203,7 +204,8 @@ async function update_managers(table,index)
             }  
             else{
                 manager[index].rank.push(race_table.rows[i].childNodes[4].innerHTML); //track position
-               
+                manager[index].lap_time.push(race_table.rows[i].childNodes[1].innerHTML);
+
                 if(race_table.rows[i].childNodes[2].innerHTML=="-")
                 manager[index].race_time.push("0"); // leading car lead by 0
                 else
@@ -232,7 +234,7 @@ async function update_managers(table,index)
 
       }
       catch(err) {
-        alert(err);
+        console.log(err);
        
       }
 

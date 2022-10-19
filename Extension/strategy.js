@@ -190,11 +190,13 @@ function inject_advanced_stint(){
 }
 
 function inject_estimated(){
+  
   placement = document.getElementById("fuelLapsPrediction");
   if(placement.childElementCount<1){
     fuel= document.getElementsByClassName("igpNum m")[0].textContent;
     real = document.createElement("span");
     real.style.color = "darkcyan";
+    real.style.position = "fixed";
     real.textContent= " ("+(fuel/eco[0]).toFixed(2)+")";
     placement.appendChild(real);
     //placement.textContent = ;
@@ -249,7 +251,7 @@ function add_mutation_observer(){
     for (const mutation of mutationList) {     
       if (mutation.type === 'attributes') {
         
-        console.log(mutation.target.style.visibility);
+       // console.log(mutation.target.style.visibility);
       if(mutation.target.style.visibility=="visible"){
         if(document.URL=="https://igpmanager.com/app/p=race")
         {
@@ -294,6 +296,7 @@ async function main(){
   add_mutation_observer();
   document.getElementById("beginner-d1PitsWrap").addEventListener("touchstart",update_stint);
   document.getElementById("beginner-d1PitsWrap").addEventListener("click",update_stint);
+
   if(document.getElementsByClassName("fuel").length>1){
     document.querySelector("#d2strategy > div").addEventListener("touchstart",update_stint);
     document.querySelector("#d2strategy > div").addEventListener("click",update_stint);
@@ -355,10 +358,6 @@ async function inject_fuel_info() {
     
 
  }
-
- console.log("test");
-
-
 
 //global variables
  multiplier = 1;

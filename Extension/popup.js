@@ -181,7 +181,10 @@ document.addEventListener('DOMContentLoaded', function() {
     //------------------------------------------------------------------------------Race report---------------------------------------------- 
     recapButton.addEventListener('click', function(){
 
-     
+     function lapRecap()
+     {
+
+     }
         
 
           //sorting managers by quali
@@ -192,7 +195,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return -1
           
           });
-           
+          
+          
           race_timings=",";  // time position
           //race_recap = ","; // track position
 
@@ -211,15 +215,18 @@ document.addEventListener('DOMContentLoaded', function() {
             race_timings += ","+i;  
           
             race_timings +="\n";
+            lap_timings = race_timings;
 
                     for(i=0; i<sortQuali.length; i++)
                     {
                       if(sortQuali[i].rank[sortQuali[i].rank.length-1] <= 10)
                       {
                         race_timings+= "Top 10";
+                        lap_timings+="Top 10";
                       }
                       //race_recap +=","+sortQuali[i].name +","+ sortQuali[i].race_replay+ "<br>";
                       race_timings +=","+sortQuali[i].name +","+ sortQuali[i].race_time+ "\n";
+                      lap_timings +=","+sortQuali[i].name +","+ sortQuali[i].lap_time+ "\n";
                       
                     }
           
