@@ -29,11 +29,11 @@ if(value>=185)
 if(value>=180)
     return 4;
 if(value>=175)
-    return 8;
+    return 6;
 if(value>=170)
-    return 10;
+    return 8;
 if(value>=165)
-    return 12;
+    return 10;
 
     return 0;
    
@@ -89,7 +89,11 @@ async function request_driver_heigth(n)
     url = "https://igpmanager.com/index.php?action=fetch&d=driver&id="+drivers[n].attributes[1].value+"&csrfName=&csrfToken=";
     result = await request(url);
     result = JSON.parse(result);
-    height = /[0-9.]+/gm.exec(result.vars.sHeight)[0];
+    height = result.vars.sHeight.replace(/[^\d+]/g,'');
+    if(height<100)
+    {
+        height*=30.48/10;
+    }
     return height;
 }
 
