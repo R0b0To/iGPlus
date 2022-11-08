@@ -1,9 +1,15 @@
+
+      
+
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 
     tab_status = changeInfo.status;
     title = tab.url;
+  
+
     
+
     
     if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
     {
@@ -13,6 +19,8 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     
 
 if(tab_status === "complete"){
+
+
     if(title == "https://igpmanager.com/app/d=research"){
        
         chrome.scripting.executeScript({
@@ -21,6 +29,17 @@ if(tab_status === "complete"){
         })
          .then(()=> {
                 //console.log("research inject");
+         })
+         .catch(err => console.log(err));
+    }
+    if(/^(https:\/\/igpmanager\.com\/app\/p=league&id=)/.test(title)){
+       
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: ["./league.js"]
+        })
+         .then(()=> {
+                //console.log("league inject");
          })
          .catch(err => console.log(err));
     }
