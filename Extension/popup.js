@@ -181,12 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     //------------------------------------------------------------------------------Race report---------------------------------------------- 
     recapButton.addEventListener('click', function(){
 
-     function lapRecap()
-     {
-
-     }
-        
-
+   
           //sorting managers by quali
           sortQuali = driver.sort((a,b) =>{
             if(a.quali > b.quali)
