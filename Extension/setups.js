@@ -35,7 +35,7 @@ if(value>=170)
 if(value>=165)
     return 10;
 
-    return 0;
+    return 10;
    
 }
 

@@ -56,6 +56,12 @@ if(tab_status === "complete"){
     }
     if(title == "https://igpmanager.com/app/p=race&tab=strategy"){
        // console.log("Loading car setup");
+       chrome.scripting.insertCSS({
+        target: { tabId: tabId },
+        files: ["style.css"],});
+
+
+
         chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: ["./strategy.js"]
