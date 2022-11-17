@@ -597,7 +597,7 @@ track = circuit_info(); //return [0]length and [1]wear
  
 
  window.onclick = function(event) {
-  if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1'))
+  if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1')&&!event.target.matches('.tooltip1')&&!event.target.matches('.tooltiptext'))
    {
     
 
