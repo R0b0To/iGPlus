@@ -332,14 +332,23 @@ try {
 
 
 function inject_estimated(){
-  
+var  stintId = document.getElementsByName("stintId");
+var strategyCar = document.getElementsByName("dNum")[0].value;
   placement = document.getElementById("fuelLapsPrediction");
   if(placement.childElementCount<1){
-    fuel= document.getElementsByClassName("igpNum m")[0].textContent;
+    fuel= parseInt(document.getElementsByClassName("igpNum m")[0].textContent);
     real = document.createElement("span");
     real.style.color = "darkcyan";
     real.style.position = "fixed";
-    real.textContent= " ("+(fuel/eco[0]).toFixed(2)+")";
+
+    if(strategyCar==1)
+   var p=document.getElementById("push");
+   else
+   var p=document.getElementById("push 2");
+
+   var selectedPush=parseFloat( p.childNodes[stintId[0].value].childNodes[0].value);
+
+    real.textContent= " ("+(fuel/(((eco[0]/track[0])+selectedPush)*track[0])).toFixed(3)+")";
     placement.appendChild(real);
     //placement.textContent = ;
   }
