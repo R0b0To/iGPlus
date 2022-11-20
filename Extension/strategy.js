@@ -136,7 +136,7 @@ function openPushMenu(e)
 }
 
 
-async function inject_advanced_stint(){
+async function injectAdvancedStint(){
 
   placement = document.getElementsByClassName("fuel");
 
@@ -243,7 +243,7 @@ async function inject_advanced_stint(){
     
     elem.appendChild(row_name);
     
-    for(i=1 ; i<6 ; i++)
+    for(var i=1 ; i<placement[car].childElementCount ; i++)
     {
       var stint = document.createElement("td");
       if(name=="Fuel")
@@ -266,13 +266,13 @@ async function inject_advanced_stint(){
         var pushSelect = document.createElement("select");
             pushSelect.setAttribute("Style","margin-bottom:0px; margin: -10px;padding: 7px;");
             pushSelect.addEventListener("change",updateFuel);
-       for(var j=5 ; j>0 ; j--)
+       for(var j=5 ; j>0 ; j--) //5 push options
         {
           var pushOption = document.createElement('option');
           pushOption.textContent = "PL"+j;
           
           if(j==3)
-          pushOption.selected = true;
+          pushOption.selected = true; //pre select middle push
 
           pushOption.value = pushToUse[j-1];
           pushOption.className = "OPL"+j;
@@ -389,7 +389,7 @@ function add_mutation_observer(){
   }
 
   function removeObserver(observer){
-    console.log(document.URL);
+    //console.log(document.URL);
     if(document.URL!="https://igpmanager.com/app/p=race" && document.URL!="https://igpmanager.com/app/p=race&tab=strategy")
         {
           observer.disconnect();
@@ -458,7 +458,7 @@ async function main(){
   
   
   
-  inject_advanced_stint().then(()=> {
+  injectAdvancedStint().then(()=> {
     inject_fuel_info();
 })
  
@@ -490,8 +490,10 @@ function updateWearText(id)
      carNumber=1;
 
   t_stint = document.getElementById(id);
-  for(i=1 ; i<6 ;i++)
-  t_stint.childNodes[i].textContent = (stint_wear(i,carNumber));
+  for(i=1 ; i<t_stint.childElementCount ;i++){
+    t_stint.childNodes[i].textContent = (stint_wear(i,carNumber));
+  }
+  
 }
 
   
@@ -520,18 +522,21 @@ function updateFuel()
       {
         p2 = document.getElementById("push 2");
         var totalFuel = 0;
-        for(var i=1 ;i<6 ; i++)
+        var totalLaps = 0;
+        for(var i=1 ;i<p2.childElementCount ; i++)
         {
           if(f[1].childNodes[i].style.visibility=="visible")
           {
             var selectedPush = parseFloat(p2.childNodes[i].childNodes[0].value);
-            var stintLaps = parseInt(f[1].childNodes[i].textContent);
+            var stintLaps = parseInt(f[1].childNodes[i].textContent); //laps of each stint
+            totalLaps+=stintLaps;
             totalFuel += (((eco[0]/track[0])+selectedPush)*track[0])*stintLaps;
           }
           
         }
 
         try {
+          document.getElementById("d2TotalLaps").textContent = totalLaps;
           document.getElementById("fuelEst2").textContent = "Fuel: "+totalFuel.toFixed(2);
         } catch (error) {
           return totalFuel.toFixed(2);
@@ -541,19 +546,21 @@ function updateFuel()
       }
         
         var totalFuel = 0;
+        var totalLaps = 0;
    
-        for(var i=1 ;i<6 ; i++)
+        for(var i=1 ;i<p.childElementCount ; i++)
         {
           if(f[0].childNodes[i].style.visibility=="visible")
           {
             var selectedPush = parseFloat(p.childNodes[i].childNodes[0].value);
             var stintLaps = parseInt(f[0].childNodes[i].textContent);
+             totalLaps += stintLaps;
             totalFuel += (((eco[0]/track[0])+selectedPush)*track[0])*stintLaps;
           }
           
         }
    try {
-    
+        document.getElementById("d1TotalLaps").textContent = totalLaps;
         document.getElementById("fuelEst").textContent = "Fuel: "+totalFuel.toFixed(2);
    } catch (error) {
     return totalFuel.toFixed(2);
@@ -591,7 +598,7 @@ async function inject_fuel_info() {
 //global variables
 multiplier = 1;
 track = circuit_info(); //return [0]length and [1]wear
- eco = [];
+eco = [];
 
  main();
  
@@ -639,4 +646,195 @@ track = circuit_info(); //return [0]length and [1]wear
       updateFuel();
   }
 
+  addMoreStints();
   
+  function addMoreStints()
+  {
+      var carNumber = document.getElementsByClassName("fuel").length;
+
+
+      addExtraStintButton();
+
+
+    function addExtraStintButton()
+    {
+
+      if(document.getElementById("extraStint")==null){
+      addStint = document.createElement("div");
+      addStint.textContent = "+";
+      var stintCounter = document.createElement("div");
+      stintCounter.textContent = -1;
+      addStint.appendChild(stintCounter);
+      addStint.id="extraStint";
+      addStint.setAttribute("style","left: 140px;position: relative; visibility:hidden");
+     
+      
+      car1pits = document.getElementById("d1strategy").childNodes[2];
+
+      var stops = parseInt(car1pits.textContent.match(/\d+/)[0]);
+        if(stops>3)
+        {
+          stintCounter.textContent=0;
+          car1pits.childNodes[0].childNodes[2].setAttribute("style","background-color: firebrick;opacity: 100!important;");
+        }
+        
+
+      car1pits.childNodes[0].childNodes[2].addEventListener("click",injectExtraStints);
+      car1pits.childNodes[0].childNodes[0].addEventListener("click",removeStints);
+      car1pits.childNodes[0].appendChild(addStint)
+      }
+   
+
+    }
+    function injectExtraStints(){
+
+      var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
+
+
+
+      if(pits>=4 && parseInt(this.nextElementSibling.lastChild.textContent)>-1)
+      {
+
+     
+
+
+      numberOfExtraPits = parseInt(this.nextElementSibling.lastChild.textContent);
+
+      var minus = this.nextElementSibling.parentElement.firstChild;
+      minus.className= "minus disabled";
+      minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+      this.nextElementSibling.setAttribute("style","visibility:visible");
+      if(numberOfExtraPits<2 && numberOfExtraPits>-1){
+      document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan++; //to change
+      this.nextElementSibling.childNodes[1].textContent = numberOfExtraPits+1; 
+      var driver = this.nextElementSibling.parentElement.parentElement.parentElement;
+      var strategyTable = driver.childNodes[3].childNodes[0];
+      //clone last pit 
+      var pitRow = strategyTable.childNodes[0];
+      var pitTh = pitRow.lastChild.cloneNode(true);
+      var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
+      lastpit++;
+      pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
+      pitRow.appendChild(pitTh);
+
+      //clone last tyre 
+      var tyreRow= strategyTable.childNodes[1];
+      var clonedTyre = tyreRow.lastChild.cloneNode(true);
+      clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
+      clonedTyre.addEventListener("click",openTyreDialog);
+      tyreRow.appendChild(clonedTyre);
+      //clone last lap
+      var lapsRow = strategyTable.childNodes[3];
+      var clonedLap = lapsRow.lastChild.cloneNode(true);
+      clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
+      clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
+      lapsRow.appendChild(clonedLap);
+       //clone last push 
+      var pushRow = strategyTable.childNodes[5];
+      var clonedPush = pushRow.lastChild.cloneNode(true);
+      clonedPush.addEventListener("change",updateFuel)
+      pushRow.appendChild(clonedPush);
+      //clone last wear 
+      var wearRow = strategyTable.childNodes[6];
+      var clonedWear = wearRow.lastChild.cloneNode(true);
+      wearRow.appendChild(clonedWear);
+      }
+      }else if(pits==4 && parseInt(this.nextElementSibling.lastChild.textContent)==-1)
+      {
+        this.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+        this.nextElementSibling.lastChild.textContent = 0;
+      }
+
+
+      
+    }
+
+
+    function removeStints()
+    {
+      console.log('pressed minus with '+this.nextElementSibling.textContent[0]);
+      var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
+
+      if(pits==3)
+      {
+        console.log("removing style");
+        this.nextElementSibling.nextElementSibling.setAttribute("style","background-color:#6c7880");
+      }
+
+      var extraStints =parseInt(this.parentElement.lastChild.childNodes[1].textContent);
+      if(extraStints>=1){
+        extraStints--;
+        document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan--;
+        if(extraStints==0)
+        {
+          console.log("hiding");
+          this.nextSibling.nextElementSibling.nextElementSibling.style.visibility="hidden";
+        }
+        
+          var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
+          pits--;
+          this.nextElementSibling.textContent.replace(/[0-9]/g, pits);
+  
+        driver = this.parentElement.parentElement.parentElement;
+        var strategyTable = driver.childNodes[3].childNodes[0];
+        strategyTable.childNodes[0].lastChild.remove();
+        strategyTable.childNodes[1].lastChild.remove();
+        strategyTable.childNodes[3].lastChild.remove();
+        strategyTable.childNodes[5].lastChild.remove();
+        strategyTable.childNodes[6].lastChild.remove();
+
+      
+     
+      this.parentElement.lastChild.childNodes[1].textContent = extraStints;
+      
+      if(extraStints==0)
+      {
+        this.className = "minus";
+        this.setAttribute("style","background-color:#6c7880")
+      }
+
+      
+      }
+      else if(extraStints==0)
+      this.parentElement.lastChild.childNodes[1].textContent=-1;
+      
+
+
+
+
+    }
+
+
+  }
+
+  function openTyreDialog(){
+
+  var tyre = this.className;
+  var stintId = this.lastChild.name.match(/\d+/)[0];
+  var fuelL = this.parentElement.parentElement.childNodes[3].childNodes[stintId].childNodes[1].value;
+  var laps = this.parentElement.parentElement.childNodes[3].childNodes[stintId].textContent;
+  this.parentElement.childNodes[2].click();
+  var tyreD = document.getElementById("tyreSelect").childNodes[0].childNodes[0];
+
+
+  if(document.getElementById("fuelLapsPrediction").parentElement.parentElement.className==" hide")
+    document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = laps;
+  else
+    document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = fuelL;
+
+  document.getElementsByName("stintId")[0].value = stintId; 
+  document.getElementById("stintDialog").childNodes[0].childNodes[0].textContent = "Pit "+(stintId-1); // name of dialog stint
+
+
+for(var i=0 ; i<6 ; i++)
+{
+  if(tyreD.childNodes[i].id!=tyre)
+  {
+    tyreD.childNodes[i].className = "inactive";
+  }else
+  tyreD.childNodes[i].className = "";
+}
+
+
+
+  }
