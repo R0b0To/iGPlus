@@ -679,85 +679,27 @@ eco = [];
         }
         
 
+      car1pits.childNodes[0].childNodes[2].addEventListener("touchstart",injectExtraStints);
       car1pits.childNodes[0].childNodes[2].addEventListener("click",injectExtraStints);
+
       car1pits.childNodes[0].childNodes[0].addEventListener("click",removeStints);
+      car1pits.childNodes[0].childNodes[0].addEventListener("touchstart",removeStints);
       car1pits.childNodes[0].appendChild(addStint)
       }
    
 
     }
-    function injectExtraStints(){
 
-      var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
-
-
-
-      if(pits>=4 && parseInt(this.nextElementSibling.lastChild.textContent)>-1)
-      {
-
-     
-
-
-      numberOfExtraPits = parseInt(this.nextElementSibling.lastChild.textContent);
-
-      var minus = this.nextElementSibling.parentElement.firstChild;
-      minus.className= "minus disabled";
-      minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
-      this.nextElementSibling.setAttribute("style","visibility:visible");
-      if(numberOfExtraPits<2 && numberOfExtraPits>-1){
-      document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan++; //to change
-      this.nextElementSibling.childNodes[1].textContent = numberOfExtraPits+1; 
-      var driver = this.nextElementSibling.parentElement.parentElement.parentElement;
-      var strategyTable = driver.childNodes[3].childNodes[0];
-      //clone last pit 
-      var pitRow = strategyTable.childNodes[0];
-      var pitTh = pitRow.lastChild.cloneNode(true);
-      var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
-      lastpit++;
-      pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
-      pitRow.appendChild(pitTh);
-
-      //clone last tyre 
-      var tyreRow= strategyTable.childNodes[1];
-      var clonedTyre = tyreRow.lastChild.cloneNode(true);
-      clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
-      clonedTyre.addEventListener("click",openTyreDialog);
-      tyreRow.appendChild(clonedTyre);
-      //clone last lap
-      var lapsRow = strategyTable.childNodes[3];
-      var clonedLap = lapsRow.lastChild.cloneNode(true);
-      clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
-      clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
-      lapsRow.appendChild(clonedLap);
-       //clone last push 
-      var pushRow = strategyTable.childNodes[5];
-      var clonedPush = pushRow.lastChild.cloneNode(true);
-      clonedPush.addEventListener("change",updateFuel)
-      pushRow.appendChild(clonedPush);
-      //clone last wear 
-      var wearRow = strategyTable.childNodes[6];
-      var clonedWear = wearRow.lastChild.cloneNode(true);
-      wearRow.appendChild(clonedWear);
-      }
-      }else if(pits==4 && parseInt(this.nextElementSibling.lastChild.textContent)==-1)
-      {
-        this.setAttribute("style","background-color: firebrick;opacity: 100!important;");
-        this.nextElementSibling.lastChild.textContent = 0;
-      }
-
-
-      
-    }
-
+    
 
     function removeStints()
     {
-      console.log('pressed minus with '+this.nextElementSibling.textContent[0]);
+      //console.log('pressed minus with '+this.nextElementSibling.textContent[0]);
       var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
 
       if(pits==3)
       {
-        console.log("removing style");
+        //console.log("removing style");
         this.nextElementSibling.nextElementSibling.setAttribute("style","background-color:#6c7880");
       }
 
@@ -767,7 +709,7 @@ eco = [];
         document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan--;
         if(extraStints==0)
         {
-          console.log("hiding");
+          //console.log("hiding");
           this.nextSibling.nextElementSibling.nextElementSibling.style.visibility="hidden";
         }
         
@@ -806,6 +748,65 @@ eco = [];
 
 
   }
+
+  function injectExtraStints(){
+
+    var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
+
+    if(pits>=4 && parseInt(this.nextElementSibling.lastChild.textContent)>-1)
+    {
+
+    numberOfExtraPits = parseInt(this.nextElementSibling.lastChild.textContent);
+
+    var minus = this.nextElementSibling.parentElement.firstChild;
+    minus.className= "minus disabled";
+    minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+    this.nextElementSibling.setAttribute("style","visibility:visible");
+    if(numberOfExtraPits<2 && numberOfExtraPits>-1){
+    document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan++; //to change
+    this.nextElementSibling.childNodes[1].textContent = numberOfExtraPits+1; 
+    var driver = this.nextElementSibling.parentElement.parentElement.parentElement;
+    var strategyTable = driver.childNodes[3].childNodes[0];
+    //clone last pit 
+    var pitRow = strategyTable.childNodes[0];
+    var pitTh = pitRow.lastChild.cloneNode(true);
+    var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
+    lastpit++;
+    pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
+    pitRow.appendChild(pitTh);
+
+    //clone last tyre 
+    var tyreRow= strategyTable.childNodes[1];
+    var clonedTyre = tyreRow.lastChild.cloneNode(true);
+    clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
+    clonedTyre.addEventListener("click",openTyreDialog);
+    tyreRow.appendChild(clonedTyre);
+    //clone last lap
+    var lapsRow = strategyTable.childNodes[3];
+    var clonedLap = lapsRow.lastChild.cloneNode(true);
+    clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
+    clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
+    lapsRow.appendChild(clonedLap);
+     //clone last push 
+    var pushRow = strategyTable.childNodes[5];
+    var clonedPush = pushRow.lastChild.cloneNode(true);
+    clonedPush.addEventListener("change",updateFuel)
+    pushRow.appendChild(clonedPush);
+    //clone last wear 
+    var wearRow = strategyTable.childNodes[6];
+    var clonedWear = wearRow.lastChild.cloneNode(true);
+    wearRow.appendChild(clonedWear);
+    }
+    }else if(pits==4 && parseInt(this.nextElementSibling.lastChild.textContent)==-1)
+    {
+      this.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+      this.nextElementSibling.lastChild.textContent = 0;
+    }
+
+
+    
+  }
+
 
   function openTyreDialog(){
 
