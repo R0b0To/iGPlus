@@ -108,7 +108,7 @@ switch (tyre) {
     t=hard_wear;
   break;
   default:
-   return "";
+   return ""; //don't calculate for W and I as wear fluctuates too much
   break;
 }
 
@@ -653,38 +653,41 @@ eco = [];
       var carNumber = document.getElementsByClassName("fuel").length;
 
 
-      addExtraStintButton();
+      if(carNumber==2)
+      addExtraStintButton(2);
+
+      addExtraStintButton(1);
 
 
-    function addExtraStintButton()
+    function addExtraStintButton(id)
     {
 
-      if(document.getElementById("extraStint")==null){
+      if(document.getElementById("extra "+id)==null){
       addStint = document.createElement("div");
       addStint.textContent = "+";
       var stintCounter = document.createElement("div");
       stintCounter.textContent = -1;
       addStint.appendChild(stintCounter);
-      addStint.id="extraStint";
+      addStint.id="extra "+id;
       addStint.setAttribute("style","left: 140px;position: relative; visibility:hidden");
      
       
-      car1pits = document.getElementById("d1strategy").childNodes[2];
+      carPits = document.getElementById("d"+id+"strategy").childNodes[2];
 
-      var stops = parseInt(car1pits.textContent.match(/\d+/)[0]);
+      var stops = parseInt(carPits.textContent.match(/\d+/)[0]);
         if(stops>3)
         {
           stintCounter.textContent=0;
-          car1pits.childNodes[0].childNodes[2].setAttribute("style","background-color: firebrick;opacity: 100!important;");
+          carPits.childNodes[0].childNodes[2].setAttribute("style","background-color: firebrick;opacity: 100!important;");
         }
         
 
-      car1pits.childNodes[0].childNodes[2].addEventListener("touchstart",injectExtraStints);
-      car1pits.childNodes[0].childNodes[2].addEventListener("click",injectExtraStints);
+      carPits.childNodes[0].childNodes[2].addEventListener("touchstart",injectExtraStints);
+      carPits.childNodes[0].childNodes[2].addEventListener("click",injectExtraStints);
 
-      car1pits.childNodes[0].childNodes[0].addEventListener("click",removeStints);
-      car1pits.childNodes[0].childNodes[0].addEventListener("touchstart",removeStints);
-      car1pits.childNodes[0].appendChild(addStint)
+      carPits.childNodes[0].childNodes[0].addEventListener("click",removeStints);
+      carPits.childNodes[0].childNodes[0].addEventListener("touchstart",removeStints);
+      carPits.childNodes[0].appendChild(addStint)
       }
    
 
@@ -706,7 +709,7 @@ eco = [];
       var extraStints =parseInt(this.parentElement.lastChild.childNodes[1].textContent);
       if(extraStints>=1){
         extraStints--;
-        document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan--;
+        this.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan--;
         if(extraStints==0)
         {
           //console.log("hiding");
@@ -763,7 +766,9 @@ eco = [];
     minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
     this.nextElementSibling.setAttribute("style","visibility:visible");
     if(numberOfExtraPits<2 && numberOfExtraPits>-1){
-    document.getElementById("tyre wear").nextElementSibling.childNodes[0].colSpan++; //to change
+
+    this.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan++;
+
     this.nextElementSibling.childNodes[1].textContent = numberOfExtraPits+1; 
     var driver = this.nextElementSibling.parentElement.parentElement.parentElement;
     var strategyTable = driver.childNodes[3].childNodes[0];
@@ -816,16 +821,33 @@ eco = [];
   var laps = this.parentElement.parentElement.childNodes[3].childNodes[stintId].textContent;
   this.parentElement.childNodes[2].click();
   var tyreD = document.getElementById("tyreSelect").childNodes[0].childNodes[0];
-
+  document.getElementsByName("stintId")[0].value = stintId; 
+  var dialog = document.getElementById("stintDialog");
+  dialog.childNodes[0].childNodes[0].textContent = "Pit "+(stintId-1); // name of dialog stint
 
   if(document.getElementById("fuelLapsPrediction").parentElement.parentElement.className==" hide")
     document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = laps;
   else
     document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = fuelL;
 
-  document.getElementsByName("stintId")[0].value = stintId; 
-  document.getElementById("stintDialog").childNodes[0].childNodes[0].textContent = "Pit "+(stintId-1); // name of dialog stint
 
+    var event = new MouseEvent('mousedown', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true,
+  
+  });
+  var event2 = new MouseEvent('mouseup', {
+    'view': window,
+    'bubbles': true,
+    'cancelable': true,
+
+});
+
+    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event);
+    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event2);
+    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event);
+    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event2);
 
 for(var i=0 ; i<6 ; i++)
 {
