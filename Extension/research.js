@@ -1,4 +1,16 @@
 
+function restore_options() {
+    // Use default value color = 'red' and likesColor = true.
+    chrome.storage.local.get({
+      language: 'English',
+    }, function(items) {
+      document.getElementById("valuesId").textContent = lang[items.language].valuesText;
+      document.getElementById("valuesGapId").textContent = lang[items.language].gapText;
+    });
+  }
+
+
+
 
 function inject_attributes_details(){
 
@@ -6,14 +18,13 @@ function inject_attributes_details(){
 try {
     title = document.querySelector("#carResearch > thead > tr");
     values = document.createElement("th");
+    values.id="valuesId";
     values_gap = document.createElement("th"); 
+    values_gap.id = "valuesGapId";
     values.style.width ="7%";
     values_gap.style.width ="30px";
-    description = document.createTextNode("Values");
-    description_gap = document.createTextNode("Gap");
     title.childNodes[0].style.width = "20%";
-    values.appendChild(description);
-    values_gap.appendChild(description_gap);
+  
     title.insertBefore(values, title.childNodes[0]);
     title.insertBefore(values_gap, title.childNodes[1]);
 
@@ -39,6 +50,7 @@ for(i=0; i<8 ; i++)
     attribute.insertBefore(gap_area, attribute.childNodes[1]);
   }
   done = true;
+  restore_options();
 } catch (error) {
     console.log(error);
     setTimeout(() => {
@@ -111,6 +123,7 @@ function get_attribute_value(attr){
 
 
 done = false;
+if(document.getElementById("valuesId")==null)
 inject_attributes_details();
 
 

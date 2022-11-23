@@ -21,7 +21,7 @@ function request(url) {
 
 
 function fuel_calc(f){
-  return ((f** -0.085)*0.671);}
+  return ((f** -0.0892)*0.68);}
 
 async function get_eco()
   {
@@ -169,7 +169,8 @@ async function injectAdvancedStint(){
 
       var pushButton = document.createElement('div');
           pushButton.className ="dropbtn1";
-          pushButton.textContent = "Push";
+         
+          pushButton.textContent = lang[language.language].pushText;
           pushButton.addEventListener("click",openPushMenu)
 
           pushButtonHeader.appendChild(pushButton);
@@ -186,7 +187,7 @@ async function injectAdvancedStint(){
           pushInputDiv.className = "number-input";
 
       var pushInputLabel = document.createElement('div');
-          pushInputLabel.textContent = "PL"+i;
+          pushInputLabel.textContent = i;
           pushInputLabel.setAttribute("style","font-size: 0.8rem; color:white;align-self:center;background-color:#669999;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
 
       var pushInputDown = document.createElement('div');
@@ -229,7 +230,7 @@ async function injectAdvancedStint(){
           tooltipElem.textContent = "?";
           tooltipText = document.createElement("span");
           tooltipText.className= "tooltiptext";
-          tooltipText.textContent = 'Each PL indicates the fuel amount (in liters) that will be added to the fuel consumption. Your fuel consuption is '+(eco[0]/track[0]).toFixed(3)+" L/KM. The PL selection does not change the stints push for the race";
+          tooltipText.textContent = lang[language.language].pushDescriptionPart1+(eco[0]/track[0]).toFixed(3)+" L/KM. "+lang[language.language].pushDescriptionPart2;
           tooltipElem.appendChild(tooltipText);
           
           pushButtonHeader.appendChild(tooltipElem);
@@ -441,7 +442,7 @@ function add_mutation_observer(){
 async function main(){
  
   try {
-
+    language = await chrome.storage.local.get({language: 'English'});
     eco = await get_eco();
   
   multiplier = await league_multiplier();
@@ -599,7 +600,7 @@ async function inject_fuel_info() {
 multiplier = 1;
 track = circuit_info(); //return [0]length and [1]wear
 eco = [];
-
+language = "";
  main();
  
 
@@ -632,6 +633,7 @@ eco = [];
       
       });
 
+      // update the selections options with the new pushes
       for(var j=0 ; j<5 ; j++)
       {
         option = document.getElementsByClassName("OPL"+(j+1));
@@ -658,7 +660,8 @@ eco = [];
 
       addExtraStintButton(1);
 
-
+//add an event listener to plus button and a counter next to it
+//id is used for handling 2 cars strategies
     function addExtraStintButton(id)
     {
 
@@ -843,7 +846,7 @@ eco = [];
     'cancelable': true,
 
 });
-
+//simulate changing fuel to update values
     dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event);
     dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event2);
     dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event);

@@ -229,8 +229,12 @@ async function race_report() {
 
       update_managers(table, number);
 
+      
+     
+
     }
   }
+  formatTable();
   document.getElementById("progress").remove();
 }
 
@@ -280,17 +284,18 @@ async function update_managers(table, index) {
     race_table = table;
     laps_done = race_table.tBodies[0].rows.length; // getting last lap
 
-    manager[index].pit_stop = race_table.rows[1].childNodes[1].childNodes[0].textContent.split(" ")[0];
+    startTyre = race_table.rows[1].childNodes[1].childNodes[0].textContent;
+    manager[index].pit_stop = startTyre;
     last_pit_lap = 0;
-
+    
 
     for (i = 2; i <= laps_done; i++) {
 
       if (isNaN(race_table.rows[i].childNodes[0].textContent)) {
         pit_lap = race_table.rows[i - 1].childNodes[0].textContent;
-        pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent.split(" ")[0];
-
-        manager[index].pit_stop += "," + (pit_lap - last_pit_lap) + "," + pit_tyre;
+        pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent;  
+        var stintLaps = (pit_lap - last_pit_lap);
+        manager[index].pit_stop += "," + stintLaps + "," + pit_tyre;
 
         last_pit_lap = pit_lap;
 
@@ -309,9 +314,10 @@ async function update_managers(table, index) {
     }
 
     last_lap_completed = race_table.rows[race_table.tBodies[0].rows.length].childNodes[0].innerHTML;
-    manager[index].pit_stop += "," + (last_lap_completed - last_pit_lap);
-
-
+    
+    var lastStintLaps = (last_lap_completed - last_pit_lap)
+    
+    manager[index].pit_stop += "," + lastStintLaps;
 
     bar = document.getElementById("bar");
     progress_status += (100 / manager.length);
@@ -330,11 +336,181 @@ async function update_managers(table, index) {
 
   }
 
-
 }
 
 
+function formatTable(){
 
+
+  chrome.storage.local.get("active", function(data) {
+
+    var manager = data.active;
+    manager.sort((a, b) => { return a.race_finish - b.race_finish; });
+  
+    var table = document.getElementById("race").childNodes[1];
+
+    var history = document.createElement("div");
+
+
+    for(var i=1 ; i<table.rows.length ; i++){
+    
+          history =document.createElement("div");
+          stops = manager[i-1].pit_stop.split(",");
+          stops.forEach(item =>{
+            var ele;
+            if(isNaN(item))      
+            ele = createTyreElement(item);
+            else
+            ele = createTextElement(item);
+            
+            history.appendChild(ele);
+          })
+          table.rows[i].childNodes[1].lastChild.appendChild(history);
+
+    }
+    
+      
+ 
+
+  });
+  function createTextElement(laps)
+  {
+  var laptext = document.createElement("td");
+  laptext.setAttribute("style","height:10px; width:10px;");
+  laptext.textContent = laps;
+  return laptext;
+  }
+function createTyreElement(code){
+
+  var tyre ="ts-M";
+
+switch (code) {
+    case "Full wet tyres":
+    tyre = "ts-W";
+    break;
+    case "Intermediate wet tyres":
+    tyre = "ts-I";
+    break;
+    case "Hard tyres":
+    tyre = "ts-H";
+    break;
+    case "Medium tyres":
+    tyre = "ts-M";
+    break;
+    case "Soft tyres":
+    tyre = "ts-S";
+    break;
+    case "Super soft tyres":
+    tyre = "ts-SS";
+    break;
+
+    case "Pneumatici da bagnato":
+      tyre = "ts-W";
+      break;
+      case "Pneumatici intermedi":
+      tyre = "ts-I";
+      break;
+      case "Pneumatici duri":
+      tyre = "ts-H";
+      break;
+      case "Pneumatici medi":
+      tyre = "ts-M";
+      break;
+      case "Pneumatici morbidi":
+      tyre = "ts-S";
+      break;
+      case "Pneumatici super morbidi":
+      tyre = "ts-SS";
+      break;
+
+      case "Neumáticos de Lluvia":
+      tyre = "ts-W";
+      break;
+      case "Neumáticos Intermedios":
+      tyre = "ts-I";
+      break;
+      case "Neumáticos Duros":
+      tyre = "ts-H";
+      break;
+      case "Neumáticos Medios":
+      tyre = "ts-M";
+      break;
+      case "Neumáticos Blandos":
+      tyre = "ts-S";
+      break;
+      case "Neumáticos Súper Blandos":
+      tyre = "ts-SS";
+      break;
+
+      case "Vollregen-Reifen":
+        tyre = "ts-W";
+        break;
+        case "Intermediate Reifen":
+        tyre = "ts-I";
+        break;
+        case "Hart Reifen":
+        tyre = "ts-H";
+        break;
+        case "Medium Reifen":
+        tyre = "ts-M";
+        break;
+        case "Soft Reifen":
+        tyre = "ts-S";
+        break;
+        case "Super Soft Reifen":
+        tyre = "ts-SS";
+        break;
+        
+        case "Pneus de chuva":
+        tyre = "ts-W";
+        break;
+        case "Pneus intermediários":
+        tyre = "ts-I";
+        break;
+        case "Pneus duros":
+        tyre = "ts-H";
+        break;
+        case "Pneus médios":
+        tyre = "ts-M";
+        break;
+        case "Pneus macios":
+        tyre = "ts-S";
+        break;
+        case "Pneus super macios":
+        tyre = "ts-SS";
+        break;
+
+        case "Дождевые шины":
+          tyre = "ts-W";
+          break;
+          case "Промежуточные шины":
+          tyre = "ts-I";
+          break;
+          case "Твердые шины":
+          tyre = "ts-H";
+          break;
+          case "Средние шины":
+          tyre = "ts-M";
+          break;
+          case "Мягкие шины":
+          tyre = "ts-S";
+          break;
+          case "Супермягкие шины":
+          tyre = "ts-SS";
+          break;
+
+  default:tyre = "ts-M";
+    break;
+}
+
+ var  tyreEle = document.createElement("td");
+  tyreEle.setAttribute("style","height:10px; width:20px;background-color: transparent;");
+  tyreEle.className = tyre;
+
+  return tyreEle;
+}
+
+}
 
 
 

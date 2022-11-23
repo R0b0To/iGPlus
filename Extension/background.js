@@ -25,7 +25,7 @@ if(tab_status === "complete"){
        
         chrome.scripting.executeScript({
             target: { tabId: tabId },
-            files: ["./research.js"]
+            files: ["./research.js","./localization.js"]
         })
          .then(()=> {
                 //console.log("research inject");
@@ -64,7 +64,7 @@ if(tab_status === "complete"){
 
         chrome.scripting.executeScript({
             target: { tabId: tabId },
-            files: ["./strategy.js"]
+            files: ["./strategy.js","./localization.js"]
         })
          .then(()=> {
                 //console.log("strategy");

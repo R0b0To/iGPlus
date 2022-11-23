@@ -14,6 +14,30 @@ document.addEventListener('DOMContentLoaded', function() {
      driver = 0;
      is_save_empty = true;
 
+    restore_options();
+
+
+     function restore_options() {
+      // Use default value color = 'red' and likesColor = true.
+      chrome.storage.local.get({
+        language: 'English',
+      }, function(items) {
+        
+        recapButton.textContent = lang[items.language].RaceReport;
+        startOvertakes.textContent = lang[items.language].StartOvertakes;
+        deleteButton.textContent =lang[items.language].delete;
+        newButton.textContent =lang[items.language].newRace;
+        
+        averageButton.textContent =lang[items.language].heatMap;
+        pitButton.textContent =lang[items.language].PitReport;
+        downloadButton.textContent =lang[items.language].downloadText;
+        copyButton.textContent =lang[items.language].copyText;
+
+      });
+    }
+
+
+
    async function disableButton(yes)
     {
 
