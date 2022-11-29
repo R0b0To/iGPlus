@@ -28,11 +28,15 @@ function swapWeatherLink()
     }
     var url = "https://darksky.net/forecast/";
     var weather = document.getElementById("race").childNodes[0].lastChild.childNodes[1];
-    weather.className+=" avoid";
-    weather.target="_blank";
-    weather.setAttribute("style",'background:#00899e');
-    weather.href = url+weatherLocation[weather.href.slice(-1)];
-    weather.id = "darkWeather";
+    darkWeather = weather.cloneNode(true)
+    darkWeather.className+=" avoid";
+    darkWeather.target="_blank";
+    darkWeather.textContent = "DarkSky";
+    darkWeather.setAttribute("style",'background:#00899e');
+    darkWeather.href = url+weatherLocation[weather.href.match(/\d+/)[0]];
+    darkWeather.id = "darkWeather";
+    weather.parentElement.className="tree-btn";
+    weather.parentElement.appendChild(darkWeather);
 }
 
 if(document.getElementById("darkWeather")==null)
