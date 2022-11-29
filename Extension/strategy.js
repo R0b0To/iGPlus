@@ -21,7 +21,27 @@ function request(url) {
 
 
 function fuel_calc(f){
-  return ((f** -0.0892)*0.68);}
+
+  /*if(f>=180)
+  return ((f** -0.089)*0.679)   
+  if(f>=160)
+  return ((f** -0.089)*0.679)   
+  if(f>=140)
+  return ((f** -0.089)*0.679)   
+  if(f>=120)
+  return ((f** -0.089)*0.679) */  
+  if(f>=100)
+  return ((f** -0.0893)*0.68)   
+  if(f>=80)
+  return ((f** -0.0815)*0.659)   
+  if(f>=60)
+  return ((f** -0.086)*0.671)   
+  if(f>=40)
+  return ((f** -0.0859)*0.671)   
+  if(f>=20)
+  return ((f** -0.0898)*0.68);   
+
+  return ((f** -0.0975)*0.696);   }
 
 async function get_eco()
   {
@@ -442,7 +462,7 @@ function add_mutation_observer(){
 async function main(){
  
   try {
-    language = await chrome.storage.local.get({language: 'English'});
+    language = await chrome.storage.local.get({language: 'eng'});
     eco = await get_eco();
   
   multiplier = await league_multiplier();
@@ -600,7 +620,7 @@ async function inject_fuel_info() {
 multiplier = 1;
 track = circuit_info(); //return [0]length and [1]wear
 eco = [];
-language = "";
+language = "eng";
  main();
  
 

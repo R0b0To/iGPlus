@@ -2,7 +2,7 @@
 function restore_options() {
     // Use default value color = 'red' and likesColor = true.
     chrome.storage.local.get({
-      language: 'English',
+      language: 'eng',
     }, function(items) {
       document.getElementById("valuesId").textContent = lang[items.language].valuesText;
       document.getElementById("valuesGapId").textContent = lang[items.language].gapText;

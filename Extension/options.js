@@ -14,9 +14,9 @@ function save_options() {
   }
 
 function restore_options() {
-    // Use default value color = 'red' and likesColor = true.
+    // Use default value language = 'eng'
     chrome.storage.local.get({
-      language: 'English',
+      language: 'eng',
     }, function(items) {
       document.getElementById('language').value = items.language;
       document.getElementById("langTitle").textContent = lang[items.language].languageText;

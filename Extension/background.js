@@ -54,6 +54,17 @@ if(tab_status === "complete"){
          })
          .catch(err => console.log(err));
     }
+    if(title == "https://igpmanager.com/app/p=race&tab=race"){
+        // console.log("Loading car setup");
+         chrome.scripting.executeScript({
+             target: { tabId: tabId },
+             files: ["./race.js"]
+         })
+          .then(()=> {
+                 //console.log("car setup");
+          })
+          .catch(err => console.log(err));
+     }
     if(title == "https://igpmanager.com/app/p=race&tab=strategy"){
        // console.log("Loading car setup");
        chrome.scripting.insertCSS({

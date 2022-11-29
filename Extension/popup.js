@@ -18,9 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
      function restore_options() {
-      // Use default value color = 'red' and likesColor = true.
+      
       chrome.storage.local.get({
-        language: 'English',
+        language: 'eng',
       }, function(items) {
         
         recapButton.textContent = lang[items.language].RaceReport;
