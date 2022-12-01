@@ -1,5 +1,5 @@
 {
-    "manifest_version":3,
+    "manifest_version":2,
     "name": "iGP Extended",
     "description": "Enhance your iGPmanager experience",
     "version":"0.860",
@@ -7,27 +7,25 @@
          "128": "./images/racing128.png"
      },
      "background": {
-         "service_worker": "background.js"
-     },
-     "action":{
-         "default_popup": "popup.html",
-         "default_icons":{
-            "128": "./images/racing128.png"
-         }
+         "scripts": ["background.js"]
      },
      "options_ui": {
         "page": "options.html",
         "open_in_tab": false
       },
-
-     
+    
+     "browser_action":{
+         "default_popup": "popup.html",
+         "default_icons":{
+            "128": "./images/racing128.png"
+         }
+     },
      "permissions":[
          "tabs",
          "storage",
-         "scripting"
-     ],
-
-     "host_permissions": [
+         "scripting",
          "*://igpmanager.com/*"
      ]
+
+    
 }
