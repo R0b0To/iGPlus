@@ -59,7 +59,9 @@ function inject_button() {
  }
  async function update_button(){
             
-            h1 = await request_driver_heigth(0);
+    drivers = document.getElementsByClassName("staffImage");
+    
+    h1 = await request_driver_heigth(drivers[0].attributes[1].value);
             setup_value = height_Convertion(h1);
             
             t = getTrack();
@@ -67,14 +69,14 @@ function inject_button() {
             setPitTime(t.pit); 
             
             //get other driver if present
-            drivers = document.getElementsByClassName("staffImage");
+            
             if(drivers.length>2)
             {
                 driver_number=2;
-                h2 = await request_driver_heigth(1);
+                h2 = await request_driver_heigth(drivers[1].attributes[1].value);
                 setup_value = height_Convertion(h2);
     
-                setCar(t.suspension,t.ride+setup_value2,t.wing,2);
+                setCar(t.suspension,t.ride+setup_value,t.wing,2);
                 //setPitTime(t.pit); 
                 chrome.storage.local.set({'driver2h':setup_value});   
             }
@@ -84,9 +86,9 @@ function inject_button() {
                 chrome.storage.local.set({'driver1h':setup_value});   
 
 
-async function request_driver_heigth(n)
+async function request_driver_heigth(id)
 {
-    url = "https://igpmanager.com/index.php?action=fetch&d=driver&id="+drivers[n].attributes[1].value+"&csrfName=&csrfToken=";
+    url = "https://igpmanager.com/index.php?action=fetch&d=driver&id="+id+"&csrfName=&csrfToken=";
     result = await request(url);
     result = JSON.parse(result);
     height = result.vars.sHeight.replace(/[^\d+]/g,'');
@@ -123,13 +125,13 @@ function setPitTime(time){
  */
 function setCar(s,r,w,n){
 
-    if(driver_number==2)
+    /*if(driver_number==2)
     {
         if(n==2)
             n=1;
         else if(n==1)
             n=2;
-    }
+    }*/
 
     // ride element
     ride_height =  document.querySelector("#d"+n+"setup > table.acp.linkFill.pad > tbody > tr:nth-child(2)");
@@ -141,7 +143,7 @@ function setCar(s,r,w,n){
       ride_height.insertBefore(x, ride_height.childNodes[0]);
     }
     else{
-        new_ride_heigth = document.querySelector("#d1setup > table.acp.linkFill.pad > tbody > tr:nth-child(2) > td:nth-child(1)")
+        new_ride_heigth = document.querySelector("#d"+n+"setup > table.acp.linkFill.pad > tbody > tr:nth-child(2) > td:nth-child(1)")
         new_ride_heigth.textContent= r;
     }   
      
@@ -218,7 +220,7 @@ function getTrack(){
         
         if(data.driver1h==null)
         {
-            //if no driver is found update cuurrent driver
+            //if no driver is found update current driver
             update_button();  
      
         }else

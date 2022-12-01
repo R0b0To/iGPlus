@@ -31,7 +31,7 @@ function fuel_calc(f){
   if(f>=120)
   return ((f** -0.089)*0.679) */  
   if(f>=100)
-  return ((f** -0.0893)*0.68)   
+  return ((f** -0.0892)*0.68)   
   if(f>=80)
   return ((f** -0.0815)*0.659)   
   if(f>=60)

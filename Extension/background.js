@@ -28,7 +28,7 @@ if(tab_status === "complete"){
             files: ["./research.js","./localization.js"]
         })
          .then(()=> {
-                //console.log("research inject");
+              
          })
          .catch(err => console.log(err));
     }
@@ -39,7 +39,7 @@ if(tab_status === "complete"){
             files: ["./league.js"]
         })
          .then(()=> {
-                //console.log("league inject");
+               
          })
          .catch(err => console.log(err));
     }
@@ -55,18 +55,40 @@ if(tab_status === "complete"){
          .catch(err => console.log(err));
     }
     if(title == "https://igpmanager.com/app/p=race&tab=race"){
-        // console.log("Loading car setup");
+      
          chrome.scripting.executeScript({
              target: { tabId: tabId },
              files: ["./race.js"]
          })
           .then(()=> {
-                 //console.log("car setup");
+               
           })
           .catch(err => console.log(err));
      }
+     if(title == "https://igpmanager.com/app/p=headquarters"){
+        
+         chrome.scripting.executeScript({
+             target: { tabId: tabId },
+             files: ["./headquarters.js"]
+         })
+          .then(()=> {
+                 
+          })
+          .catch(err => console.log(err));
+     }
+     if(title == "https://igpmanager.com/app/p=staff&tab=staff"){
+        
+        chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            files: ["./staff.js","./purify.js"]
+        })
+         .then(()=> {
+                
+         })
+         .catch(err => console.log(err));
+    }
     if(title == "https://igpmanager.com/app/p=race&tab=strategy"){
-       // console.log("Loading car setup");
+      
        chrome.scripting.insertCSS({
         target: { tabId: tabId },
         files: ["style.css"],});
@@ -86,26 +108,25 @@ if(tab_status === "complete"){
   
  if(/^(https:\/\/igpmanager\.com\/app\/d=result&id=)/.test(title))
     {
-       // console.log("starting extraction");
         chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: ["./reports.js","./purify.js"]
         })
          .then(()=> {
-                //console.log("hello");
+               
          })
          .catch(err => console.log(err));
     }
 
     if(title == "https://igpmanager.com/app/d=teamSettings")
     {
-       // console.log("starting race report extraction");
+       
         chrome.scripting.executeScript({
             target: { tabId: tabId },
             files: ["./team_settings.js"]
         })
          .then(()=> {
-                //console.log("hello");
+                
          })
          .catch(err => console.log(err));
     }

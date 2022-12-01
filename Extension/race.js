@@ -28,7 +28,7 @@ function swapWeatherLink()
     }
     var url = "https://darksky.net/forecast/";
     var weather = document.getElementById("race").childNodes[0].lastChild.childNodes[1];
-    darkWeather = weather.cloneNode(true)
+    darkWeather = weather.cloneNode(true);
     darkWeather.className+=" avoid";
     darkWeather.target="_blank";
     darkWeather.textContent = "DarkSky";

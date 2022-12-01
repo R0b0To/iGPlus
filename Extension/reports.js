@@ -341,6 +341,8 @@ async function update_managers(table, index) {
 
 function formatTable(){
 
+  if(document.getElementById("histTyre")!=null)
+  return
 
   chrome.storage.local.get("active", function(data) {
 
@@ -350,11 +352,13 @@ function formatTable(){
     var table = document.getElementById("race").childNodes[1];
 
     var history = document.createElement("div");
+        history.id="histTyre";
 
 
     for(var i=1 ; i<table.rows.length ; i++){
     
           history =document.createElement("div");
+          history.id="histTyre";
           stops = manager[i-1].pit_stop.split(",");
           stops.forEach(item =>{
             var ele;
