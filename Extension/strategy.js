@@ -22,26 +22,25 @@ function request(url) {
 
 function fuel_calc(f){
 
-  /*if(f>=180)
-  return ((f** -0.089)*0.679)   
-  if(f>=160)
-  return ((f** -0.089)*0.679)   
-  if(f>=140)
-  return ((f** -0.089)*0.679)   
-  if(f>=120)
-  return ((f** -0.089)*0.679) */  
-  if(f>=100)
-  return ((f** -0.0892)*0.68)   
-  if(f>=80)
-  return ((f** -0.0815)*0.659)   
-  if(f>=60)
-  return ((f** -0.086)*0.671)   
-  if(f>=40)
-  return ((f** -0.0859)*0.671)   
-  if(f>=20)
-  return ((f** -0.0898)*0.68);   
-
-  return ((f** -0.0975)*0.696);   }
+  switch (true) {
+   /* case f >= 180:
+    case f >= 160:
+    case f >= 140:
+    case f >= 120:
+      return ((f ** -0.089) * 0.679);*/
+    case f >= 100:
+      return ((f ** -0.089) * 0.68);
+    case f >= 80:
+      return ((f ** -0.0815) * 0.659);
+    case f >= 60:
+      return ((f ** -0.086) * 0.671);
+    case f >= 40:
+      return ((f ** -0.0859) * 0.671); //very good
+    case f >= 20:
+      return ((f ** -0.0898) * 0.68);
+    default:
+      return ((f ** -0.0975) * 0.696);
+  }   }
 
 async function get_eco()
   {
@@ -107,43 +106,31 @@ function getWear(tyre,laps){
    * track[0] is track length
    * multiplier is league length scaling
   */
-  medium_wear =(1.43 *eco[1]  ** -0.0778) * (0.00364 *track[1] +0.354) *track[0]  * 1.384612 * multiplier;
   
-  soft_wear = medium_wear*1.338;
-  super_wear = medium_wear*2.03;
-  hard_wear = medium_wear*0.824;
+  
+  const tyreWearFactors = {
+    SS: 2.03,
+    S: 1.338,
+    M: 1,
+    H: 0.824
+  };
 
-
-switch (tyre) {
-  case "SS":
-    t=super_wear;
-  break;
-  case "S":
-    t=soft_wear;
-  break;
-  case "M":
-    t=medium_wear;
-  break;
-  case "H":
-    t=hard_wear;
-  break;
-  default:
-   return ""; //don't calculate for W and I as wear fluctuates too much
-  break;
-}
+ const tyreWear  = tyreWearFactors[tyre] || 0;
+ const t = (1.43 * eco[1] ** -0.0778) * (0.00364 * track[1] + 0.354) * track[0] * 1.384612 * multiplier * tyreWear;
 
 //calculate stint wear
 stint = Math.exp(1)**((-t/100*1.18)*laps)*100;
 stint2 = (1-(1*((t)+(0.0212*laps-0.00926)*track[0])/100));
 for(j=1 ; j<laps ; j++)
 {
-  stint2 = (stint2-(stint2*((t)+(0.0212*j-0.00926)*track[0])/100));
+  stint2 *= (1-(1*((t)+(0.0212*j-0.00926)*track[0])/100));
 }
 stint2 = stint2*100;
 
 average = ((stint+stint2)/2).toFixed(2);
 
 return average;
+
 
 }
 
@@ -172,7 +159,7 @@ async function injectAdvancedStint(){
     
     if(name=="Push" && car==0){
       
-        const defaultPush = [-0.002,-0.001,0,0.001,0.002];
+        const defaultPush = [-0.007,-0.002,0,0.002,0.007];
         pushToUse = [];
       
       
@@ -384,17 +371,16 @@ async function league_multiplier()
   //request league page
   league_info = await request("https://igpmanager.com/index.php?action=fetch&p=league&id="+league_id+"&csrfName=&csrfToken=");
   rules = JSON.parse(league_info).vars.rules;
-  league_lenght = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
+  // Extract league length from rules
+  league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
 
-  //wear multiplier (testing)
-  if(league_lenght==100) //correct
-  return 1;
-  if(league_lenght==75)
-  return 1.33;
-  if(league_lenght==50)
-  return 1.5;
-  if(league_lenght==25)
-  return 3;
+  const multipliers = {
+    100: 1,
+    75: 1.33,
+    50: 1.5,
+    25: 3
+  };
+  return multipliers[league_length] || 1;
 }
 
 function add_mutation_observer(){

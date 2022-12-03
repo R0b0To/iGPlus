@@ -36,30 +36,29 @@ async function addStaffLabels()
 }
 
 
-function extractSkills(req,st)
-{ 
-    
-    try {
+function extractSkills(req, st) {
+
+  try {
     staffData = JSON.parse(req);
     table = staffData.vars.skillTable;
-   
-    tr =document.createElement("tr");
+
+    tr = document.createElement("tr");
     let cleanHTML = DOMPurify.sanitize(table);
     tr.innerHTML = cleanHTML;
-    
-        strength = tr.childNodes[8].textContent.split(" ")[0];
-        weakness = tr.childNodes[10].textContent.split(" ")[0];
-        //console.log("str: "+strength+" weak: "+weakness);
 
-        if(st.childNodes[0].childElementCount==3)
-        st.childNodes[0].appendChild(createElement(strength,"str"));
-       /* if(st.childNodes[0].childElementCount==4)
-        st.childNodes[0].appendChild(createElement(weakness,"wks"));*/
+    strength = tr.childNodes[8].textContent.split(" ")[0];
+    weakness = tr.childNodes[10].textContent.split(" ")[0];
+    //console.log("str: "+strength+" weak: "+weakness);
 
-    } catch (error) {
-        //console.log(error);
-    }
-    
+    if (st.childNodes[0].childElementCount == 3)
+      st.childNodes[0].appendChild(createElement(strength, "str"));
+    /* if(st.childNodes[0].childElementCount==4)
+     st.childNodes[0].appendChild(createElement(weakness,"wks"));*/
+
+  } catch (error) {
+    //console.log(error);
+  }
+
 }
 
 function createElement(skill,type)

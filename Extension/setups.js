@@ -20,87 +20,52 @@ function request(url) {
   } 
 
 //How much ride hight needs to be increased
-function height_Convertion(value){   
-
-if(value>=190)
-    return 0;
-if(value>=185)
-    return 2;
-if(value>=180)
-    return 4;
-if(value>=175)
-    return 6;
-if(value>=170)
-    return 8;
-if(value>=165)
+function heightConversion(value) {
+    if (value >= 190) return 0;
+    if (value >= 185) return 2;
+    if (value >= 180) return 4;
+    if (value >= 175) return 6;
+    if (value >= 170) return 8;
+    if (value >= 165) return 10;
     return 10;
+  }
 
-    return 10;
-   
-}
 
-//update button injection
-function inject_button() {
+async function getDrivers() {
+
+  drivers = document.getElementsByClassName("staffImage");
+
+  h1 = await requestDriverHeight(drivers[0].attributes[1].value);
+  console.log(h1);
+  setup_value = heightConversion(h1);
+  
+  t = getTrack();
+  setCar(t.suspension, t.ride + setup_value, t.wing, 1);
+  setPitTime(t.pit);
+
+  //get other driver if present
+
+  if (drivers.length > 2) {
+    h2 = await requestDriverHeight(drivers[1].attributes[1].value);
+    setup_value = heightConversion(h2);
+
+    setCar(t.suspension, t.ride + setup_value, t.wing, 2);
+    //setPitTime(t.pit); 
     
-    button = document.createElement("button");
-    button.setAttribute("style","color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%; background-color:#689954");
-    button.textContent= "update";
-    button.id = 'update_button';
-    button.addEventListener('click', update_button);
-    button.addEventListener('touchstart', update_button);
-    placement = document.getElementsByClassName("pic-name")[0].parentElement; //location of the button
-
- 
-    if(placement.childElementCount == 2)
-    {  
-        placement.insertBefore(button,placement.firstChild);
-    }
-   
- }
- async function update_button(){
-            
-    drivers = document.getElementsByClassName("staffImage");
-    
-    h1 = await request_driver_heigth(drivers[0].attributes[1].value);
-            setup_value = height_Convertion(h1);
-            
-            t = getTrack();
-            setCar(t.suspension,t.ride+setup_value,t.wing,1);
-            setPitTime(t.pit); 
-            
-            //get other driver if present
-            
-            if(drivers.length>2)
-            {
-                driver_number=2;
-                h2 = await request_driver_heigth(drivers[1].attributes[1].value);
-                setup_value = height_Convertion(h2);
-    
-                setCar(t.suspension,t.ride+setup_value,t.wing,2);
-                //setPitTime(t.pit); 
-                chrome.storage.local.set({'driver2h':setup_value});   
-            }
-           
-                
-            
-                chrome.storage.local.set({'driver1h':setup_value});   
-
-
-async function request_driver_heigth(id)
-{
-    url = "https://igpmanager.com/index.php?action=fetch&d=driver&id="+id+"&csrfName=&csrfToken=";
-    result = await request(url);
-    result = JSON.parse(result);
-    height = result.vars.sHeight.replace(/[^\d+]/g,'');
-    if(height<100)
-    {
-        height*=30.48/10;
-    }
-    return height;
-}
+  }
 
 }
-
+ async function requestDriverHeight(id) {
+     const url = `https://igpmanager.com/index.php?action=fetch&d=driver&id=${id}&csrfName=&csrfToken=`;
+     const result = await request(url);
+     var height = JSON.parse(result).vars.sHeight.replace(/[^\d+]/g, '');
+     
+     // Avoid unnecessary multiplication if height is already in centimeters
+     if (height < 100) {
+       height *= 30.48 / 10;
+     }
+     return height;
+   }
  //inject pit time
 function setPitTime(time){
     temp =  document.querySelector("#d1setup > div.pWeather.text-right.green");
@@ -124,14 +89,6 @@ function setPitTime(time){
  * @param {number} n The driver number.
  */
 function setCar(s,r,w,n){
-
-    /*if(driver_number==2)
-    {
-        if(n==2)
-            n=1;
-        else if(n==1)
-            n=2;
-    }*/
 
     // ride element
     ride_height =  document.querySelector("#d"+n+"setup > table.acp.linkFill.pad > tbody > tr:nth-child(2)");
@@ -159,6 +116,7 @@ function setCar(s,r,w,n){
 
     // suspension element
     suspension = document.querySelector("#d"+n+"setup > table.acp.linkFill.pad > tbody > tr:nth-child(1)");
+    suspension.id ="suggestedSetup";
     if(suspension.childElementCount == 2)
     {
     x = document.createElement("td");
@@ -209,47 +167,10 @@ function getTrack(){
 }
 
 
-
-
-  async function getDrivers()
-  {
-    
-    drivers = document.getElementsByClassName("staffImage");
-
-    chrome.storage.local.get(["driver1h","driver2h"], async function(data) {
-        
-        if(data.driver1h==null)
-        {
-            //if no driver is found update current driver
-            update_button();  
-     
-        }else
-        {
-            t = getTrack(); 
-
-            //check if manager has 2 drivers for the race
-            if(drivers.length>2)
-            {
-                driver_number = 2;
-                setCar(t.suspension,t.ride+data.driver2h,t.wing,2);
-                     
-            }
-
-                setCar(t.suspension,t.ride+data.driver1h,t.wing,1);
-                setPitTime(t.pit);
-        }
-
-        
-    });
-
-       
-    }
-
-
   
 //code execution ==>
-    driver_number=1;
-    inject_button();
+ 
+    if(document.getElementById("suggestedSetup")==null)
     getDrivers();
 
    

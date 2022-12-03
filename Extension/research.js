@@ -4,29 +4,71 @@ function restore_options() {
     chrome.storage.local.get({
       language: 'eng',
     }, function(items) {
-      document.getElementById("valuesId").textContent = lang[items.language].valuesText;
-      document.getElementById("valuesGapId").textContent = lang[items.language].gapText;
+      document.getElementById("yourValuesId").childNodes[0].textContent = lang[items.language].yourValuesText;
+      document.getElementById("bestValuesId").childNodes[0].textContent = lang[items.language].bestValuesText;
+      document.getElementById("valuesGapId").childNodes[0].textContent = lang[items.language].gapText;
     });
   }
 
-
-
+function createLabelElement()
+{
+    var htmlElement = document.createElement("th");
+    var textLabel = document.createElement("div");
+    var copyIcon = document.createElement("div");
+    copyIcon.className = "fa fa-clipboard";
+    copyIcon.setAttribute("style","position:absolute; top:800%;; padding:6px; border-radius:8px; display:flex; background:#a1c590; cursor: pointer;");
+    copyIcon.addEventListener("click",copyAbove);
+    htmlElement.appendChild(textLabel);
+    htmlElement.appendChild(copyIcon);
+    htmlElement.setAttribute("style","width:4%;position:relative;");
+    return htmlElement;
+}
+function copyAbove()
+{
+    col = this.parentElement.cellIndex;
+    rows = this.parentElement.parentElement.parentElement.parentElement.childNodes[1];
+    var value="";
+    for(var i=0; i<rows.childElementCount; i++)
+    { 
+        value += rows.childNodes[i].childNodes[col].textContent+"\n";
+    }
+    navigator.clipboard.writeText(value).then(() => {
+        //clipboard successfully set
+    }, () => {
+        //clipboard write failed, use fallback
+    });
+}
 
 function inject_attributes_details(){
-
-    if(!done){
+    if(document.getElementById("valuesGapId")!=null)
+    return;
 try {
     title = document.querySelector("#carResearch > thead > tr");
-    values = document.createElement("th");
-    values.id="valuesId";
-    values_gap = document.createElement("th"); 
-    values_gap.id = "valuesGapId";
-    values.style.width ="7%";
-    values_gap.style.width ="30px";
-    title.childNodes[0].style.width = "20%";
-  
-    title.insertBefore(values, title.childNodes[0]);
-    title.insertBefore(values_gap, title.childNodes[1]);
+    
+    if(document.getElementById("awesomeId")==null){
+    fontIcons = document.createElement('link');
+    fontIcons.rel = "stylesheet";
+    fontIcons.id = "awesomeId";
+    fontIcons.href= "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" ;
+    document.head.appendChild(fontIcons);
+
+    }
+ 
+
+    yourValues = createLabelElement();
+    bestValues = createLabelElement();
+    values_gap = createLabelElement();
+
+    
+    yourValues.id="yourValuesId";
+    bestValues.id="bestValuesId";
+    values_gap.id="valuesGapId";
+    
+    
+    title.insertBefore(yourValues, title.childNodes[0]);
+    title.insertBefore(bestValues, title.childNodes[1]);
+    title.insertBefore(values_gap, title.childNodes[2]);
+
 
 table = document.querySelector("#carResearch > tbody");
 
@@ -34,23 +76,22 @@ table = document.querySelector("#carResearch > tbody");
 for(i=0; i<8 ; i++)
   {
     attribute= table.rows[i];
-    data_area = document.createElement("th"); 
-    gap_area = document.createElement("th"); 
-    //gap_area.style.backgroundColor="red";
-    value = get_attribute_value(i);
-    gap = value[0]-value[1];
+    yourTeam = document.createElement("th");
+    bestTeam =  document.createElement("th");
+    gap_area = document.createElement("th");
+    
+    value = getAttributeValue(i);
+ 
+    yourTeam.textContent = value[1];
+    bestTeam.textContent = value[0];
+    gap_area.textContent = value[0]-value[1];
 
-    data = document.createTextNode(value[1]+" : "+value[0]);
-    gap_data = document.createTextNode(gap);
-
-    data_area.appendChild(data);
-    gap_area.appendChild(gap_data);
-
-    attribute.insertBefore(data_area, attribute.childNodes[0]);
-    attribute.insertBefore(gap_area, attribute.childNodes[1]);
+    attribute.insertBefore(yourTeam, attribute.childNodes[0]);
+    attribute.insertBefore(bestTeam, attribute.childNodes[1]);
+    attribute.insertBefore(gap_area, attribute.childNodes[2]);
   }
-  done = true;
   restore_options();
+ 
 } catch (error) {
     console.log(error);
     setTimeout(() => {
@@ -58,72 +99,25 @@ for(i=0; i<8 ; i++)
     }, 200);
 }
 
-    }
-}
-
-function get_attribute_value(attr){
-
-    function useRegex(input) {
-        let regex = /[0-9]+%/g;
-        return regex.exec(input)[0];
-    }
     
-    attribute_values=[];
+}
 
-    switch(attr) {
-        case 0:
-            //acceleration
-          best_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(1) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-          my_attr =   parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(1) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 1:
-            //braking
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(2) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(2) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 2:
-            //cooling
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(3) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(3) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 3:
-            //downforce
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(4) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(4) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 4:
-            //fuel economy
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(5) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(5) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 5:
-            //handling
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(6) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(6) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 6:
-            //reliability
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(7) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(7) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        case 7:
-            //tyre economy
-            best_attr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(8) > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-            my_attr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child(8) > td:nth-child(3) > div > div").outerHTML))*200/100;
-        break;
-        default:
-            console.log("error");
-            }
+function getAttributeValue(attr){
 
-            attribute_values[0] = best_attr;
-            attribute_values[1] = my_attr;
-            return attribute_values;
+    const useRegex = (input) => {
+        const regex = /[0-9]+%/g;
+        return regex.exec(input)[0];
+    };
+    
+    const  bestAttr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
+    const myAttr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > div").outerHTML))*200/100;
+            return [bestAttr,myAttr];
 
 }
 
 
-done = false;
-if(document.getElementById("valuesId")==null)
+ 
+
 inject_attributes_details();
 
 
