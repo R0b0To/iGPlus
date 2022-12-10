@@ -21,22 +21,30 @@ function request(url) {
 async function addStaffLabels()
 {    
     
-    var staff = document.getElementById("staff").childNodes[3].childNodes[1].childNodes[1];
+    var staff = document.getElementById("staff");
+    var reserveStaff = staff.childNodes[3].childNodes[1].childNodes[1];
     
-    for(var i=0 ; i<staff.rows.length; i++)
+    activeCD = staff.childNodes[0].childNodes[3].childNodes[1].childNodes[0].childNodes[0].href.match(/\d+/)[0];
+    staffRequest = await request( "https://igpmanager.com/index.php?action=fetch&d=staff&id="+activeCD+"&csrfName=&csrfToken=");
+    cdStr = extractSkills(staffRequest);
+    if(staff.childNodes[0].childNodes[3].childNodes[1].childNodes[0].childElementCount == 3)
+    staff.childNodes[0].childNodes[3].childNodes[1].childNodes[0].appendChild(createElement(cdStr[0],"str"));
+    
+    for(var i=0 ; i<reserveStaff.rows.length; i++)
     {
-        var staffId = staff.rows[i].childNodes[0].childNodes[0].href.match(/\d+/)[0];
-        
+        var staffId = reserveStaff.rows[i].childNodes[0].childNodes[0].href.match(/\d+/)[0];
         staffUrl = "https://igpmanager.com/index.php?action=fetch&d=staff&id="+staffId+"&csrfName=&csrfToken=";
         staffRequest = await request(staffUrl);
-        extractSkills(staffRequest,staff.rows[i]);
+        var attribute = extractSkills(staffRequest);
+        if (reserveStaff.rows[i].childNodes[0].childElementCount == 3 && attribute[0]!=-1)
+        reserveStaff.rows[i].childNodes[0].appendChild(createElement(attribute[0], "str"));
         
     }
     
 }
 
 
-function extractSkills(req, st) {
+function extractSkills(req) {
 
   try {
     staffData = JSON.parse(req);
@@ -50,14 +58,14 @@ function extractSkills(req, st) {
     weakness = tr.childNodes[10].textContent.split(" ")[0];
     //console.log("str: "+strength+" weak: "+weakness);
 
-    if (st.childNodes[0].childElementCount == 3)
-      st.childNodes[0].appendChild(createElement(strength, "str"));
+    
     /* if(st.childNodes[0].childElementCount==4)
      st.childNodes[0].appendChild(createElement(weakness,"wks"));*/
 
   } catch (error) {
-    //console.log(error);
+    return [-1,-1];
   }
+  return [strength,weakness];
 
 }
 
@@ -81,12 +89,12 @@ function createElement(skill,type)
 
 
     span =document.createElement("span");
-    span.setAttribute("style","margin-left: 5px; background:#a1c590; border-radius: 4px;");
+    span.setAttribute("style","margin-left: 7px; background:#a1c590; border-radius: 4px; position:absolute;");
     span.className=type;
     
     image = document.createElement("img");
     image.src=icons[skill];
-    image.setAttribute("style","width:8%;position: relative; top: 5px;");
+    image.setAttribute("style","width:18px;position: relative; top: 5px;");
 
     span.appendChild(image);
     

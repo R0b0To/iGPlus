@@ -58,26 +58,26 @@ function race_export()
 {
   cvs = "";
   r= document.querySelector("#race").childNodes[1];
-  cvs+=r.childNodes[0].childNodes[0].childNodes[0].textContent;
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[1].textContent;
+  cvs+=r.childNodes[0].childNodes[0].childNodes[0].textContent;//pos
+  cvs+=","+r.childNodes[0].childNodes[0].childNodes[1].textContent;//driver
   cvs+=",Team";
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[2].textContent;
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[3].textContent;
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[4].textContent;
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[5].textContent;
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[6].textContent;
+  cvs+=","+r.childNodes[0].childNodes[0].childNodes[2].textContent;//finish
+  cvs+=","+r.childNodes[0].childNodes[0].childNodes[3].textContent;//bestlap
+  cvs+=","+r.childNodes[0].childNodes[0].childNodes[4].textContent;//top
+  cvs+=","+r.childNodes[0].childNodes[0].childNodes[5].textContent;//pit
+  cvs+=","+r.childNodes[0].childNodes[0].childNodes[6].textContent;//pnt
 
   race_table = r.childNodes[1];
 
   for (i = 1; i <= race_table.childElementCount; i++) {
     rank = i;
     driver_name = race_table.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
-    team_name = race_table.childNodes[i].childNodes[1].childNodes[6].innerText;
+    team_name = race_table.childNodes[i].childNodes[1].childNodes[6].childNodes[0].textContent;
     finish = race_table.childNodes[i].childNodes[2].textContent;
     best_lap = race_table.childNodes[i].childNodes[3].textContent;
-    top_speed = race_table.childNodes[2].childNodes[4].textContent;
-    pits = race_table.childNodes[2].childNodes[5].textContent;
-    points = race_table.childNodes[2].childNodes[6].textContent;
+    top_speed = race_table.childNodes[i].childNodes[4].textContent;
+    pits = race_table.childNodes[i].childNodes[5].textContent;
+    points = race_table.childNodes[i].childNodes[6].textContent;
 
     cvs+="\n"+rank+","+driver_name+","+team_name+","+finish+","+best_lap+","+top_speed+","+pits+","+points;
   }
@@ -103,13 +103,13 @@ function quali_export()
   cvs+=","+q.childNodes[0].childNodes[0].childNodes[4].textContent;
 
   quali_table = q.childNodes[1];
-  for (i = 1; i <= quali_table.childElementCount; i++) {
+  for (let i = 1; i <= quali_table.childElementCount; i++) {
     rank = i;
     driver_name = quali_table.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
     team_name = quali_table.childNodes[i].childNodes[1].childNodes[6].innerText;
     lap = quali_table.childNodes[i].childNodes[2].textContent;
     gap = quali_table.childNodes[i].childNodes[3].textContent;
-    tyre = quali_table.childNodes[2].childNodes[4].className.replace("ts-","");
+    tyre = quali_table.childNodes[i].childNodes[4].className.replace("ts-","");
     race_id = window.location.href.replace(/\D/g, "");
     cvs+="\n"+rank+","+driver_name+","+team_name+","+lap+","+gap+","+tyre;
   }

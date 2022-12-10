@@ -36,7 +36,6 @@ async function getDrivers() {
   drivers = document.getElementsByClassName("staffImage");
 
   h1 = await requestDriverHeight(drivers[0].attributes[1].value);
-  console.log(h1);
   setup_value = heightConversion(h1);
   
   t = getTrack();
@@ -55,16 +54,42 @@ async function getDrivers() {
   }
 
 }
+
+function toCentimeters(height) {
+  // Set up an object containing the conversion factors for feet and inches to centimeters
+  const units = {
+    "ft": 30.48,
+    "in": 2.54,
+    "cm": 100
+  };
+
+  // Check if the height value is in feet and inches or in centimeters
+  let valueInCentimeters;
+  if (height[1] == "'") {
+    // If the height is in feet and inches, split the value into feet and inches
+    const feetInches = height.split(' ');
+    // Convert the feet and inches to centimeters and add them together
+    valueInCentimeters = (parseInt(feetInches[0]) * units["ft"]) + (parseInt(feetInches[1]) * units["in"]);
+  } else if (height[1] == ".") {
+    // If the height is in meters
+    valueInCentimeters = height.slice(0, -1)* units["cm"];
+  } else {
+    // If the height is in cm
+    valueInCentimeters = height.slice(0, -2) ;
+  }
+
+  return valueInCentimeters;
+}
+
+
  async function requestDriverHeight(id) {
      const url = `https://igpmanager.com/index.php?action=fetch&d=driver&id=${id}&csrfName=&csrfToken=`;
      const result = await request(url);
-     var height = JSON.parse(result).vars.sHeight.replace(/[^\d+]/g, '');
-     
-     // Avoid unnecessary multiplication if height is already in centimeters
-     if (height < 100) {
-       height *= 30.48 / 10;
-     }
-     return height;
+  
+    const height = JSON.parse(result).vars.sHeight; 
+    const valueInCentimeters = toCentimeters(height);
+
+     return valueInCentimeters;
    }
  //inject pit time
 function setPitTime(time){
@@ -141,7 +166,7 @@ function getTrack(){
         "my":{"ride":15,"wing":10,"suspension":"Neutral","pit":18},//Malaysia
         "jp":{"ride":15,"wing":25,"suspension":"Soft","pit":21},//Japan
         "us":{"ride":1,"wing":12,"suspension":"Neutral","pit":17},//USA
-        "mx":{"ride":5,"wing":15,"suspension":"Neutral","pit":26},//Mexico
+        "mx":{"ride":5,"wing":15,"suspension":"Neutral","pit":22},//Mexico
         "br":{"ride":7,"wing":15,"suspension":"Neutral","pit":19},//Brazil
         "ae":{"ride":17,"wing":10,"suspension":"Neutral","pit":21},//AbuDhabi
         "bh":{"ride":7,"wing":5,"suspension":"Firm","pit":23},//Bahrain
@@ -155,10 +180,10 @@ function getTrack(){
         "hu":{"ride":12,"wing":30,"suspension":"Soft","pit":16},//Hungary
         "gb":{"ride":10,"wing":5,"suspension":"Firm","pit":23},//Great Britain
         "ca":{"ride":10,"wing":1,"suspension":"Firm","pit":16},//Canada
-        "az":{"ride":25,"wing":10,"suspension":"Neutral","pit":23},//Azerbaijan
+        "az":{"ride":25,"wing":10,"suspension":"Neutral","pit":17},//Azerbaijan
         "mc":{"ride":35,"wing":40,"suspension":"Soft","pit":16},//Monaco
         "cn":{"ride":2,"wing":15,"suspension":"Neutral","pit":27},//China
-        "fr":{"ride":25,"wing":15,"suspension":"Neutral","pit":18}//France
+        "fr":{"ride":25,"wing":15,"suspension":"Neutral","pit":21}//France
     }
 
     return t[code];
