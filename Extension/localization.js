@@ -1,5 +1,6 @@
 const lang = {
 "eng":{
+    "signOption":"Invert Sign",
     "languageText":"Language",
     "saveText":"Save",
     "RaceReport":"Race Report",
@@ -20,6 +21,7 @@ const lang = {
     "pushDescriptionPart2":"The PL selection does not change the stints push for the race"
 },
 "ita":{
+    "signOption":"Inverti Segno",
     "languageText":"Lingua",
     "saveText":"Salva",
     "RaceReport":"Resoconto gara",
@@ -40,6 +42,7 @@ const lang = {
     "pushDescriptionPart2":"La scelta della spinta non verrà salvata per la gara."
 },
 "template":{
+    "signOption":"",
     "languageText":"",
     "saveText":"",
     "RaceReport":"",

@@ -1,16 +1,33 @@
 <!DOCTYPE html>
+<meta charset="utf-8">
 <html>
 <head><title>iGPx Options</title></head>
 <body>
 
-<div id="langTitle">Language:</div>
-<select id="language">
- <option value="eng">English</option>
- <option value="ita">Italiano</option>
-</select>
 
-<button id="save">Save</button>
-<div id="status"></div>
+    
+<div id="langTitle">Language: 
+    <select id="language">
+     <option value="eng">English</option>
+     <option value="ita">Italiano</option>
+    </select></div>
+    
+    
+
+<fieldset>
+    <legend id="signOpt">Invert Sign</legend>
+
+    <div>
+      <input type="checkbox" id="race" name="race">
+      <label for="race">Race Report</label>
+    </div>
+
+    <div>
+      <input type="checkbox" id="over" name="over">
+      <label for="over">Overtakes</label>
+    </div>
+</fieldset>
+
 <script src="options.js"></script>
 <script src="localization.js"></script>
 </body>

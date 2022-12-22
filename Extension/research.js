@@ -15,9 +15,13 @@ function createLabelElement()
     var htmlElement = document.createElement("th");
     var textLabel = document.createElement("div");
     var copyIcon = document.createElement("div");
+    var copyMessage = document.createElement("div");
+    copyMessage.textContent="Copied to Clipboard";
+    copyMessage.setAttribute("style","display:none; position:absolute; background:#141414; color:white; border-radius:8px; padding:5px; top:-100%; left:-65%; font-size:50%;z-index: 99;");
     copyIcon.className = "fa fa-clipboard";
-    copyIcon.setAttribute("style","position:absolute; top:800%;; padding:6px; border-radius:8px; display:flex; background:#a1c590; cursor: pointer;");
+    copyIcon.setAttribute("style","position:absolute; top:800%; padding:6px; border-radius:8px; display:flex; background:#a1c590; cursor: pointer;");
     copyIcon.addEventListener("click",copyAbove);
+    copyIcon.appendChild(copyMessage);
     htmlElement.appendChild(textLabel);
     htmlElement.appendChild(copyIcon);
     htmlElement.setAttribute("style","width:4%;position:relative;");
@@ -25,6 +29,7 @@ function createLabelElement()
 }
 function copyAbove()
 {
+    this.childNodes[0].style.display="block";
     col = this.parentElement.cellIndex;
     rows = this.parentElement.parentElement.parentElement.parentElement.childNodes[1];
     var value="";
@@ -37,6 +42,7 @@ function copyAbove()
     }, () => {
         //clipboard write failed, use fallback
     });
+    setTimeout(() => this.childNodes[0].style.display="none", 500);
 }
 
 function inject_attributes_details(){

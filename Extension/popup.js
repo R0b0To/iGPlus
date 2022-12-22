@@ -169,14 +169,25 @@ document.addEventListener('DOMContentLoaded', function() {
   //-------------------------------------------------------------------------------start overtakes-------------------------------------------
   startOvertakes.addEventListener('click',function(){
     //returns rank position at the end of lap 2 - quali position
+      chrome.storage.local.get({"overSign":false},function(data){
+      isChecked = data.overSign;
+if(isChecked)
+    sign = -1;
+else
+    sign = 1;
+
     function getOvertakes(d){return d.rank[1]-d.quali;}    
     //sort by overtakes
     driver.sort((a, b) => {return getOvertakes(a)-getOvertakes(b);});  
     string_result="";
-    driver.forEach(ele => {string_result+=ele.name+": "+getOvertakes(ele)+"\n";});
+    driver.forEach(ele => {string_result+=ele.name+": "+getOvertakes(ele)*sign+"\n";});
     //display result
     setText(string_result);
     });
+
+    });
+    
+   
     
     
    //------------------------------------------------------------------------------select change---------------------------------------------- 
@@ -205,53 +216,64 @@ document.addEventListener('DOMContentLoaded', function() {
     //------------------------------------------------------------------------------Race report---------------------------------------------- 
     recapButton.addEventListener('click', function(){
 
-   
-          //sorting managers by quali
-          sortQuali = driver.sort((a,b) =>{
-            if(a.quali > b.quali)
-            return 1
-            else
-            return -1
-          
-          });
-          
-          
-          race_timings=",";  // time position
-          //race_recap = ","; // track position
+      chrome.storage.local.get({"raceSign":false},function(data){
+        isChecked = data.raceSign;
 
-         //getting the max number of laps completed
-          temp_max = sortQuali[0].rank.length;
+ //sorting managers by quali
+ sortQuali = driver.sort((a,b) =>{
+  if(a.quali > b.quali)
+  return 1
+  else
+  return -1
+
+});
+
+
+race_timings=",";  // time position
+//race_recap = ","; // track position
+
+//getting the max number of laps completed
+temp_max = sortQuali[0].rank.length;
+for(i=0; i<sortQuali.length; i++)
+{ 
+  if(temp_max < sortQuali[i].rank.length)
+  {
+    temp_max = sortQuali[i].rank.length;
+  }
+
+}
+//formating with circuit lap numbers
+for(i=1; i<=temp_max ; i++)
+  race_timings += ","+i;  
+
+  race_timings +="\n";
+  //lap_timings = race_timings;
+
           for(i=0; i<sortQuali.length; i++)
-          { 
-            if(temp_max < sortQuali[i].rank.length)
+          {
+            if(sortQuali[i].rank[sortQuali[i].rank.length-1] <= 10)
             {
-              temp_max = sortQuali[i].rank.length;
+              race_timings+= "Top 10";
+              //lap_timings+="Top 10";
             }
+            //race_recap +=","+sortQuali[i].name +","+ sortQuali[i].race_replay+ "<br>";
+            if(isChecked)
+            {
+              raceTime = sortQuali[i].race_time.map(str => str.replace(/\+/g, "-"));
+            }else
+            raceTime = sortQuali[i].race_time;
 
+            race_timings +=","+sortQuali[i].name +","+ raceTime+ "\n";
+            //lap_timings +=","+sortQuali[i].name +","+ sortQuali[i].lap_time+ "\n";
+            
           }
-          //formating with circuit lap numbers
-          for(i=1; i<=temp_max ; i++)
-            race_timings += ","+i;  
-          
-            race_timings +="\n";
-            lap_timings = race_timings;
 
-                    for(i=0; i<sortQuali.length; i++)
-                    {
-                      if(sortQuali[i].rank[sortQuali[i].rank.length-1] <= 10)
-                      {
-                        race_timings+= "Top 10";
-                        lap_timings+="Top 10";
-                      }
-                      //race_recap +=","+sortQuali[i].name +","+ sortQuali[i].race_replay+ "<br>";
-                      race_timings +=","+sortQuali[i].name +","+ sortQuali[i].race_time+ "\n";
-                      lap_timings +=","+sortQuali[i].name +","+ sortQuali[i].lap_time+ "\n";
-                      
-                    }
-          
-          //reporttext.textContent=race_timings; 
-          setText(race_timings);      
-         // downloadFile(race_timings,"race_recap"); 
+//reporttext.textContent=race_timings; 
+setText(race_timings);      
+// downloadFile(race_timings,"race_recap"); 
+        
+      });
+         
           
 
     });

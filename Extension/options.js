@@ -1,16 +1,11 @@
+raceSign = document.getElementById("race");
+overSign = document.getElementById("over");
 
 function save_options() {
     var lang = document.getElementById('language').value;
-    chrome.storage.local.set({
-      language: lang,
-    }, function() {
-      // Update status to let user know options were saved.
-      var status = document.getElementById('status');
-      status.textContent = 'Options saved.';
-      setTimeout(function() {
-        status.textContent = '';
-      }, 750);
-    });
+    chrome.storage.local.set({language: lang});
+    //chrome.storage.local.set({sign: ,});
+    restore_options();
   }
 
 function restore_options() {
@@ -19,14 +14,32 @@ function restore_options() {
       language: 'eng',
     }, function(items) {
       document.getElementById('language').value = items.language;
-      document.getElementById("langTitle").textContent = lang[items.language].languageText;
-      document.getElementById("save").textContent = lang[items.language].saveText;
+      document.getElementById("langTitle").childNodes[0].textContent = lang[items.language].languageText+": ";
+      document.getElementById('signOpt').textContent = lang[items.language].signOption;
+      raceSign.nextElementSibling.textContent = lang[items.language].RaceReport;
+      overSign.nextElementSibling.textContent = lang[items.language].StartOvertakes;
+    });
+    chrome.storage.local.get("raceSign",function(data){
+      raceSign.checked = data.raceSign;
+    });
+    chrome.storage.local.get("overSign",function(data){
+      overSign.checked = data.overSign;
     });
   }
 
   
 
+languageSelection = document.getElementById("language");
+languageSelection.addEventListener("change",save_options);
 
+raceSign.addEventListener("click",function(){
+  var checkStatus = this.checked;
+  chrome.storage.local.set({"raceSign": checkStatus});
+});
+
+overSign.addEventListener("click",function(){
+  var checkStatus = this.checked;
+  chrome.storage.local.set({"overSign": checkStatus});
+});
+languageSelection = document.getElementById("language");
 document.addEventListener('DOMContentLoaded', restore_options);
-document.getElementById('save').addEventListener('click',
-    save_options);
