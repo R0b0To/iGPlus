@@ -341,25 +341,32 @@ function formatTable(){
   return
 
   chrome.storage.local.get("active", function(data) {
-
+  var manager = data.active;
+    manager.sort((a, b) => { return a.race_finish - b.race_finish; });
+  
 
   var valid = 0;
   let total = 0;
-  for (let i = 0; i < data.active.length; i++) {
+    for (let i = 0; i < data.active.length; i++) {
 
-         time = data.active[i].pitTimeLoss[data.active[i].pitTimeLoss.length-1];
-        if(time!=null){
-         total += time
-         valid++;}
-  }
+      time = data.active[i].pitTimeLoss[data.active[i].pitTimeLoss.length - 1];
+      //check if driver did same number of laps as the winner
+      if (manager[0].rank.length == manager[i].rank.length) {
+        //console.log("doing pit of: "+manager[i].name);
+        if (time != null) {
+          total += time
+
+          valid++;
+        }
+      }
+    }
     
 //console.log(total/valid);
 document.querySelector("#race > div:nth-child(1)").appendChild(document.createTextNode("Average pit time loss: "+(total/valid).toFixed(2)));
 
 
 
-    var manager = data.active;
-    manager.sort((a, b) => { return a.race_finish - b.race_finish; });
+    
   
     var table = document.getElementById("race").childNodes[1];
 
