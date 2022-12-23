@@ -40,7 +40,7 @@ async function getDrivers() {
   
   t = getTrack();
   setCar(t.suspension, t.ride + setup_value, t.wing, 1);
-  setPitTime(t.pit);
+  //setPitTime(t.pit);
 
   //get other driver if present
 

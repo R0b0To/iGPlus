@@ -2,7 +2,7 @@
     "manifest_version":3,
     "name": "iGP Extended",
     "description": "Enhance your iGPmanager experience",
-    "version":"0.870",
+    "version":"0.888",
      "icons":{
          "128": "./images/racing128.png"
      },
@@ -19,7 +19,12 @@
         "page": "options.html",
         "open_in_tab": false
       },
-
+      "web_accessible_resources": [
+        { 
+            "resources": [ "*.png", "*.PNG" ],
+            "matches": [ "*://igpmanager.com/*" ]
+        
+        }],
      
      "permissions":[
          "tabs",

@@ -870,3 +870,22 @@ for(var i=0 ; i<6 ; i++)
 
 
   }
+
+  function injectCircuitMap(){
+
+    if(document.getElementById("customMap")==null)
+    {
+    circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+    code = /[^-]+(?=">)/g.exec(circuit)[0];
+    target = document.getElementById("stintDialog");
+    circuit = document.createElement("img");
+    circuit.id = "customMap";
+    
+    circuit.src= chrome.runtime.getURL('images/circuits/'+code+'.png');
+    circuit.setAttribute("style","width:100%;");
+    target.parentNode.insertBefore(circuit, target.nextSibling);
+
+    }
+  }
+
+  injectCircuitMap();

@@ -20,8 +20,6 @@ function downloadFile(data,download_name){
       }
   }
 }
-
-
 function inject_button() {
 
   button = document.createElement("button");
@@ -53,7 +51,6 @@ function inject_button() {
   export_button.parentNode.replaceChild(race_button, export_button);
  
 }
-
 function race_export()
 {
   cvs = "";
@@ -85,10 +82,6 @@ function race_export()
   downloadFile(cvs,race_id+"_Race");
 
 }
-  
-
-
-
 function quali_export()
 {
   
@@ -129,9 +122,6 @@ function progress() {
   progress_div.appendChild(bar_div);
   return progress_div;
 }
-
-
-
 function get_quali()
 {
   manager = [];
@@ -154,12 +144,12 @@ for (i = 1; i <= quali_results.childElementCount; i++) {
     "rank": [],
     "race_time": [],
     "lap_time": [],
-    "pit_stop": ""
+    "pit_stop": "",
+    "pitTimeLoss":[]
   }
   manager.push(manager_template);
 }
 }
-
 function button_function() {
 
   b_parent = this.parentElement;
@@ -206,16 +196,12 @@ function button_function() {
       j++;
     }
 
-
   }
 
   //start extraction
   race_report();
 
 }
-
-
-
 //send requests for each driver report
 async function race_report() {
   console.log("requesting " + manager.length + " reports");
@@ -229,15 +215,12 @@ async function race_report() {
 
       update_managers(table, number);
 
-      
-     
 
     }
   }
   formatTable();
   document.getElementById("progress").remove();
 }
-
 //handle server response
 function request(url) {
   return new Promise(function (resolve, reject) {
@@ -258,7 +241,6 @@ function request(url) {
     xhr.send()
   })
 }
-
 //get only the table from the response
 function decode_result(data) {
 
@@ -272,12 +254,15 @@ function decode_result(data) {
   return t;
 
 }
-
-
-
 //complete the manager_template info
 async function update_managers(table, index) {
-
+  function toMs(timeString)
+  {
+    time = timeString.split(":");
+    m = parseInt(time[0])*60000;
+    secondAndMs = time[1].split(".");
+    return m + (parseInt(secondAndMs[0])*1000) + (parseInt(secondAndMs[1]));
+  }
 
   try {
 
@@ -288,7 +273,7 @@ async function update_managers(table, index) {
     manager[index].pit_stop = startTyre;
     last_pit_lap = 0;
     
-
+    pitTimes = [];
     for (i = 2; i <= laps_done; i++) {
 
       if (isNaN(race_table.rows[i].childNodes[0].textContent)) {
@@ -298,6 +283,14 @@ async function update_managers(table, index) {
         manager[index].pit_stop += "," + stintLaps + "," + pit_tyre;
 
         last_pit_lap = pit_lap;
+
+        a = race_table.rows[i-1].childNodes[1].textContent;
+        b = race_table.rows[i+1].childNodes[1].textContent;
+        c = race_table.rows[i-2].childNodes[1].textContent;
+        d = race_table.rows[i+2].childNodes[1].textContent;
+        pitTime = toMs(a) + toMs(b) -toMs(c) - toMs(d);
+        pitTimes.push(pitTime/1000);
+        manager[index].pitTimeLoss.push(pitTime/1000);
 
       }
       else {
@@ -311,8 +304,13 @@ async function update_managers(table, index) {
           manager[index].race_time.push(string); //time from leading car
         }
       }
-    }
 
+    }
+  console.log(pitTimes);
+  sum = pitTimes.reduce((a, b) => a + b, 0);
+  avg = (sum / pitTimes.length) || 0;
+  manager[index].pitTimeLoss.push(avg);
+  console.log("average is: "+avg);
     last_lap_completed = race_table.rows[race_table.tBodies[0].rows.length].childNodes[0].innerHTML;
     
     var lastStintLaps = (last_lap_completed - last_pit_lap)
@@ -337,14 +335,28 @@ async function update_managers(table, index) {
   }
 
 }
-
-
 function formatTable(){
 
   if(document.getElementById("histTyre")!=null)
   return
 
   chrome.storage.local.get("active", function(data) {
+
+
+  var valid = 0;
+  let total = 0;
+  for (let i = 0; i < data.active.length; i++) {
+
+         time = data.active[i].pitTimeLoss[data.active[i].pitTimeLoss.length-1];
+        if(time!=null){
+         total += time
+         valid++;}
+  }
+    
+//console.log(total/valid);
+document.querySelector("#race > div:nth-child(1)").appendChild(document.createTextNode("Average pit time loss: "+(total/valid).toFixed(2)));
+
+
 
     var manager = data.active;
     manager.sort((a, b) => { return a.race_finish - b.race_finish; });

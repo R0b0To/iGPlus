@@ -1,4 +1,4 @@
-function swapWeatherLink()
+function addWeatherLink()
 {
     var weatherLocation = {
         1:"-37.8464,144.9712",
@@ -40,5 +40,36 @@ function swapWeatherLink()
 }
 
 if(document.getElementById("darkWeather")==null)
-swapWeatherLink();
+addWeatherLink();
+swapMap();
+showValues();
+function swapMap()
+{
+    circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+    code = /[^-]+(?=">)/g.exec(circuit)[0];
+    image = document.querySelector("#race > div.eight.columns.text-center > img");
+    image.src= chrome.runtime.getURL('images/circuits/'+code+'.png');
+    image.setAttribute("style","width:90%");
+}
+function showValues()
+{
+    function createEle(value)
+    {
+    number = document.createElement("span");
+    number.setAttribute("style","position:absolute; top:-90%; left:"+value+";font-size:90%");
+    number.className = "showStat";
+    number.textContent= value;
+    return number;
+    }
 
+    if(document.getElementsByClassName("showStat").length==0)
+    {
+    table = document.querySelector("#race > div:nth-child(1) > table > tbody");
+
+    table.rows[2].childNodes[1].childNodes[0].appendChild(createEle(table.rows[2].childNodes[1].childNodes[0].childNodes[0].style.width));
+    table.rows[3].childNodes[1].childNodes[0].appendChild(createEle(table.rows[3].childNodes[1].childNodes[0].childNodes[0].style.width));
+    table.rows[4].childNodes[1].childNodes[0].appendChild(createEle(table.rows[4].childNodes[1].childNodes[0].childNodes[0].style.width));
+    table.rows[5].childNodes[1].childNodes[0].appendChild(createEle(table.rows[5].childNodes[1].childNodes[0].childNodes[0].style.width));
+}
+    
+}
