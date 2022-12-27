@@ -115,8 +115,8 @@ function getAttributeValue(attr){
         return regex.exec(input)[0];
     };
     
-    const  bestAttr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > img:nth-child(1)").outerHTML))*200/100;
-    const myAttr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > div").outerHTML))*200/100;
+    const  bestAttr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > img:nth-child(1)").style.left))*2;
+    const myAttr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > div").style.width))*2;
             return [bestAttr,myAttr];
 
 }

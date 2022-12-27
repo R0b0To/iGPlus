@@ -52,6 +52,11 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
             injectScript(tabId, "./team_settings.js");
         }
+        if (/^(https:\/\/igpmanager\.com\/app\/d=resultDetail&id=)/.test(title)) {
+
+            injectScript(tabId, "./raceResult.js");
+        }
+
 
     }
 

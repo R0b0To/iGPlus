@@ -258,10 +258,16 @@ function decode_result(data) {
 async function update_managers(table, index) {
   function toMs(timeString)
   {
-    time = timeString.split(":");
+    try {
+      time = timeString.split(":");
     m = parseInt(time[0])*60000;
     secondAndMs = time[1].split(".");
     return m + (parseInt(secondAndMs[0])*1000) + (parseInt(secondAndMs[1]));
+    } catch (error) {
+      console.log(error);
+      return false;
+    }
+    
   }
 
   try {
@@ -278,19 +284,32 @@ async function update_managers(table, index) {
 
       if (isNaN(race_table.rows[i].childNodes[0].textContent)) {
         pit_lap = race_table.rows[i - 1].childNodes[0].textContent;
+        
         pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent;  
         var stintLaps = (pit_lap - last_pit_lap);
         manager[index].pit_stop += "," + stintLaps + "," + pit_tyre;
 
         last_pit_lap = pit_lap;
 
-        a = race_table.rows[i-1].childNodes[1].textContent;
-        b = race_table.rows[i+1].childNodes[1].textContent;
-        c = race_table.rows[i-2].childNodes[1].textContent;
-        d = race_table.rows[i+2].childNodes[1].textContent;
-        pitTime = toMs(a) + toMs(b) -toMs(c) - toMs(d);
-        pitTimes.push(pitTime/1000);
-        manager[index].pitTimeLoss.push(pitTime/1000);
+        a = toMs(race_table.rows[i-1].childNodes[1].textContent);
+        b = toMs(race_table.rows[i+1].childNodes[1].textContent);
+        c = toMs(race_table.rows[i-2].childNodes[1].textContent);
+        d = toMs(race_table.rows[i+2].childNodes[1].textContent);
+
+        //console.log(a+"\n"+b+"\n"+c+"\n"+d+"\n");
+        
+        if(a*b*c*d != false)
+       {
+         pitTime = a + b -c-d;
+         pitTimes.push(pitTime/1000);
+         manager[index].pitTimeLoss.push(pitTime/1000);
+       }
+        else
+        manager[index].pitTimeLoss.push(-1);
+        
+       
+        //console.log("pitime: "+pitTime);
+        
 
       }
       else {
@@ -350,8 +369,8 @@ function formatTable(){
     for (let i = 0; i < data.active.length; i++) {
 
       time = data.active[i].pitTimeLoss[data.active[i].pitTimeLoss.length - 1];
-      //check if driver did same number of laps as the winner
-      if (manager[0].rank.length == manager[i].rank.length) {
+      //check if driver did same number of laps as the winner and has a valid pit time
+      if (manager[0].rank.length == manager[i].rank.length && time>0) {
         //console.log("doing pit of: "+manager[i].name);
         if (time != null) {
           total += time
