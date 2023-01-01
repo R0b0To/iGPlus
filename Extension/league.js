@@ -98,4 +98,9 @@ function inject_toggle_switch()
 
 }
 
-inject_toggle_switch();
+try {
+    inject_toggle_switch();
+} catch (error) {
+    
+}
+

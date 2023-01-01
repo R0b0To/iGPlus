@@ -1,4 +1,4 @@
-const lang = {
+lang = {
 "eng":{
     "signOption":"Invert Sign",
     "languageText":"Language",

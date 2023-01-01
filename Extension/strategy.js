@@ -51,16 +51,15 @@ async function get_eco()
     fuel_eco = car_design.vars.fuel_economyBar;
     tyre_eco = car_design.vars.tyre_economyBar;
     fuel_lap = fuel_calc(fuel_eco)*track[0];
-    eco = [fuel_lap, tyre_eco];
+    eco = [fuel_lap, tyre_eco,fuel_eco];
     return eco;   
 }
   
 function circuit_info(){
-    
-    circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-    code = /[^-]+(?=">)/g.exec(circuit)[0];
-
-    t ={
+    try {
+       circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+      code = /[^-]+(?=">)/g.exec(circuit)[0]; 
+      t ={
       "au":{"length":5.3017135,"wear":40},//Australia
       "my":{"length":5.5358276,"wear":85},//Malaysia
       "cn":{"length":5.4417996,"wear":80},//China
@@ -84,10 +83,18 @@ function circuit_info(){
       "az":{"length":6.053212,"wear":45},//Azerbaijan
       "mx":{"length":4.3076024,"wear":60},//Mexico
       "ru":{"length":6.078335,"wear":50},//Russia
-      "us":{"length":4.60296,"wear":65}//USA    
-  }
+      "us":{"length":4.60296,"wear":65}//USA 
 
-     return [t[code].length,t[code].wear];
+  }
+  return [t[code].length,t[code].wear];
+    } catch (error) {
+      
+    }
+   
+
+   
+
+     
 }
 
 
@@ -186,11 +193,11 @@ async function injectAdvancedStint(){
           pushDiv.className = "dropdown1-content not-selectable";
           pushDiv.id="myDropdown";
 
-          //push list
-          for(var i=5; i>0 ;i--)
-          {
-          
-      var pushInputDiv = document.createElement("div");
+  
+
+        function createPushElement(i,value,step)
+        {
+          var pushInputDiv = document.createElement("div");
           pushInputDiv.className = "number-input";
 
       var pushInputLabel = document.createElement('div');
@@ -207,8 +214,12 @@ async function injectAdvancedStint(){
       var pushInput = document.createElement('input');
           pushInput.id= "PL"+i;
           pushInput.type = "number";
-          pushInput.step ="0.001";
+          pushInput.step = step;"0.001";
           pushInput.setAttribute("style","margin: 9px;");
+
+          if(i=="FE")
+          pushInput.value = value;
+          else
           pushInput.value = pushToUse[i-1];
           
 
@@ -224,7 +235,16 @@ async function injectAdvancedStint(){
       pushInputDiv.appendChild(pushInput);
       pushInputDiv.appendChild(pushInputUp);
 
-      pushDiv.appendChild(pushInputDiv);
+      return pushInputDiv;
+        }
+        fuelEco = createPushElement("FE",eco[2],1);
+        pushDiv.appendChild(fuelEco);
+          for(var i=5; i>0 ;i--)
+          {
+          
+      p = createPushElement(i,"",0.001);
+
+      pushDiv.appendChild(p);
 
        
       pushButtonHeader.appendChild(pushDiv);
@@ -537,7 +557,8 @@ function updateFuel()
             var selectedPush = parseFloat(p2.childNodes[i].childNodes[0].value);
             var stintLaps = parseInt(f[1].childNodes[i].textContent); //laps of each stint
             totalLaps+=stintLaps;
-            totalFuel += (((eco[0]/track[0])+selectedPush)*track[0])*stintLaps;
+            feOverwrite = document.getElementById("PLFE").value;
+            totalFuel += (((fuel_calc(feOverwrite))+selectedPush)*track[0])*stintLaps;
           }
           
         }
@@ -561,8 +582,9 @@ function updateFuel()
           {
             var selectedPush = parseFloat(p.childNodes[i].childNodes[0].value);
             var stintLaps = parseInt(f[0].childNodes[i].textContent);
-             totalLaps += stintLaps;
-            totalFuel += (((eco[0]/track[0])+selectedPush)*track[0])*stintLaps;
+            totalLaps += stintLaps;
+            feOverwrite = document.getElementById("PLFE").value;
+            totalFuel += (((fuel_calc(feOverwrite))+selectedPush)*track[0])*stintLaps;
           }
           
         }
@@ -611,7 +633,8 @@ language = "eng";
  
 
  window.onclick = function(event) {
-  if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1')&&!event.target.matches('.tooltip1')&&!event.target.matches('.tooltiptext'))
+  try {
+    if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1')&&!event.target.matches('.tooltip1')&&!event.target.matches('.tooltiptext'))
    {
     
 
@@ -625,6 +648,10 @@ language = "eng";
         }
       }
     }
+  } catch (error) {
+    
+  }
+  
   }
 
   function savePush(){
