@@ -10,6 +10,8 @@ document.addEventListener('DOMContentLoaded', function() {
      text = document.getElementById('text'); 
      downloadButton= document.getElementById('down'); 
      copyButton= document.getElementById('copy'); 
+     pitLossButton= document.getElementById('averagePit'); 
+
      
      driver = 0;
      is_save_empty = true;
@@ -138,7 +140,46 @@ document.addEventListener('DOMContentLoaded', function() {
   
     });
 
+  //-------------------------------------------------------------------------------pit time loss button-------------------------------------------
+    pitLossButton.addEventListener('click',function(){
 
+
+
+      
+        var manager = driver;
+            manager.sort((a, b) => { return a.race_finish - b.race_finish; });
+        
+        cvsS='';
+          for (let i = 0; i < manager.length; i++) {
+        
+               cvsS+=(manager[i].name+","+arrayToCSV(manager[i].pitTimeLoss))+"\n";
+            
+          
+        }
+        setText(cvsS);
+        
+        
+        function arrayToCSV(arr) {
+          // check if the array is empty
+          if (arr.length === 0) {
+            return '';
+          }
+          
+          // initialize a variable to store the CSV string
+          let csv = '';
+          
+          // loop through the array and add each element to the CSV string, separated by a comma
+          for (let i = 0; i < arr.length - 1; i++) {
+            csv += arr[i] + ',';
+          }
+          
+          // return the CSV string
+          return csv;
+        }
+      
+
+
+    });
 
 //-------------------------------------------------------------------------------download button-------------------------------------------
   downloadButton.addEventListener('click',function(){

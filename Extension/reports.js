@@ -1,5 +1,6 @@
 manager = [];
 progress_status = 0;
+
 inject_button();
 
 function downloadFile(data,download_name){
@@ -21,7 +22,8 @@ function downloadFile(data,download_name){
   }
 }
 function inject_button() {
-
+ 
+  
   button = document.createElement("button");
   button.setAttribute("class", "btn3");
   button.setAttribute("style", "position:relative; left:10px;");
@@ -39,18 +41,71 @@ function inject_button() {
   export_button = p.childNodes[5];
   quali_button = export_button.cloneNode(true);
   race_button = export_button.cloneNode(true);
+  podium = export_button.cloneNode(true);
 
+  podium.textContent = "Top 3";
   quali_button.textContent = "Export Q";
+  podium.addEventListener("click", podium_copy);
   quali_button.addEventListener('click', quali_export);
   race_button.addEventListener('click', race_export)
   if (p.childElementCount == 5) {
-
+ p.insertBefore(podium,p.childNodes[6]);
     p.insertBefore(quali_button,p.childNodes[6]);
+   
   }
 
   export_button.parentNode.replaceChild(race_button, export_button);
  
 }
+
+async function podium_copy()
+{
+  language = await chrome.storage.local.get({language: 'eng'});
+  button = this;
+  async function getManagerNameOfDriver(driverID)
+  {
+    url = `https://igpmanager.com/index.php?action=fetch&d=driver&id=${driverID}&csrfName=&csrfToken=`;
+    var driver = await request(url);
+    var driverData = JSON.parse(driver);
+    var managerID = driverData.vars.historyTable.match(/\d+/)[0];
+    url = `https://igpmanager.com/index.php?action=fetch&d=profile&team=${managerID}&csrfName=&csrfToken=`;
+    var manager = await request(url);
+    var managerData = JSON.parse(manager);
+    managerName = managerData.vars.manager.match(/\/>(.*)$/)[1].substring(1);
+    return managerName;
+  }
+r= document.querySelector("#race").childNodes[1].childNodes[1];
+track = document.querySelector("#dialogs-container > div > div > div.dialog-head > h1");
+trackName = track.textContent.substring(1)
+//driver1 = r.rows[0].childNodes[1].childNodes[4].textContent.substring(1);
+team_name1 = r.rows[0].childNodes[1].childNodes[6].childNodes[0].textContent;
+driverId = r.rows[0].childNodes[1].childNodes[0].href.match(/\d+/)[0];
+manager1 = await getManagerNameOfDriver(driverId);
+
+//driver2 = r.rows[1].childNodes[1].childNodes[4].textContent.substring(1);
+team_name2 =r.rows[1].childNodes[1].childNodes[6].childNodes[0].textContent;
+driverId = r.rows[1].childNodes[1].childNodes[0].href.match(/\d+/)[0];
+manager2 = await getManagerNameOfDriver(driverId);
+//driver3 = r.rows[2].childNodes[1].childNodes[4].textContent.substring(1);
+team_name3 = r.rows[2].childNodes[1].childNodes[6].childNodes[0].textContent;
+driverId = r.rows[2].childNodes[1].childNodes[0].href.match(/\d+/)[0];
+manager3 = await getManagerNameOfDriver(driverId);
+
+string = "🚦 🏁"+trackName+"🚦\n"+
+        "🥇"+team_name1+" - "+manager1+"\n"+
+        "🥈"+team_name2+" - "+manager2+"\n"+
+        "🥉"+team_name3+" - "+manager3+"\n"+
+        "👇 🎤"+lang[language.language].commentText+"... 👇";
+
+        navigator.clipboard.writeText(string).then(() => {
+
+          button.setAttribute("style","pointer-events:none; opacity:50%");
+      }, () => {
+          alert("failed to copy top 3");
+      });
+}
+
+
 function race_export()
 {
   cvs = "";

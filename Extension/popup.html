@@ -12,8 +12,10 @@
   display: block;
   font-size: 16px;
   font-family: "RobotoCondensedBold";
-  margin: 4px 2px;
+  margin: 2px 2px;
+  background-color: #7ab54294;
   cursor: pointer;
+  border-radius:8px;
 }
 
 .button:enabled:active {
@@ -25,25 +27,26 @@
   opacity: 0.5;
 }
 .grid-container {
-  min-width:200px;
+  min-width:220px;
   margin: 1px;
   display: grid;
-  gap: 5px;
-  background-color: #212533;
+ 
+  background-color: #202431;
   padding: 5px;
-  height: fit-content;
+  
 }
 
 
-.button1 {background-color: #d66e67;border-radius:4px;grid-column:1/span 1;grid-row: 4;height: auto;} 
-.button2{background-color:#7ab542;border-radius:4px;grid-column:2/span 1;grid-row:4;} 
-.button3{background-color:#7ab54294;border-radius:4px;grid-column:2/span 1;grid-row:3;}
-.button4 {background-color: #7ab54294;border-radius:4px;grid-column:1/span 1;grid-row:2;}
-.button5 {background-color: #7ab54294;border-radius: 4px;grid-column:1/span 1;grid-row:3;}
-.button6 {background-color: #7ab54294;border-radius:4px;grid-column:2/span 1;grid-row:2;}
-.button7 {background-color: #7ab54294;border-radius:4px;grid-column:2/span 1;grid-row:6;display: none;}
-.button8 {background-color: #7ab54294;border-radius: 4px;grid-column:1/span 1;grid-row:6;display: none;}
-.item1{grid-column:1/span 2;grid-row: 1;}
+.button1 {background-color: #d66e67;grid-column:1/span 1;grid-row: 5;height: auto;} 
+.button2{background-color:#7ab542;grid-column:2/span 1;grid-row:5;} 
+.button3{grid-column:1/span 2;grid-row:4;}
+.button4 {grid-column:1/span 1;grid-row:2;}
+.button5 {grid-column:1/span 1;grid-row:3;}
+.button6 {grid-column:2/span 1;grid-row:2;}
+.button7 {grid-column:2/span 1;grid-row:6;display: none;}
+.button8 {grid-column:1/span 1;grid-row:6;display: none;}
+.button9 {grid-column:2/span 1;grid-row:3;} 
+.select-box{grid-column:1/span 2;grid-row: 1;border-radius: 8px;}
 .textarea{
   grid-column: 1 / span 2;
   grid-row: 5;
@@ -72,13 +75,12 @@
 
     <body class="grid-container">
         
-
-        
-        <select class="item1" id= "select"></select>
+        <select class="select-box" id= "select"></select>
         <button class="button button4"id="recap">Race Report</button>
-        <button class="button button6" id="start" >Start Overtake Report</button><br>
-        <button class="button button5" id="pit">Pit Report</button><br>
-        <button class="button button3" id="average">Average Report</button><br>
+        <button class="button button6" id="start" >Start Overtake Report</button>
+        <button class="button button5" id="pit">Pit Report</button>
+        <button class="button button9" id="averagePit">Pit Time Loss</button>
+        <button class="button button3" id="average">Average Report</button>
         <button class="button button1" id="delete">Delete</button>
         <button class="button button2"id="new" >New race</button>
         <button class="button button7"id="down" >Download</button>

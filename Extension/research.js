@@ -17,9 +17,9 @@ function createLabelElement()
     var copyIcon = document.createElement("div");
     var copyMessage = document.createElement("div");
     copyMessage.textContent="Copied to Clipboard";
-    copyMessage.setAttribute("style","display:none; position:absolute; background:#141414; color:white; border-radius:8px; padding:5px; top:-100%; left:-65%; font-size:50%;z-index: 99;");
+    copyMessage.setAttribute("style","display:none; position:absolute; background:#141414; color:white; border-radius:8px; padding:5px; top:-10%; font-size:50%;z-index: 99;");
     copyIcon.className = "fa fa-clipboard";
-    copyIcon.setAttribute("style","position:absolute; top:800%; padding:6px; border-radius:8px; display:flex; background:#a1c590; cursor: pointer;");
+    copyIcon.setAttribute("style"," justify-content: center; padding:6px; border-radius:8px; background:#a1c590; cursor: pointer;");
     copyIcon.addEventListener("click",copyAbove);
     copyIcon.appendChild(copyMessage);
     htmlElement.appendChild(textLabel);
@@ -62,6 +62,7 @@ try {
  
 
     yourValues = createLabelElement();
+    yourValues.style.width = "8%";
     bestValues = createLabelElement();
     values_gap = createLabelElement();
 
@@ -78,17 +79,55 @@ try {
 
 table = document.querySelector("#carResearch > tbody");
 
+try {
+    myAttr = document.getElementById("overview").childNodes[0].childNodes[0].childNodes[0];
+} catch (error) {
+    myAttr = null;
+}
+
 
 for(i=0; i<8 ; i++)
   {
     attribute= table.rows[i];
-    yourTeam = document.createElement("th");
+    var yourTeam = document.createElement("th");
     bestTeam =  document.createElement("th");
     gap_area = document.createElement("th");
     
     value = getAttributeValue(i);
  
+    if(myAttr!=null)
+    {
+        if(i<4)
+    myAttrValue = myAttr.rows[i].childNodes[0].childNodes[2].textContent;
+    else
+    myAttrValue = myAttr.rows[i-4].childNodes[1].childNodes[2].textContent;
+
+    sponsorValue = parseInt(myAttrValue-value[1]);
+     yourTeam.textContent = value[1];
+    if(sponsorValue!=0)
+    {
+        sponsorSpan = document.createElement("span");
+        sponsorSpan.setAttribute("style","font-size:10%; position:relative; top:-3px");
+        sponsorSpan.textContent = " "+sponsorValue;
+        if(sponsorValue>0)
+        {
+        sponsorSpan.style.color = "green";
+        sponsorSpan.textContent = ' +'+sponsorValue;
+        }
+        else
+        sponsorSpan.style.color = "red";
+
+        console.log(sponsorSpan);
+        yourTeam.appendChild(sponsorSpan);
+       
+        
+    } 
+    }
+    else
     yourTeam.textContent = value[1];
+   
+   
+    
     bestTeam.textContent = value[0];
     gap_area.textContent = value[0]-value[1];
 

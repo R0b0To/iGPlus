@@ -45,7 +45,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         }
 
         if (/^(https:\/\/igpmanager\.com\/app\/d=result&id=)/.test(title)) {
-            inject2Script(tabId, "./reports.js", "./purify.js");
+            inject3Script(tabId, "./reports.js", "./purify.js","./localization.js");
         }
 
         if (title == "https://igpmanager.com/app/d=teamSettings") {
@@ -74,5 +74,11 @@ function inject2Script(tabId, scriptFile, scriptFile2) {
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2]
+    });
+}
+function inject3Script(tabId, scriptFile, scriptFile2,scriptFile3) {
+    chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: [scriptFile, scriptFile2,scriptFile3]
     });
 }
