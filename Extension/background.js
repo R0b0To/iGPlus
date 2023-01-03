@@ -25,7 +25,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         }
         if (title == "https://igpmanager.com/app/p=race&tab=race") {
 
-            injectScript(tabId, "./race.js");
+            inject3Script(tabId, "./race.js","highcharts.js","exporting.js");
         }
         if (title == "https://igpmanager.com/app/p=headquarters") {
             injectScript(tabId, "./headquarters.js");
