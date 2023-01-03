@@ -100,6 +100,34 @@ function createElement(skill,type)
     
     return span;
 }
+
+function changeStaffLabels()
+{
+  
+  setTimeout(async () => {
+  try {
+   staffTable = document.querySelector("#dialogs-container > div > div > form > div:nth-child(1) > table > tbody"); 
+  for (let i = 0; i < staffTable.rows.length; i++) {
+  staffID = staffTable.rows[i].childNodes[3].childNodes[0].value;
+  staffRequest = await request( "https://igpmanager.com/index.php?action=fetch&d=staff&id="+staffID+"&csrfName=&csrfToken=");
+  cdStr = extractSkills(staffRequest);
+  staffTable.rows[i].childNodes[0].appendChild(createElement(cdStr[0],"str"));
+  }
+
+  } catch (error) {
+    console.log("failed, trying again...")
+    changeStaffLabels();
+    
+  }
+
+}, 100);
+  
+}
+
+staff = document.getElementById("staff");
+changeButton = staff.childNodes[0].childNodes[1];
+changeButton.addEventListener("click",changeStaffLabels);
+
 if(document.getElementsByClassName("str")[0]==null)
     {
         addStaffLabels();

@@ -107,7 +107,7 @@ for(i=0; i<8 ; i++)
     if(sponsorValue!=0)
     {
         sponsorSpan = document.createElement("span");
-        sponsorSpan.setAttribute("style","font-size:10%; position:relative; top:-3px");
+        sponsorSpan.setAttribute("style"," position:relative;");
         sponsorSpan.textContent = " "+sponsorValue;
         if(sponsorValue>0)
         {

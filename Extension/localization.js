@@ -42,27 +42,6 @@ lang = {
     "pushDescriptionPart1":"Ogni spinta equivale alla quantità di carburante (in litri) da aggiungere al consumo di carburante. Il tuo consumo attuale è: ",
     "pushDescriptionPart2":"La scelta della spinta non verrà salvata per la gara.",
     "commentText":"Commenti"
-},
-"template":{
-    "signOption":"",
-    "languageText":"",
-    "saveText":"",
-    "RaceReport":"",
-    "StartOvertakes":"",
-    "PitReport":"",
-    "heatMap":"",
-    "delete":"",
-    "newRace":"",
-    "downloadText":"",
-    "copyText":"",
-    "yourValuesText":"",
-    "bestValuesText":"",
-    "gapText":"",
-    "fuelText":"",
-    "lapText":"",
-    "pushText":"",
-    "pushDescriptionPart1":"",
-    "pushDescriptionPart2":""
 }
 
 };

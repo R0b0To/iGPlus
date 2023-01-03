@@ -48,12 +48,14 @@ document.addEventListener('DOMContentLoaded', function() {
         averageButton.disabled = true;
         pitButton.disabled = true;
         startOvertakes.disabled= true;
+        pitLossButton.disabled=true;
       }
       else{
         recapButton.disabled = false;
         averageButton.disabled = false;
         pitButton.disabled = false;
         startOvertakes.disabled= false;
+        pitLossButton.disabled=false;
       }
     }
     
