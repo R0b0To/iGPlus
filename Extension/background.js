@@ -25,7 +25,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         }
         if (title == "https://igpmanager.com/app/p=race&tab=race") {
 
-            inject3Script(tabId, "./race.js","highcharts.js","exporting.js");
+            inject2Script(tabId, "highcharts.js","./race.js");
         }
         if (title == "https://igpmanager.com/app/p=headquarters") {
             injectScript(tabId, "./headquarters.js");
@@ -80,5 +80,11 @@ function inject3Script(tabId, scriptFile, scriptFile2,scriptFile3) {
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2,scriptFile3]
+    });
+}
+function inject4Script(tabId, scriptFile, scriptFile2,scriptFile3,scriptFile4) {
+    chrome.scripting.executeScript({
+        target: { tabId: tabId },
+        files: [scriptFile, scriptFile2,scriptFile3,scriptFile4]
     });
 }

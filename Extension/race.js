@@ -122,10 +122,13 @@ async function getWeather(){
     url = "https://api.open-meteo.com/v1/forecast?latitude="+coordinates[0]+"&longitude="+coordinates[1]+"&hourly=temperature_2m,relativehumidity_2m,precipitation"+url2;
     weatherResponse = await request(url);
     data = JSON.parse(weatherResponse)
+  
     
-
+  
+    
     previewData(data);
-      
+
+   
 }
 var weatherLocation2 = {
     1:"-37.84,144.96",
@@ -252,12 +255,10 @@ function previewData(data) {
         let elevation = data.elevation.toFixed(0);
         title = `${title} ${elevation}m above sea level`;
     }
-    let generationtime_ms = data.generationtime_ms.toFixed(2);
 
-    let utc_offset_sign = data.utc_offset_seconds < 0 ? "" : "+"
     offset = -new Date().getTimezoneOffset();
     let json =  {
-
+       
         title: {
             text: ""
         },

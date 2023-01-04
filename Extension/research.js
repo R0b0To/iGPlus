@@ -117,7 +117,6 @@ for(i=0; i<8 ; i++)
         else
         sponsorSpan.style.color = "red";
 
-        console.log(sponsorSpan);
         yourTeam.appendChild(sponsorSpan);
        
         

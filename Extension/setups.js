@@ -21,13 +21,13 @@ function request(url) {
 
 //How much ride hight needs to be increased
 function heightConversion(value) {
-    if (value >= 190) return 0;
-    if (value >= 185) return 2;
-    if (value >= 180) return 4;
-    if (value >= 175) return 6;
-    if (value >= 170) return 8;
-    if (value >= 165) return 10;
-    return 10;
+    if (value >= 190) return -8;
+    if (value >= 185) return -6;
+    if (value >= 180) return -4;
+    if (value >= 175) return -2;
+    if (value >= 170) return 0;
+    if (value >= 165) return 2;
+    return 2;
   }
 
 
@@ -160,30 +160,30 @@ function getTrack(){
     code = /[^-]+(?=">)/g.exec(circuit)[0];
   
       t ={
-        "be":{"ride":15,"wing":17,"suspension":"Neutral","pit":14},//Belgium
-        "it":{"ride":15,"wing":1,"suspension":"Firm","pit":23},//Italy
-        "sg":{"ride":25,"wing":32,"suspension":"Soft","pit":18},//Singapore
-        "my":{"ride":15,"wing":10,"suspension":"Neutral","pit":18},//Malaysia
-        "jp":{"ride":15,"wing":25,"suspension":"Soft","pit":21},//Japan
-        "us":{"ride":1,"wing":12,"suspension":"Neutral","pit":17},//USA
-        "mx":{"ride":5,"wing":15,"suspension":"Neutral","pit":22},//Mexico
-        "br":{"ride":7,"wing":15,"suspension":"Neutral","pit":19},//Brazil
-        "ae":{"ride":17,"wing":10,"suspension":"Neutral","pit":21},//AbuDhabi
-        "bh":{"ride":7,"wing":5,"suspension":"Firm","pit":23},//Bahrain
-        "eu":{"ride":15,"wing":25,"suspension":"Soft","pit":17},//Europe
-        "de":{"ride":7,"wing":15,"suspension":"Neutral","pit":18},//Germany
-        "es":{"ride":2,"wing":25,"suspension":"Soft","pit":25},//Spain
-        "ru":{"ride":1,"wing":15,"suspension":"Neutral","pit":21},//Russia
-        "tr":{"ride":17,"wing":15,"suspension":"Neutral","pit":18},//Turkey
-        "au":{"ride":30,"wing":20,"suspension":"Neutral","pit":24},//Australia
-        "at":{"ride":10,"wing":5,"suspension":"Firm","pit":26},//Austria
-        "hu":{"ride":12,"wing":30,"suspension":"Soft","pit":16},//Hungary
-        "gb":{"ride":10,"wing":5,"suspension":"Firm","pit":23},//Great Britain
-        "ca":{"ride":10,"wing":1,"suspension":"Firm","pit":16},//Canada
-        "az":{"ride":25,"wing":10,"suspension":"Neutral","pit":17},//Azerbaijan
-        "mc":{"ride":35,"wing":40,"suspension":"Soft","pit":16},//Monaco
-        "cn":{"ride":2,"wing":15,"suspension":"Neutral","pit":27},//China
-        "fr":{"ride":25,"wing":15,"suspension":"Neutral","pit":21}//France
+        "be":{"ride":23,"wing":17,"suspension":"Neutral","pit":14},//Belgium
+        "it":{"ride":23,"wing":1,"suspension":"Firm","pit":23},//Italy
+        "sg":{"ride":33,"wing":32,"suspension":"Soft","pit":18},//Singapore
+        "my":{"ride":23,"wing":10,"suspension":"Neutral","pit":18},//Malaysia
+        "jp":{"ride":23,"wing":25,"suspension":"Soft","pit":21},//Japan
+        "us":{"ride":8,"wing":12,"suspension":"Neutral","pit":17},//USA
+        "mx":{"ride":13,"wing":15,"suspension":"Neutral","pit":22},//Mexico
+        "br":{"ride":15,"wing":15,"suspension":"Neutral","pit":19},//Brazil
+        "ae":{"ride":25,"wing":10,"suspension":"Neutral","pit":21},//AbuDhabi
+        "bh":{"ride":15,"wing":5,"suspension":"Firm","pit":23},//Bahrain
+        "eu":{"ride":23,"wing":25,"suspension":"Soft","pit":17},//Europe
+        "de":{"ride":15,"wing":15,"suspension":"Neutral","pit":18},//Germany
+        "es":{"ride":10,"wing":25,"suspension":"Soft","pit":25},//Spain
+        "ru":{"ride":8,"wing":15,"suspension":"Neutral","pit":21},//Russia
+        "tr":{"ride":25,"wing":15,"suspension":"Neutral","pit":18},//Turkey
+        "au":{"ride":38,"wing":20,"suspension":"Neutral","pit":24},//Australia
+        "at":{"ride":18,"wing":5,"suspension":"Firm","pit":26},//Austria
+        "hu":{"ride":20,"wing":30,"suspension":"Soft","pit":16},//Hungary
+        "gb":{"ride":18,"wing":5,"suspension":"Firm","pit":23},//Great Britain
+        "ca":{"ride":18,"wing":1,"suspension":"Firm","pit":16},//Canada
+        "az":{"ride":33,"wing":10,"suspension":"Neutral","pit":17},//Azerbaijan
+        "mc":{"ride":43,"wing":40,"suspension":"Soft","pit":16},//Monaco
+        "cn":{"ride":10,"wing":15,"suspension":"Neutral","pit":27},//China
+        "fr":{"ride":33,"wing":15,"suspension":"Neutral","pit":21}//France
     }
 
     return t[code];
