@@ -1,58 +1,29 @@
+async function request(url) {
+    return await fetch(url)
+    .then(response => response.json())
+    .then(data => {return data})
+    .catch(error => console.error(error))
+} 
 function addWeatherLink()
 {
-   
-    var weatherLocation = {
-        1:"au/melbourne/-37.84,144.96",
-        2:"my/sepang-district/2.74,101.72",
-        3:"cn/shanghai/31.32,121.21",
-        4:"bh/horat-anaqa/26.02,50.51",
-        5:"es/montmeló/41.55,2.25",
-        6:"mc/condamine",
-        7:"tr/tuzla/40.93,29.42",
-        9:"de/hockenheim/49.32,8.55",
-        10:"hu/buziii/47.60,19.24",
-        11:"/es/39.47,-0.38",
-        12:"be/stavelot/50.39,5.93",
-        13:"it/monza/45.58,9.27",
-        14:"sg-01/singapore/1.29,103.86",
-        15:"jp/suzuka/34.84,136.55",
-        16:"br/são-paulo/-23.70,-46.70",
-        17:"ae/abu-dhabi/24.45,54.38",
-        18:"gb/towcester/52.08,-1.02",
-        19:"fr/le-castellet/43.20,5.80",
-        20:"at/spielberg/47.21,14.79",
-        21:"ca/montreal/45.50,-73.56",
-        22:"UBBB",
-        23:"mx/mexico-city/19.40,-99.09",
-        24:"ru/sochi/43.59,39.72",
-        25:"us/tx/del-valle/30.17,-97.62"
-    }
-    
-    var url = "https://www.wunderground.com/forecast/";
     var weather = document.getElementById("race").childNodes[0].lastChild.childNodes[1];
-    darkWeather = weather.cloneNode(true);
-    trackID = weather.href.match(/\d+/)[0];
-    darkWeather.addEventListener("click",getWeather);
-    //darkWeather.className+=" avoid";
-    //darkWeather.target="_blank";
-    darkWeather.textContent = "Weather";
-    darkWeather.setAttribute("style",'background:#00899e');
-    darkWeather.href = "#";//url+weatherLocation[trackID];
-    darkWeather.id = "darkWeather";
     weather.parentElement.className="tree-btn";
-    test = document.createElement("div");
-    test.id = "container";
-    weather.parentElement.appendChild(darkWeather);
-    weather.parentElement.appendChild(test);
+
+    var weatherAlt = weather.cloneNode(true);
+    weatherAlt.addEventListener("click",getWeather);
+    weatherAlt.textContent = "Weather";
+    weatherAlt.setAttribute("style",'background:#00899e');
+    weatherAlt.href = "#";//url+weatherLocation[trackID];
+    weatherAlt.id = "chartWeather";
 
     
-    
+    var weatherContainer = document.createElement("div");
+    weatherContainer.id = "container";
+    weatherContainer.setAttribute("style","position:absolute; left:0; right:0");
+    weather.parentElement.appendChild(weatherAlt);
+    weather.parentElement.appendChild(weatherContainer);
+ 
 }
-
-if(document.getElementById("darkWeather")==null)
-addWeatherLink();
-swapMap();
-showValues();
 function swapMap()
 {
     circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
@@ -83,81 +54,20 @@ function showValues()
 }
     
 }
-
-function request(url) {
-    return new Promise(function(resolve, reject) {
-      const xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function(e) {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            resolve(xhr.response)
-          } else {
-            reject(xhr.status)
-          }
-        }
-      }
-      xhr.ontimeout = function () {
-        reject('timeout')
-      }
-      xhr.open('get', url, true)
-      xhr.send()
-    })
-  } 
-
 async function getWeather(){
-
-
     url = "https://igpmanager.com/index.php?action=fireUp&addon=igp&ajax=1&jsReply=fireUp&uwv=false&csrfName=&csrfToken=";
-    managerData = await request(url);
-    managerJSON = JSON.parse(managerData)
-    
-    
+    managerJSON = await request(url);
     managerJSON.manager.format.temperature;
     url2 = "";
     if( managerJSON.manager.format.temperature == 2)
     url2="&temperature_unit=fahrenheit";
 
     var trackID = document.getElementById("race").childNodes[0].lastChild.childNodes[1].href.match(/\d+/)[0];
-    coordinates = weatherLocation2[trackID].split(",");
-    url = "https://api.open-meteo.com/v1/forecast?latitude="+coordinates[0]+"&longitude="+coordinates[1]+"&hourly=temperature_2m,relativehumidity_2m,precipitation"+url2;
-    weatherResponse = await request(url);
-    data = JSON.parse(weatherResponse)
-  
-    
-  
-    
-    previewData(data);
-
+    url = "https://api.open-meteo.com/v1/forecast?latitude="+weatherLocation[trackID][0]+"&longitude="+weatherLocation[trackID][1]+"&hourly=temperature_2m,relativehumidity_2m,precipitation"+url2;
+    data = await request(url);
    
+    previewData(data); 
 }
-var weatherLocation2 = {
-    1:"-37.84,144.96",
-    2:"2.74,101.72",
-    3:"31.32,121.21",
-    4:"26.02,50.51",
-    5:"41.55,2.25",
-    6:"43.7347,7.4206",
-    7:"40.93,29.42",
-    9:"49.32,8.55",
-    10:"47.60,19.24",
-    11:"39.47,-0.38",
-    12:"50.39,5.93",
-    13:"45.58,9.27",
-    14:"1.29,103.86",
-    15:"4.84,136.55",
-    16:"-23.70,-46.70",
-    17:"24.45,54.38",
-    18:"52.08,-1.02",
-    19:"43.20,5.80",
-    20:"47.21,14.79",
-    21:"45.50,-73.56",
-    22:"40.3777,49.892",
-    23:"19.40,-99.09",
-    24:"43.59,39.72",
-    25:"30.17,-97.62"
-}
-
-
 function previewData(data) {
     var yAxis = [];
     let codes = {0: "fair", 1: "mainly clear", 2: "partly cloudy", 3: "overcast", 45: "fog", 
@@ -258,6 +168,7 @@ function previewData(data) {
 
     offset = -new Date().getTimezoneOffset();
     let json =  {
+        
        
         title: {
             text: ""
@@ -265,7 +176,10 @@ function previewData(data) {
 
         chart: {
             type: 'spline',
-            zoomType: 'x'
+            zoomType: 'x',
+            panning: true,
+            panKey: 'shift',
+            backgroundColor:"#e3e4e5"
         },    
     
         yAxis:[{ 
@@ -337,7 +251,10 @@ function previewData(data) {
         legend: {
             layout: 'vertical',
             align: 'right',
-            verticalAlign: 'middle'
+            verticalAlign: 'middle',
+         
+           
+
         },
     
         plotOptions: {
@@ -366,6 +283,10 @@ function previewData(data) {
         },
         tooltip: {
             shared: true,
+            crosshairs: true
+        },
+        caption: {
+            text: '<b> Click and drag in the chart to zoom in and inspect the data.</b>'
         }
     }
    
@@ -376,3 +297,34 @@ function previewData(data) {
         Highcharts.stockChart('containerStockcharts', json);
     }
 }
+//latitude, longitude
+var weatherLocation = {
+    1:[-37.84,144.96],
+    2:[2.74,101.72],
+    3:[31.32,121.21],
+    4:[26.02,50.51],
+    5:[41.55,2.25],
+    6:[43.7347,7.4206],
+    7:[40.93,29.42],
+    9:[49.32,8.55],
+    10:[47.60,19.24],
+    11:[39.47,-0.38],
+    12:[50.39,5.93],
+    13:[45.58,9.27],
+    14:[1.29,103.86],
+    15:[4.84,136.55],
+    16:[-23.70,-46.70],
+    17:[24.45,54.38],
+    18:[52.08,-1.02],
+    19:[43.20,5.80],
+    20:[47.21,14.79],
+    21:[45.50,-73.56],
+    22:[40.3777,49.892],
+    23:[19.40,-99.09],
+    24:[43.59,39.72],
+    25:[30.17,-97.62]
+}
+if(document.getElementById("chartWeather")==null)
+addWeatherLink();
+swapMap();
+showValues();

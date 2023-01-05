@@ -375,8 +375,9 @@ var strategyCar = document.getElementsByName("dNum")[0].value;
    var p=document.getElementById("push 2");
 
    var selectedPush=parseFloat( p.childNodes[stintId[0].value].childNodes[0].value);
-
-    real.textContent= " ("+(fuel/(((eco[0]/track[0])+selectedPush)*track[0])).toFixed(3)+")";
+  
+    feOverwrite = document.getElementById("PLFE").value;
+    real.textContent= " ("+(fuel/(((fuel_calc(feOverwrite))+selectedPush)*track[0])).toFixed(3)+")";
     placement.appendChild(real);
     //placement.textContent = ;
   }
