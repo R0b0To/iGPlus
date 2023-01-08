@@ -1,28 +1,23 @@
-
 function addLevelLabels()
 {
     try {
-
         if(document.getElementsByClassName("levelLabel")[0]!=null)
         return;
    
-        building = document.getElementById("page-content");
-
-    for(let i=3 ; i<=8; i++)
-    {
-       level = building.childNodes[i].childNodes[2].childNodes[0].childNodes[0].currentSrc.match(/\d+/)[0];
-       levelDiv = document.createElement("div");
-       levelDiv.textContent= "Lv: "+level;
-       levelDiv.className="levelLabel";
-       levelDiv.setAttribute("style","position:absolute; margin-left: 8px;");
-       building.childNodes[i].childNodes[0].after(levelDiv);
-    }
+        buildings =document.querySelectorAll("div.i100 > img");
+        buildings.forEach(node => {
+            levelDiv = document.createElement("div");
+            levelDiv.className="levelLabel";
+            levelDiv.setAttribute("style","position:absolute; margin-left: 8px;");
+            level = node.currentSrc.match(/\d+/)[0];
+            levelDiv.textContent = "Lv: " + level;
+            node.after(levelDiv);
+          });
 } catch (error) {
     setTimeout(() => {
         addLevelLabels();
       }, 200);
-}
-    
+}  
 }
 
  addLevelLabels();

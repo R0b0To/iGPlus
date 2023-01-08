@@ -18,8 +18,6 @@ function request(url) {
       xhr.send()
     })
 } 
-
-
 function fuel_calc(f){
 
   switch (true) {
@@ -41,7 +39,6 @@ function fuel_calc(f){
     default:
       return ((f ** -0.0971) * 0.696);
   }   }
-
 async function get_eco()
   {
     //request car design
@@ -53,8 +50,7 @@ async function get_eco()
     fuel_lap = fuel_calc(fuel_eco)*track[0];
     eco = [fuel_lap, tyre_eco,fuel_eco];
     return eco;   
-}
-  
+}  
 function circuit_info(){
     try {
        circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
@@ -96,8 +92,6 @@ function circuit_info(){
 
      
 }
-
-
  /**
  * Returns stint wear after n laps.
  *
@@ -140,7 +134,6 @@ return average;
 
 
 }
-
 function openPushMenu(e)
 {
   //document.getElementById("myDropdown").classList.toggle("show");
@@ -148,8 +141,6 @@ function openPushMenu(e)
   this.nextSibling.nextSibling.classList.toggle("show");
   savePush();
 }
-
-
 async function injectAdvancedStint(){
 
   placement = document.getElementsByClassName("fuel");
@@ -166,7 +157,7 @@ async function injectAdvancedStint(){
     
     if(name=="Push" && car==0){
       
-        const defaultPush = [-0.007,-0.002,0,0.002,0.007];
+        const defaultPush = [-0.007,-0.004,0,0.01,0.02];
         pushToUse = [];
       
       
@@ -342,7 +333,6 @@ try {
     return (eco[0]*placement[0].childNodes[stint_number].textContent).toFixed(2);
   }
   
-
   //Order and timing is important.
   //First create the elements for 1 car
   //Then check if car 2 is present. Create elements if true
@@ -354,11 +344,8 @@ try {
     }
     
 })
-  
   //create_elem("push 2","Push",1);
 }
-
-
 function inject_estimated(){
 var  stintId = document.getElementsByName("stintId");
 var strategyCar = document.getElementsByName("dNum")[0].value;
@@ -383,7 +370,6 @@ var strategyCar = document.getElementsByName("dNum")[0].value;
   }
   
 }
-
 async function league_multiplier()
 {
   //extract league id from page
@@ -403,7 +389,6 @@ async function league_multiplier()
   };
   return multipliers[league_length] || 1;
 }
-
 function add_mutation_observer(){
 
   //add eventlistener to the opened dialog and inject first estimate
@@ -421,7 +406,7 @@ function add_mutation_observer(){
     if(document.URL!="https://igpmanager.com/app/p=race" && document.URL!="https://igpmanager.com/app/p=race&tab=strategy")
         {
           observer.disconnect();
-          console.log("removed");
+          
         }
   }
 
@@ -463,17 +448,27 @@ function add_mutation_observer(){
   observer.observe(change_laps, config);
 
 }
-
-
-
 async function main(){
  
   try {
     language = await chrome.storage.local.get({language: 'eng'});
+    
+  
+    if(document.getElementById("igpXvars")==null)
+    {
+    varsHolder = document.createElement("div");
+    varsHolder.id="igpXvars";
+    multiplier = await league_multiplier();
     eco = await get_eco();
-  
-  multiplier = await league_multiplier();
-  
+    varsHolder.setAttribute("multiplier",multiplier);
+    varsHolder.setAttribute("eco",eco)
+    document.getElementById("stintDialog").append(varsHolder);
+    //document.body.append(varsHolder);
+    }
+    vars = document.getElementById("igpXvars").attributes;
+    eco = vars.eco.value.split(",");
+    multiplier = vars.multiplier.value;
+   
   //add event listeners
   add_mutation_observer();
   document.getElementById("beginner-d1PitsWrap").addEventListener("touchstart",update_stint);
@@ -483,9 +478,7 @@ async function main(){
     document.querySelector("#d2strategy > div").addEventListener("touchstart",update_stint);
     document.querySelector("#d2strategy > div").addEventListener("click",update_stint);
   }
-  
-  
-  
+
   injectAdvancedStint().then(()=> {
     inject_fuel_info();
 })
@@ -496,7 +489,6 @@ async function main(){
   }
 
 }
-
 function update_stint()
 {
   
@@ -596,7 +588,6 @@ function updateFuel()
     return totalFuel.toFixed(2);
    }
     }
-
 async function inject_fuel_info() {
     
     elem = document.createElement("div");
@@ -624,21 +615,10 @@ async function inject_fuel_info() {
     
 
  }
- 
-//global variables
-multiplier = 1;
-track = circuit_info(); //return [0]length and [1]wear
-eco = [];
-language = "eng";
- main();
- 
-
  window.onclick = function(event) {
   try {
     if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1')&&!event.target.matches('.tooltip1')&&!event.target.matches('.tooltiptext'))
    {
-    
-
       var dropdowns = document.getElementsByClassName("dropdown1-content");
       var i;
       for (i = 0; i < dropdowns.length; i++) {
@@ -649,12 +629,22 @@ language = "eng";
         }
       }
     }
+    if(!document.getElementById('myDropdown2').contains(event.target) &&!event.target.matches('.dropbtn2'))
+   {
+      var dropdowns = document.getElementsByClassName("dropdown2-content");
+      var i;
+      for (i = 0; i < dropdowns.length; i++) {
+        var openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains('show1')) {
+          openDropdown.classList.remove('show1');
+        }
+      }
+    }
   } catch (error) {
     
   }
   
   }
-
   function savePush(){
     var pl = [];
     pl.push(document.getElementById("PL1").value);
@@ -681,9 +671,6 @@ language = "eng";
       }
       updateFuel();
   }
-
-  addMoreStints();
-  
   function addMoreStints()
   {
       var carNumber = document.getElementsByClassName("fuel").length;
@@ -700,7 +687,7 @@ language = "eng";
     {
 
       if(document.getElementById("extra "+id)==null){
-      addStint = document.createElement("div");
+     var  addStint = document.createElement("div");
       addStint.textContent = "+";
       var stintCounter = document.createElement("div");
       stintCounter.textContent = -1;
@@ -732,32 +719,62 @@ language = "eng";
 
     
 
-    function removeStints()
-    {
-      //console.log('pressed minus with '+this.nextElementSibling.textContent[0]);
-      var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
+    
 
-      if(pits==3)
+
+  }
+  function hasExtraStint(pitNumber){
+    var extraStints = 0;
+    if(pitNumber<4)
+    extraStints =-1;
+    else if(pitNumber == 4)
+    extraStints = 0;
+    else if(pitNumber>4)
+    extraStints = 1;
+return extraStints
+  }
+function removeStints(minusDiv)
+    {
+
+     
+    if(minusDiv.tagName!="DIV")
+    {
+      var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
+      minusDiv = this;
+    }
+    else
+    pits = minusDiv.nextElementSibling.textContent.match(/\d+/)[0];
+     
+    var driver = minusDiv.closest("form");
+    totalStintNumber = driver.getElementsByClassName("tyre")[0].querySelectorAll('td[style*="visibility: visible"]').length;
+    
+   //console.log("--------"+totalStintNumber);
+      if(totalStintNumber<=5)
       {
         //console.log("removing style");
-        this.nextElementSibling.nextElementSibling.setAttribute("style","background-color:#6c7880");
+        minusDiv.nextElementSibling.nextElementSibling.setAttribute("style","background-color:#6c7880");
+        minusDiv.nextElementSibling.nextElementSibling.className="plus";
+        minusDiv.nextSibling.nextElementSibling.nextElementSibling.style.visibility="hidden";
+      }
+      if(totalStintNumber<=6)
+      {
+        minusDiv.nextSibling.nextElementSibling.nextElementSibling.style.visibility="hidden";
       }
 
-      var extraStints =parseInt(this.parentElement.lastChild.childNodes[1].textContent);
-      if(extraStints>=1){
-        extraStints--;
-        this.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan--;
-        if(extraStints==0)
-        {
-          //console.log("hiding");
-          this.nextSibling.nextElementSibling.nextElementSibling.style.visibility="hidden";
-        }
+      var extraStints =parseInt(minusDiv.parentElement.lastChild.childNodes[1].textContent);
+          pitNumber = minusDiv.nextElementSibling.childNodes[0].textContent;
+     
+
+
+        extraStints = hasExtraStint(pitNumber);
+
+     
+
+      if(totalStintNumber>5){
+        minusDiv.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan--;
         
-          var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
-          pits--;
-          this.nextElementSibling.textContent.replace(/[0-9]/g, pits);
-  
-        driver = this.parentElement.parentElement.parentElement;
+        
+        driver = minusDiv.parentElement.parentElement.parentElement;
         var strategyTable = driver.childNodes[3].childNodes[0];
         strategyTable.childNodes[0].lastChild.remove();
         strategyTable.childNodes[1].lastChild.remove();
@@ -765,90 +782,107 @@ language = "eng";
         strategyTable.childNodes[5].lastChild.remove();
         strategyTable.childNodes[6].lastChild.remove();
 
-      
+    
+        minusDiv.parentElement.lastChild.childNodes[1].textContent = totalStintNumber-6;
+
+        
+        if((totalStintNumber-1) == 5)
+        {
+          minusDiv.className = "minus";
+          minusDiv.setAttribute("style","background-color:#6c7880");
+
+        }
+
+      }
+
+    }
+
+  function injectExtraStints(plusDiv){
+    return new Promise((resolve, reject) => {
      
-      this.parentElement.lastChild.childNodes[1].textContent = extraStints;
-      
-      if(extraStints==0)
+      success =false;
+
+      if(plusDiv.tagName!="DIV")
       {
-        this.className = "minus";
-        this.setAttribute("style","background-color:#6c7880")
+        var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
+        plusDiv = this;
+      }
+      else
+      pits = plusDiv.previousElementSibling.textContent.match(/\d+/)[0];
+  
+  
+      var driver = plusDiv.closest("form");
+      var pitRow = driver.getElementsByClassName("darkgrey")[0];
+      numberOfExtraPits = hasExtraStint(pits);
+      
+      if(pits>=4 && plusDiv.style.backgroundColor=="firebrick" && pitRow.childElementCount<8)
+      {
+      
+      var minus = plusDiv.nextElementSibling.parentElement.firstChild;
+      minus.className= "minus disabled";
+      minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+      plusDiv.nextElementSibling.setAttribute("style","visibility:visible");
+  
+      if(plusDiv.className == "plus disabled"){
+  
+        
+        var strategyTable = driver.childNodes[3].childNodes[0];
+  
+        plusDiv.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan++;
+  
+      //clone last pit 
+      
+      var pitTh = pitRow.lastChild.cloneNode(true);
+      var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
+      
+      plusDiv.nextElementSibling.childNodes[1].textContent = pitRow.childElementCount-5; 
+      lastpit++;
+      pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
+      pitRow.appendChild(pitTh);
+  
+      //clone last tyre 
+      var tyreRow= strategyTable.childNodes[1];
+      var clonedTyre = tyreRow.lastChild.cloneNode(true);
+      clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
+      clonedTyre.addEventListener("click",openTyreDialog);
+      tyreRow.appendChild(clonedTyre);
+      //clone last lap
+      
+      var lapsRow = strategyTable.childNodes[3];
+      var clonedLap = lapsRow.lastChild.cloneNode(true);
+      
+      clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
+      clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
+      lapsRow.appendChild(clonedLap);
+       //clone last push 
+      var pushRow = strategyTable.childNodes[5];
+      var clonedPush = pushRow.lastChild.cloneNode(true);
+      clonedPush.addEventListener("change",updateFuel)
+      pushRow.appendChild(clonedPush);
+      //clone last wear 
+      var wearRow = strategyTable.childNodes[6];
+      var clonedWear = wearRow.lastChild.cloneNode(true);
+      wearRow.appendChild(clonedWear);
+      
+      success=true;
+      }
+      }else if(pits==4)
+      {
+        plusDiv.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+        //plusDiv.nextElementSibling.lastChild.textContent = 0;
+      }
+      
+  
+
+      if (success) {
+        resolve(true);
+      } else {
+        reject(false);
       }
 
-      
-      }
-      else if(extraStints==0)
-      this.parentElement.lastChild.childNodes[1].textContent=-1;
-      
-
-
-
-
-    }
-
-
-  }
-
-  function injectExtraStints(){
-
-    var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
-
-    if(pits>=4 && parseInt(this.nextElementSibling.lastChild.textContent)>-1)
-    {
-
-    numberOfExtraPits = parseInt(this.nextElementSibling.lastChild.textContent);
-
-    var minus = this.nextElementSibling.parentElement.firstChild;
-    minus.className= "minus disabled";
-    minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
-    this.nextElementSibling.setAttribute("style","visibility:visible");
-    if(numberOfExtraPits<2 && numberOfExtraPits>-1){
-
-    this.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan++;
-
-    this.nextElementSibling.childNodes[1].textContent = numberOfExtraPits+1; 
-    var driver = this.nextElementSibling.parentElement.parentElement.parentElement;
-    var strategyTable = driver.childNodes[3].childNodes[0];
-    //clone last pit 
-    var pitRow = strategyTable.childNodes[0];
-    var pitTh = pitRow.lastChild.cloneNode(true);
-    var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
-    lastpit++;
-    pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
-    pitRow.appendChild(pitTh);
-
-    //clone last tyre 
-    var tyreRow= strategyTable.childNodes[1];
-    var clonedTyre = tyreRow.lastChild.cloneNode(true);
-    clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
-    clonedTyre.addEventListener("click",openTyreDialog);
-    tyreRow.appendChild(clonedTyre);
-    //clone last lap
-    var lapsRow = strategyTable.childNodes[3];
-    var clonedLap = lapsRow.lastChild.cloneNode(true);
-    clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
-    clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
-    lapsRow.appendChild(clonedLap);
-     //clone last push 
-    var pushRow = strategyTable.childNodes[5];
-    var clonedPush = pushRow.lastChild.cloneNode(true);
-    clonedPush.addEventListener("change",updateFuel)
-    pushRow.appendChild(clonedPush);
-    //clone last wear 
-    var wearRow = strategyTable.childNodes[6];
-    var clonedWear = wearRow.lastChild.cloneNode(true);
-    wearRow.appendChild(clonedWear);
-    }
-    }else if(pits==4 && parseInt(this.nextElementSibling.lastChild.textContent)==-1)
-    {
-      this.setAttribute("style","background-color: firebrick;opacity: 100!important;");
-      this.nextElementSibling.lastChild.textContent = 0;
-    }
-
-
+    });
     
   }
-
 
   function openTyreDialog(){
 
@@ -898,7 +932,6 @@ for(var i=0 ; i<6 ; i++)
 
 
   }
-
   function injectCircuitMap(){
 
     if(document.getElementById("customMap")==null)
@@ -915,5 +948,286 @@ for(var i=0 ; i<6 ; i++)
 
     }
   }
+async function saveStint()
+{
+  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+  code = /[^-]+(?=">)/g.exec(circuit)[0];
+  driverStrategy = this.closest("form");
+  tyre = driverStrategy.getElementsByClassName("tyre")[0];
+  fuel = driverStrategy.getElementsByClassName("fuel")[0];
+  push = driverStrategy.querySelector("tr[id*=push]");
+  tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
+  fuelStrategy= fuel.querySelectorAll('td[style*="visibility: visible"]');
+  pushStrategy =push.querySelectorAll('td[style*="visibility: visible"]');
+    saveData = {track:code,laps:document.getElementById("raceLaps").textContent};
+    for(var i=0; i< tyreStrategy.length; i++)
+    {
+      saveData[i] ={
+        tyre:tyreStrategy[i].className,
+        laps:fuelStrategy[i].textContent,
+        push:pushStrategy[i].childNodes[0].selectedIndex};
+    }
+    s = hashCode(JSON.stringify(saveData));
+    data = await chrome.storage.local.get("save");
+   
+    if(typeof data.save==="undefined")
+    {
+    chrome.storage.local.set({"save":{[code]:{[s]:saveData}}});
+    }
+    else
+    {
+      newSave = data.save[code][s] = saveData;
+      chrome.storage.local.set({"save":data.save});
+    }
+   
+    
+}
+function hashCode(string){
+  var hash = 0;
+  for (var i = 0; i < string.length; i++) {
+      var code = string.charCodeAt(i);
+      hash = ((hash<<5)-hash)+code;
+      hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash;
+}
+async function loadStint()
+{
+  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+  code = /[^-]+(?=">)/g.exec(circuit)[0];
+  data = await chrome.storage.local.get("save");
+  s = data.save[code][this.parentElement.id];
+  driverStrategy = this.closest("form");
+  
+  tyre = driverStrategy.getElementsByClassName("tyre")[0];
+  fuel = driverStrategy.getElementsByClassName("fuel")[0];
+  push = driverStrategy.querySelector("tr[id*=push]");
+  wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
+  tyreStrategy = tyre.querySelectorAll('td');
+  fuelStrategy= fuel.querySelectorAll('td');
+  pushStrategy =push.querySelectorAll('td');
+  pits= driverStrategy.querySelector("div > div.num.green");
+  enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
+  activeStints = tyre.childElementCount-1;
+  //-2 because the save object has 2 extra elements
+  stints = Object.keys(s).length-2;
+  pitText = stints-1;
 
-  injectCircuitMap();
+  if((pitText)>4)
+  pitText = 4;
+  pits.childNodes[0].textContent = pitText;
+
+  if(activeStints>5)
+  {
+    for (let i = 0; i < (enabledStints-stints); i++) {
+      removeStints(pits.previousElementSibling);
+    }
+  }
+  
+  extraStintstoAdd = (activeStints-stints)
+
+
+  if(activeStints<stints)
+  {
+    var event = new MouseEvent('mousedown', {
+      'view': window,
+      'bubbles': true,
+      'cancelable': true,
+  
+  });
+  var event2 = new MouseEvent('mouseup', {
+    'view': window,
+    'bubbles': true,
+    'cancelable': true,
+
+});
+
+
+
+    for (let i = 0; i < (5-enabledStints); i++) {
+      pits.nextElementSibling.dispatchEvent(event);
+      pits.nextElementSibling.dispatchEvent(event2);
+      pits.nextElementSibling.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+    }
+   
+    for (let i = 0; i < (stints-5); i++) {
+      done = await injectExtraStints(pits.nextElementSibling);
+    }
+  }
+  tyre = driverStrategy.getElementsByClassName("tyre")[0];
+  fuel = driverStrategy.getElementsByClassName("fuel")[0];
+  push = driverStrategy.querySelector("tr[id*=push]");
+  wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
+  tyreStrategy = tyre.querySelectorAll('td');
+  fuelStrategy= fuel.querySelectorAll('td');
+  pushStrategy =push.querySelectorAll('td');
+
+  for(var i=stints ; i<5; i++)
+  {
+    tyreStrategy[i].style.visibility="hidden";
+    fuelStrategy[i].style.visibility="hidden";
+    pushStrategy[i].style.visibility="hidden";
+    wear[i].style.visibility = "hidden";
+  }
+
+  for(var i=0; i< stints; i++)
+    {
+      try {
+        tyreStrategy[i].className = s[i].tyre;
+        tyreStrategy[i].childNodes[0].value = s[i].tyre.substring(3);
+        tyreStrategy[i].setAttribute("data-tyre",s[i].tyre.substring(3));
+        tyreStrategy[i].style.visibility = "visible";
+        fuelStrategy[i].childNodes[0].textContent = s[i].laps;
+        fuelStrategy[i].style.visibility = "visible";
+        fuelStrategy[i].childNodes[1].value = Math.ceil((s[i].laps *eco[0]));
+        fuelStrategy[i].childNodes[2].value = s[i].laps;
+        pushStrategy[i].childNodes[0].selectedIndex = s[i].push;
+        pushStrategy[i].style.visibility = "visible";
+        wear[i].style.visibility = "visible";
+      } catch (error) {
+
+      }
+      
+    }
+
+    if((stints-1)<4)
+    {
+      pits.nextElementSibling.setAttribute("style","background-color: #6c7880;opacity: 100!important;");
+      pits.nextElementSibling.className = "plus";
+    }
+    if((stints-1)==1)
+    {
+      pits.previousElementSibling.className = "minus disabled";
+    }
+    if((stints-1)==4)
+    {
+      pits.nextElementSibling.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+      pits.nextElementSibling.className = "plus disabled";
+      pits.previousElementSibling.className = "minus";
+    }
+    update_stint();
+   
+}
+
+function addSaveButton()
+{
+  if(document.getElementById("save&load")==null)
+  {
+    function createSaveLoad()
+  {
+    containerDiv = document.createElement("div");
+    containerDiv.id="save&load";
+    containerDiv.setAttribute("style","position:relative");
+    saveDiv = document.createElement("div");
+    loadDiv = document.createElement("div");
+    loadContainer = document.createElement("div");
+    loadContainer.className = "dropdown2-content not-selectable";
+    loadContainer.id="myDropdown2";
+    
+    saveDiv.className = "dropbtn2";
+    loadDiv.className = "dropbtn2";
+    saveDiv.textContent = "Save";
+    loadDiv.textContent = "Load";
+    loadDiv.appendChild(loadContainer);
+    saveDiv.addEventListener("click",saveStint);
+    loadDiv.addEventListener("click",async function(){
+      circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+      code = /[^-]+(?=">)/g.exec(circuit)[0];
+      data = await chrome.storage.local.get("save");
+      if(typeof data.save=="undefined")
+      {
+        console.log("empty");
+      }else{
+        if(Object.keys(data.save[code]).length==0)
+        {
+          console.log("no save");
+        }else{
+        sList = document.getElementById("saveList");
+        if(sList!=null)
+        sList.remove();
+
+        sList = createSaveDataPreview(data.save[code]);
+        this.childNodes[1].appendChild(sList);
+        this.childNodes[1].classList.toggle("show1");
+        }
+       
+      }
+      
+    });
+    containerDiv.appendChild(saveDiv);
+    containerDiv.appendChild(loadDiv);
+ return containerDiv;
+  }
+  
+  driverNumber = document.getElementsByClassName("fuel").length;
+  if(driverNumber==2)
+  {
+    strategy = document.getElementById("d2strategy");
+    placeHere = strategy.querySelectorAll("th")[0];
+    placeHere.appendChild(createSaveLoad());
+  }
+  strategy =document.getElementById("d1strategy");
+  placeHere = strategy.querySelectorAll("th")[0];
+  placeHere.appendChild(createSaveLoad());
+  }
+  
+
+}
+function createSaveDataPreview(s)
+{
+  function createStint(a,k)
+  {
+    strategyContainer = document.createElement("tr");
+    strategyContainer.setAttribute("style","background-color: #dfdfdf;");
+    strategyContainer.id= k;
+    deleteB = document.createElement("th");
+    deleteB.textContent = "del";
+    deleteB.setAttribute("style","background-color: #d66e67; font-size: 1.25rem;font-family: roboto");
+    deleteB.addEventListener("click",deleteSave);
+    strategyContainer.appendChild(deleteB);
+    
+    for (const key in a) {
+      if(!isNaN(key))
+      {
+      strategy = document.createElement("td");
+      strategyL = document.createElement("td");
+      strategyL.addEventListener("click",loadStint);
+      strategy.addEventListener("click",loadStint);
+      strategy.setAttribute("style","height:32px; width:32px;margin:1px; background-color: #dfdfdf;");
+      strategyL.setAttribute("style","width:5px; font-size: 1.25rem;color: black;font-family: roboto;margin:1px");
+      strategyL.textContent = a[key].laps;
+      strategy.className = a[key].tyre;
+      strategyContainer.appendChild(strategyL);
+      strategyContainer.appendChild(strategy);
+      } 
+    }
+    //console.log(strategyContainer);
+    return strategyContainer;
+  }
+  saveList = document.createElement("tbody")
+  saveList.id="saveList";
+  
+
+  for (const key in s) {
+
+    saveList.appendChild(createStint(s[key],key));
+  }
+
+  saveList.setAttribute("style","height:max-content ;width: max-content;border-collapse: collapse;");
+return saveList;
+
+}
+async function deleteSave()
+{
+  saveToDelete = this.parentElement.id;
+  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+  code = /[^-]+(?=">)/g.exec(circuit)[0];
+  data = await chrome.storage.local.get("save");
+  delete data.save[code][saveToDelete];
+  chrome.storage.local.set({"save":data.save});
+}
+track = circuit_info(); //return [0]length and [1]wear
+addMoreStints();
+main();
+injectCircuitMap();
+addSaveButton();

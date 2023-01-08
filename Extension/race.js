@@ -63,9 +63,15 @@ async function getWeather(){
     url2="&temperature_unit=fahrenheit";
 
     var trackID = document.getElementById("race").childNodes[0].lastChild.childNodes[1].href.match(/\d+/)[0];
-    url = "https://api.open-meteo.com/v1/forecast?latitude="+weatherLocation[trackID][0]+"&longitude="+weatherLocation[trackID][1]+"&hourly=temperature_2m,relativehumidity_2m,precipitation"+url2;
+    url = "https://api.open-meteo.com/v1/forecast?latitude="+weatherLocation[trackID][0]+"&longitude="+weatherLocation[trackID][1]+"&hourly=temperature_2m,relativehumidity_2m,precipitation&models=gfs_seamless"+url2;
     data = await request(url);
    
+    //url3 = "http://api.weatherunlocked.com/api/forecast/51.50,-0.12?app_id=ba14cfca&app_key=637253385cd6ff853a6cf83c85132a4b"; 
+  /* chrome.runtime.sendMessage( //goes to bg_page.js
+      url3,
+      data => previewData2(data) //your callback
+); /ss */
+
     previewData(data); 
 }
 function previewData(data) {
@@ -78,10 +84,13 @@ function previewData(data) {
         81: "moderate rain showers", 82: "heavy rain showers", 85: "slight snow showers", 86: "heavy snow showers",
         95: "slight to moderate thunderstorm", 96: "thunderstorm with slight hail", 99: "thunderstorm with heavy hail"
     };
-
+    //data = JSON.parse(data);
+   // console.log(data);
     var series = [];
+    
     ["hourly", "six_hourly", "three_hourly", "daily"].forEach(function (section, index) {
         if (!(section in data)) {
+           
             return
         }
         Object.entries(data[section]||[]).forEach(function(k){
@@ -114,9 +123,17 @@ function previewData(data) {
                 typeP = "area";
             }   
             if(k[0]=="relativehumidity_2m")
-                    colorP= Highcharts.getOptions().colors[1];
+            {
+                colorP= Highcharts.getOptions().colors[1];
+                k[0] ="humidity";
+            }
+                    
             if(k[0]=="temperature_2m")
-            colorP = Highcharts.getOptions().colors[3];
+            {
+               colorP = Highcharts.getOptions().colors[3]; 
+               k[0] ="temperature";
+            }
+            
 
 
 
@@ -139,7 +156,7 @@ function previewData(data) {
                     return "<span style=\"color:"+this.series.color+"\">\u25CF</span> "+this.series.name+": <b>"+condition+"</b> ("+this.y+" wmo)<br/>"
                 }
             }
-
+            //console.log(ser);
             series.push(ser);
         });
     });
@@ -328,3 +345,210 @@ if(document.getElementById("chartWeather")==null)
 addWeatherLink();
 swapMap();
 showValues();
+
+
+function previewData2(data) {
+    var yAxis = [];
+ 
+    data = JSON.parse(data);
+    console.log(data);
+    var series = [];
+    function toIso8601(dateString) {
+        const [day, month, year] = dateString.split('/');
+        return `${year}-${month}-${day}`;
+      }
+      function hoursToTime(hours) {
+        return `${hours.toString().padStart(2, "0")}:00`;
+      }
+
+      date = new Date(toIso8601(data.Days[0].Timeframes[0].date)+"T"+hoursToTime(data.Days[0].Timeframes[0].time));
+      date2 = new Date(toIso8601(data.Days[0].Timeframes[1].date)+"T"+hoursToTime(data.Days[0].Timeframes[1].time));
+      offset = -new Date().getTimezoneOffset();
+      day = [];
+      for(var i=0 ; i<=data.Days.length ; i++)
+      {
+            
+
+            for(var j=0 ; j<data.Days[i].Timeframes.length ; j++)
+            {
+                day.push(data.Days[i].Timeframes[j]);
+            }
+            console.log(day);
+/*
+            var ser = {
+                name: k[0],
+                data: k[1],
+                color: colorP,
+                type: typeP,
+                yAxis: axisId,
+                pointStart: hourly_starttime,
+                pointInterval: pointInterval,
+                tooltip: {
+                    valueSuffix: " " + unit,
+                }
+            };
+    
+            console.log(ser);
+            series.push(ser);
+           
+       
+        */
+        
+
+
+
+      }
+
+    var plotBands = []
+    if ('daily' in data && 'sunrise' in data.daily && 'sunset' in data.daily) {
+        let rise = data.daily.sunrise
+        let set = data.daily.sunset
+        var plotBands = rise.map(function(r, i) {
+            return {
+                "color": "rgb(255, 255, 194)",
+                "from": (r + data.utc_offset_seconds) * 1000,
+                "to": (set[i] + data.utc_offset_seconds) * 1000
+            };
+        });
+    }
+
+    //let latitude = data.latitude.toFixed(2);
+    //let longitude = data.longitude.toFixed(2);
+    //let title = `${latitude}°N ${longitude}°E`;
+    
+    if ("elevation" in data) {
+        let elevation = data.elevation.toFixed(0);
+        title = `m above sea level`;
+    }
+
+    offset = -new Date().getTimezoneOffset();
+    let json =  {
+        
+       
+        title: {
+            text: ""
+        },
+
+        chart: {
+            type: 'spline',
+            zoomType: 'x',
+            panning: true,
+            panKey: 'shift',
+            backgroundColor:"#e3e4e5"
+        },    
+    
+        yAxis:[{ 
+            visible:false
+        },
+        { 
+            visible:false
+        },
+        { 
+            visible:false
+        },
+    ],/* [{ // Primary yAxis
+            labels: {
+                format: '{value}°C',
+                style: {
+                    color: Highcharts.getOptions().colors[3]
+                }
+            },
+            title: {
+                text: 'Temperature',
+                style: {
+                    color: Highcharts.getOptions().colors[3]
+                }
+            },
+            opposite: true
+    
+        }, { // Secondary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'Humidity',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                format: '{value} %',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+    
+        },{ // tert yAxis
+            gridLineWidth: 1,
+            title: {
+                text: 'WaterLevel',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                format: '{value} mm',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+    
+        }],*/
+       
+        xAxis: {
+            type: 'datetime',
+            plotLines: [{
+                value: Date.now() + (offset * 60000),
+                color: 'red',
+                width: 2
+            }],
+            plotBands: plotBands
+        },
+    
+        legend: {
+            layout: 'vertical',
+            align: 'right',
+            verticalAlign: 'middle',
+         
+           
+
+        },
+    
+        plotOptions: {
+            series: {
+                label: {
+                    connectorAllowed: false
+                },
+            }
+        },
+    
+        series: series,
+    
+        responsive: {
+            rules: [{
+                condition: {
+                    maxWidth: 800
+                },
+                chartOptions: {
+                    legend: {
+                        layout: 'horizontal',
+                        align: 'center',
+                        verticalAlign: 'bottom'
+                    }
+                }
+            }]
+        },
+        tooltip: {
+            shared: true,
+            crosshairs: true
+        },
+        caption: {
+            text: '<b> Click and drag in the chart to zoom in and inspect the data.</b>'
+        }
+    }
+   
+    if (document.getElementById('container')) {
+        Highcharts.chart('container', json);
+    }
+    if (document.getElementById('containerStockcharts')) {
+        Highcharts.stockChart('containerStockcharts', json);
+    }
+}

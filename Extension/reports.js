@@ -91,10 +91,17 @@ team_name3 = r.rows[2].childNodes[1].childNodes[6].childNodes[0].textContent;
 driverId = r.rows[2].childNodes[1].childNodes[0].href.match(/\d+/)[0];
 manager3 = await getManagerNameOfDriver(driverId);
 
+fastLap = document.getElementsByClassName("mOpt purple robotoBold")[0];
+teamFastLap = fastLap.parentElement.childNodes[1].childNodes[6].childNodes[0].textContent;
+driverFastLap = fastLap.parentElement.childNodes[1].childNodes[0].href.match(/\d+/)[0];
+managerFastLap = await getManagerNameOfDriver(driverFastLap);
+
+bestLapString = r.parentElement.childNodes[0].childNodes[0].childNodes[3].textContent;
 string = "🚦 🏁"+trackName+"🚦\n"+
         "🥇"+team_name1+" - "+manager1+"\n"+
         "🥈"+team_name2+" - "+manager2+"\n"+
         "🥉"+team_name3+" - "+manager3+"\n"+
+        "🏎️💨"+bestLapString+": "+teamFastLap+" - "+managerFastLap+"\n"+
         "👇 🎤"+lang[language.language].commentText+"... 👇";
 
         navigator.clipboard.writeText(string).then(() => {
