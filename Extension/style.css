@@ -32,8 +32,53 @@ input[type=number]::-webkit-outer-spin-button {
   position: relative;
 }
 
+.sbutton {
+  
+  background-color: #6e7880;
+  color: rgb(255, 255, 255);
+  padding: 5px;
+  margin: 1px;
+  border-radius: 5px;
+  font-size: .8em;
+  font-weight: normal;
+  border: none;
+  cursor: pointer;
+  display: inline;
+  width: fit-content;
+  font-family: "RobotoCondensedBold";
+  cursor: pointer;
+  border-radius:8px;
+}
+
+.lbutton
+{
+  background-color: #6e7880;
+  color: rgb(255, 255, 255);
+  padding: 5px;
+  margin: 1px;
+  border-radius: 5px;
+  font-size: .8em;
+  font-weight: normal;
+  border: none;
+  cursor: pointer;
+  display: inline;
+  width: fit-content;
+  font-family: "RobotoCondensedBold";
+  cursor: pointer;
+  border-radius:8px;
+}
 
 
+.sbutton:hover {background-color: #3e8e41}
+
+.sbutton:active:not(.disabled)  {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+.lbutton:disabled {
+  opacity: 0.5;
+}
 
 .number-input input[type=number] {
   font-family: Roboto;

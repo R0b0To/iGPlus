@@ -617,6 +617,7 @@ async function inject_fuel_info() {
  }
  window.onclick = function(event) {
   try {
+
     if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1')&&!event.target.matches('.tooltip1')&&!event.target.matches('.tooltiptext'))
    {
       var dropdowns = document.getElementsByClassName("dropdown1-content");
@@ -629,7 +630,7 @@ async function inject_fuel_info() {
         }
       }
     }
-    if(!document.getElementById('myDropdown2').contains(event.target) &&!event.target.matches('.dropbtn2'))
+    if(!document.getElementById('myDropdown2').contains(event.target)&&!event.target.matches('.sbutton'))
    {
       var dropdowns = document.getElementsByClassName("dropdown2-content");
       var i;
@@ -976,9 +977,18 @@ async function saveStint()
     }
     else
     {
-      newSave = data.save[code][s] = saveData;
+      if(typeof data.save[code]==="undefined")
+      {
+         data.save[code] = {[s]:saveData};
+      }
+      else
+          data.save[code][s] = saveData;
+
       chrome.storage.local.set({"save":data.save});
     }
+    document.querySelectorAll(".lbutton").forEach((element) => {
+      element.classList.remove("disabled");
+    });
    
     
 }
@@ -993,8 +1003,9 @@ function hashCode(string){
 }
 async function loadStint()
 {
-  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-  code = /[^-]+(?=">)/g.exec(circuit)[0];
+  document.getElementById("myDropdown2").classList.toggle("show1");
+  //this.closest("div").classList.toggle("show1");
+  code  = getTrackCode();
   data = await chrome.storage.local.get("save");
   s = data.save[code][this.parentElement.id];
   driverStrategy = this.closest("form");
@@ -1108,8 +1119,42 @@ async function loadStint()
     update_stint();
    
 }
+async function generateSaveList()
+{
+  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+  code = /[^-]+(?=">)/g.exec(circuit)[0];
+  data = await chrome.storage.local.get("save");
+  if(typeof data.save=="undefined")
+  {
+    console.log("empty");
+  }else{
+    if(Object.keys(data.save[code]).length==0)
+    {
+      console.log("no save");
+      document.querySelectorAll(".lbutton").forEach((element) => {
+        element.classList.add("disabled");
+      });
+    }else{
+    sList = document.getElementById("saveList");
+    if(sList!=null)
+    sList.remove();
 
-function addSaveButton()
+    sList = createSaveDataPreview(data.save[code]);
+
+    this.parentElement.childNodes[0].appendChild(sList);
+    this.parentElement.childNodes[0].classList.toggle("show1");
+
+console.log("disabling");
+document.querySelectorAll(".lbutton").forEach((element) => {
+  element.classList.remove("disabled");
+});
+
+    }
+   
+  }
+  
+}
+async function addSaveButton()
 {
   if(document.getElementById("save&load")==null)
   {
@@ -1117,45 +1162,24 @@ function addSaveButton()
   {
     containerDiv = document.createElement("div");
     containerDiv.id="save&load";
-    containerDiv.setAttribute("style","position:relative");
+    
+    containerDiv.setAttribute("style","position:relative; display: flex;");
     saveDiv = document.createElement("div");
     loadDiv = document.createElement("div");
     loadContainer = document.createElement("div");
     loadContainer.className = "dropdown2-content not-selectable";
     loadContainer.id="myDropdown2";
     
-    saveDiv.className = "dropbtn2";
-    loadDiv.className = "dropbtn2";
+    saveDiv.className = "sbutton";
+    loadDiv.className = "sbutton lbutton";
     saveDiv.textContent = "Save";
     loadDiv.textContent = "Load";
-    loadDiv.appendChild(loadContainer);
+    containerDiv.append(loadContainer);
     saveDiv.addEventListener("click",saveStint);
-    loadDiv.addEventListener("click",async function(){
-      circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-      code = /[^-]+(?=">)/g.exec(circuit)[0];
-      data = await chrome.storage.local.get("save");
-      if(typeof data.save=="undefined")
-      {
-        console.log("empty");
-      }else{
-        if(Object.keys(data.save[code]).length==0)
-        {
-          console.log("no save");
-        }else{
-        sList = document.getElementById("saveList");
-        if(sList!=null)
-        sList.remove();
-
-        sList = createSaveDataPreview(data.save[code]);
-        this.childNodes[1].appendChild(sList);
-        this.childNodes[1].classList.toggle("show1");
-        }
-       
-      }
-      
-    });
+    loadDiv.addEventListener("click",generateSaveList);
     containerDiv.appendChild(saveDiv);
     containerDiv.appendChild(loadDiv);
+    generateSaveList();
  return containerDiv;
   }
   
@@ -1171,6 +1195,26 @@ function addSaveButton()
   placeHere.appendChild(createSaveLoad());
   }
   
+  getTrackCode();
+  data = await chrome.storage.local.get("save");
+
+  lb =document.querySelectorAll('.lbutton');
+   
+  if(typeof data.save==="undefined")
+  {
+    document.querySelectorAll('.lbutton').className+= "disabled";
+  }
+  else
+  {
+    if(typeof data.save[code]==="undefined")
+    {
+       data.save[code] = {[s]:saveData};
+    }
+    else
+        data.save[code][s] = saveData;
+
+    chrome.storage.local.set({"save":data.save});
+  }
 
 }
 function createSaveDataPreview(s)
@@ -1182,7 +1226,7 @@ function createSaveDataPreview(s)
     strategyContainer.id= k;
     deleteB = document.createElement("th");
     deleteB.textContent = "del";
-    deleteB.setAttribute("style","background-color: #d66e67; font-size: 1.25rem;font-family: roboto");
+    deleteB.setAttribute("style","background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white");
     deleteB.addEventListener("click",deleteSave);
     strategyContainer.appendChild(deleteB);
     
@@ -1225,7 +1269,24 @@ async function deleteSave()
   data = await chrome.storage.local.get("save");
   delete data.save[code][saveToDelete];
   chrome.storage.local.set({"save":data.save});
+  document.getElementById(saveToDelete).remove();
+  document.getElementById("myDropdown2");
+  if(document.getElementById("saveList").childElementCount == 0)
+  {
+    console.log("disabling");
+    document.querySelectorAll(".lbutton").forEach((element) => {
+      element.className+=" disabled";
+    });
+  }
+  
 }
+function getTrackCode()
+{
+  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
+  code = /[^-]+(?=">)/g.exec(circuit)[0];
+  return code;
+}
+
 track = circuit_info(); //return [0]length and [1]wear
 addMoreStints();
 main();
