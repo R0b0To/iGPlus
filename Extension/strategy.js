@@ -42,6 +42,7 @@ function fuel_calc(f){
 async function get_eco()
   {
     //request car design
+    track = circuit_info();
     url = "https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=";
     response = await request(url);
     car_design = JSON.parse(response);
@@ -53,8 +54,7 @@ async function get_eco()
 }  
 function circuit_info(){
     try {
-       circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-      code = /[^-]+(?=">)/g.exec(circuit)[0]; 
+      code= getTrackCode();
       t ={
       "au":{"length":5.3017135,"wear":40},//Australia
       "my":{"length":5.5358276,"wear":85},//Malaysia
@@ -363,7 +363,9 @@ var strategyCar = document.getElementsByName("dNum")[0].value;
 
    var selectedPush=parseFloat( p.childNodes[stintId[0].value].childNodes[0].value);
   
+   
     feOverwrite = document.getElementById("PLFE").value;
+    track = circuit_info();
     real.textContent= " ("+(fuel/(((fuel_calc(feOverwrite))+selectedPush)*track[0])).toFixed(3)+")";
     placement.appendChild(real);
     //placement.textContent = ;
@@ -451,8 +453,9 @@ function add_mutation_observer(){
 async function main(){
  
   try {
+   
     language = await chrome.storage.local.get({language: 'eng'});
-    
+
   
     if(document.getElementById("igpXvars")==null)
     {
@@ -465,10 +468,13 @@ async function main(){
     document.getElementById("stintDialog").append(varsHolder);
     //document.body.append(varsHolder);
     }
+    else{
     vars = document.getElementById("igpXvars").attributes;
     eco = vars.eco.value.split(",");
     multiplier = vars.multiplier.value;
-   
+
+    }
+    
   //add event listeners
   add_mutation_observer();
   document.getElementById("beginner-d1PitsWrap").addEventListener("touchstart",update_stint);
@@ -479,10 +485,16 @@ async function main(){
     document.querySelector("#d2strategy > div").addEventListener("click",update_stint);
   }
 
-  injectAdvancedStint().then(()=> {
+  await injectAdvancedStint().then(()=> {
     inject_fuel_info();
 })
- 
+
+addMoreStints();
+injectCircuitMap();
+addSaveButton();
+readGSheets();
+
+
 
   } catch (error) {
     console.log(error);
@@ -516,14 +528,12 @@ function updateWearText(id)
   
 }
 
-  
 function stint_wear(stint_number,car){
 
   tyre = driverStrategy[car].previousElementSibling.childNodes[stint_number].childNodes[0].value;
   laps = driverStrategy[car].childNodes[stint_number].textContent;
   return getWear(tyre,laps);
 }
-
 
 }
 function updateFuel()
@@ -537,7 +547,7 @@ function updateFuel()
         if(f.length==1)
           p = document.getElementById("push");
 
-
+track = circuit_info();
       if(f.length==2)
       {
         p2 = document.getElementById("push 2");
@@ -551,6 +561,7 @@ function updateFuel()
             var stintLaps = parseInt(f[1].childNodes[i].textContent); //laps of each stint
             totalLaps+=stintLaps;
             feOverwrite = document.getElementById("PLFE").value;
+            
             totalFuel += (((fuel_calc(feOverwrite))+selectedPush)*track[0])*stintLaps;
           }
           
@@ -587,7 +598,7 @@ function updateFuel()
    } catch (error) {
     return totalFuel.toFixed(2);
    }
-    }
+}
 async function inject_fuel_info() {
     
     elem = document.createElement("div");
@@ -718,11 +729,6 @@ async function inject_fuel_info() {
 
     }
 
-    
-
-    
-
-
   }
   function hasExtraStint(pitNumber){
     var extraStints = 0;
@@ -796,8 +802,7 @@ function removeStints(minusDiv)
 
       }
 
-    }
-
+  }
   function injectExtraStints(plusDiv){
     return new Promise((resolve, reject) => {
      
@@ -878,13 +883,12 @@ function removeStints(minusDiv)
       if (success) {
         resolve(true);
       } else {
-        reject(false);
+        //reject(false);
       }
 
     });
     
   }
-
   function openTyreDialog(){
 
   var tyre = this.className;
@@ -989,7 +993,9 @@ async function saveStint()
     document.querySelectorAll(".lbutton").forEach((element) => {
       element.classList.remove("disabled");
     });
-   
+    list = document.getElementById("myDropdown2");
+    list.classList.remove("show1");
+    
     
 }
 function hashCode(string){
@@ -1009,7 +1015,7 @@ async function loadStint()
   data = await chrome.storage.local.get("save");
   s = data.save[code][this.parentElement.id];
   driverStrategy = this.closest("form");
-  
+  pitNum = driverStrategy.querySelectorAll("input[name='numPits']")[0];
   tyre = driverStrategy.getElementsByClassName("tyre")[0];
   fuel = driverStrategy.getElementsByClassName("fuel")[0];
   push = driverStrategy.querySelector("tr[id*=push]");
@@ -1023,6 +1029,9 @@ async function loadStint()
   //-2 because the save object has 2 extra elements
   stints = Object.keys(s).length-2;
   pitText = stints-1;
+
+
+  pitNum.value = pitText;
 
   if((pitText)>4)
   pitText = 4;
@@ -1078,22 +1087,26 @@ async function loadStint()
     tyreStrategy[i].style.visibility="hidden";
     fuelStrategy[i].style.visibility="hidden";
     pushStrategy[i].style.visibility="hidden";
-    wear[i].style.visibility = "hidden";
+    wear[i].style.visibility = "hidden"
   }
 
   for(var i=0; i< stints; i++)
     {
       try {
+        
         tyreStrategy[i].className = s[i].tyre;
         tyreStrategy[i].childNodes[0].value = s[i].tyre.substring(3);
         tyreStrategy[i].setAttribute("data-tyre",s[i].tyre.substring(3));
         tyreStrategy[i].style.visibility = "visible";
+        
         fuelStrategy[i].childNodes[0].textContent = s[i].laps;
         fuelStrategy[i].style.visibility = "visible";
         fuelStrategy[i].childNodes[1].value = Math.ceil((s[i].laps *eco[0]));
         fuelStrategy[i].childNodes[2].value = s[i].laps;
+        
         pushStrategy[i].childNodes[0].selectedIndex = s[i].push;
         pushStrategy[i].style.visibility = "visible";
+        
         wear[i].style.visibility = "visible";
       } catch (error) {
 
@@ -1119,40 +1132,36 @@ async function loadStint()
     update_stint();
    
 }
-async function generateSaveList()
-{
-  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-  code = /[^-]+(?=">)/g.exec(circuit)[0];
+async function generateSaveList() {
+
+  code = getTrackCode();
   data = await chrome.storage.local.get("save");
-  if(typeof data.save=="undefined")
-  {
-    console.log("empty");
-  }else{
-    if(Object.keys(data.save[code]).length==0)
-    {
+  if (typeof data.save == "undefined") {
+    //console.log("empty");
+  } else {
+    if (Object.keys(data.save[code]).length == 0) {
       console.log("no save");
       document.querySelectorAll(".lbutton").forEach((element) => {
         element.classList.add("disabled");
       });
-    }else{
-    sList = document.getElementById("saveList");
-    if(sList!=null)
-    sList.remove();
+    } else {
+      sList = document.querySelectorAll("#saveList");
+      if (sList != null)
+        sList.forEach((e) => {e.remove();});
+      
 
-    sList = createSaveDataPreview(data.save[code]);
-
-    this.parentElement.childNodes[0].appendChild(sList);
-    this.parentElement.childNodes[0].classList.toggle("show1");
-
-console.log("disabling");
-document.querySelectorAll(".lbutton").forEach((element) => {
-  element.classList.remove("disabled");
-});
-
+      document.querySelectorAll(".lbutton").forEach((element) => {
+        element.classList.remove("disabled");
+      });
+      
+      list = document.querySelectorAll("#myDropdown2");
+      list.forEach((e) => {
+        sList = createSaveDataPreview(data.save[code]);
+        e.appendChild(sList)});
     }
-   
+
   }
-  
+
 }
 async function addSaveButton()
 {
@@ -1176,10 +1185,17 @@ async function addSaveButton()
     loadDiv.textContent = "Load";
     containerDiv.append(loadContainer);
     saveDiv.addEventListener("click",saveStint);
-    loadDiv.addEventListener("click",generateSaveList);
+    loadDiv.addEventListener("click",function(){
+      generateSaveList();
+      this.previousElementSibling.previousElementSibling.classList.toggle("show1");
+     
+    });
     containerDiv.appendChild(saveDiv);
     containerDiv.appendChild(loadDiv);
     generateSaveList();
+    
+
+
  return containerDiv;
   }
   
@@ -1202,18 +1218,20 @@ async function addSaveButton()
    
   if(typeof data.save==="undefined")
   {
-    document.querySelectorAll('.lbutton').className+= "disabled";
+    lb.forEach((ele) => {
+      ele.classList.add("disabled");
+    });
+    
   }
   else
   {
     if(typeof data.save[code]==="undefined")
     {
-       data.save[code] = {[s]:saveData};
+      lb.forEach((ele) => {
+        ele.classList.add("disabled");
+      });
     }
-    else
-        data.save[code][s] = saveData;
-
-    chrome.storage.local.set({"save":data.save});
+  
   }
 
 }
@@ -1273,7 +1291,6 @@ async function deleteSave()
   document.getElementById("myDropdown2");
   if(document.getElementById("saveList").childElementCount == 0)
   {
-    console.log("disabling");
     document.querySelectorAll(".lbutton").forEach((element) => {
       element.className+=" disabled";
     });
@@ -1286,9 +1303,239 @@ function getTrackCode()
   code = /[^-]+(?=">)/g.exec(circuit)[0];
   return code;
 }
+function sortTable() {
 
-track = circuit_info(); //return [0]length and [1]wear
-addMoreStints();
+  n = this.cellIndex;
+
+  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+  table = document.getElementById("importedTable");
+  switching = true;
+  //Set the sorting direction to ascending:
+  dir = "asc"; 
+  /*Make a loop that will continue until
+  no switching has been done:*/
+  while (switching) {
+    //start by saying: no switching is done:
+    switching = false;
+    rows = table.rows;
+    /*Loop through all table rows (except the
+    first, which contains table headers):*/
+    for (i = 1; i < (rows.length - 1); i++) {
+      //start by saying there should be no switching:
+      shouldSwitch = false;
+      /*Get the two elements you want to compare,
+      one from current row and one from the next:*/
+      x = rows[i].getElementsByTagName("TD")[n];
+      y = rows[i + 1].getElementsByTagName("TD")[n];
+      var cmpX=isNaN(parseInt(x.innerHTML))?x.innerHTML.toLowerCase():parseInt(x.innerHTML);
+                var cmpY=isNaN(parseInt(y.innerHTML))?y.innerHTML.toLowerCase():parseInt(y.innerHTML);
+cmpX=(cmpX=='-')?0:cmpX;
+cmpY=(cmpY=='-')?0:cmpY;
+      /*check if the two rows should switch place,
+      based on the direction, asc or desc:*/
+      if (dir == "asc") {
+        if (cmpX > cmpY) {
+          shouldSwitch= true;
+          break;
+      }
+      } else if (dir == "desc") {
+        if (cmpX < cmpY) {
+          shouldSwitch= true;
+          break;
+      }
+      }
+    }
+    if (shouldSwitch) {
+      /*If a switch has been marked, make the switch
+      and mark that a switch has been done:*/
+      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+      switching = true;
+      //Each time a switch is done, increase this count by 1:
+      switchcount ++;      
+    } else {
+      /*If no switching has been done AND the direction is "asc",
+      set the direction to "desc" and run the while loop again.*/
+      if (switchcount == 0 && dir == "asc") {
+        dir = "desc";
+        switching = true;
+      }
+    }
+  }
+}
+async function readGSheets()
+{
+if(document.getElementById("importedTable")==null)
+{
+  savedLink = await chrome.storage.local.get({"gLink":""});
+
+  if(savedLink.gLink!="")
+  {
+t = await chrome.storage.local.get({"gTrack":"track"});
+sName = await chrome.storage.local.get({"gLinkName":"Sheet1"});
+
+idRegex =/spreadsheets\/d\/(.*)\/edit/;
+link = idRegex.exec(savedLink.gLink)[1]; 
+const sheetId = link;
+const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?`;
+//console.log(sName);
+const sheetName = sName.gLinkName;
+const query = encodeURIComponent('Select *');
+const url = `${base}&sheet=${sheetName}&tq=${query}`;
+const data = [];
+var output = document.createElement("table");//document.querySelector('.output')
+output.setAttribute("style","width: 100%;table-layout: auto;text-align: center;")
+output.id="importedTable";
+init();
+  async function init() {
+   await fetch(url)
+        .then(res => res.text())
+        .then(async rep => {
+            //Remove additional text and extract only JSON:
+            const jsonData = JSON.parse(rep.substring(47).slice(0, -2));
+            //console.log(jsonData);
+            const colz = [];
+            const tr = document.createElement('tr');
+            //Extract column labels
+            jsonData.table.cols.forEach((heading) => {  
+                if (heading.label) {
+                    let column = heading.label;
+                    if(column.toLowerCase()==t.gTrack)
+                    {
+                      column = column.toLowerCase();
+                    }
+                    colz.push(column);
+                    const th = document.createElement('th');
+                    th.setAttribute("style",'font-family: "RobotoCondensed","Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;cursor: pointer;background-color: #8f8f8f;color: #ffffff;border-radius: 5px;')
+                    th.addEventListener("click",sortTable);
+                    th.textContent = column;                              
+                    tr.appendChild(th);
+                   
+                }
+            })
+            output.appendChild(tr);
+            //extract row data:
+            jsonData.table.rows.forEach((rowData) => {
+                const row = {};
+                colz.forEach((ele, ind) => {
+                    row[ele] = (rowData.c[ind] != null) ? rowData.c[ind].v : '';
+                })
+                data.push(row);
+            })
+
+           await processRows(data);
+        })
+        
+       
+     
+
+        if(document.getElementById("importedTable")==null)
+        {
+          function removeColumn(table, columnName) {
+            // Find the index of the column to remove
+            let colIndex = -1;
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+              if (table.rows[0].cells[i].textContent === columnName) {
+                colIndex = i;
+                break;
+              }
+            }
+            
+            // If the column was found
+            if (colIndex !== -1) {
+              // Remove the cells from all rows
+              for (let i = 0; i < table.rows.length; i++) {
+                table.rows[i].deleteCell(colIndex);
+              }
+            }
+          }
+          
+         
+          document.querySelectorAll(".eight.columns.mOpt.aStrat")[0].append(output);
+          removeColumn(output,t.gTrack);
+        }
+
+
+  }
+  
+
+  
+        
+}
+ 
+  async function processRows(json) {
+    //console.log(json);
+  track = getTrackCode;
+  json = await getCurrentTrack(json);
+  
+    json.forEach((row) => {
+        const tr = document.createElement('tr');
+        const keys = Object.keys(row);
+    
+        keys.forEach((key) => {
+            const td = document.createElement('td');
+            td.textContent = row[key];
+            tr.appendChild(td);
+        })
+        output.appendChild(tr);
+    })
+
+}
+}
+
+}
+async function getCurrentTrack(j){
+
+  jTrack = [];
+  var trackToSearch = getTrackCode();
+  var trackDictionary  ={
+    "au":["australia","au",1],//,//Australia
+    "my":["malaysia","my",2],//,//Malaysia
+    "cn":["china","cn",3],//,//China
+    "bh":["bahrain","bh",4],//,//Bahrain
+    "es":["spain","es",5],//,//Spain
+    "mc":["monaco","mc",6],//,//Monaco
+    "tr":["turkey","tr",7],//,//Turkey
+    "de":["germany","de",9],//,//Germany
+    "hu":["hungary",'hu',10],//,//Hungary
+    "eu":["europe",'eu',11],//,//Europe
+    "be":["belgium","be",12],//,//Belgium
+    "it":["italy","it",13],//,//Italy
+    "sg":["sg","singapore",14],//,//Singapore
+    "jp":["japan","jp",15],//,//Japan
+    "br":["brazil","br",16],//,//Brazil
+    "ae":["abu dhabi","abudhabi",17,"ae"],//,//AbuDhabi
+    "gb":["gb","gb 19","great britan",18],//,//Great Britain
+    "fr":["france","fr",19],//,//France
+    "at":["austria","at",20],//,//Austria
+    "ca":["canaada","ca",21],//,//Canada
+    "az":["azerbaijan","az",22],//,//Azerbaijan
+    "mx":["mexico","mx",23],//,//Mexico
+    "ru":["russia","ru",24],//,//Russia
+    "us":["usa","us",25]////USA 
+
+};
+
+  j.forEach((ele) =>
+  {
+    try {
+//console.log(ele);
+      
+      if(isNaN(ele[t.gTrack]))
+        requestedTrack = ele[t.gTrack].toLowerCase();
+      else
+        requestedTrack = ele[t.gTrack];
+
+      if(trackDictionary[trackToSearch].includes(requestedTrack))
+            jTrack.push(ele);
+
+    } catch (error) {
+      console.log(error);
+    }
+  });
+  
+return jTrack;
+}
+
+track =circuit_info(); //return [0]length and [1]wear
+
 main();
-injectCircuitMap();
-addSaveButton();

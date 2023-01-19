@@ -67,14 +67,22 @@ async function getWeather(){
     data = await request(url);
    
     //url3 = "http://api.weatherunlocked.com/api/forecast/51.50,-0.12?app_id=ba14cfca&app_key=637253385cd6ff853a6cf83c85132a4b"; 
-  /* chrome.runtime.sendMessage( //goes to bg_page.js
+ /*  chrome.runtime.sendMessage( //goes to bg_page.js
       url3,
       data => previewData2(data) //your callback
-); /ss */
+); */
 
     previewData(data); 
 }
 function previewData(data) {
+
+
+    Object.keys(data.hourly).forEach((ele) =>
+    {
+        data.hourly[ele] =  data.hourly[ele].slice(0,48);
+    })
+    //console.log(data);
+
     var yAxis = [];
     let codes = {0: "fair", 1: "mainly clear", 2: "partly cloudy", 3: "overcast", 45: "fog", 
         48: "depositing rime fog", 51: "light drizzle", 53: "moderate drizzle", 55: "dense drizzle", 
@@ -93,6 +101,9 @@ function previewData(data) {
            
             return
         }
+
+
+
         Object.entries(data[section]||[]).forEach(function(k){
             if (k[0] == "time" || k[0] == "sunrise" || k[0] == "sunset") {
                 return

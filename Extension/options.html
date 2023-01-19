@@ -1,5 +1,48 @@
 <!DOCTYPE html>
 <meta charset="utf-8">
+<style>
+  @media (prefers-color-scheme: light) {  
+  body {  
+     background: white;    
+     color: black;  
+  }
+}
+@media (prefers-color-scheme: dark) {  
+  body {  
+     background: rgb(69, 69, 69);    
+     color: rgb(255, 255, 255);  
+  }
+}
+select{
+  border-radius: 5px;
+  border: none;
+}
+label {
+  display: block;
+}
+input{
+  border-radius: 5px;
+  border: none;
+}
+.invalid {
+  background-color: ivory;
+  border: none;
+  outline: 2px solid red;
+  border-radius: 5px;
+}  
+.valid {
+  background-color: ivory;
+  border: none;
+  outline: 2px solid rgb(81, 225, 37);
+  border-radius: 5px;
+} 
+span
+{
+  font-size: 0.5rem;
+}
+
+</style>
+
 <html>
 <head><title>iGPx Options</title></head>
 <body>
@@ -11,21 +54,28 @@
      <option value="eng">English</option>
      <option value="ita">Italiano</option>
     </select></div>
-    
-    
 
 <fieldset>
     <legend id="signOpt">Invert Sign</legend>
 
     <div>
       <input type="checkbox" id="race" name="race">
-      <label for="race">Race Report</label>
+      <span for="race">Race Report</label>
     </div>
 
     <div>
       <input type="checkbox" id="over" name="over">
-      <label for="over">Overtakes</label>
+      <span for="over">Overtakes</label>
     </div>
+</fieldset>
+<fieldset>
+  <legend id="Gsheet">Google Sheet</legend>
+<label for="link">Link:</label>
+  <input style="width:-webkit-fill-available;" type="text" id="link">
+  <label for="link">Track ID:<span> (The name you use for your track column)</span></label>
+  <input placeholder="Track" type="text" id="track"><br>
+  <label for="sname">Sheet Name:</label>
+  <input type="text" id="sname"><span> Optional</span>
 </fieldset>
 
 <script src="options.js"></script>

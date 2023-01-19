@@ -2,7 +2,7 @@
     "manifest_version":2,
     "name": "iGP Extended",
     "description": "Enhance your iGPmanager experience",
-    "version":"0.952",
+    "version":"0.957",
      "icons":{
          "128": "./images/racing128.png"
      },
@@ -26,7 +26,8 @@
          "storage",
          "scripting",
          "*://igpmanager.com/*",
-         "*://api.open-meteo.com/*"
+         "*://api.open-meteo.com/*",
+         "*://docs.google.com/*"
      ]
 
     

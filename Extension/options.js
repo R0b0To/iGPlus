@@ -1,5 +1,53 @@
 raceSign = document.getElementById("race");
 overSign = document.getElementById("over");
+link = document.getElementById("link");
+sname = document.getElementById("sname");
+trackName = document.getElementById("track");
+
+link.addEventListener("change",testLink);
+sname.addEventListener("change",sName);
+trackName.addEventListener("change",sTrack);
+function sName()
+{
+  sheetName = sname.value;
+  chrome.storage.local.set({"gLinkName": sheetName});
+}
+function sTrack()
+{
+  lowName =trackName.value.toLowerCase();
+  //console.log("saving "+trackNameT);
+  chrome.storage.local.set({"gTrack": lowName});
+}
+
+function testLink()
+{
+  url = link.value;
+
+  if(url=="")
+  {
+    link.className ="";
+    chrome.storage.local.set({"gLink": url});
+  }
+  else{
+     fetch(url)
+  .then(res => {
+    if (res.ok) {
+      link.className = "valid";
+      console.log(res);
+
+
+      chrome.storage.local.set({"gLink": url});
+
+
+    }
+  })
+  .then(rep => {console.log(rep)})
+  .catch((error) => {
+    console.log('invalid link');
+    link.className = "invalid";
+  });
+  }
+}
 
 function save_options() {
     var lang = document.getElementById('language').value;
@@ -25,6 +73,20 @@ function restore_options() {
     chrome.storage.local.get("overSign",function(data){
       overSign.checked = data.overSign;
     });
+
+    chrome.storage.local.get("gLink",function(data){
+      if(typeof data.gLink!="undefined")
+      link.value = data.gLink;
+    });
+    chrome.storage.local.get("gLinkName",function(data){
+      if(typeof data.gLinkName!="undefined")
+      sname.value = data.gLinkName;
+    });
+    chrome.storage.local.get("gTrack",function(data){
+      if(typeof data.gTrack!="undefined")
+      trackName.value = data.gTrack;
+    });
+
   }
 
   

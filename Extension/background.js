@@ -62,13 +62,24 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 });
 
+
 chrome.runtime.onMessage.addListener(
-    function(url, sender, onSuccess) {
+    async function(f, sender, onSuccess) {
+
+
+       /* chrome.tabs.executeScript({
+            code: s // call the function from page source
+          }, function(results) {
+            console.log(results[0]);
+          });
+
+          return true;*/
+        /*
         fetch(url)
             .then(response => response.text())
             .then(responseText => onSuccess(responseText))
         
-        return true;  // Will respond asynchronously.
+        return true;  // Will respond asynchronously.*/
     }
 );
 

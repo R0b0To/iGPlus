@@ -20,7 +20,7 @@ function pit(){
         secondAndMs = time[1].split(".");
         return m + (parseInt(secondAndMs[0])*1000) + (parseInt(secondAndMs[1]));
       }
-      console.log(pitTimes);
+      //console.log(pitTimes);
       sum = pitTimes.reduce((a, b) => a + b, 0);
       avg = (sum / pitTimes.length) || 0;
       console.log("average is: "+avg);

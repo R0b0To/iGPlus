@@ -387,11 +387,11 @@ async function update_managers(table, index) {
       }
 
     }
-  console.log(pitTimes);
+  //console.log(pitTimes);
   sum = pitTimes.reduce((a, b) => a + b, 0);
   avg = (sum / pitTimes.length) || 0;
   manager[index].pitTimeLoss.push(avg);
-  console.log("average is: "+avg);
+  //console.log("average is: "+avg);
     last_lap_completed = race_table.rows[race_table.tBodies[0].rows.length].childNodes[0].innerHTML;
     
     var lastStintLaps = (last_lap_completed - last_pit_lap)
