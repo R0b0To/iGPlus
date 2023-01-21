@@ -287,6 +287,9 @@ function previewData(data) {
     
         plotOptions: {
             series: {
+                marker: {
+                    enabled: false
+                },
                 label: {
                     connectorAllowed: false
                 },
@@ -327,239 +330,33 @@ function previewData(data) {
 }
 //latitude, longitude
 var weatherLocation = {
-    1:[-37.84,144.96],
-    2:[2.74,101.72],
-    3:[31.32,121.21],
-    4:[26.02,50.51],
-    5:[41.55,2.25],
-    6:[43.7347,7.4206],
-    7:[40.93,29.42],
-    9:[49.32,8.55],
-    10:[47.60,19.24],
-    11:[39.47,-0.38],
-    12:[50.39,5.93],
-    13:[45.58,9.27],
-    14:[1.29,103.86],
-    15:[4.84,136.55],
-    16:[-23.70,-46.70],
-    17:[24.45,54.38],
-    18:[52.08,-1.02],
-    19:[43.20,5.80],
-    20:[47.21,14.79],
-    21:[45.50,-73.56],
-    22:[40.3777,49.892],
-    23:[19.40,-99.09],
-    24:[43.59,39.72],
-    25:[30.17,-97.62]
+    1:[-37.84,144.96],//australia
+    2:[2.74,101.72],//malaysia
+    3:[31.32,121.21],//china
+    4:[26.02,50.51],//bahrain
+    5:[41.55,2.25],//spain
+    6:[43.7347,7.4206],//monaco
+    7:[40.93,29.42],//turkey
+    9:[49.32,8.55],//germany
+    10:[47.60,19.24],//hungary
+    11:[39.47,-0.38],//europe
+    12:[50.39,5.93],//belgium
+    13:[45.58,9.27],//italy
+    14:[1.29,103.86],//singapore
+    15:[34.84,136.55],//japan
+    16:[-23.70,-46.70],//brazil
+    17:[24.45,54.38],//abu
+    18:[52.08,-1.02],//gb
+    19:[43.20,5.80],//france
+    20:[47.21,14.79],//austria
+    21:[45.50,-73.56],//canada
+    22:[40.3777,49.892],//azerbaijan
+    23:[19.40,-99.09],//mexico
+    24:[43.59,39.72],//russia
+    25:[30.17,-97.62]//usa
 }
 if(document.getElementById("chartWeather")==null)
 addWeatherLink();
 swapMap();
 showValues();
 
-
-function previewData2(data) {
-    var yAxis = [];
- 
-    data = JSON.parse(data);
-    console.log(data);
-    var series = [];
-    function toIso8601(dateString) {
-        const [day, month, year] = dateString.split('/');
-        return `${year}-${month}-${day}`;
-      }
-      function hoursToTime(hours) {
-        return `${hours.toString().padStart(2, "0")}:00`;
-      }
-
-      date = new Date(toIso8601(data.Days[0].Timeframes[0].date)+"T"+hoursToTime(data.Days[0].Timeframes[0].time));
-      date2 = new Date(toIso8601(data.Days[0].Timeframes[1].date)+"T"+hoursToTime(data.Days[0].Timeframes[1].time));
-      offset = -new Date().getTimezoneOffset();
-      day = [];
-      for(var i=0 ; i<=data.Days.length ; i++)
-      {
-            
-
-            for(var j=0 ; j<data.Days[i].Timeframes.length ; j++)
-            {
-                day.push(data.Days[i].Timeframes[j]);
-            }
-            console.log(day);
-/*
-            var ser = {
-                name: k[0],
-                data: k[1],
-                color: colorP,
-                type: typeP,
-                yAxis: axisId,
-                pointStart: hourly_starttime,
-                pointInterval: pointInterval,
-                tooltip: {
-                    valueSuffix: " " + unit,
-                }
-            };
-    
-            console.log(ser);
-            series.push(ser);
-           
-       
-        */
-        
-
-
-
-      }
-
-    var plotBands = []
-    if ('daily' in data && 'sunrise' in data.daily && 'sunset' in data.daily) {
-        let rise = data.daily.sunrise
-        let set = data.daily.sunset
-        var plotBands = rise.map(function(r, i) {
-            return {
-                "color": "rgb(255, 255, 194)",
-                "from": (r + data.utc_offset_seconds) * 1000,
-                "to": (set[i] + data.utc_offset_seconds) * 1000
-            };
-        });
-    }
-
-    //let latitude = data.latitude.toFixed(2);
-    //let longitude = data.longitude.toFixed(2);
-    //let title = `${latitude}°N ${longitude}°E`;
-    
-    if ("elevation" in data) {
-        let elevation = data.elevation.toFixed(0);
-        title = `m above sea level`;
-    }
-
-    offset = -new Date().getTimezoneOffset();
-    let json =  {
-        
-       
-        title: {
-            text: ""
-        },
-
-        chart: {
-            type: 'spline',
-            zoomType: 'x',
-            panning: true,
-            panKey: 'shift',
-            backgroundColor:"#e3e4e5"
-        },    
-    
-        yAxis:[{ 
-            visible:false
-        },
-        { 
-            visible:false
-        },
-        { 
-            visible:false
-        },
-    ],/* [{ // Primary yAxis
-            labels: {
-                format: '{value}°C',
-                style: {
-                    color: Highcharts.getOptions().colors[3]
-                }
-            },
-            title: {
-                text: 'Temperature',
-                style: {
-                    color: Highcharts.getOptions().colors[3]
-                }
-            },
-            opposite: true
-    
-        }, { // Secondary yAxis
-            gridLineWidth: 0,
-            title: {
-                text: 'Humidity',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-            labels: {
-                format: '{value} %',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            }
-    
-        },{ // tert yAxis
-            gridLineWidth: 1,
-            title: {
-                text: 'WaterLevel',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-            labels: {
-                format: '{value} mm',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            }
-    
-        }],*/
-       
-        xAxis: {
-            type: 'datetime',
-            plotLines: [{
-                value: Date.now() + (offset * 60000),
-                color: 'red',
-                width: 2
-            }],
-            plotBands: plotBands
-        },
-    
-        legend: {
-            layout: 'vertical',
-            align: 'right',
-            verticalAlign: 'middle',
-         
-           
-
-        },
-    
-        plotOptions: {
-            series: {
-                label: {
-                    connectorAllowed: false
-                },
-            }
-        },
-    
-        series: series,
-    
-        responsive: {
-            rules: [{
-                condition: {
-                    maxWidth: 800
-                },
-                chartOptions: {
-                    legend: {
-                        layout: 'horizontal',
-                        align: 'center',
-                        verticalAlign: 'bottom'
-                    }
-                }
-            }]
-        },
-        tooltip: {
-            shared: true,
-            crosshairs: true
-        },
-        caption: {
-            text: '<b> Click and drag in the chart to zoom in and inspect the data.</b>'
-        }
-    }
-   
-    if (document.getElementById('container')) {
-        Highcharts.chart('container', json);
-    }
-    if (document.getElementById('containerStockcharts')) {
-        Highcharts.stockChart('containerStockcharts', json);
-    }
-}
