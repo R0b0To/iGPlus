@@ -175,7 +175,7 @@ function getTrack(tier){
     circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
     code = /[^-]+(?=">)/g.exec(circuit)[0];
     susOption = document.querySelectorAll('.rotateThis')[0];
-    soft = susOption.childNodes[1].textContent;
+    soft = susOption.childNodes[0].textContent;
     neutral = susOption.childNodes[1].textContent;
     firm = susOption.childNodes[2].textContent;
 

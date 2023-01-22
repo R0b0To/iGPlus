@@ -27,12 +27,15 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
             inject2Script(tabId, "highcharts.js","./race.js");
         }
+        if (title == "https://igpmanager.com/app/p=transfers&tab=staff") { 
+            injectScript(tabId, "./staffMarket.js");
+        }
         if (title == "https://igpmanager.com/app/p=headquarters") {
             injectScript(tabId, "./headquarters.js");
         }
         if (title == "https://igpmanager.com/app/p=staff&tab=staff") {
 
-            inject2Script(tabId, "./staff.js", "./purify.js");
+            inject2Script(tabId, "./staff.js");
         }
         if (title == "https://igpmanager.com/app/p=race&tab=strategy") {
 
