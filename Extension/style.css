@@ -1,3 +1,37 @@
+.sliderX {
+  position: relative;
+  z-index: 1;
+  height: 15px;
+  -webkit-appearance: none;
+  padding: 0;
+  border-radius: 5px;  
+  background: #d3d3d3;
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+.sliderX:hover {
+  opacity: 1;
+}
+.sliderX::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%; 
+  background: hsl(158, 95%, 34%);
+  cursor: pointer;
+}
+
+.sliderX::-moz-range-thumb {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: #04AA6D;
+  cursor: pointer;
+}
+
 input[type="number"] {
   -webkit-appearance: textfield;
   -moz-appearance: textfield;
@@ -92,7 +126,7 @@ input[type=number]::-webkit-outer-spin-button {
   text-align: center;
 }
 .dropbtn1 {
-  background-color: #00899e;
+  background-color: #689954;
   color: rgb(255, 255, 255);
   padding: 10px;
   border-radius: 12px;
@@ -104,7 +138,7 @@ input[type=number]::-webkit-outer-spin-button {
   width: fit-content;
 }
 .dropbtn2 {
-  background-color: #6e7880;
+  background-color: #96bf86;
   color: rgb(255, 255, 255);
   padding: 5px;
   margin: 1px;
@@ -118,7 +152,7 @@ input[type=number]::-webkit-outer-spin-button {
 }
 
 .dropbtn1:hover, .dropbtn1:focus {
-  background-color: #2980B9;
+  background-color: #6b8760;
 }
 
 .dropdown1 {
@@ -184,7 +218,7 @@ input[type=number]::-webkit-outer-spin-button {
 .tooltip1 {
   top: -63px;
     left: 17px;
-    background-color:#00899e;
+    background-color:#689954;
     padding: 9px;
     font-size: 1.2em;
     width: 20px;

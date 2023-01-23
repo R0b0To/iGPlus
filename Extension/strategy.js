@@ -193,7 +193,7 @@ async function injectAdvancedStint(){
 
       var pushInputLabel = document.createElement('div');
           pushInputLabel.textContent = i;
-          pushInputLabel.setAttribute("style","font-size: 0.8rem; color:white;align-self:center;background-color:#669999;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
+          pushInputLabel.setAttribute("style","font-size: 0.8rem; color:white;align-self:center;background-color:#96bf86;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
 
       var pushInputDown = document.createElement('div');
           pushInputDown.textContent = "−";
@@ -1136,8 +1136,8 @@ async function generateSaveList() {
 
   code = getTrackCode();
   data = await chrome.storage.local.get("save");
-  if (typeof data.save == "undefined") {
-    //console.log("empty");
+  if (typeof data.save[code] === "undefined") {
+   //empty
   } else {
     if (Object.keys(data.save[code]).length == 0) {
       console.log("no save");

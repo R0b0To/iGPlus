@@ -21,6 +21,10 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         }
         if (title == "https://igpmanager.com/app/p=race&tab=setup") {
             // console.log("Loading car setup");
+            chrome.scripting.insertCSS({
+                target: { tabId: tabId },
+                files: ["style.css"],
+            });
             injectScript(tabId, "./setups.js");
         }
         if (title == "https://igpmanager.com/app/p=race&tab=race") {
@@ -35,7 +39,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         }
         if (title == "https://igpmanager.com/app/p=staff&tab=staff") {
 
-            inject2Script(tabId, "./staff.js");
+            injectScript(tabId, "./staff.js");
         }
         if (title == "https://igpmanager.com/app/p=race&tab=strategy") {
 
@@ -88,7 +92,7 @@ chrome.runtime.onMessage.addListener(
 
 function injectScript(tabId, scriptFile) {
     chrome.scripting.executeScript({
-        target: { tabId: tabId },
+        target: { tabId: tabId,allFrames : false },
         files: [scriptFile]
     });
 }

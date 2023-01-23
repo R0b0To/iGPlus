@@ -54,6 +54,8 @@ async function getDrivers() {
   h1 = await requestDriverHeight(drivers[0].attributes[1].value);
   setup_value = heightConversion(h1,tier);
 
+  addSlider(1);
+
 
   setCar(t.suspension, t.ride + setup_value, t.wing, 1);
   //setPitTime(t.pit);
@@ -63,11 +65,11 @@ async function getDrivers() {
   if (drivers.length > 2) {
     h2 = await requestDriverHeight(drivers[1].attributes[1].value);
     setup_value = heightConversion(h2,tier);
-
+    addSlider(2);
     setCar(t.suspension, t.ride + setup_value, t.wing, 2);
     //setPitTime(t.pit); 
-    
   }
+  
 
 }
 
@@ -284,7 +286,7 @@ async function findTier()
         'tier3':data.vars.standings2,
       }
       return standings})
-    .catch(error => console.error(error))
+    
 
     if(managerStandings.tier1.search("myTeam")!=-1)
       return (1);
@@ -294,8 +296,87 @@ async function findTier()
       return (3);
 
 }
+
+function  addSlider(d)
+{
+  try {
+     setup = document.getElementById(`d${d}setup`);
+     if(setup==null)
+     {
+      setup = document.getElementById(`d1setup`);
+     }
+
+     
+  ride = setup.querySelector('[name=ride]');
+  if(ride.previousElementSibling.childElementCount<4)
+  {
+    createSlider(ride);
+  }
+  aero =  setup.querySelector('[name=aerodynamics]');
+  if(aero.previousElementSibling.childElementCount<4)
+  {
+    createSlider(aero);
+  }
+  
+function createSlider(node){
+  nodeText = node.previousElementSibling.childNodes[1]; 
+  sliderContainer = document.createElement("div");
+  sliderContainer.setAttribute("style","position:absolute;top: -1.7rem;display:none");
+  slider = document.createElement("input");
+  slider.className = "sliderX";
+  slider.type= "range";
+  slider.max = 50;
+  slider.min = 1;
+  slider.value = nodeText.textContent;
+  slider.addEventListener("input",updateSetup);
+  slider.addEventListener("change",closeAndUpdate);
+  //slider.setAttribute("style","");
+  sliderContainer.append(slider);
+
+
+nodeText.addEventListener("click",toggleSlider);
+nodeText.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
+//nodeText.previousElementSibling.prepend(createSlider());
+node.previousElementSibling.prepend(sliderContainer);
+
+}
+
+  
+  
+  
+  
+
+  
+  
+
+  } catch (error) {
+    console.log(error);
+  }
+ return true;
+
+}
+function updateSetup()
+{
+  this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;
+}
+function toggleSlider()
+{
+  slider = this.parentElement.childNodes[0];
+  if (slider.style.display === "none") {
+    slider.style.display = "block";
+  } else {
+    slider.style.display = "none";
+  }
+
+}
+function closeAndUpdate()
+{
+  this.parentElement.style.display = 'none';
+ // console.log(this.parentElement.parentElement.nextElementSibling);
+  this.parentElement.parentElement.nextElementSibling.value = this.value;
+}
+
 //code execution ==>
-   
     if(document.getElementById("suggestedSetup")==null)
       getDrivers()
 
