@@ -92,7 +92,7 @@ chrome.runtime.onMessage.addListener(
 
 function injectScript(tabId, scriptFile) {
     chrome.scripting.executeScript({
-        target: { tabId: tabId,allFrames : false },
+        target: { tabId: tabId},
         files: [scriptFile]
     });
 }

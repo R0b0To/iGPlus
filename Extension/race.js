@@ -63,6 +63,7 @@ async function getWeather(){
     url2="&temperature_unit=fahrenheit";
 
     var trackID = document.getElementById("race").childNodes[0].lastChild.childNodes[1].href.match(/\d+/)[0];
+    
     url = "https://api.open-meteo.com/v1/forecast?latitude="+weatherLocation[trackID][0]+"&longitude="+weatherLocation[trackID][1]+"&hourly=temperature_2m,relativehumidity_2m,precipitation&models=gfs_seamless"+url2;
     data = await request(url);
    

@@ -1,45 +1,21 @@
-//handle server response
-function request(url) {
-    return new Promise(function(resolve, reject) {
-      const xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function(e) {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            resolve(xhr.response)
-          } else {
-            reject(xhr.status)
-          }
-        }
-      }
-      xhr.ontimeout = function () {
-        reject('timeout')
-      }
-      xhr.open('get', url, true)
-      xhr.send()
-    })
-  } 
 
 //How much ride hight needs to be increased
 function heightConversion(value,tier) {
-
-
-scale = {
-  190:{3:-10,2:-5,1:-2},
-  185:{3:-8,2:-4,1:-1},
-  180:{3:-6,2:-3,1:-1},
-  175:{3:-4,2:-2,1:0},
-  170:{3:-2,2:-1,1:0},
-  165:{3:0,2:0,1:0}
-}
-
-
-    if (value >= 190) return scale[190][tier];
-    if (value >= 185) return scale[185][tier];
-    if (value >= 180) return scale[180][tier];
-    if (value >= 175) return scale[175][tier];
-    if (value >= 170) return scale[170][tier];
-    if (value >= 165) return scale[165][tier];
-    return 0;
+  scale = {
+    190: { 3: -10, 2: -5, 1: -2 },
+    185: { 3: -8, 2: -4, 1: -1 },
+    180: { 3: -6, 2: -3, 1: -1 },
+    175: { 3: -4, 2: -2, 1: 0 },
+    170: { 3: -2, 2: -1, 1: 0 },
+    165: { 3: 0, 2: 0, 1: 0 }
+  }
+  if (value >= 190) return scale[190][tier];
+  if (value >= 185) return scale[185][tier];
+  if (value >= 180) return scale[180][tier];
+  if (value >= 175) return scale[175][tier];
+  if (value >= 170) return scale[170][tier];
+  if (value >= 165) return scale[165][tier];
+  return 0;
 
   }
 
@@ -49,7 +25,7 @@ async function getDrivers() {
   drivers = document.getElementsByClassName("staffImage");
   tier = await findTier();
 
-  t = await getTrack(tier);
+  const t = getTrack(tier);
 
   h1 = await requestDriverHeight(drivers[0].attributes[1].value);
   setup_value = heightConversion(h1,tier);
@@ -58,7 +34,7 @@ async function getDrivers() {
 
 
   setCar(t.suspension, t.ride + setup_value, t.wing, 1);
-  //setPitTime(t.pit);
+
 
   //get other driver if present
 
@@ -67,7 +43,7 @@ async function getDrivers() {
     setup_value = heightConversion(h2,tier);
     addSlider(2);
     setCar(t.suspension, t.ride + setup_value, t.wing, 2);
-    //setPitTime(t.pit); 
+ 
   }
   
 
@@ -102,27 +78,14 @@ function toCentimeters(height) {
 
  async function requestDriverHeight(id) {
      const url = `https://igpmanager.com/index.php?action=fetch&d=driver&id=${id}&csrfName=&csrfToken=`;
-     const result = await request(url);
-  
-    const height = JSON.parse(result).vars.sHeight; 
+     height = await fetch(url)
+     .then(response => response.json())
+     .then(data => {return data.vars.sHeight;})
     const valueInCentimeters = toCentimeters(height);
 
      return valueInCentimeters;
    }
- //inject pit time
-function setPitTime(time){
-    temp =  document.querySelector("#d1setup > div.pWeather.text-right.green");
-    x = document.createElement("span");     
-    pitTime = document.createTextNode("Pit time: " + time + " ");
-    x.style.margin = "20px";
-    x.appendChild(pitTime);
-    
-    if(temp.childElementCount == 3)
-    {
-        temp.insertBefore(x, temp.childNodes[0]);
-    }
 
-}
 
  /**
  * Inject html elements into setup page
@@ -133,13 +96,17 @@ function setPitTime(time){
  */
 function setCar(s,r,w,n){
 
+  if(s==null||r==null||w==null){
+     getDrivers();console.log("test");
+  }
+ 
     // ride element
     ride_height =  document.querySelector("#d"+n+"setup > table.acp.linkFill.pad > tbody > tr:nth-child(2)");
     if(ride_height.childElementCount == 2){  
       x = document.createElement("td");
       x.setAttribute("style","text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;");
       height= document.createTextNode(r);
-      x.appendChild(height);
+      x.append(height);
       ride_height.insertBefore(x, ride_height.childNodes[0]);
     }
     else{
@@ -153,7 +120,7 @@ function setCar(s,r,w,n){
     x = document.createElement("td");
     x.setAttribute("style","text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;");
     wing_height= document.createTextNode(w);
-    x.appendChild(wing_height);
+    x.append(wing_height);
      wing.insertBefore(x, wing.childNodes[0]);
     } 
 
@@ -165,7 +132,7 @@ function setCar(s,r,w,n){
     x = document.createElement("td");
     x.setAttribute("style","text-align:center; background:#f0f1f2; font-size:14.44px; font-family:RobotoCondensedBold;");
     suspen_value = document.createTextNode(s);
-    x.appendChild(suspen_value);
+    x.append(suspen_value);
     suspension.insertBefore(x, suspension.childNodes[0]);
     }
     
@@ -301,22 +268,15 @@ function  addSlider(d)
 {
   try {
      setup = document.getElementById(`d${d}setup`);
-     if(setup==null)
-     {
-      setup = document.getElementById(`d1setup`);
-     }
 
-     
   ride = setup.querySelector('[name=ride]');
   if(ride.previousElementSibling.childElementCount<4)
-  {
     createSlider(ride);
-  }
+  
   aero =  setup.querySelector('[name=aerodynamics]');
   if(aero.previousElementSibling.childElementCount<4)
-  {
     createSlider(aero);
-  }
+  
   
 function createSlider(node){
   nodeText = node.previousElementSibling.childNodes[1]; 
@@ -328,26 +288,25 @@ function createSlider(node){
   slider.max = 50;
   slider.min = 1;
   slider.value = nodeText.textContent;
-  slider.addEventListener("input",updateSetup);
-  slider.addEventListener("change",closeAndUpdate);
-  //slider.setAttribute("style","");
+  slider.addEventListener("input",function(){this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;});
+  slider.addEventListener("change",function(){this.parentElement.style.display = 'none';this.parentElement.parentElement.nextElementSibling.value = this.value;});
   sliderContainer.append(slider);
 
 
-nodeText.addEventListener("click",toggleSlider);
+  nodeText.addEventListener("click", function () {
+    slider= this.parentElement.childNodes[0];
+    if (slider.style.display=== "none")
+      slider.style.display= "block";
+    else
+      slider.style.display= "none";
+
+  });
 nodeText.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
-//nodeText.previousElementSibling.prepend(createSlider());
+
 node.previousElementSibling.prepend(sliderContainer);
 
 }
 
-  
-  
-  
-  
-
-  
-  
 
   } catch (error) {
     console.log(error);
@@ -355,34 +314,12 @@ node.previousElementSibling.prepend(sliderContainer);
  return true;
 
 }
-function updateSetup()
-{
-  this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;
-}
-function toggleSlider()
-{
-  slider = this.parentElement.childNodes[0];
-  if (slider.style.display === "none") {
-    slider.style.display = "block";
-  } else {
-    slider.style.display = "none";
-  }
-
-}
-function closeAndUpdate()
-{
-  this.parentElement.style.display = 'none';
- // console.log(this.parentElement.parentElement.nextElementSibling);
-  this.parentElement.parentElement.nextElementSibling.value = this.value;
-}
-
 //code execution ==>
     if(document.getElementById("suggestedSetup")==null)
       getDrivers()
 
     
    
-
 
 
 
