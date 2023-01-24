@@ -493,7 +493,7 @@ addMoreStints();
 injectCircuitMap();
 addSaveButton();
 readGSheets();
-
+addFuelSlider();
 
 
   } catch (error) {
@@ -1534,6 +1534,54 @@ async function getCurrentTrack(j){
   });
   
 return jTrack;
+}
+
+function addFuelSlider(){
+  advancedFuel = document.getElementsByName("advancedFuel");
+  if(advancedFuel!=null)
+  {
+    advancedFuel.forEach(car => {
+      
+      if(car.previousElementSibling.childElementCount<4)
+      createSlider(car);
+
+    });
+  }
+
+  function createSlider(node){
+    nodeText = node.previousElementSibling.childNodes[1]; 
+    sliderContainer = document.createElement("div");
+    sliderContainer.setAttribute("style","position:absolute;top: -1.7rem;display:none");
+    slider = document.createElement("input");
+    slider.className = "sliderX";
+    slider.type= "range";
+    slider.max = 200;
+    slider.min = 0;
+    slider.value = nodeText.textContent;
+    slider.addEventListener("input",function(){this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;});
+    slider.addEventListener("change",function(){this.parentElement.style.display = 'none';this.parentElement.parentElement.nextElementSibling.value = this.value;
+    if(this.value == 0)
+    {
+      driverStrategyId = this.closest("form").id;
+      document.getElementsByName("fuel1")[driverStrategyId[1]-1].value = 0
+    }
+  });
+    sliderContainer.append(slider);
+  
+  
+    nodeText.addEventListener("click", function () {
+      slider= this.parentElement.childNodes[0];
+      if (slider.style.display=== "none")
+        slider.style.display= "block";
+      else
+        slider.style.display= "none";
+  
+    });
+  nodeText.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
+  
+  node.previousElementSibling.prepend(sliderContainer);
+  
+  }
 }
 
 track =circuit_info(); //return [0]length and [1]wear
