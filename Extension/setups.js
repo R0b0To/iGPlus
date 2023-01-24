@@ -97,7 +97,8 @@ function toCentimeters(height) {
 function setCar(s,r,w,n){
 
   if(s==null||r==null||w==null){
-     getDrivers();console.log("test");
+     getDrivers();
+     console.log("invalid setup values");
   }
  
     // ride element
