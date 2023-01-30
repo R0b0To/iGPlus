@@ -31,13 +31,13 @@ function fuel_calc(f){
     case f >= 80:
       return ((f ** -0.0819) * 0.66);
     case f >= 60:
-      return ((f ** -0.0827) * 0.662);
+      return ((f ** -0.0849) * 0.668);
     case f >= 40:
-      return ((f ** -0.0866) * 0.673); //very good
-    case f >= 20:
-      return ((f ** -0.0889) * 0.678);
-    default:
-      return ((f ** -0.0971) * 0.696);
+      return ((f ** -0.0848) * 0.668); //very good
+    case f >= 20: //(20-40)
+      return ((f ** -0.089) * 0.678);
+    default:  //(1-20)
+      return ((f ** -0.0945) * 0.69);
   }   }
 async function get_eco()
   {

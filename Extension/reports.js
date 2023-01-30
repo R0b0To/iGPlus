@@ -326,7 +326,7 @@ async function update_managers(table, index) {
     secondAndMs = time[1].split(".");
     return m + (parseInt(secondAndMs[0])*1000) + (parseInt(secondAndMs[1]));
     } catch (error) {
-      console.log(error);
+      console.log("----");
       return false;
     }
     
@@ -353,10 +353,13 @@ async function update_managers(table, index) {
 
         last_pit_lap = pit_lap;
 
+        if((i+2)<laps_done){
         a = toMs(race_table.rows[i-1].childNodes[1].textContent);
         b = toMs(race_table.rows[i+1].childNodes[1].textContent);
         c = toMs(race_table.rows[i-2].childNodes[1].textContent);
         d = toMs(race_table.rows[i+2].childNodes[1].textContent);
+        }
+        
 
         //console.log(a+"\n"+b+"\n"+c+"\n"+d+"\n");
         
