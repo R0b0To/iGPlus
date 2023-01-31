@@ -12,10 +12,9 @@ function addWeatherLink()
     var weatherAlt = weather.cloneNode(true);
     weatherAlt.addEventListener("click",getWeather);
     weatherAlt.textContent = "Weather";
-    weatherAlt.setAttribute("style",'background:#00899e');
     weatherAlt.href = "#";//url+weatherLocation[trackID];
     weatherAlt.id = "chartWeather";
-
+    weatherAlt.className = "btn4";
     
     var weatherContainer = document.createElement("div");
     weatherContainer.id = "container";

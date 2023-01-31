@@ -35,7 +35,7 @@ function fuel_calc(f){
     case f >= 40:
       return ((f ** -0.0848) * 0.668); //very good
     case f >= 20: //(20-40)
-      return ((f ** -0.089) * 0.678);
+      return ((f ** -0.0889) * 0.678);
     default:  //(1-20)
       return ((f ** -0.0945) * 0.69);
   }   }

@@ -18,6 +18,7 @@ function addLevelLabels()
             url= `https://igpmanager.com/index.php?action=fetch&d=facility&id=${id}&csrfName=&csrfToken=`;
             data = await request(url);
             try {
+                if(data.vars.level!=null)
                levelDiv.textContent = "Lv: " + data.vars.level; 
             } catch (error) {
                 console.log("couldn't get level of building");

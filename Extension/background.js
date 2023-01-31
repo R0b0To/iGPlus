@@ -11,9 +11,18 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
     if (tab_status === "complete") {
 
+
+        if (/^(https:\/\/igpmanager\.com\/app\/p=home)/.test(title)) {
+
+            injectScript(tabId, "./home.js");
+        }
         if (title == "https://igpmanager.com/app/d=research") {
 
             inject2Script(tabId, "./research.js", "./localization.js");
+        }
+        if (/^(https:\/\/igpmanager\.com\/app\/p=cars)/.test(title)) {
+
+            injectScript(tabId, "./overview.js");
         }
         if (/^(https:\/\/igpmanager\.com\/app\/p=league&id=)/.test(title)) {
 
