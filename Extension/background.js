@@ -11,8 +11,17 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
     if (tab_status === "complete") {
 
+        injectScript(tabId, "./timerAlert.js");
 
         if (/^(https:\/\/igpmanager\.com\/app\/p=home)/.test(title)) {
+
+            injectScript(tabId, "./home.js");
+        }
+        if (title ==`https://igpmanager.com/app/&tab=news`) {
+
+            injectScript(tabId, "./home.js");
+        }
+        if (title ==`https://igpmanager.com/app/p=login&tab=news`) {
 
             injectScript(tabId, "./home.js");
         }
