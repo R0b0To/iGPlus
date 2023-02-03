@@ -24,8 +24,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             "review": true,
             "refresh": true
           }
-        enabled = await chrome.storage.local.get({"script":script}); 
-
+         chrome.storage.local.get({"script":script},function(list){
+            enabled = list;
+            
         if (/^(https:\/\/igpmanager\.com\/app\/p=home)/.test(title) && enabled.script.review) {
 
             injectScript(tabId, "./home.js");
@@ -97,6 +98,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
             injectScript(tabId, "./raceResult.js");
         }
+        }); 
+
 
 
     }

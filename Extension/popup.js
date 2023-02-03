@@ -239,7 +239,7 @@ else
       //new option of the select
       opt = select[select.selectedIndex].text+"LRID";
       //get state before the select was changed
-      data = await chrome.storage.local.get(["active","active_option",opt]);
+      chrome.storage.local.get(["active","active_option",opt],function(data){
       //save the active data in the previous option 
       chrome.storage.local.set({[data["active_option"]]:data["active"]});
       //update the active data with the new selected option and save option state
@@ -252,6 +252,10 @@ else
         
         driver = data[opt];
       });
+
+
+      });
+      
 
     });
  

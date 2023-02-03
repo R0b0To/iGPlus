@@ -188,10 +188,14 @@ function restore_options() {
         defaultOption.value = 0;
         exportSave.append(defaultOption);
         Object.keys(d.save).forEach(item =>{
+          if(Object.keys(d.save[item]).length>0)
+          {
           option = document.createElement("option");
           option.textContent = item;
           option.value = item;
           exportSave.append(option);
+          }
+          
         });
 
         exportSave.addEventListener("change",function(){
@@ -215,12 +219,17 @@ function restore_options() {
             document.getElementById("trackSave").remove();
             document.getElementById("download").remove();
           }
-          exportSave.parentElement.append(select);
+          if(Object.keys(d.save[this.value]).length>0)
+          {
+ exportSave.parentElement.append(select);
 
           dButton = document.createElement('div');
           dButton.id = "download";
           dButton.className = "btn fa fa-download";
           exportSave.parentElement.append(dButton);
+
+          }
+         
           }
           else{
             document.getElementById("trackSave").remove();
@@ -286,15 +295,19 @@ importSave.addEventListener("change",async function(){
   reader.readAsText(this.files[0]);
   async function onReaderLoad(event){
   try {  
+
   var obj = JSON.parse(event.target.result);
+  
   track = Object.keys(obj)[0];
   hashID = Object.keys(obj[track])[0];
   validTrack = ['be','it','sg','my','jp','us','mx','br','ae','bh','eu','de','es','ru','tr','au','at','hu','gb','ca','az','mc','cn','fr'];
   if(validTrack.includes(track)){
-  data = await chrome.storage.local.get("save");
+  chrome.storage.local.get("save",function(data){
+
   if(typeof data.save==="undefined")
   {
-  chrome.storage.local.set({"save":{obj}});
+
+  chrome.storage.local.set({"save":obj});
   }
   else
   {
@@ -308,6 +321,9 @@ importSave.addEventListener("change",async function(){
     chrome.storage.local.set({"save":data.save});
     importSave.className = "valid upl";
   }
+    
+  });
+  
   }
   else{
     console.log("invalid track");

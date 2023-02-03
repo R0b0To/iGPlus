@@ -1,9 +1,3 @@
-async function request(url) {
-    return await fetch(url)
-    .then(response => response.json())
-    .then(data => {return data})
-    .catch(error => console.error(error))
-} 
 function addLevelLabels()
 {
     try {
@@ -16,14 +10,19 @@ function addLevelLabels()
             levelDiv.setAttribute("style","position:absolute; margin-left: 8px;");
             id = node.href.match(/\d+/)[0];
             url= `https://igpmanager.com/index.php?action=fetch&d=facility&id=${id}&csrfName=&csrfToken=`;
-            data = await request(url);
-            try {
-                if(data.vars.level!=null)
-               levelDiv.textContent = "Lv: " + data.vars.level; 
-            } catch (error) {
-                console.log("couldn't get level of building");
-            }
-            node.previousSibling.append(levelDiv);
+            fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                try{
+                    if (data.vars.level != null)
+                        levelDiv.textContent = "Lv: " + data.vars.level;
+                } catch (error) {
+                    console.log("couldn't get level of building");
+                }
+                    node.previousSibling.append(levelDiv);
+                })
+            .catch(error => console.error(error))
+
           });
 } catch (error) {
     setTimeout(() => {

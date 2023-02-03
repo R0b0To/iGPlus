@@ -42,7 +42,7 @@ function inject_button() {
   quali_button = export_button.cloneNode(true);
   race_button = export_button.cloneNode(true);
   podium = export_button.cloneNode(true);
-
+  podium.id = "top3";
   podium.textContent = "Top 3";
   quali_button.textContent = "Export Q";
   podium.addEventListener("click", podium_copy);
@@ -58,10 +58,9 @@ function inject_button() {
  
 }
 
-async function podium_copy()
+  function podium_copy()
 {
-  language = await chrome.storage.local.get({language: 'eng'});
-  button = this;
+  chrome.storage.local.get({language: 'eng'},async function(language){
   async function getManagerNameOfDriver(driverID)
   {
     url = `https://igpmanager.com/index.php?action=fetch&d=driver&id=${driverID}&csrfName=&csrfToken=`;
@@ -105,11 +104,16 @@ string = "🚦 🏁"+trackName+"🚦\n"+
         "👇 🎤"+lang[language.language].commentText+"... 👇";
 
         navigator.clipboard.writeText(string).then(() => {
-
+          var button = document.getElementById("top3");
           button.setAttribute("style","pointer-events:none; opacity:50%");
       }, () => {
           alert("failed to copy top 3");
       });
+
+
+
+  });
+  
 }
 
 

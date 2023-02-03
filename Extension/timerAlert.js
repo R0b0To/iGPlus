@@ -17,8 +17,7 @@ function checkAcademyTimer()
         
     }) 
     }else{
-      //console.log("testing");
-          
+      document.getElementById("academyAlert").childNodes[0].textContent = countDown(resetDate);
     }
    
 }
@@ -28,40 +27,38 @@ function injectNotification (resetDate){
     notification = document.createElement("div"); 
     notification.className = "notify";
     notification.id = "academyAlert";
-    notification.setAttribute("style","display:flex;background:#5986b3!important");
-    s = secondsToReset(resetDate);
-    notification.setAttribute("timer",s);
-    
-    if(s>0)
-    {
-      notification.style.display = "none";
-      setTimeout(() => {
-        document.getElementById("academyAlert").style.display = "flex";
-      },parseInt(s))  
-    }else{
-        //alert("new drivers in HQ, the timer was reset");
-    }
+    notification.setAttribute("style","display:flex;background:#5986b3!important;width: fit-content!important;");
+    notification.setAttribute("expire",resetDate);
     span = document.createElement("span");
     span.className= "robotoBold";
-    span.textContent = "!";
+    span.textContent = countDown(resetDate);
     notification.append(span);
     try {
     hq = document.getElementById("mHeadquarters");
     hq.style.position = "relative";
     hq.append(notification); 
-    } catch (error) {
-        //error
+    } catch (error) {//error
     }
-     
     }
 }
+function countDown(resetDate) {
+var countDownDate = new Date(resetDate).getTime();
+    var now = new Date().getTime();
+    var ms = countDownDate - now;
+    var d, h, m, s;
+    s = Math.floor(ms / 1000);
+    m = Math.floor(s / 60);
+    s = s % 60;
+    h = Math.floor(m / 60);
+    m = m % 60;
+    d = Math.floor(h / 24);
+    h = h % 24;
+    function is0(n,t){if(n==0)return "";return n+t}
+    string = `${is0(d,"d")}${is0(h,"h")}${is0(m,"m")}`;   
+    if (ms < 0)
+      string = "!";
 
-function secondsToReset(resetDate)
-{
-    d1 = new Date(resetDate);
-    d2 = new Date();
-    diff = (d1-d2); 
-    return diff;
-}
-//waiting page to be fully loaded
-setTimeout(checkAcademyTimer, 1000);
+    return string;
+    //return { d: d, h: h, m: m, s: s };
+  }
+setTimeout(checkAcademyTimer, 500);
