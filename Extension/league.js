@@ -28,64 +28,12 @@ t ={
 }
 
 
-
-
-
-function cmsLoadDialog(src, varArr, tab, sticky)
-{
-
-    console.log(src);
-    var tab = tab || false, sticky = sticky || false;
-    //Insert vars in to src
-
-    src = src.replace(/\{\{(\w+)\}\}/g, function (s, key) {         //Replace with '' to remove display of all vars
-        //Use "s" (without quotes) to keep the variable on the page if not defined
-        return varArr[key] === undefined ? s : varArr[key];
-    });
-    var body = document.body;
-    body.style.overflowY = "hidden";
-    var bodyScroll = body.scrollTop;
-    //bodyScroll = $body.css('overflow-y', 'hidden').scrollTop();
-
-    //Destroy any tooltips
-    //document.querySelector('.tTip').remove();
-
-    //Create dialog & Perform manipulation
-
-    var modalWrap =document.querySelector("#modal-wrap");
-    modalWrap.style.visibility = "visible";
-
-    var dialogContainer = document.querySelector("#dialogs-container");
-    dialogContainer.parentNode.style.opacity = "1";
-    dialogContainer.parentNode.style.visibility = "visible";
-
-    dialogContainer.parentNode.innerHTML = '<div><div class="dialog' + (sticky ? ' sticky' : '') + '"><a href="#" class="close closeDialog"><icon>cancel</icon></a>' + src + '<div class="clear"></div></div></div>';
-
-
-  /* $modalWrap.css({'visibility': 'visible'});
-    $dialogContainer.parent().css({'opacity': '1', 'visibility': 'visible'}).end()
-            .html('<div><div class="dialog' + (sticky ? ' sticky' : '') + '"><a href="#" class="close closeDialog"><icon>cancel</icon></a>' + src + '<div class="clear"></div></div></div>')
-            .igpParse(tab);*/
-
-    //Apply post-load manipulation to dialog content
-//    playSound('swoosh3.mp3', 0);
-    return true;
-}
 async function inject_history()
 {
-   /* var script = document.createElement('script');
-    script.textContent = 'cmsCall("d=result&id=61380258&tab=race", false)';
-    (document.head||document.documentElement).appendChild(script);
-script.parentNode.removeChild(script);*/
+
 race = 'd=result&id=61380258&tab=race';
 url = 'https://igpmanager.com/index.php?action=fetch&'+race+"&csrfName=&csrfToken=";
-//cmsCall("d=result&id=61380258&tab=race", false);
-/*await fetch(url)
-    .then(response => response.json())
-    .then(data => {
-        console.log(data.dialog);
-        cmsLoadDialog(data.dialog,data.vars)})
-    .catch(error => console.error(error))*/
+
 
     track_numbers = scheduleTable.rows.length;
     tstatus = document.getElementById("togglestatus");

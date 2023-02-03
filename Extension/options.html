@@ -24,11 +24,18 @@ input{
   border-radius: 5px;
   border: none;
 }
+[type="checkbox"]
+{
+    vertical-align:middle;
+}
 .invalid {
   background-color: ivory;
   border: none;
   outline: 2px solid red;
   border-radius: 5px;
+}
+.upl{
+  color:black;
 }  
 .valid {
   background-color: ivory;
@@ -36,15 +43,24 @@ input{
   outline: 2px solid rgb(81, 225, 37);
   border-radius: 5px;
 } 
-span
-{
-  font-size: 0.5rem;
+.btn {
+  background-color: DodgerBlue;
+  border: none;
+  color: white;
+  padding: 3px 4px;
+  cursor: pointer;
+  border-radius: 3px;
+  margin-left: 3px;
+}
+.btn:hover {
+  background-color: RoyalBlue;
 }
 
 </style>
 
 <html>
 <head><title>iGPx Options</title></head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 <body>
 
 
@@ -56,16 +72,16 @@ span
     </select></div>
 
 <fieldset>
-    <legend id="signOpt">Invert Sign</legend>
+    <legend id="signOpt">Invert Report Sign</legend>
 
     <div>
       <input type="checkbox" id="race" name="race">
-      <span for="race">Race Report</label>
+      <span for="race">Race Report</span>
     </div>
 
     <div>
       <input type="checkbox" id="over" name="over">
-      <span for="over">Overtakes</label>
+      <span for="over">Overtakes</span>
     </div>
 </fieldset>
 <fieldset>
@@ -77,7 +93,64 @@ span
   <label for="sname">Sheet Name:</label>
   <input type="text" id="sname"><span> Optional</span>
 </fieldset>
-
+<fieldset>
+  <legend id="Scripts">Scripts</legend>
+  <div>
+    <input type="checkbox" id="review">
+        <span>Race Review</span>
+        </div>
+  <div>
+  <input type="checkbox" id="league">
+      <span>League Home</span>
+      </div>
+      <div>
+        <input type="checkbox" id="research">
+      <span>Research</span>
+      </div>
+      <div>
+        <input type="checkbox" id="staff">
+      <span>Staff (strength icons)</span>
+      </div>
+      <div>
+        <input type="checkbox" id="market">
+      <span>Market (strength and weakness icons)</span>
+      </div>
+      <div>
+        <input type="checkbox" id="strategy">
+      <span>Race Strategy</span>
+      </div>
+      <div>
+        <input type="checkbox" id="setup">
+      <span>Race Setup</span>
+      </div>
+      <div>
+        <input type="checkbox" id="overview">
+      <span>Race Overview</span>
+      </div>
+      <div>
+        <input type="checkbox" id="hq">
+      <span>HQ Level Labels</span>
+      </div>
+      <div>
+        <input type="checkbox" id="refresh">
+      <span>Academy Auto-Refresh</span>
+      </div>
+      <div>
+        <input type="checkbox" id="reports">
+      <span>Reports</span>
+      </div>
+</fieldset>
+<fieldset>
+  <legend id="ssaves">Strategies</legend>
+  <div>
+    <span>Export</span>
+      <select id="exportSave"></select>
+    </div>
+  <div style="margin-top: 3px;">
+  <span>Import</span>
+  <input style="border-radius: 5px;" type="file" id="myFile" name="filename">
+  </div>
+</fieldset>
 <script src="options.js"></script>
 <script src="localization.js"></script>
 </body>

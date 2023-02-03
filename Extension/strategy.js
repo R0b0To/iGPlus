@@ -964,7 +964,8 @@ async function saveStint()
   tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
   fuelStrategy= fuel.querySelectorAll('td[style*="visibility: visible"]');
   pushStrategy =push.querySelectorAll('td[style*="visibility: visible"]');
-    saveData = {track:code,laps:document.getElementById("raceLaps").textContent};
+    
+  saveData = {};
     for(var i=0; i< tyreStrategy.length; i++)
     {
       saveData[i] ={
@@ -1026,8 +1027,8 @@ async function loadStint()
   pits= driverStrategy.querySelector("div > div.num.green");
   enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
   activeStints = tyre.childElementCount-1;
-  //-2 because the save object has 2 extra elements
-  stints = Object.keys(s).length-2;
+  
+  stints = Object.keys(s).length;
   pitText = stints-1;
 
 
@@ -1247,6 +1248,8 @@ function createSaveDataPreview(s)
     deleteB.setAttribute("style","background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white");
     deleteB.addEventListener("click",deleteSave);
     strategyContainer.appendChild(deleteB);
+    //download = docum ---------------------------------------------
+    
     
     for (const key in a) {
       if(!isNaN(key))

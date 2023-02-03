@@ -24,7 +24,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             "review": true,
             "refresh": true
           }
-        enabled = await chrome.storage.local.get({"script":script}); 
+        enabled = await browser.storage.local.get({"script":script}); 
 
         if (/^(https:\/\/igpmanager\.com\/app\/p=home)/.test(title) && enabled.script.review) {
 

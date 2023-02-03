@@ -17,7 +17,7 @@ function checkAcademyTimer()
         
     }) 
     }else{
-      //nothing to do
+      //console.log("testing");
           
     }
    
@@ -39,7 +39,7 @@ function injectNotification (resetDate){
         document.getElementById("academyAlert").style.display = "flex";
       },parseInt(s))  
     }else{
-        alert("new drivers in HQ");
+        //alert("new drivers in HQ, the timer was reset");
     }
     span = document.createElement("span");
     span.className= "robotoBold";
@@ -63,5 +63,5 @@ function secondsToReset(resetDate)
     diff = (d1-d2); 
     return diff;
 }
-
-checkAcademyTimer();
+//waiting page to be fully loaded
+setTimeout(checkAcademyTimer, 1000);
