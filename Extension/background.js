@@ -1,6 +1,5 @@
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
-
     tab_status = changeInfo.status;
     title = tab.url;
 
@@ -22,7 +21,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             "staff": true,
             "strategy": true,
             "review": true,
-            "refresh": true
+            "refresh": true,
+            "marketDriver": true
           }
          chrome.storage.local.get({"script":script},function(list){
             enabled = list;
@@ -43,6 +43,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             injectScript(tabId, "./home.js");
         }
         if (title == "https://igpmanager.com/app/d=research" && enabled.script.research) {
+            chrome.scripting.insertCSS({
+                target: { tabId: tabId },
+                files: ["researchStyle.css"],
+            });
 
             inject2Script(tabId, "./research.js", "./localization.js");
         }
@@ -51,7 +55,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             injectScript(tabId, "./overview.js");
         }
         if (/^(https:\/\/igpmanager\.com\/app\/p=league&id=)/.test(title) && enabled.script.league) {
-
             injectScript(tabId, "./league.js");
         }
         if (title == "https://igpmanager.com/app/p=race&tab=setup" && enabled.script.setup) {
@@ -61,6 +64,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
                 files: ["style.css"],
             });
             injectScript(tabId, "./setups.js");
+        }
+        if (title == "https://igpmanager.com/app/p=transfers&tab=drivers" && enabled.script.marketDriver) {
+
+            injectScript(tabId, "./driverMarket.js");
         }
         if (title == "https://igpmanager.com/app/p=race&tab=race" && enabled.script.overview) {
 
@@ -109,21 +116,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
 chrome.runtime.onMessage.addListener(
     async function(f, sender, onSuccess) {
-
-
-       /* chrome.tabs.executeScript({
-            code: s // call the function from page source
-          }, function(results) {
-            console.log(results[0]);
-          });
-
-          return true;*/
-        /*
-        fetch(url)
-            .then(response => response.text())
-            .then(responseText => onSuccess(responseText))
-        
-        return true;  // Will respond asynchronously.*/
     }
 );
 

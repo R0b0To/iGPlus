@@ -1,0 +1,22 @@
+.hoverCopy {
+    overflow: hidden;
+ }
+ .hoverCopyTd {
+    padding: 10px;
+    position: relative;
+    cursor: pointer;
+    
+ }
+ .hoverCopyTd:hover::after{ 
+    background-color: rgba(0, 162, 255, 0.5);
+    content: '';  
+    height: 10000px;    
+    left: 0;
+    position: absolute;  
+    top: -5000px;
+    width: 100%;
+    z-index: 1;   
+ }
+ .hoverCopyTd:active::after {
+    opacity: 0.5;
+  }

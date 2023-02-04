@@ -1,169 +1,96 @@
-
-function restore_options() {
-    // Use default value color = 'red' and likesColor = true.
+function addTable(){
     chrome.storage.local.get({
-      language: 'eng',
-    }, function(items) {
-      document.getElementById("yourValuesId").childNodes[0].textContent = lang[items.language].yourValuesText;
-      document.getElementById("bestValuesId").childNodes[0].textContent = lang[items.language].bestValuesText;
-      document.getElementById("valuesGapId").childNodes[0].textContent = lang[items.language].gapText;
-    });
+        language: 'eng',
+      }, function(items) {
+        try {
+            if(document.getElementById('statsTable')==null){
+        table = document.createElement('table');
+        table.id = "statsTable";
+        table.className = "acp hoverCopy";
+        table.setAttribute("style","float: left;width: 19%;margin-right: 1px;");
+        header =document.createElement('thead');
+        header.className="hoverCopyTh";
+        header.append(createTh(lang[items.language].yourValuesText));header.append(createTh(lang[items.language].bestValuesText));header.append(createTh(lang[items.language].gapValuesText));
+        table.append(header);
+        body = document.createElement('tbody');
+        gameTable = document.getElementById("carResearch");
+        gameTable.setAttribute("style","width:80%");
+        ratings = gameTable.querySelectorAll(".ratingBar")
+
+        ratings.forEach(bar => {
+            (function createRow(){
+                row = document.createElement("tr");
+                row.className = "hoverCopyTr";
+                b =/(\d+)/.exec(bar.childNodes[0].style.left)[0]*2;
+                y =/(\d+)/.exec(bar.childNodes[2].style.width)[0]*2;
+                g = b-y;
+                row.append(createTd(y));row.append(createTd(b));row.append(createTd(g));
+                body.append(row);
+            })();        
+        });
+        table.append(body);
+        try {
+            realAttr =  sortArray(document.getElementById("overview").querySelectorAll("[class*=block]"));
+            body.rows[0].childNodes[0].textContent
+            for(var i=0; i<8; i++)
+            {
+                sponsorValue = realAttr[i].textContent - body.rows[i].childNodes[0].textContent;
+                body.rows[i].childNodes[0].append(realCarDiff(sponsorValue))
+            }
+        } catch (error) {
+        }
+        gameTable.parentElement.insertBefore(table, gameTable);
+            }
+        } catch (error) {
+            setTimeout(addTable,500);
+        }
+      });
+    
+}
+addTable();
+  function createTd(text){
+    ele =document.createElement('td');    
+    ele.textContent = text;
+    ele.addEventListener('click',copyColumn);
+    ele.className = "hoverCopyTd"
+    ele.setAttribute('style','height:32px;text-align: center;');
+    return ele;
   }
-
-function createLabelElement()
-{
-    var htmlElement = document.createElement("th");
-    var textLabel = document.createElement("div");
-    var copyIcon = document.createElement("div");
-    var copyMessage = document.createElement("div");
-    copyMessage.textContent="Copied to Clipboard";
-    copyMessage.setAttribute("style","display:none; position:absolute; background:#141414; color:white; border-radius:8px; padding:5px; top:-10%; font-size:50%;z-index: 99;");
-    copyIcon.className = "fa fa-clipboard";
-    copyIcon.setAttribute("style"," justify-content: center; padding:6px; border-radius:8px; background:#a1c590; cursor: pointer;");
-    copyIcon.addEventListener("click",copyAbove);
-    copyIcon.appendChild(copyMessage);
-    htmlElement.appendChild(textLabel);
-    htmlElement.appendChild(copyIcon);
-    htmlElement.setAttribute("style","width:4%;position:relative;");
-    return htmlElement;
-}
-function copyAbove()
-{
-    this.childNodes[0].style.display="block";
-    col = this.parentElement.cellIndex;
-    rows = this.parentElement.parentElement.parentElement.parentElement.childNodes[1];
-    var value="";
-    for(var i=0; i<rows.childElementCount; i++)
-    { 
-        value += rows.childNodes[i].childNodes[col].textContent+"\n";
-    }
-    navigator.clipboard.writeText(value).then(() => {
-        //clipboard successfully set
-    }, () => {
-        //clipboard write failed, use fallback
-    });
-    setTimeout(() => this.childNodes[0].style.display="none", 500);
-}
-
-function inject_attributes_details(){
-    if(document.getElementById("valuesGapId")!=null)
-    return;
-try {
-    title = document.querySelector("#carResearch > thead > tr");
-    
-    if(document.getElementById("awesomeId")==null){
-    fontIcons = document.createElement('link');
-    fontIcons.rel = "stylesheet";
-    fontIcons.id = "awesomeId";
-    fontIcons.href= "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" ;
-    document.head.appendChild(fontIcons);
-
-    }
- 
-
-    yourValues = createLabelElement();
-    yourValues.style.width = "8%";
-    bestValues = createLabelElement();
-    values_gap = createLabelElement();
-
-    
-    yourValues.id="yourValuesId";
-    bestValues.id="bestValuesId";
-    values_gap.id="valuesGapId";
-    
-    
-    title.insertBefore(yourValues, title.childNodes[0]);
-    title.insertBefore(bestValues, title.childNodes[1]);
-    title.insertBefore(values_gap, title.childNodes[2]);
-
-
-table = document.querySelector("#carResearch > tbody");
-
-try {
-    myAttr = document.getElementById("overview").childNodes[0].childNodes[0].childNodes[0];
-} catch (error) {
-    myAttr = null;
-}
-
-
-for(i=0; i<8 ; i++)
-  {
-    attribute= table.rows[i];
-    var yourTeam = document.createElement("th");
-    bestTeam =  document.createElement("th");
-    gap_area = document.createElement("th");
-    
-    value = getAttributeValue(i);
- 
-    if(myAttr!=null)
-    {
-        if(i<4)
-    myAttrValue = myAttr.rows[i].childNodes[0].childNodes[2].textContent;
-    else
-    myAttrValue = myAttr.rows[i-4].childNodes[1].childNodes[2].textContent;
-
-    sponsorValue = parseInt(myAttrValue-value[1]);
-     yourTeam.textContent = value[1];
-    if(sponsorValue!=0)
+  function createTh(text){
+    ele =document.createElement('th');
+    ele.textContent = text;
+    ele.setAttribute('style','height:32px;text-align: center;');
+    return ele;
+  }
+  function sortArray(a){return [a[0],a[2],a[4],a[6],a[1],a[3],a[5],a[7]];}
+  function realCarDiff(val){
+    if(val!=0)
     {
         sponsorSpan = document.createElement("span");
-        sponsorSpan.setAttribute("style"," position:relative;");
-        sponsorSpan.textContent = " "+sponsorValue;
-        if(sponsorValue>0)
+        sponsorSpan.setAttribute("style","font-size: x-small; position:absolute;");
+        if(val>0)
         {
         sponsorSpan.style.color = "green";
-        sponsorSpan.textContent = ' +'+sponsorValue;
+        sponsorSpan.textContent = ' +'+val;
         }
-        else
-        sponsorSpan.style.color = "red";
-
-        yourTeam.appendChild(sponsorSpan);
-       
-        
+        else{
+           sponsorSpan.style.color = "red";
+           sponsorSpan.textContent =  val;  
+        }    
+        return sponsorSpan;
     } 
-    }
     else
-    yourTeam.textContent = value[1];
-   
-   
-    
-    bestTeam.textContent = value[0];
-    gap_area.textContent = value[0]-value[1];
-
-    attribute.insertBefore(yourTeam, attribute.childNodes[0]);
-    attribute.insertBefore(bestTeam, attribute.childNodes[1]);
-    attribute.insertBefore(gap_area, attribute.childNodes[2]);
+    return ""
   }
-  restore_options();
- 
-} catch (error) {
-    console.log(error);
-    setTimeout(() => {
-        inject_attributes_details();
-    }, 200);
+  function copyColumn()
+{
+    columnIndex = this.cellIndex;
+    table = this.closest("tbody");
+    cvs = "";
+    for (let item of table.rows) {
+        cvs+=`${item.childNodes[columnIndex].childNodes[0].textContent}\n`;
+    }
+    navigator.clipboard.writeText(cvs).then(() => {
+        console.log("text copied");
+    }, () => { });
 }
-
-    
-}
-
-function getAttributeValue(attr){
-
-    const useRegex = (input) => {
-        const regex = /[0-9]+%/g;
-        return regex.exec(input)[0];
-    };
-    
-    const  bestAttr =parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > img:nth-child(1)").style.left))*2;
-    const myAttr = parseInt(useRegex(document.querySelector("#carResearch > tbody > tr:nth-child("+(attr+1)+") > td:nth-child(3) > div > div").style.width))*2;
-            return [bestAttr,myAttr];
-
-}
-
-
- 
-
-inject_attributes_details();
-
-
-
-

@@ -17,6 +17,7 @@ function checkAcademyTimer()
         
     }) 
     }else{
+      resetDate = document.getElementById("academyAlert").attributes.expire.textContent;
       document.getElementById("academyAlert").childNodes[0].textContent = countDown(resetDate);
     }
    
@@ -27,7 +28,7 @@ function injectNotification (resetDate){
     notification = document.createElement("div"); 
     notification.className = "notify";
     notification.id = "academyAlert";
-    notification.setAttribute("style","display:flex;background:#5986b3!important;width: fit-content!important;");
+    notification.setAttribute("style","display:flex;background:#5986b3!important;width: fit-content!important;min-width: 24px;");
     notification.setAttribute("expire",resetDate);
     span = document.createElement("span");
     span.className= "robotoBold";

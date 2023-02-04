@@ -27,31 +27,37 @@ function createElement(skill,type)
     
     return span;
 }
-function addLabels(){
-CDstaff = document.querySelectorAll("[data-sort=CD]");
+var timer;
+setTimeout(function addLabels(){
+try {
+  time = document.getElementById("cdTransfersRefresh").textContent;
+  count = (convertToSeconds(time)*1000)+500;
+  clearTimeout(timer);
+  timer = setTimeout(addLabels, count);
 
-if(document.getElementsByClassName("str")[0]==null)
-CDstaff.forEach(async chief => {
-
-    var chiefID = chief.previousElementSibling.childNodes[0].href.match(/\d+/)[0];
-    url = `https://igpmanager.com/index.php?action=fetch&d=staff&id=${chiefID}&tab=contract&csrfName=&csrfToken=`
-
-    chiefStrength = await fetch(url)
-    .then(response => response.json())
-    .then(data => {  return extractSkills(data)} )
-    .catch(error => console.error(error))
-   
-    if(chief.childElementCount<2)
-    {
-     chief.append(createElement(chiefStrength[0],"str"));
-    chief.append(createElement(chiefStrength[1],"weak"));    
-    }  
+  if(document.getElementsByClassName("str")[0]==null)
+  {
+    CDstaff = document.querySelectorAll("[data-sort=CD]");
+    if(document.getElementsByClassName("str")[0]==null)
+      CDstaff.forEach(async chief => {
+      var chiefID = chief.previousElementSibling.childNodes[0].href.match(/\d+/)[0];
+      url = `https://igpmanager.com/index.php?action=fetch&d=staff&id=${chiefID}&tab=contract&csrfName=&csrfToken=`
+      fetch(url)
+      .then(response => response.json())
+      .then(data => 
+      { 
+        chiefStrength = extractSkills(data);
+        if(chief.childElementCount<2)
+        {
+          chief.append(createElement(chiefStrength[0],"str"));
+          chief.append(createElement(chiefStrength[1],"weak"));    
+      }})
+      .catch(error => console.log("couldn't get CD info"))   
 });
-
-}
-
+  }
+}catch (error) {}
+},200)
 function extractSkills(req) {
-
     try {
       c = [...req.vars.skillTable.matchAll(/icon>(.*?)<\/icon>/g)]
       strength = c[0][1];
@@ -62,9 +68,12 @@ function extractSkills(req) {
     return [strength,weakness];
   
   }
-
-
-  if(document.getElementsByClassName("str")[0]==null)
-  {
-      addLabels();
+  function convertToSeconds(time) {
+    const parts = time.split('m ');
+    if (parts.length === 1) {
+      return parseInt(parts[0].slice(0, -1), 10);
+    } else {
+      const [minutes, seconds] = parts;
+      return parseInt(minutes, 10) * 60 + parseInt(seconds.slice(0, -1), 10);
+    }
   }

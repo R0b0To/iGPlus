@@ -70,6 +70,11 @@ review.addEventListener("click",function(){
   scriptCheck("review",this.checked);
 });
 
+
+document.getElementById("marketDriver").addEventListener("click",function(){
+  scriptCheck("marketDriver",this.checked);
+});
+
 exportSave = document.getElementById("exportSave");
 
 
@@ -167,7 +172,8 @@ function restore_options() {
       "staff": true,
       "strategy": true,
       "review": true,
-      "refresh": true
+      "refresh": true,
+      "marketDriver": true
     }
     chrome.storage.local.get({"script":script},function(data){
       Object.keys(script).forEach(item => {

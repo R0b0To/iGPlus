@@ -1,6 +1,5 @@
 async function addStaffLabels()
 {    
-    
     var staff = document.getElementById("staff");
     var reserveStaff = staff.childNodes[3].childNodes[1].childNodes[1];
     
@@ -84,12 +83,14 @@ function changeStaffLabels()
   for (let i = 0; i < staffTable.rows.length; i++) {
   staffID = staffTable.rows[i].childNodes[3].childNodes[0].value;
 
-  cdStr = await fetch("https://igpmanager.com/index.php?action=fetch&d=staff&id="+staffID+"&csrfName=&csrfToken=")
+  fetch("https://igpmanager.com/index.php?action=fetch&d=staff&id="+staffID+"&csrfName=&csrfToken=")
   .then(response => response.json())
-  .then(data => {  return extractSkills(data)} )
+  .then(data => {  
+    cdStr = extractSkills(data)
+    staffTable.rows[i].childNodes[0].appendChild(createElement(cdStr[0],"str"));
+  })
   .catch(error => console.error(error))
 
-  staffTable.rows[i].childNodes[0].appendChild(createElement(cdStr[0],"str"));
   }
 
   } catch (error) {
@@ -110,5 +111,3 @@ if(document.getElementsByClassName("str")[0]==null)
     {
         addStaffLabels();
     }
-   
-
