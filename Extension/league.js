@@ -52,7 +52,6 @@ function openHistory()
     code = track.className.slice(-2);
     try {
         link = track.parentElement.previousSibling.childNodes[0];
-        console.log(link);
         if(link.href!=null){
         original = link.getAttribute("href");
         link.href = t[code];
@@ -78,7 +77,32 @@ async function inject_history()
     scheduleTable.setAttribute("style","width: 90%;width:-webkit-fill-available ;")
     track_numbers = scheduleTable.rows.length;
     tableToAdd = addExtraTable(track_numbers);
-    scheduleTable.parentElement.insertBefore(tableToAdd, scheduleTable);  
+    scheduleTable.parentElement.insertBefore(tableToAdd, scheduleTable);
+    
+    racesCompleted = scheduleTable.querySelectorAll('.pointer:not(.myTeam)');
+    racesToCheck = racesCompleted.length;
+    url = `https://igpmanager.com/index.php?action=send&type=history&start=0&numResults=${racesToCheck}&jsReply=scrollLoader&el=history&csrfName=&csrfToken=`;
+    fetch(url)
+    .then(response => response.json())
+    .then(data => 
+    { 
+        arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
+        arrayID = [...data.src.matchAll(/id=(\d+)/g)];
+        historyObj = {};
+        arrayID.forEach((element, index) => {
+            historyObj[element[1]] = arrayPositions[index][1];
+          });
+       // return historyObj;
+
+        racesCompleted.forEach(race => {
+        raceID = race.querySelector('[href]').href.match(/\d+/)[0];
+        race.childNodes[0].textContent+=` [${historyObj[raceID]}]`;
+    });
+
+
+    })
+    
+    
     }
     
    
@@ -91,3 +115,6 @@ try {
     
 }
 
+function getHistory(){
+
+}

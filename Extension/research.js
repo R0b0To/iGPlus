@@ -21,8 +21,8 @@ function addTable(){
             (function createRow(){
                 row = document.createElement("tr");
                 row.className = "hoverCopyTr";
-                b =/(\d+)/.exec(bar.childNodes[0].style.left)[0]*2;
-                y =/(\d+)/.exec(bar.childNodes[2].style.width)[0]*2;
+                b =/(\d+)/.exec(bar.querySelectorAll('img')[0].style.left)[0]*2;
+                y =/(\d+)/.exec(bar.querySelectorAll('div')[0].style.width)[0]*2;
                 g = b-y;
                 row.append(createTd(y));row.append(createTd(b));row.append(createTd(g));
                 body.append(row);
@@ -38,6 +38,7 @@ function addTable(){
                 body.rows[i].childNodes[0].append(realCarDiff(sponsorValue))
             }
         } catch (error) {
+            
         }
         gameTable.parentElement.insertBefore(table, gameTable);
             }

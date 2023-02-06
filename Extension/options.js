@@ -173,8 +173,11 @@ function restore_options() {
       "strategy": true,
       "review": true,
       "refresh": true,
-      "marketDriver": true
+      "marketDriver": true,
+      "train":true
     }
+
+
     chrome.storage.local.get({"script":script},function(data){
       Object.keys(script).forEach(item => {
          document.getElementById(item).checked = data.script[item];
@@ -183,15 +186,58 @@ function restore_options() {
      }); 
 
      chrome.storage.local.get("save",function(d){
-  
+
+      function download(){
+    
+        function downloadFile(data,download_name){
+          var blob = new Blob([data], { type: 'application/json;charset=utf-8;' });
+          if (navigator.msSaveBlob) { // IE 10+
+              navigator.msSaveBlob(blob, "test");
+          } else {
+              var link = document.createElement("a");
+              if (link.download !== undefined) { // feature detection
+                  // chromes that support HTML5 download attribute
+                  var url = URL.createObjectURL(blob);
+                  link.setAttribute("href", url);
+                  link.setAttribute("download", download_name);
+                  link.style.visibility = 'hidden';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+              }
+          }
+        }
+        
+       all= document.getElementById("exportSave").value;
+        if(all==0){
+          saved = d;
+          filename = 'save';
+        }else{
+        saveID = document.getElementById("trackSave").value;
+        track = document.getElementById("exportSave").value;
+        saved = {[track]:{[saveID]:d.save[track][saveID]}};
+        filename = `${track}_${saveID}`;
+      
+        }
+        saveJSON = JSON.stringify(saved);
+        downloadFile(saveJSON,filename);
+      
+      }
+      function addButton(){
+        dButton = document.createElement('div');
+        dButton.className = "btn fa fa-download";
+        return dButton;
+      }
       if(typeof d.save==="undefined")
       {
        
         
       }else{
+
         defaultOption = document.createElement("option");
-        defaultOption.textContent = "select save";
+        defaultOption.textContent = "All";
         defaultOption.value = 0;
+        exportSave.parentElement.append(addButton());
         exportSave.append(defaultOption);
         Object.keys(d.save).forEach(item =>{
           if(Object.keys(d.save[item]).length>0)
@@ -203,7 +249,7 @@ function restore_options() {
           }
           
         });
-
+        document.querySelector('.fa-download').addEventListener('click',download);
         exportSave.addEventListener("change",function(){
           //console.log("changing");
           try {
@@ -215,7 +261,11 @@ function restore_options() {
             option = document.createElement('option');
            // console.log(d.save[this.value][item]);
             
-          
+           downloadButtons = document.querySelectorAll('.fa-download');
+              downloadButtons.forEach(button => {
+                button.remove();
+              });
+
             option.textContent = getStrategyString(d.save[this.value][item]);
             option.value = item;
             select.append(option);
@@ -223,62 +273,34 @@ function restore_options() {
           if(document.getElementById("trackSave")!=null)
           {
             document.getElementById("trackSave").remove();
-            document.getElementById("download").remove();
           }
           if(Object.keys(d.save[this.value]).length>0)
           {
- exportSave.parentElement.append(select);
+          exportSave.parentElement.append(select);
 
-          dButton = document.createElement('div');
-          dButton.id = "download";
-          dButton.className = "btn fa fa-download";
-          exportSave.parentElement.append(dButton);
+          exportSave.parentElement.append(addButton());
 
           }
          
           }
           else{
-            document.getElementById("trackSave").remove();
-            document.getElementById("download").remove();
+            downloadButtons = document.querySelectorAll('.fa-download');
+              downloadButtons.forEach(button => {
+                button.remove();
+              });
+            
+            if(document.getElementById("trackSave")!=null)
+            {
+              document.getElementById("trackSave").remove();
+            }
+            exportSave.parentElement.append(addButton());
            
           }
          } catch (error) {
-          document.getElementById("trackSave").remove();
-          document.getElementById("download").remove();
+          
           } 
           
-          
-
-          
-         
-          
-          dButton.addEventListener('click',function(){
-    
-            function downloadFile(data,download_name){
-              var blob = new Blob([data], { type: 'application/json;charset=utf-8;' });
-              if (navigator.msSaveBlob) { // IE 10+
-                  navigator.msSaveBlob(blob, "test");
-              } else {
-                  var link = document.createElement("a");
-                  if (link.download !== undefined) { // feature detection
-                      // chromes that support HTML5 download attribute
-                      var url = URL.createObjectURL(blob);
-                      link.setAttribute("href", url);
-                      link.setAttribute("download", download_name);
-                      link.style.visibility = 'hidden';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                  }
-              }
-            }
-            track = document.getElementById("exportSave").value;
-            saveID = document.getElementById("trackSave").value;
-            saved = {[track]:{[saveID]:d.save[track][saveID]}};
-            saveJSON = JSON.stringify(saved);
-            downloadFile(saveJSON,"save");
-        
-          });
+          document.querySelector('.fa-download').addEventListener('click',download);
       
         });
       }
@@ -303,26 +325,48 @@ importSave.addEventListener("change",async function(){
   try {  
 
   var obj = JSON.parse(event.target.result);
-  
   track = Object.keys(obj)[0];
   hashID = Object.keys(obj[track])[0];
-  validTrack = ['be','it','sg','my','jp','us','mx','br','ae','bh','eu','de','es','ru','tr','au','at','hu','gb','ca','az','mc','cn','fr'];
+  validTrack = ['be','it','sg','my','jp','us','mx','br','ae','bh','eu','de','es','ru','tr','au','at','hu','gb','ca','az','mc','cn','fr','save'];
   if(validTrack.includes(track)){
   chrome.storage.local.get("save",function(data){
 
   if(typeof data.save==="undefined")
   {
-
-  chrome.storage.local.set({"save":obj});
+    if(track=="save")
+    chrome.storage.local.set({"save":obj.save});
+    else
+    chrome.storage.local.set({"save":obj});
   }
   else
   {
+    if(track=="save")
+    {
+      Object.keys(obj.save).forEach(track =>{
+
+        if(data.save[track]!=undefined)
+        {
+           Object.keys(data.save[track]).forEach(save =>{
+          data.save[track][save] = obj.save[track][save];
+        });  
+        }
+        else{
+          data.save[track] = obj.save[track];
+        }
+
+      });
+
+    }
+    else{
     if(typeof data.save[track]==="undefined")
     {
        data.save[track] = {[hashID]:obj[track][hashID]};
     }
     else
         data.save[track][hashID] = obj[track][hashID];
+
+    }
+    
 
     chrome.storage.local.set({"save":data.save});
     importSave.className = "valid upl";
@@ -359,4 +403,6 @@ overSign.addEventListener("click",function(){
 });
 languageSelection = document.getElementById("language");
 document.addEventListener('DOMContentLoaded', restore_options);
+
+
 

@@ -22,7 +22,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             "strategy": true,
             "review": true,
             "refresh": true,
-            "marketDriver": true
+            "marketDriver": true,
+            "train":true
           }
          chrome.storage.local.get({"script":script},function(list){
             enabled = list;
@@ -37,6 +38,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         if (title ==`https://igpmanager.com/app/&tab=news` && enabled.script.review) {
 
             injectScript(tabId, "./home.js");
+        }
+        if (title ==`https://igpmanager.com/app/p=training` && enabled.script.train) {
+
+            injectScript(tabId, "./training.js");
         }
         if (title ==`https://igpmanager.com/app/p=login&tab=news`&& enabled.script.review) {
 
