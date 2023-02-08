@@ -493,7 +493,13 @@ addMoreStints();
 injectCircuitMap();
 addSaveButton();
 readGSheets();
+chrome.storage.local.get("script",async function(d){
+if(d.script.sliderS)
 addFuelSlider();
+if(d.script.editS)
+addEdit();
+});
+
 
 
   } catch (error) {
@@ -1586,7 +1592,70 @@ function addFuelSlider(){
   
   }
 }
+function addEdit(){
+  advancedFuel = document.getElementsByName("advancedFuel");
+  if(advancedFuel!=null)
+  {
+    advancedFuel.forEach(car => {
+      
+      if(!car.getAttribute('event')) {
+         createEdit(car);
+         car.setAttribute('event',true);
+        }
+    
 
+    });
+  }
+
+
+ 
+  function createEdit(node){
+
+    text = node.parentElement.querySelectorAll('.num')[0];
+    text.contentEditable = true;
+ 
+    text.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
+    text.addEventListener('click',function(){
+      if(this.textContent!=""){
+        this.parentElement.nextElementSibling.value= this.textContent;
+      }
+      this.textContent="";
+    });
+    text.addEventListener('focusout',function(e){
+      this.textContent=this.parentElement.nextElementSibling.value ;
+    });
+    text.addEventListener('input',function(e){
+
+      stored =this.parentElement.nextElementSibling;
+     
+      if (!e.data.match(/^[0-9]{0,2}$/)) {
+        this.textContent = '';
+      }
+      currentValue = parseInt(this.textContent);
+      if(isNaN(currentValue))
+      {
+        currentValue = stored.value;
+      }
+      if(currentValue>parseInt(stored.max))
+      {
+        this.textContent = stored.max;
+        currentValue =stored.max;
+      } if(currentValue==0)
+      {
+        driverStrategyId = this.closest("form").id;
+        document.getElementsByName("fuel1")[driverStrategyId[1]-1].value = 0;
+      }
+      this.textContent=(currentValue);
+      stored.value= currentValue;
+    });
+
+  }
+
+  
+  
+  
+  
+}
 track =circuit_info(); //return [0]length and [1]wear
 
 main();

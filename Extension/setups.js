@@ -22,6 +22,7 @@ function heightConversion(value,tier) {
 
 async function getDrivers() {
 
+  chrome.storage.local.get("script",async function(d){
   drivers = document.getElementsByClassName("staffImage");
   tier = await findTier();
 
@@ -30,8 +31,10 @@ async function getDrivers() {
   h1 = await requestDriverHeight(drivers[0].attributes[1].value);
   setup_value = heightConversion(h1,tier);
 
+  if(d.script.slider)
   addSlider(1);
-
+  if(d.script.edit)
+  edit(1);
 
   setCar(t.suspension, t.ride + setup_value, t.wing, 1);
 
@@ -41,10 +44,17 @@ async function getDrivers() {
   if (drivers.length > 2) {
     h2 = await requestDriverHeight(drivers[1].attributes[1].value);
     setup_value = heightConversion(h2,tier);
+    if(d.script.slider)
     addSlider(2);
+    if(d.script.edit)
+    edit(2);
     setCar(t.suspension, t.ride + setup_value, t.wing, 2);
  
   }
+  
+
+
+  });
   
 
 }
@@ -248,12 +258,18 @@ async function findTier()
   managerStandings = await fetch(url)
     .then(response => response.json())
     .then(data => {
-      standings = {
+      try {
+        standings = {
         'tier1':data.vars.standings1,
         'tier2':data.vars.standings2,
         'tier3':data.vars.standings2,
       }
-      return standings})
+      return standings
+      } catch (error) {
+        
+      }
+      
+      })
     
 
     if(managerStandings.tier1.search("myTeam")!=-1)
@@ -315,6 +331,74 @@ node.previousElementSibling.prepend(sliderContainer);
  return true;
 
 }
+function edit(d){
+  
+  if(document.getElementsByClassName('edit').length<2)
+  {
+  setup = document.getElementById(`d${d}setup`);
+  
+  carSetup = setup.querySelectorAll('.num');
+  ride = carSetup[0];
+  aero = carSetup[1];
+
+  //add flag to avoid creating duplicate events
+  if(!aero.getAttribute('event')) {
+    editEvent(aero);
+     aero.setAttribute('event',true);
+    }
+  if(!ride.getAttribute('event')) {
+      editEvent(ride);
+      ride.setAttribute('event',true);
+    }
+ 
+
+  function editEvent(node){
+    node.contentEditable = true;
+    node.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
+    node.addEventListener('click',function(){
+      if(this.textContent!='');
+      {
+        if(this.textContent!=""){
+          this.closest('td').querySelector('.number').value =this.textContent;
+        }
+        this.textContent="";
+      }
+    });
+    node.addEventListener('focusout',function(e){
+      inputValue = this.closest('td').querySelector('.number');
+      value = this.closest('td').querySelector('.number').value;
+      if(!isNaN(value))
+      this.textContent= inputValue.value;
+    });
+    node.addEventListener('input',function(e){
+      stored =this.parentElement.nextElementSibling;
+     
+      if (!e.data.match(/^[0-9]{0,2}$/)) {
+        this.textContent = '';
+      }
+      currentValue = parseInt(this.textContent);
+      if(isNaN(currentValue))
+      {
+        currentValue = stored.value;
+      }
+      if(currentValue>parseInt(stored.max))
+      {
+        this.textContent = stored.max;
+        currentValue =stored.max;
+      } if(currentValue==0)
+      {
+        currentValue ++
+      }
+      this.textContent=(currentValue);
+      stored.value= currentValue;
+    });
+
+  }
+
+  }
+  
+}
+
 //code execution ==>
     if(document.getElementById("suggestedSetup")==null)
       getDrivers()

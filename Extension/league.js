@@ -39,6 +39,9 @@ function addExtraTable (size)
         icon.setAttribute("style","display: block;width:18px;cursor:pointer");
         icon.className = "hover pointer";
         icon.addEventListener("click",openHistory);
+        a = document.createElement("a");
+        a.href = "#";
+        icon.append(a);
         row.append(icon);
         t.append(row);
     }
@@ -51,19 +54,10 @@ function openHistory()
     track = scheduleTable.rows[raceRow].childNodes[1].childNodes[0];
     code = track.className.slice(-2);
     try {
-        link = track.parentElement.previousSibling.childNodes[0];
-        if(link.href!=null){
-        original = link.getAttribute("href");
-        link.href = t[code];
-        link.click();
-        link.href = original;  
-        }else{
-            a = document.createElement("a");
+        link = track.parentElement.previousSibling.childNodes[0];       
+            a = this.querySelector('a');
             a.href = t[code];
-            link.parentElement.append(a);
-            a.click();
-        }
-        
+            a.click();        
     } catch (error) {
         console.log(error);
     }
@@ -71,7 +65,8 @@ function openHistory()
 
 async function inject_history()
 {
-    if(document.getElementById("extraTable")==null)
+    try {
+         if(document.getElementById("extraTable")==null)
     {
     scheduleTable = document.getElementById("scheduleTable");
     scheduleTable.setAttribute("style","width: 90%;width:-webkit-fill-available ;")
@@ -89,14 +84,16 @@ async function inject_history()
         arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
         arrayID = [...data.src.matchAll(/id=(\d+)/g)];
         historyObj = {};
+        
         arrayID.forEach((element, index) => {
             historyObj[element[1]] = arrayPositions[index][1];
           });
        // return historyObj;
-
+//console.log(historyObj);
         racesCompleted.forEach(race => {
         raceID = race.querySelector('[href]').href.match(/\d+/)[0];
-        race.childNodes[0].textContent+=` [${historyObj[raceID]}]`;
+        if(historyObj[raceID]!=null)
+        race.childNodes[0].childNodes[1].textContent+=` [${historyObj[raceID]}]`;
     });
 
 
@@ -104,13 +101,17 @@ async function inject_history()
     
     
     }
+    } catch (error) {
+        
+    }
+   
     
    
 }
 
 
 try {
-    inject_history();
+    setTimeout(inject_history,100)
 } catch (error) {
     
 }

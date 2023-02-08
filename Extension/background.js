@@ -23,9 +23,14 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             "review": true,
             "refresh": true,
             "marketDriver": true,
-            "train":true
+            "train":true,
+            "edit":false,
+            "slider":true,
+            "editS":false,
+            "sliderS":true
           }
          chrome.storage.local.get({"script":script},function(list){
+         chrome.storage.local.set({"script":list.script});
             enabled = list;
             
         if (/^(https:\/\/igpmanager\.com\/app\/p=home)/.test(title) && enabled.script.review) {

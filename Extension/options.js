@@ -10,8 +10,12 @@ league.addEventListener("click",function(){
   scriptCheck("league",this.checked);
 });
 
-
-
+function checkEvent(cName){
+  var c = document.getElementById(cName);
+  c.addEventListener("click",function(){
+    scriptCheck(cName,c.checked);
+  });
+}
 function scriptCheck(scriptName,status)
 {
   chrome.storage.local.get({"script":""},function(data){
@@ -20,65 +24,51 @@ function scriptCheck(scriptName,status)
    });  
 }
 
+checkEvent('edit');
+checkEvent('slider');
+checkEvent('editS');
+checkEvent('sliderS');
+checkEvent('research');
+checkEvent('staff');
+checkEvent('market');
+//checkEvent('strategy');
+checkEvent('overview');
+checkEvent('hq');
+checkEvent('reports');
+checkEvent('refresh');
+checkEvent('review');
+checkEvent('marketDriver');
+checkEvent('review');
 
-research = document.getElementById("research");
-research.addEventListener("click",function(){
-  scriptCheck("research",this.checked);
+setup = document.getElementById("setup");
+
+setup.addEventListener("click",function(){
+  if(this.checked)
+  {
+   document.getElementById("edit").disabled=false;
+   document.getElementById("slider").disabled=false;
+  }else{
+    document.getElementById("edit").disabled=true;
+   document.getElementById("slider").disabled=true;
+  }
+  scriptCheck("setup",this.checked);
 });
-
-staff = document.getElementById("staff");
-staff.addEventListener("click",function(){
-  scriptCheck("staff",this.checked);
-});
-
-market = document.getElementById("market");
-market.addEventListener("click",function(){
-  scriptCheck("market",this.checked);
-});
-
 strategy = document.getElementById("strategy");
+
 strategy.addEventListener("click",function(){
+  if(this.checked)
+  {
+   document.getElementById("editS").disabled=false;
+   document.getElementById("sliderS").disabled=false;
+  }else{
+    document.getElementById("editS").disabled=true;
+   document.getElementById("sliderS").disabled=true;
+  }
   scriptCheck("strategy",this.checked);
 });
 
-setup = document.getElementById("setup");
-setup.addEventListener("click",function(){
-  scriptCheck("setup",this.checked);
-});
-
-overview = document.getElementById("overview");
-overview.addEventListener("click",function(){
-  scriptCheck("overview",this.checked);
-});
-
-hq = document.getElementById("hq");
-hq.addEventListener("click",function(){
-  scriptCheck("hq",this.checked);
-});
-
-reports = document.getElementById("reports");
-reports.addEventListener("click",function(){
-  scriptCheck("reports",this.checked);
-});
-
-refresh = document.getElementById("refresh");
-refresh.addEventListener("click",function(){
-  scriptCheck("refresh",this.checked);
-});
-review = document.getElementById("review");
-review.addEventListener("click",function(){
-  scriptCheck("review",this.checked);
-});
-
-
-document.getElementById("marketDriver").addEventListener("click",function(){
-  scriptCheck("marketDriver",this.checked);
-});
 
 exportSave = document.getElementById("exportSave");
-
-
-
 link.addEventListener("change",testLink);
 sname.addEventListener("change",sName);
 trackName.addEventListener("change",sTrack);
@@ -93,7 +83,6 @@ function sTrack()
   //console.log("saving "+trackNameT);
   chrome.storage.local.set({"gTrack": lowName});
 }
-
 function testLink()
 {
   url = link.value;
@@ -123,7 +112,6 @@ function testLink()
   });
   }
 }
-
 function save_options() {
     var lang = document.getElementById('language').value;
     chrome.storage.local.set({language: lang});
@@ -174,7 +162,11 @@ function restore_options() {
       "review": true,
       "refresh": true,
       "marketDriver": true,
-      "train":true
+      "train":true,
+      "edit":false,
+      "slider":true,
+      "editS":false,
+      "sliderS":true
     }
 
 
@@ -183,8 +175,17 @@ function restore_options() {
          document.getElementById(item).checked = data.script[item];
       });
       chrome.storage.local.set({"script":data.script});
+      console.log(setup.checked);
+     if(setup.checked==false){
+      document.getElementById("edit").disabled=true;
+      document.getElementById("slider").disabled=true;
+    }
+    if(strategy.checked==false){
+      document.getElementById("editS").disabled=true;
+      document.getElementById("sliderS").disabled=true;
+    }
      }); 
-
+     
      chrome.storage.local.get("save",function(d){
 
       function download(){

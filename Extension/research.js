@@ -42,11 +42,15 @@ function addTable(){
         }
         gameTable.parentElement.insertBefore(table, gameTable);
             }
+      researchPower = document.getElementById('checkboxTotal');
+      observer.observe(researchPower, { characterData: false, attributes: false, childList: true, subtree: false });
+      weightedResearch();
+
         } catch (error) {
             setTimeout(addTable,500);
         }
       });
-    
+      
 }
 addTable();
   function createTd(text){
@@ -95,3 +99,63 @@ addTable();
         console.log("text copied");
     }, () => { });
 }
+
+
+function weightedResearch (){
+   
+    try {
+       rPower = document.getElementById('checkboxTotal').textContent.slice(0,-1)/100;
+    table = document.getElementById('statsTable');
+    tableMap = {'acc':0,'bra':1,'han':5,'dow':3}
+    //'fe':4,'col':2,'te':7,'rel':6};
+    if(table!=null){
+    function getStats(t,index)
+    { 
+      value =  parseInt(t.rows[index].childNodes[0].childNodes[0].textContent);
+      gap =  parseInt(t.rows[index].childNodes[2].childNodes[0].textContent);
+        return {'value':value,'gap':gap};
+    }
+    carDesign ={};
+    Object.keys(tableMap).forEach(key =>{
+        design = getStats(table,tableMap[key]);
+        carDesign[key] =weightResult(design.value,design.gap,rPower,key);
+    });
+    //console.log(carDesign);
+    function weightResult(currentS,gap,rPower,code){
+        weight ={
+            'acc':1,
+            'bra':0.5,
+            'han':0.8,
+            'dow':0.3,
+            'fe':0.1,
+            'te':0.1,
+            'col':0.01,
+            'rel':0.01
+        }
+        return (2.23 + 4.23 * Math.log (currentS + (gap * rPower)) - (2.23 + 4.23 * Math.log (currentS))) * weight[code];
+    }
+    
+
+    bestWResearch = Math.max(...Object.values(carDesign));
+     table.querySelectorAll('.hoverCopyTr').forEach(row => {row.style.background='transparent';});
+    if(bestWResearch>0){
+        bestKey = Object.keys(carDesign).filter(key => carDesign[key] === bestWResearch );
+        bestKey.forEach(key=> {
+            table.rows[tableMap[key]].style.background = "#ADD8E6";
+        });   
+    }
+    }else{
+       setTimeout(weightedResearch,200); 
+    } 
+    } catch (error) {
+        
+    }
+    
+    
+    
+}
+
+var observer = new MutationObserver(function(mutations) {
+    weightedResearch();
+}); 
+
