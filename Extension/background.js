@@ -131,6 +131,7 @@ chrome.runtime.onMessage.addListener(
 );
 
 function injectScript(tabId, scriptFile) {
+    scriptRunning = true;
     chrome.scripting.executeScript({
         target: { tabId: tabId},
         files: [scriptFile]
@@ -148,6 +149,7 @@ function inject2Script(tabId, scriptFile, scriptFile2) {
       });
 }
 function inject3Script(tabId, scriptFile, scriptFile2,scriptFile3) {
+    scriptRunning = true;
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2,scriptFile3]
@@ -156,6 +158,7 @@ function inject3Script(tabId, scriptFile, scriptFile2,scriptFile3) {
       });
 }
 function inject4Script(tabId, scriptFile, scriptFile2,scriptFile3,scriptFile4) {
+    scriptRunning = true;
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2,scriptFile3,scriptFile4]

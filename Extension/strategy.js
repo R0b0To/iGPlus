@@ -99,13 +99,19 @@ async function main(){
                             track = circuit_info();
                             fuel = fuel_calc(fuel_eco);
                             eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy
-                            injectAdvancedStint();
-                            addEdit();
+                            injectAdvancedStint();  
                             injectCircuitMap();
                             readGSheets();
                             addMoreStints();
                             addSaveButton();
                             addWeatherInStrategy();
+                            chrome.storage.local.get("script",async function(d){
+                              if(d.script.sliderS)
+                              addFuelSlider();
+                              if(d.script.editS)
+                              addEdit();
+                              });
+
                             waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el)}});
                             varsHolder.setAttribute("eco", true)
                             document.getElementById("stintDialog").append(varsHolder);
@@ -114,7 +120,8 @@ async function main(){
                               fuel = el.querySelector('.num');
                               var fuelChangeObserver = new MutationObserver(function (mutations) {
                                 mutations.forEach(mut => {
-                                  real.textContent = (eco.fuel * parseFloat(fuel.textContent)).toFixed(2);
+
+                                  real.textContent = (parseFloat(fuel.textContent)/((eco.fuel+pushToAdd) *track.length)).toFixed(2);
                                   //console.log('fuel change');
                                 });
                               });
@@ -133,10 +140,16 @@ async function main(){
                               fuelChangeObserver.observe(fuel, { characterData: false, attributes: false, childList: true, subtree: false });
                               estimatedlaps = document.getElementById('fuelLapsPrediction');
                               if (document.getElementById('realfuel') == null) {
+                                
+                                driver =document.querySelector('form[id$="strategy"]:not([style*="display:none"]):not([style*="display: none"])');
+                                stintID = parseInt(document.getElementsByName('stintId')[0].value);
+                                pushToAdd = parseFloat(driver.querySelector("[pushevent]").cells[stintID].childNodes[0].value);
+                                
                                 real = document.createElement('span');
                                 real.id = 'realfuel';
                                 real.setAttribute('style', 'position: relative;top: 2px;vertical-align: text-bottom;width: 2rem;display: inline-table;color: #ffffff;margin-left: 5px;cursor: pointer;background-color: #96bf86;border-radius: 40%;');
-                                real.textContent = (eco.fuel * parseFloat(fuel.textContent)).toFixed(2);
+                                real.textContent = (parseFloat(fuel.textContent)/((eco.fuel+pushToAdd) *track.length)).toFixed(2);
+                                //console.log(eco.fuel);
                                 real.addEventListener('click',function overwrite(){
                                   document.getElementById('fuelLapsPrediction').textContent = this.textContent;
                                 });
@@ -198,7 +211,7 @@ async function injectAdvancedStint(){
         if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length>2)
         {   
             var elem = document.createElement("div");
-            elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;display: inline;padding-left: 5px;");
+            elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
             elem.className = "fuelEst";
             placement = dstrategy[driver].closest('form').querySelector(`[id^='d']`).parentElement;
             if(placement.childElementCount<2)
@@ -280,7 +293,7 @@ function createPushRow(strategy)
                 tooltipElem.textContent = "?";
                 tooltipText = document.createElement("span");
                 tooltipText.className = "tooltiptext";
-                tooltipText.textContent = lang[language].pushDescriptionPart1 + ((eco.fuel * track.length).toFixed(3)) + " " + lang[language].pushDescriptionPart2;
+                tooltipText.textContent = lang[language].pushDescriptionPart1 + ((eco.fuel).toFixed(3)) + "km/l " + lang[language].pushDescriptionPart2;
                 tooltipElem.append(tooltipText);
                 pushButtonHeader.append(tooltipElem);
                 row_name = pushButtonHeader;
