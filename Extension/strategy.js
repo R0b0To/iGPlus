@@ -1,751 +1,800 @@
-//handle server response
-function request(url) {
-    return new Promise(function(resolve, reject) {
-      const xhr = new XMLHttpRequest();
-      xhr.onreadystatechange = function(e) {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            resolve(xhr.response)
-          } else {
-            reject(xhr.status)
-          }
-        }
-      }
-      xhr.ontimeout = function () {
-        reject('timeout')
-      }
-      xhr.open('get', url, true)
-      xhr.send()
-    })
-} 
+function getTrackCode(){return document.querySelector('.flag').className.slice(-2);}
 function fuel_calc(f){
-
-  switch (true) {
-   /* case f >= 180:
-    case f >= 160:
-    case f >= 140:
-    case f >= 120:
-      return ((f ** -0.089) * 0.679);*/
-    case f >= 100:
-      return ((f ** -0.0792) * 0.652);
-    case f >= 80:
-      return ((f ** -0.0819) * 0.66);
-    case f >= 60:
-      return ((f ** -0.0849) * 0.668);
-    case f >= 40:
-      return ((f ** -0.0854) * 0.669); //very good
-    case f >= 20: //(20-40)
-      return ((f ** -0.0887) * 0.678);
-    default:  //(1-20)
-      return ((f ** -0.0945) * 0.69);
-  }   }
-async function get_eco()
-  {
-    //request car design
-    track = circuit_info();
-    url = "https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=";
-    response = await request(url);
-    car_design = JSON.parse(response);
-    fuel_eco = car_design.vars.fuel_economyBar;
-    tyre_eco = car_design.vars.tyre_economyBar;
-    fuel_lap = fuel_calc(fuel_eco)*track[0];
-    eco = [fuel_lap, tyre_eco,fuel_eco];
-    return eco;   
-}  
-function circuit_info(){
-    try {
-      code= getTrackCode();
-      t ={
-      "au":{"length":5.3017135,"wear":40},//Australia
-      "my":{"length":5.5358276,"wear":85},//Malaysia
-      "cn":{"length":5.4417996,"wear":80},//China
-      "bh":{"length":4.7273,"wear":60},//Bahrain
-      "es":{"length":4.4580207,"wear":85},//Spain
-      "mc":{"length":4.0156865,"wear":20},//Monaco
-      "tr":{"length":5.1630893,"wear":90},//Turkey
-      "de":{"length":4.1797523,"wear":50},//Germany
-      "hu":{"length":3.4990127,"wear":30},//Hungary
-      "eu":{"length":5.5907145,"wear":45},//Europe
-      "be":{"length":7.0406127,"wear":60},//Belgium
-      "it":{"length":5.4024186,"wear":35},//Italy
-      "sg":{"length":5.049042,"wear":45},//Singapore
-      "jp":{"length":5.0587635,"wear":70},//Japan
-      "br":{"length":3.9715014,"wear":60},//Brazil
-      "ae":{"length":5.412688,"wear":50},//AbuDhabi
-      "gb":{"length":5.75213,"wear":65},//Great Britain
-      "fr":{"length":5.882508,"wear":80},//France
-      "at":{"length":4.044372,"wear":60},//Austria
-      "ca":{"length":4.3413563,"wear":45},//Canada
-      "az":{"length":6.053212,"wear":45},//Azerbaijan
-      "mx":{"length":4.3076024,"wear":60},//Mexico
-      "ru":{"length":6.078335,"wear":50},//Russia
-      "us":{"length":4.60296,"wear":65}//USA 
-
-  }
-  return [t[code].length,t[code].wear];
-    } catch (error) {
-      
-    }
-   
-
-   
-
-     
-}
- /**
- * Returns stint wear after n laps.
- *
- * @param {string} tyre The tyre.
- * @param {number} laps The number of laps.
- * @return {array} tyre wear after laps.
- */
+    switch (true) {
+     /* case f >= 180:
+      case f >= 160:
+      case f >= 140:
+      case f >= 120:
+        return ((f ** -0.089) * 0.679);*/
+      case f >= 100:
+        return ((f ** -0.0792) * 0.652);
+      case f >= 80:
+        return ((f ** -0.0819) * 0.66);
+      case f >= 60:
+        return ((f ** -0.0849) * 0.668);
+      case f >= 40:
+        return ((f ** -0.0854) * 0.669); //very good
+      case f >= 20: //(20-40)
+        return ((f ** -0.0887) * 0.678);
+      default:  //(1-20)
+        return ((f ** -0.0945) * 0.69);
+    }}
 function getWear(tyre,laps){
- 
-  /**tyre wear formula, 
-   * eco[1] is car tyre economy
-   * track[1] is track wear
-   * track[0] is track length
-   * multiplier is league length scaling
-  */
-  
-  
-  const tyreWearFactors = {
-    SS: 2.03,
-    S: 1.338,
-    M: 1,
-    H: 0.824
-  };
-
- const tyreWear  = tyreWearFactors[tyre] || 0.5;
- const t = (1.43 * eco[1] ** -0.0778) * (0.00364 * track[1] + 0.354) * track[0] * 1.384612 * multiplier * tyreWear;
-
-//calculate stint wear
-stint = Math.exp(1)**((-t/100*1.18)*laps)*100;
-stint2 = (1-(1*((t)+(0.0212*laps-0.00926)*track[0])/100));
-for(j=1 ; j<laps ; j++)
-{
-  stint2 *= (1-(1*((t)+(0.0212*j-0.00926)*track[0])/100));
-}
-stint2 = stint2*100;
-
-average = ((stint+stint2)/2).toFixed(2);
-
-return average;
-
-
-}
-function openPushMenu(e)
-{
-  //document.getElementById("myDropdown").classList.toggle("show");
-  this.nextSibling.classList.toggle("show");
-  this.nextSibling.nextSibling.classList.toggle("show");
-  savePush();
-}
-async function injectAdvancedStint(){
-
-  placement = document.getElementsByClassName("fuel");
-
-
-  async function create_elem(id,name,car){
-    
-   
-    elem = document.createElement("tr");
-    elem.id = id;
-    row_name = document.createElement("th");
-    row_name.textContent=name;
-    row_name.style.fontSize =".8em";
-    
-    if(name=="Push" && car==0){
-      
-        const defaultPush = [-0.007,-0.004,0,0.01,0.02];
-        pushToUse = [];
-      
-      
-        getPush = await chrome.storage.local.get("pushLevels");
-        
-        if(getPush.pushLevels!=null)
-        pushToUse = getPush.pushLevels;
-        else
-        pushToUse = defaultPush;
-     
-
-      var pushButtonHeader = document.createElement('th');
-          pushButtonHeader.className = "dropdown1";
-
-      var pushButton = document.createElement('div');
-          pushButton.className ="dropbtn1";
-         
-          pushButton.textContent = lang[language.language].pushText;
-          pushButton.addEventListener("click",openPushMenu)
-
-          pushButtonHeader.appendChild(pushButton);
-
-          var pushDiv = document.createElement('div');
-          pushDiv.className = "dropdown1-content not-selectable";
-          pushDiv.id="myDropdown";
-
-  
-
-        function createPushElement(i,value,step)
-        {
-          var pushInputDiv = document.createElement("div");
-          pushInputDiv.className = "number-input";
-
-      var pushInputLabel = document.createElement('div');
-          pushInputLabel.textContent = i;
-          pushInputLabel.setAttribute("style","font-size: 0.8rem; color:white;align-self:center;background-color:#96bf86;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
-
-      var pushInputDown = document.createElement('div');
-          pushInputDown.textContent = "−";
-          pushInputDown.setAttribute("style","font-size:xx-large; color:black; width: 40px;")
-          pushInputDown.addEventListener('click',function(){
-            this.parentNode.querySelector('input[type=number]').stepDown()
-          });
-
-      var pushInput = document.createElement('input');
-          pushInput.id= "PL"+i;
-          pushInput.type = "number";
-          pushInput.step = step;"0.001";
-          pushInput.setAttribute("style","margin: 9px;");
-
-          if(i=="FE")
-          pushInput.value = value;
-          else
-          pushInput.value = pushToUse[i-1];
-          
-
-      var pushInputUp = document.createElement('div');
-          pushInputUp.setAttribute("style","font-size:xx-large; color:black; width: 40px;")
-          pushInputUp.textContent="+";
-          pushInputUp.addEventListener('click',function(){
-            this.parentNode.querySelector('input[type=number]').stepUp()
-          });
-
-      pushInputDiv.appendChild(pushInputLabel);
-      pushInputDiv.appendChild(pushInputDown);
-      pushInputDiv.appendChild(pushInput);
-      pushInputDiv.appendChild(pushInputUp);
-
-      return pushInputDiv;
-        }
-        fuelEco = createPushElement("FE",eco[2],1);
-        pushDiv.appendChild(fuelEco);
-          for(var i=5; i>0 ;i--)
-          {
-          
-      p = createPushElement(i,"",0.001);
-
-      pushDiv.appendChild(p);
-
-       
-      pushButtonHeader.appendChild(pushDiv);
-          
-          }
-          var tooltipElem = document.createElement('div') 
-          tooltipElem.className = "dropdown1-content tooltip1" ;
-          //tooltipElem.setAttribute("data-tip","Push level is the ammount of fuel (in liters) that wil be added to the default fuel consumption.");
-         
-          tooltipElem.textContent = "?";
-          tooltipText = document.createElement("span");
-          tooltipText.className= "tooltiptext";
-          tooltipText.textContent = lang[language.language].pushDescriptionPart1+(eco[0]/track[0]).toFixed(3)+" L/KM. "+lang[language.language].pushDescriptionPart2;
-          tooltipElem.appendChild(tooltipText);
-          
-          pushButtonHeader.appendChild(tooltipElem);
-
-
-      row_name = pushButtonHeader;
-      
-      row_name.setAttribute("style","color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;");
-    }
-    
-    
-    elem.appendChild(row_name);
-    
-    for(var i=1 ; i<placement[car].childElementCount ; i++)
-    {
-      var stint = document.createElement("td");
-      if(name=="Fuel")
-      stint.textContent= stint_fuel(i);
-     
-      if(name=="Wear")
+       const tyreWearFactors = {SS: 2.03,S: 1.338,M: 1,H: 0.824};
+       const tyreWear  = tyreWearFactors[tyre] || 0.5;
+       const t = (1.43 * eco.te ** -0.0778) * (0.00364 * track.wear + 0.354) * track.length * 1.384612 * multiplier * tyreWear;    
+      //calculate stint wear
+      stint = Math.exp(1)**((-t/100*1.18)*laps)*100;
+      stint2 = (1-(1*((t)+(0.0212*laps-0.00926)*track.length)/100));
+      for(j=1 ; j<laps ; j++)
       {
-       // console.log("placing at "+car);
-        tyre = placement[car].previousElementSibling.childNodes[i].childNodes[0].value;
-        laps = placement[car].childNodes[i].textContent;
-        w = getWear(tyre,laps);
-        
-       
-        stint.style.visibility = placement[car].childNodes[i].style.visibility;
-        stint.textContent= w;
+        stint2 *= (1-(1*((t)+(0.0212*j-0.00926)*track.length)/100));
       }
-      if(name=="Push")
-      {
-
-        var pushSelect = document.createElement("select");
-            pushSelect.setAttribute("Style","margin-bottom:0px; margin: -10px;padding: 7px;");
-            pushSelect.addEventListener("change",updateFuel);
-       for(var j=5 ; j>0 ; j--) //5 push options
-        {
-          var pushOption = document.createElement('option');
-          pushOption.textContent = "PL"+j;
-          
-          if(j==3)
-          pushOption.selected = true; //pre select middle push
-
-          pushOption.value = pushToUse[j-1];
-          pushOption.className = "OPL"+j;
-          pushSelect.appendChild(pushOption);
-        }
-
-        stint.appendChild(pushSelect);
-        stint.style.visibility = placement[car].childNodes[i].style.visibility;
-        //stint.textContent= "text";
+      stint2 = stint2*100;      
+      average = ((stint+stint2)/2).toFixed(2); 
+      return average;
       }
-
-     
-      try {
-        elem.appendChild(stint);
-      } catch (error) {
-              console.log(error);
-
-      }
-      
+function circuit_info(){
+      code= getTrackCode();
+    t = {
+        "au": { "length": 5.3017135, "wear": 40 },//Australia
+        "my": { "length": 5.5358276, "wear": 85 },//Malaysia
+        "cn": { "length": 5.4417996, "wear": 80 },//China
+        "bh": { "length": 4.7273, "wear": 60 },//Bahrain
+        "es": { "length": 4.4580207, "wear": 85 },//Spain
+        "mc": { "length": 4.0156865, "wear": 20 },//Monaco
+        "tr": { "length": 5.1630893, "wear": 90 },//Turkey
+        "de": { "length": 4.1797523, "wear": 50 },//Germany
+        "hu": { "length": 3.4990127, "wear": 30 },//Hungary
+        "eu": { "length": 5.5907145, "wear": 45 },//Europe
+        "be": { "length": 7.0406127, "wear": 60 },//Belgium
+        "it": { "length": 5.4024186, "wear": 35 },//Italy
+        "sg": { "length": 5.049042, "wear": 45 },//Singapore
+        "jp": { "length": 5.0587635, "wear": 70 },//Japan
+        "br": { "length": 3.9715014, "wear": 60 },//Brazil
+        "ae": { "length": 5.412688, "wear": 50 },//AbuDhabi
+        "gb": { "length": 5.75213, "wear": 65 },//Great Britain
+        "fr": { "length": 5.882508, "wear": 80 },//France
+        "at": { "length": 4.044372, "wear": 60 },//Austria
+        "ca": { "length": 4.3413563, "wear": 45 },//Canada
+        "az": { "length": 6.053212, "wear": 45 },//Azerbaijan
+        "mx": { "length": 4.3076024, "wear": 60 },//Mexico
+        "ru": { "length": 6.078335, "wear": 50 },//Russia
+        "us": { "length": 4.60296, "wear": 65 }//USA 
     }
-
-try {
- 
-  if(document.getElementById(id)==null)
-  {
-    //console.log("placing "+id+" at "+car);
-    //console.log(document.getElementById(id));
-    placement[car].parentElement.insertBefore(elem,placement[car].parentElement.childNodes[5]); 
-  }
-   
-} catch (error) {
-  console.log(error);
-}
-
-    //return elem;
-  }
-
-  function stint_fuel(stint_number){
-    return (eco[0]*placement[0].childNodes[stint_number].textContent).toFixed(2);
-  }
-  
-  //Order and timing is important.
-  //First create the elements for 1 car
-  //Then check if car 2 is present. Create elements if true
-  create_elem("tyre wear","Wear",0)
-  await create_elem("push","Push",0).then(()=> {
-    if(placement.length>1){
-      create_elem("tyre wear2","Wear",1);
-      create_elem("push 2","Push",1);
-    }
-    
-})
-  //create_elem("push 2","Push",1);
-}
-function inject_estimated(){
-var  stintId = document.getElementsByName("stintId");
-var strategyCar = document.getElementsByName("dNum")[0].value;
-  placement = document.getElementById("fuelLapsPrediction");
-  if(placement.childElementCount<1){
-    fuel= parseInt(document.getElementsByClassName("igpNum m")[0].textContent);
-    real = document.createElement("span");
-    real.style.color = "darkcyan";
-    real.style.position = "fixed";
-
-    if(strategyCar==1)
-   var p=document.getElementById("push");
-   else
-   var p=document.getElementById("push 2");
-
-   var selectedPush=parseFloat( p.childNodes[stintId[0].value].childNodes[0].value);
-  
-   
-    feOverwrite = document.getElementById("PLFE").value;
-    track = circuit_info();
-    real.textContent= " ("+(fuel/(((fuel_calc(feOverwrite))+selectedPush)*track[0])).toFixed(3)+")";
-    placement.appendChild(real);
-    //placement.textContent = ;
-  }
+  return t[code];
   
 }
-async function league_multiplier()
-{
-  //extract league id from page
-  league = document.querySelector("#mLeague").href;
-  league_id= /(?<=id=).*/gm.exec(league)[0];
-  //request league page
-  league_info = await request("https://igpmanager.com/index.php?action=fetch&p=league&id="+league_id+"&csrfName=&csrfToken=");
-  rules = JSON.parse(league_info).vars.rules;
-  // Extract league length from rules
-  league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
-
-  const multipliers = {
-    100: 1,
-    75: 1.33,
-    50: 1.5,
-    25: 3
-  };
-  return multipliers[league_length] || 1;
-}
-function add_mutation_observer(){
-
-  //add eventlistener to the opened dialog and inject first estimate
-  function addEvent()
-  {
-    change_fuel = document.getElementsByClassName("igpNum m")[0];
-    change_fuel.addEventListener("click",inject_estimated);
-    change_fuel.addEventListener("touchstart",inject_estimated);
-    inject_estimated();
-
-  }
-
-  function removeObserver(observer){
-    //console.log(document.URL);
-    if(document.URL!="https://igpmanager.com/app/p=race" && document.URL!="https://igpmanager.com/app/p=race&tab=strategy")
-        {
-          observer.disconnect();
-          
-        }
-  }
-
-  const config = { attributes: true, attributeFilter : ['style'] };
-  const callback = (mutationList, observer) => {
-    for (const mutation of mutationList) {     
-      if (mutation.type === 'attributes') {
-        
-       // console.log(mutation.target.style.visibility);
-      if(mutation.target.style.visibility=="visible"){
-        if(document.URL=="https://igpmanager.com/app/p=race")
-        {
-          addEvent();
-          update_stint();
-          updateFuel();
-        }else if(document.URL=="https://igpmanager.com/app/p=race&tab=strategy")
-        {
-          addEvent();
-
-        }else{
-          //remove mutation observer when opening the dialog from a different page
-          observer.disconnect();       
-        }
-      }else{
-        update_stint();
-        updateFuel();
-        //page double refresh when changing tabs, wait for final page
-        //remove mutation observer when user is not doing the strategy
-        setTimeout(removeObserver,300,observer);
-        
-      }
-      
-      }
-    }
-  };
-  
-  change_laps = document.getElementById("modal-wrap");
-  observer = new MutationObserver(callback); 
-  observer.observe(change_laps, config);
-
-}
+main();
+//console.log('hey');
 async function main(){
- 
-  try {
-   
-    language = await chrome.storage.local.get({language: 'eng'});
+    try {
+           chrome.storage.local.get({language: 'eng'},async function(data){
+           language=data.language;
+          if (document.getElementById("igpXvars") == null) {
+              varsHolder = document.createElement("div");
+              varsHolder.id = "igpXvars";
 
+              //extract league id from page
+              league = document.querySelector("#mLeague").href;
+              league_id = /(?<=id=).*/gm.exec(league)[0];
+              
+              //request league page to get rules
+                  fetch(`https://igpmanager.com/index.php?action=fetch&p=league&id=${league_id}&csrfName=&csrfToken=`)
+                  .then(response => response.json())
+                  .then(data => {
+                      if (typeof data.vars !== 'undefined') {
+                          rules = data.vars.rules;
+                          
+                          league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0] |100;
+                          const multipliers = { 100: 1, 75: 1.33, 50: 1.5, 25: 3 };
+                          multiplier = multipliers[league_length] || 1; //<-------------------------------multiplier
+
+                          //fetch car economy
+                          fetch(`https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=`)
+                          .then(response => response.json())
+                          .then(data => {
+                            fuel_eco = data.vars.fuel_economyBar;
+                            tyre_eco = data.vars.tyre_economyBar;
+                            track = circuit_info();
+                            fuel = fuel_calc(fuel_eco);
+                            eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy
+                            injectAdvancedStint();
+                            addEdit();
+                            injectCircuitMap();
+                            readGSheets();
+                            addMoreStints();
+                            addSaveButton();
+                            addWeatherInStrategy();
+                            waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el)}});
+                            varsHolder.setAttribute("eco", true)
+                            document.getElementById("stintDialog").append(varsHolder);
+                            
+                            function addBetterStintFuel(el){
+                              fuel = el.querySelector('.num');
+                              var fuelChangeObserver = new MutationObserver(function (mutations) {
+                                mutations.forEach(mut => {
+                                  real.textContent = (eco.fuel * parseFloat(fuel.textContent)).toFixed(2);
+                                  //console.log('fuel change');
+                                });
+                              });
+                              var dialogBoxObserver = new MutationObserver(function (mutations) {
+                                mutations.forEach(mut => {
+
+                                  if (mut.type == "childList" && mut.addedNodes.length == 0) {
+                                    //console.log('closed');
+                                    this.disconnect();
+                                    waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el)}});
+                                  }
+
+                                });
+                              });
+                              dialogBoxObserver.observe(document.getElementById('dialogs-container'), { childList: true, attributes: true, subtree: true });
+                              fuelChangeObserver.observe(fuel, { characterData: false, attributes: false, childList: true, subtree: false });
+                              estimatedlaps = document.getElementById('fuelLapsPrediction');
+                              if (document.getElementById('realfuel') == null) {
+                                real = document.createElement('span');
+                                real.id = 'realfuel';
+                                real.setAttribute('style', 'position: relative;top: 2px;vertical-align: text-bottom;width: 2rem;display: inline-table;color: #ffffff;margin-left: 5px;cursor: pointer;background-color: #96bf86;border-radius: 40%;');
+                                real.textContent = (eco.fuel * parseFloat(fuel.textContent)).toFixed(2);
+                                real.addEventListener('click',function overwrite(){
+                                  document.getElementById('fuelLapsPrediction').textContent = this.textContent;
+                                });
+                                estimatedlaps.parentElement.append(real);
+                              }
+
+
+
+                            }                          
+                            function waitForAddedNode(params) {                        
+                              new MutationObserver(function(mutations) {
+                                  var el = document.getElementById(params.id);
+                                  if (el) {
+                                    if(document.getElementsByClassName('fuelEst').length==0)
+                                    {                             
+                                      params.done(el);
+                                    }
+                                    this.disconnect();
+                                  }
+                              }).observe(params.parent || document, {
+                                  subtree: !!params.recursive || !params.parent,
+                                  childList: true,
+                              });
+                          }
+                          });
+
+                      }
+                      return -1;
+
+                  })
+                  .catch(error => console.log("look"+error));
+
+          }
+          else {
+
+
+          }
+
+       
+
+      });
   
-    if(document.getElementById("igpXvars")==null)
-    {
-    varsHolder = document.createElement("div");
-    varsHolder.id="igpXvars";
-    multiplier = await league_multiplier();
-    eco = await get_eco();
-    varsHolder.setAttribute("multiplier",multiplier);
-    varsHolder.setAttribute("eco",eco)
-    document.getElementById("stintDialog").append(varsHolder);
-    //document.body.append(varsHolder);
-    }
-    else{
-    vars = document.getElementById("igpXvars").attributes;
-    eco = vars.eco.value.split(",");
-    multiplier = vars.multiplier.value;
-
-    }
     
-  //add event listeners
-  add_mutation_observer();
-  document.getElementById("beginner-d1PitsWrap").addEventListener("touchstart",update_stint);
-  document.getElementById("beginner-d1PitsWrap").addEventListener("click",update_stint);
-
-  if(document.getElementsByClassName("fuel").length>1){
-    document.querySelector("#d2strategy > div").addEventListener("touchstart",update_stint);
-    document.querySelector("#d2strategy > div").addEventListener("click",update_stint);
-  }
-
-  await injectAdvancedStint().then(()=> {
-    inject_fuel_info();
-})
-
-addMoreStints();
-injectCircuitMap();
-addSaveButton();
-readGSheets();
-chrome.storage.local.get("script",async function(d){
-if(d.script.sliderS)
-addFuelSlider();
-if(d.script.editS)
-addEdit();
-});
-
-
-
-  } catch (error) {
-    console.log(error);
-  }
-
-}
-function update_stint()
-{
-  
-  let driverStrategy = document.getElementsByClassName("fuel");
-  updateFuel();
-
-
-// check if the manager is in a 2 cars league
-  if(driverStrategy.length>1)
-  updateWearText("tyre wear2");
-
-  updateWearText("tyre wear");
-
-  
-function updateWearText(id)
-{
-  let carNumber = 0;
-  if(id=="tyre wear2")
-     carNumber=1;
-
-  t_stint = document.getElementById(id);
-  for(i=1 ; i<t_stint.childElementCount ;i++){
-    t_stint.childNodes[i].textContent = (stint_wear(i,carNumber));
-  }
-  
-}
-
-function stint_wear(stint_number,car){
-
-  tyre = driverStrategy[car].previousElementSibling.childNodes[stint_number].childNodes[0].value;
-  laps = driverStrategy[car].childNodes[stint_number].textContent;
-  return getWear(tyre,laps);
-}
-
-}
-function updateFuel()
-    {
       
-        f = document.getElementsByClassName("fuel");
-     
-        if(f.length==2)
-          p = document.getElementById("push");
-        
-        if(f.length==1)
-          p = document.getElementById("push");
+  
+    } catch (error) {
+      console.log(error);
+    }
+  
+  }
 
-track = circuit_info();
-      if(f.length==2)
-      {
-        p2 = document.getElementById("push 2");
-        var totalFuel = 0;
-        var totalLaps = 0;
-        for(var i=1 ;i<p2.childElementCount ; i++)
-        {
-          if(f[1].childNodes[i].style.visibility=="visible")
-          {
-            var selectedPush = parseFloat(p2.childNodes[i].childNodes[0].value);
-            var stintLaps = parseInt(f[1].childNodes[i].textContent); //laps of each stint
-            totalLaps+=stintLaps;
-            feOverwrite = document.getElementById("PLFE").value;
+async function injectAdvancedStint(){
+    dstrategy = document.getElementsByClassName("fuel");
+    
+    Object.keys(dstrategy).forEach(async driver =>{
+        strategyIDNumber =dstrategy[driver].closest('form').id[1];
+        
+        //add fuel div if the race is no refuel
+        if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length>2)
+        {   
+            var elem = document.createElement("div");
+            elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;display: inline;padding-left: 5px;");
+            elem.className = "fuelEst";
+            placement = dstrategy[driver].closest('form').querySelector(`[id^='d']`).parentElement;
+            if(placement.childElementCount<2)
+            placement.append(elem);
+        }
+        
+
+        Promise.all([createWearRow(dstrategy[driver]),createPushRow(dstrategy[driver])]).then((test) => {
+            //after wear and push rows are generated execute this
+            update_stint(dstrategy[driver].cells[1]);
+          
+
+          });
+       
+        
+    });
+
+      if(document.body.getAttribute('boxEvent')==null)
+     {
+          document.body.removeEventListener('click',handleClickOutsidePushBox,false);
+          document.body.addEventListener('click',handleClickOutsidePushBox,false);
+        
+     }                  
+       
+     function handleClickOutsidePushBox(event) {
+        document.body.setAttribute('boxEvent', true);
+        const box = document.getElementsByClassName('not-selectable');
+        button = document.getElementsByClassName('dropbtn1');
+        Object.keys(box).forEach(key => {
+            //console.log(box[key].closest('th').contains(event.target));
+            if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
+
+                if( box[key].classList)
+                 box[key].classList.remove('show');
+                 box[key].nextElementSibling.classList.remove('show');
+
+                 savePush(box[key].closest('tbody'));
+                 //updateFuel(box[key].closest('tbody'));
+            }
+        });
+    }
+
+        
+
+
+function createPushRow(strategy)
+    {
+        return new Promise((resolve, reject) => {
+            const defaultPush = [-0.007, -0.004, 0, 0.01, 0.02];
+            pushToUse = [];
+            chrome.storage.local.get({ "pushLevels": defaultPush }, function (data) {
+                pushToUse = data.pushLevels;
+                pushEle = document.createElement("tr");
+                pushEle.setAttribute(`pushevent`, true);
+                var pushButtonHeader = document.createElement('th');
+                pushButtonHeader.className = "dropdown1";
+                var pushButton = document.createElement('div');
+                pushButton.className = "dropbtn1";
+                pushButton.textContent = lang[language].pushText;
+                pushButton.addEventListener("click",function(){
+                    this.nextSibling.classList.toggle("show");
+                    this.nextSibling.nextSibling.classList.toggle("show");
+                    //savePush();
+
+                });
+                pushButtonHeader.append(pushButton);
+                var pushDiv = document.createElement('div');
+                pushDiv.className = "dropdown1-content not-selectable";
+                pushDiv.id = "myDropdown";
+                fuelEco = createPushElement("FE", eco.fe, 1);
+                pushDiv.append(fuelEco);
+                for (var i = 5; i > 0; i--) {
+                    p = createPushElement(i, "", 0.001);
+                    pushDiv.append(p);
+                    pushButtonHeader.append(pushDiv);
+                }
+                var tooltipElem = document.createElement('div')
+                tooltipElem.className = "dropdown1-content tooltip1";
+                tooltipElem.textContent = "?";
+                tooltipText = document.createElement("span");
+                tooltipText.className = "tooltiptext";
+                tooltipText.textContent = lang[language].pushDescriptionPart1 + ((eco.fuel * track.length).toFixed(3)) + " " + lang[language].pushDescriptionPart2;
+                tooltipElem.append(tooltipText);
+                pushButtonHeader.append(tooltipElem);
+                row_name = pushButtonHeader;
+                row_name.setAttribute("style", "color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;");
+                pushEle.append(row_name);
+
+                for (var i = 1; i < strategy.childElementCount; i++) {
+                    var stint = document.createElement("td");
+                    var pushSelect = document.createElement("select");
+                    pushSelect.setAttribute("Style", "margin-bottom:0px; margin: -10px;padding: 7px;");
+                    pushSelect.addEventListener("change",updateFuel);
+                    for (var j = 5; j > 0; j--) //5 push options
+                    {
+                        var pushOption = document.createElement('option');
+                        pushOption.textContent = "PL" + j;
+                        if (j == 3)
+                            pushOption.selected = true; //pre select middle push
+                        pushOption.value = pushToUse[j - 1];
+                        pushOption.className = "OPL" + j;
+                        pushSelect.append(pushOption);
+                    }
+                    stint.append(pushSelect);
+                    stint.style.visibility = strategy.childNodes[i].style.visibility;
+                    pushEle.append(stint);
+
+                }
+                if (strategy.parentElement.querySelector('[pushevent=true]') == null) {
+                    strategy.parentElement.insertBefore(pushEle, strategy.parentElement.childNodes[5]);
+
+                     resolve(`driver ${strategy.closest('form').id[1]} push is done`);
+                }
+            });
+
+
             
-            totalFuel += (((fuel_calc(feOverwrite))+selectedPush)*track[0])*stintLaps;
-          }
-          
-        }
+            function createPushElement(i, value, step) {
+                var pushInputDiv = document.createElement("div");
+                pushInputDiv.className = "number-input";
 
-        try {
-          document.getElementById("d2TotalLaps").textContent = totalLaps;
-          document.getElementById("fuelEst2").textContent = "Fuel: "+totalFuel.toFixed(2);
-        } catch (error) {
-          return totalFuel.toFixed(2);
-        }
-        
+                var pushInputLabel = document.createElement('div');
+                pushInputLabel.textContent = i;
+                pushInputLabel.setAttribute("style", "font-size: 0.8rem; color:white;align-self:center;background-color:#96bf86;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
 
-      }
-        
-        var totalFuel = 0;
-        var totalLaps = 0;
-   
-        for(var i=1 ;i<p.childElementCount ; i++)
-        {
-          if(f[0].childNodes[i].style.visibility=="visible")
-          {
-            var selectedPush = parseFloat(p.childNodes[i].childNodes[0].value);
-            var stintLaps = parseInt(f[0].childNodes[i].textContent);
-            totalLaps += stintLaps;
-            feOverwrite = document.getElementById("PLFE").value;
-            totalFuel += (((fuel_calc(feOverwrite))+selectedPush)*track[0])*stintLaps;
-          }
-          
-        }
-   try {
-        document.getElementById("d1TotalLaps").textContent = totalLaps;
-        document.getElementById("fuelEst").textContent = "Fuel: "+totalFuel.toFixed(2);
-   } catch (error) {
-    return totalFuel.toFixed(2);
-   }
-}
-async function inject_fuel_info() {
-    
-    elem = document.createElement("div");
-    elem.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
-    elem.id = "fuelEst";
-    //race_laps = parseInt(document.getElementById("raceLaps").textContent);
-   
-    if(document.getElementsByClassName("fuel").length>1)
-    {
-      
-      elem2 = document.createElement("div");
-      elem2.setAttribute("style","color:white; font-family:RobotoCondensedBold; font-size:.9em;");
-      elem2.id = "fuelEst2";
-      placement = document.getElementById("d2TotalLaps").parentElement; //location of the elem
-      elem2.textContent = "Fuel: "+updateFuel();
-      if(placement.childElementCount == 1)  
-        placement.appendChild(elem2)
-    }
-    
-    elem.textContent = "Fuel: "+updateFuel();
-    placement = document.getElementById("d1TotalLaps").parentElement; //location of the elem
+                var pushInputDown = document.createElement('div');
+                pushInputDown.textContent = "−";
+                pushInputDown.setAttribute("style", "font-size:xx-large; color:black; width: 40px;")
+                pushInputDown.addEventListener('click', function () {
+                    this.parentNode.querySelector('input[type=number]').stepDown()
+                });
 
-    if(placement.childElementCount == 1)  
-        placement.appendChild(elem)
-    
+                var pushInput = document.createElement('input');
+                pushInput.className = "PL" + i;
+                pushInput.type = "number";
+                pushInput.step = step; "0.001";
+                pushInput.setAttribute("style", "margin: 9px;");
 
+                if (i == "FE")
+                    pushInput.value = value;
+                else
+                    pushInput.value = pushToUse[i - 1];
+
+
+                var pushInputUp = document.createElement('div');
+                pushInputUp.setAttribute("style", "font-size:xx-large; color:black; width: 40px;")
+                pushInputUp.textContent = "+";
+                pushInputUp.addEventListener('click', function () {
+                    this.parentNode.querySelector('input[type=number]').stepUp()
+                });
+
+                pushInputDiv.append(pushInputLabel);
+                pushInputDiv.append(pushInputDown);
+                pushInputDiv.append(pushInput);
+                pushInputDiv.append(pushInputUp);
+
+                return pushInputDiv;
+            }
+        });  
  }
- window.onclick = function(event) {
-  try {
-
-    if(!document.getElementById('myDropdown').contains(event.target)&&!event.target.matches('.dropbtn1')&&!event.target.matches('.tooltip1')&&!event.target.matches('.tooltiptext'))
-   {
-      var dropdowns = document.getElementsByClassName("dropdown1-content");
-      var i;
-      for (i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show')) {
-          savePush();
-          openDropdown.classList.remove('show');
-        }
+function createWearRow(strategy) {
+          return new Promise((resolve, reject) => {
+              wearEle = document.createElement("tr");
+              wearEle.setAttribute(`wearevent`, true);
+              row_name = document.createElement("th");
+              row_name.textContent = 'Wear';
+              row_name.style.fontSize = ".8em";
+              wearEle.append(row_name);
+              //starts at 1 because the first element is the name title
+              for (var i = 1; i < strategy.childElementCount; i++) {
+                  var stint = document.createElement("td");
+                  var tyre = strategy.previousElementSibling.cells[i].className.slice(3); //tyre of stint i
+                  var laps = strategy.cells[i].textContent;
+                  var w = getWear(tyre, laps);
+                  stint.style.visibility = strategy.cells[i].style.visibility
+                //event will fire when laps or tyre is changed
+                  observer.observe(strategy.cells[i].childNodes[0], { characterData: false, attributes: false, childList: true, subtree: false });
+                  stint.textContent = w;
+                  wearEle.append(stint);
+              }
+              if (strategy.parentElement.querySelector('[wearevent=true]') == null) {
+                  strategy.parentElement.insertBefore(wearEle, strategy.parentElement.childNodes[5]);
+                  resolve(`driver ${strategy.closest('form').id[1]} wear is done`);
+              }
+          });
       }
-    }
-    if(!document.getElementById('myDropdown2').contains(event.target)&&!event.target.matches('.sbutton'))
-   {
-      var dropdowns = document.getElementsByClassName("dropdown2-content");
-      var i;
-      for (i = 0; i < dropdowns.length; i++) {
-        var openDropdown = dropdowns[i];
-        if (openDropdown.classList.contains('show1')) {
-          openDropdown.classList.remove('show1');
-        }
-      }
-    }
-  } catch (error) {
-    
-  }
   
-  }
-  function savePush(){
-    var pl = [];
-    pl.push(document.getElementById("PL1").value);
-    pl.push(document.getElementById("PL2").value);
-    pl.push(document.getElementById("PL3").value);
-    pl.push(document.getElementById("PL4").value);
-    pl.push(document.getElementById("PL5").value);
+}
 
+var observer = new MutationObserver(function(mutations){ mutations.forEach(mut=>{if(mut.target.parentElement.style.visibility=='visible'&&mut.addedNodes.length>0)update_stint(mut.target.closest('td'));});});
+
+function update_stint(s)
+{
+    stint = s.cellIndex;
+    var tbody = s.closest('tbody');
+    wearRow = tbody.querySelector('[wearevent]');
+    tyreRow = tbody.querySelector('.tyre');
+    tyre = tyreRow.cells[stint].className.slice(3);
+    laps = s.textContent;
+    wearRow.cells[stint].textContent = getWear(tyre,laps);
+    updateFuel(tbody)
+}
+function updateFuel(tbod)
+ {
+    if(tbod instanceof Event)
+    tbod = tbod.target.closest('tbody');
+    pushRow = tbod.querySelector('[pushevent]');
+    tyreRow = tbod.querySelector('.tyre');
+    lapsRow = tbod.querySelector('.fuel');
+    stintNumber = tyreRow.querySelectorAll("[style*='visibility: visible']").length;
+    ecoFuel = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
+    var totalfuel =0;
+    var totalLaps = 0;
+    for(var i=1 ;i<stintNumber ;i++)
+    {
+        push = parseFloat(pushRow.cells[i].childNodes[0].value);
+        laps = lapsRow.cells[i].textContent;
+        totalLaps+= parseInt(laps);
+        fuellap = ((ecoFuel+push)*track.length);
+        totalfuel+= parseInt(laps) * fuellap;
+    }
+    fuelEle = tbod.closest('form').getElementsByClassName('fuelEst')[0];
+    tbod.querySelector('.robotoBold').textContent = totalLaps;
+    if(fuelEle!=null)
+         fuelEle.textContent =`Fuel:${totalfuel.toFixed(2)}`;
+}
+function addEdit()
+{
+    advancedFuel = document.getElementsByName("advancedFuel");
+    if(advancedFuel!=null)
+    {
+      advancedFuel.forEach(car => {
+        
+        if(!car.getAttribute('event')) {
+           createEdit(car);
+           car.setAttribute('event',true);
+          }
+      
+  
+      });
+    }
+  
+    function createEdit(node){
+  
+      text = node.parentElement.querySelectorAll('.num')[0];
+      text.contentEditable = true;
+   
+      text.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
+      text.addEventListener('click',function(){
+        if(this.textContent!=""){
+          this.parentElement.nextElementSibling.value= this.textContent;
+        }
+        this.textContent="";
+      });
+      text.addEventListener('focusout',function(e){
+        this.textContent=this.parentElement.nextElementSibling.value ;
+      });
+      text.addEventListener('input',function(e){
+  
+        stored =this.parentElement.nextElementSibling;
+       
+        if (!e.data.match(/^[0-9]{0,2}$/)) {
+          this.textContent = '';
+        }
+        currentValue = parseInt(this.textContent);
+        if(isNaN(currentValue))
+        {
+          currentValue = stored.value;
+        }
+        if(currentValue>parseInt(stored.max))
+        {
+          this.textContent = stored.max;
+          currentValue =stored.max;
+        } if(currentValue==0)
+        {
+          driverStrategyId = this.closest("form").id;
+          document.getElementsByName("fuel1")[driverStrategyId[1]-1].value = 0;
+        }
+        //this.textContent=(currentValue);
+        stored.value= currentValue;
+      });
+    }
+}
+function addFuelSlider()
+{
+    advancedFuel = document.getElementsByName("advancedFuel");
+    if(advancedFuel!=null)
+    {
+      advancedFuel.forEach(car => {
+        
+        if(car.previousElementSibling.childElementCount<4)
+        createSlider(car);
+  
+      });
+    }
+  
+    function createSlider(node){
+      nodeText = node.previousElementSibling.childNodes[1]; 
+      sliderContainer = document.createElement("div");
+      sliderContainer.setAttribute("style","position:absolute;top: -1.7rem;display:none");
+      slider = document.createElement("input");
+      slider.className = "sliderX";
+      slider.type= "range";
+      slider.max = 200;
+      slider.min = 0;
+      slider.value = nodeText.textContent;
+      slider.addEventListener("input",function(){this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;});
+      slider.addEventListener("change",function(){this.parentElement.style.display = 'none';this.parentElement.parentElement.nextElementSibling.value = this.value;
+      if(this.value == 0)
+      {
+        driverStrategyId = this.closest("form").id;
+        document.getElementsByName("fuel1")[driverStrategyId[1]-1].value = 0
+      }
+    });
+      sliderContainer.append(slider);
+    
+    
+      nodeText.addEventListener("click", function () {
+        slider= this.parentElement.childNodes[0];
+        if (slider.style.display=== "none")
+          slider.style.display= "block";
+        else
+          slider.style.display= "none";
+    
+      });
+    nodeText.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
+    
+    node.previousElementSibling.prepend(sliderContainer);
+    
+    }
+}
+function savePush(tbody){
+   // console.log('saving');
+    newPL = tbody.querySelectorAll('[class^=PL]');
+    pushes = document.querySelectorAll('[class^=PL]');
+    Object.keys(newPL).forEach(key=>{
+    });
+    var pl = [];
+    pl.push(tbody.getElementsByClassName('PL1')[0].value);
+    pl.push(tbody.getElementsByClassName('PL2')[0].value);
+    pl.push(tbody.getElementsByClassName('PL3')[0].value);
+    pl.push(tbody.getElementsByClassName('PL4')[0].value);
+    pl.push(tbody.getElementsByClassName('PL5')[0].value);
+    fe = tbody.getElementsByClassName('PLFE')[0].value;
+
+    for(var i=1; i<6 ;i++){
+        p = document.querySelectorAll(`[class^=PL${i}]`);
+        Object.keys(p).forEach(key=>{
+            p[key].value = pl[i-1];
+        });
+    }
+    pFE = document.getElementsByClassName('PLFE');
+    feToolTip = document.getElementsByClassName('tooltiptext');
+    for (var i = 0; i < pFE.length; i++) {
+        pFE[i].value = fe;
+        feToolTip[i].textContent =  lang[language].pushDescriptionPart1 + ((fuel_calc(fe) * track.length).toFixed(3)) + " " + lang[language].pushDescriptionPart2;
+      }
     chrome.storage.local.set({"pushLevels":pl}, function() { 
       
       });
-
-      // update the selections options with the new pushes
       for(var j=0 ; j<5 ; j++)
       {
         option = document.getElementsByClassName("OPL"+(j+1));
         for(let item of option)
         {
-          //console.log("updating: "+item.className+" with: "+(j));
           item.value = pl[j];
         }
-          
-        
       }
-      updateFuel();
-  }
-  function addMoreStints()
-  {
-      var carNumber = document.getElementsByClassName("fuel").length;
+      toUpdate = document.getElementsByClassName("fuelEst");
+      Object.keys(toUpdate).forEach(car=>{
+        updateFuel(toUpdate[car].closest('tbody'));
+      });
+}
+function injectCircuitMap(){
 
-
-      if(carNumber==2)
-      addExtraStintButton(2);
-
-      addExtraStintButton(1);
-
-//add an event listener to plus button and a counter next to it
-//id is used for handling 2 cars strategies
-    function addExtraStintButton(id)
+    if(document.getElementById("customMap")==null)
     {
-
-      if(document.getElementById("extra "+id)==null){
-     var  addStint = document.createElement("div");
-      addStint.textContent = "+";
-      var stintCounter = document.createElement("div");
-      stintCounter.textContent = -1;
-      addStint.appendChild(stintCounter);
-      addStint.id="extra "+id;
-      addStint.setAttribute("style","left: 140px;position: relative; visibility:hidden");
-     
-      
-      carPits = document.getElementById("d"+id+"strategy").childNodes[2];
-
-      var stops = parseInt(carPits.textContent.match(/\d+/)[0]);
-        if(stops>3)
-        {
-          stintCounter.textContent=0;
-          carPits.childNodes[0].childNodes[2].setAttribute("style","background-color: firebrick;opacity: 100!important;");
-        }
-        
-
-      carPits.childNodes[0].childNodes[2].addEventListener("touchstart",injectExtraStints);
-      carPits.childNodes[0].childNodes[2].addEventListener("click",injectExtraStints);
-
-      carPits.childNodes[0].childNodes[0].addEventListener("click",removeStints);
-      carPits.childNodes[0].childNodes[0].addEventListener("touchstart",removeStints);
-      carPits.childNodes[0].appendChild(addStint)
-      }
-   
-
+    target = document.getElementById("stintDialog");
+    circuit = document.createElement("img");
+    circuit.id = "customMap";
+    circuit.src= chrome.runtime.getURL('images/circuits/'+getTrackCode()+'.png');
+    circuit.setAttribute("style","width:100%;");
+    target.parentNode.insertBefore(circuit, target.nextSibling);
     }
+}
+async function readGSheets()
+{
+if(document.getElementById("importedTable")==null)
+{
+    async function getCurrentTrack(j){
+
+        jTrack = [];
+        var trackToSearch = getTrackCode();
+        var trackDictionary  ={
+          "au":["australia","au",1],//,//Australia
+          "my":["malaysia","my",2],//,//Malaysia
+          "cn":["china","cn",3],//,//China
+          "bh":["bahrain","bh",4],//,//Bahrain
+          "es":["spain","es",5],//,//Spain
+          "mc":["monaco","mc",6],//,//Monaco
+          "tr":["turkey","tr",7],//,//Turkey
+          "de":["germany","de",9],//,//Germany
+          "hu":["hungary",'hu',10],//,//Hungary
+          "eu":["europe",'eu',11],//,//Europe
+          "be":["belgium","be",12],//,//Belgium
+          "it":["italy","it",13],//,//Italy
+          "sg":["sg","singapore",14],//,//Singapore
+          "jp":["japan","jp",15],//,//Japan
+          "br":["brazil","br",16],//,//Brazil
+          "ae":["abu dhabi","abudhabi",17,"ae"],//,//AbuDhabi
+          "gb":["gb","gb 19","great britan",18],//,//Great Britain
+          "fr":["france","fr",19],//,//France
+          "at":["austria","at",20],//,//Austria
+          "ca":["canaada","ca",21],//,//Canada
+          "az":["azerbaijan","az",22],//,//Azerbaijan
+          "mx":["mexico","mx",23],//,//Mexico
+          "ru":["russia","ru",24],//,//Russia
+          "us":["usa","us",25]////USA 
+      
+      };
+      
+        j.forEach((ele) =>
+        {
+          try {
+      //console.log(ele);
+            
+            if(isNaN(ele[t.gTrack]))
+              requestedTrack = ele[t.gTrack].toLowerCase();
+            else
+              requestedTrack = ele[t.gTrack];
+      
+            if(trackDictionary[trackToSearch].includes(requestedTrack))
+                  jTrack.push(ele);
+      
+          } catch (error) {
+            console.log(error);
+          }
+        });
+        
+      return jTrack;
+      }
+      function sortTable() {
+
+        n = this.cellIndex;
+      
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById("importedTable");
+        switching = true;
+        dir = "asc"; 
+        while (switching) {
+          switching = false;
+          rows = table.rows;
+          for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i + 1].getElementsByTagName("TD")[n];
+            var cmpX=isNaN(parseInt(x.innerHTML))?x.innerHTML.toLowerCase():parseInt(x.innerHTML);
+                      var cmpY=isNaN(parseInt(y.innerHTML))?y.innerHTML.toLowerCase():parseInt(y.innerHTML);
+      cmpX=(cmpX=='-')?0:cmpX;
+      cmpY=(cmpY=='-')?0:cmpY;
+            if (dir == "asc") {
+              if (cmpX > cmpY) {
+                shouldSwitch= true;
+                break;
+            }
+            } else if (dir == "desc") {
+              if (cmpX < cmpY) {
+                shouldSwitch= true;
+                break;
+            }
+            }
+          }
+          if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+            switchcount ++;      
+          } else {
+            if (switchcount == 0 && dir == "asc") {
+              dir = "desc";
+              switching = true;
+            }
+          }
+        }
+      }
+  savedLink = await chrome.storage.local.get({"gLink":""});
+
+  if(savedLink.gLink!="")
+  {
+t = await chrome.storage.local.get({"gTrack":"track"});
+sName = await chrome.storage.local.get({"gLinkName":"Sheet1"});
+
+idRegex =/spreadsheets\/d\/(.*)\/edit/;
+link = idRegex.exec(savedLink.gLink)[1]; 
+const sheetId = link;
+const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?`;
+//console.log(sName);
+const sheetName = sName.gLinkName;
+const query = encodeURIComponent('Select *');
+const url = `${base}&sheet=${sheetName}&tq=${query}`;
+const data = [];
+var output = document.createElement("table");//document.querySelector('.output')
+output.setAttribute("style","width: 100%;table-layout: auto;text-align: center;")
+output.id="importedTable";
+init();
+  async function init() {
+   await fetch(url)
+        .then(res => res.text())
+        .then(async rep => {
+            //Remove additional text and extract only JSON:
+            const jsonData = JSON.parse(rep.substring(47).slice(0, -2));
+            //console.log(jsonData);
+            const colz = [];
+            const tr = document.createElement('tr');
+            //Extract column labels
+            jsonData.table.cols.forEach((heading) => {  
+                if (heading.label) {
+                    let column = heading.label;
+                    if(column.toLowerCase()==t.gTrack)
+                    {
+                      column = column.toLowerCase();
+                    }
+                    colz.push(column);
+                    const th = document.createElement('th');
+                    th.setAttribute("style",'font-family: "RobotoCondensed","Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;cursor: pointer;background-color: #8f8f8f;color: #ffffff;border-radius: 5px;')
+                    th.addEventListener("click",sortTable);
+                    th.textContent = column;                              
+                    tr.appendChild(th);
+                   
+                }
+            })
+            output.appendChild(tr);
+            //extract row data:
+            jsonData.table.rows.forEach((rowData) => {
+                const row = {};
+                colz.forEach((ele, ind) => {
+                    row[ele] = (rowData.c[ind] != null) ? rowData.c[ind].v : '';
+                })
+                data.push(row);
+            })
+
+           await processRows(data);
+        })
+        
+        if(document.getElementById("importedTable")==null)
+        {
+          function removeColumn(table, columnName) {
+            // Find the index of the column to remove
+            let colIndex = -1;
+            for (let i = 0; i < table.rows[0].cells.length; i++) {
+              if (table.rows[0].cells[i].textContent === columnName) {
+                colIndex = i;
+                break;
+              }
+            }
+            
+            // If the column was found
+            if (colIndex !== -1) {
+              // Remove the cells from all rows
+              for (let i = 0; i < table.rows.length; i++) {
+                table.rows[i].deleteCell(colIndex);
+              }
+            }
+          }
+          
+         
+          document.querySelectorAll(".eight.columns.mOpt.aStrat")[0].append(output);
+          removeColumn(output,t.gTrack);
+        }
+
 
   }
-  function hasExtraStint(pitNumber){
-    var extraStints = 0;
-    if(pitNumber<4)
-    extraStints =-1;
-    else if(pitNumber == 4)
-    extraStints = 0;
-    else if(pitNumber>4)
-    extraStints = 1;
-return extraStints
-  }
+  
+
+  
+        
+}
+ 
+  async function processRows(json) {
+    //console.log(json);
+  
+  json = await getCurrentTrack(json);
+  
+    json.forEach((row) => {
+        const tr = document.createElement('tr');
+        const keys = Object.keys(row);
+    
+        keys.forEach((key) => {
+            const td = document.createElement('td');
+            td.textContent = row[key];
+            tr.appendChild(td);
+        })
+        output.appendChild(tr);
+    })
+
+}}
+}
 function removeStints(minusDiv)
     {
 
@@ -808,165 +857,204 @@ function removeStints(minusDiv)
 
       }
 
-  }
-  function injectExtraStints(plusDiv){
-    return new Promise((resolve, reject) => {
-     
-      success =false;
-
-      if(plusDiv.tagName!="DIV")
-      {
-        var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
-        plusDiv = this;
-      }
-      else
-      pits = plusDiv.previousElementSibling.textContent.match(/\d+/)[0];
-  
-  
-      var driver = plusDiv.closest("form");
-      var pitRow = driver.getElementsByClassName("darkgrey")[0];
-      numberOfExtraPits = hasExtraStint(pits);
-      
-      if(pits>=4 && plusDiv.style.backgroundColor=="firebrick" && pitRow.childElementCount<8)
-      {
-      
-      var minus = plusDiv.nextElementSibling.parentElement.firstChild;
-      minus.className= "minus disabled";
-      minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
-      plusDiv.nextElementSibling.setAttribute("style","visibility:visible");
-  
-      if(plusDiv.className == "plus disabled"){
-  
-        
-        var strategyTable = driver.childNodes[3].childNodes[0];
-  
-        plusDiv.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan++;
-  
-      //clone last pit 
-      
-      var pitTh = pitRow.lastChild.cloneNode(true);
-      var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
-      
-      plusDiv.nextElementSibling.childNodes[1].textContent = pitRow.childElementCount-5; 
-      lastpit++;
-      pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
-      pitRow.appendChild(pitTh);
-  
-      //clone last tyre 
-      var tyreRow= strategyTable.childNodes[1];
-      var clonedTyre = tyreRow.lastChild.cloneNode(true);
-      clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
-      clonedTyre.addEventListener("click",openTyreDialog);
-      tyreRow.appendChild(clonedTyre);
-      //clone last lap
-      
-      var lapsRow = strategyTable.childNodes[3];
-      var clonedLap = lapsRow.lastChild.cloneNode(true);
-      
-      clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
-      clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
-      lapsRow.appendChild(clonedLap);
-       //clone last push 
-      var pushRow = strategyTable.childNodes[5];
-      var clonedPush = pushRow.lastChild.cloneNode(true);
-      clonedPush.addEventListener("change",updateFuel)
-      pushRow.appendChild(clonedPush);
-      //clone last wear 
-      var wearRow = strategyTable.childNodes[6];
-      var clonedWear = wearRow.lastChild.cloneNode(true);
-      wearRow.appendChild(clonedWear);
-      
-      success=true;
-      }
-      }else if(pits==4)
-      {
-        plusDiv.setAttribute("style","background-color: firebrick;opacity: 100!important;");
-        //plusDiv.nextElementSibling.lastChild.textContent = 0;
-      }
-      
-  
-
-      if (success) {
-        resolve(true);
-      } else {
-        //reject(false);
-      }
-
-    });
-    
-  }
-  function openTyreDialog(){
-
-  var tyre = this.className;
-  var stintId = this.lastChild.name.match(/\d+/)[0];
-  var fuelL = this.parentElement.parentElement.childNodes[3].childNodes[stintId].childNodes[1].value;
-  var laps = this.parentElement.parentElement.childNodes[3].childNodes[stintId].textContent;
-  this.parentElement.childNodes[2].click();
-  var tyreD = document.getElementById("tyreSelect").childNodes[0].childNodes[0];
-  document.getElementsByName("stintId")[0].value = stintId; 
-  var dialog = document.getElementById("stintDialog");
-  dialog.childNodes[0].childNodes[0].textContent = "Pit "+(stintId-1); // name of dialog stint
-
-  if(document.getElementById("fuelLapsPrediction").parentElement.parentElement.className==" hide")
-    document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = laps;
-  else
-    document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = fuelL;
-
-
-    var event = new MouseEvent('mousedown', {
-      'view': window,
-      'bubbles': true,
-      'cancelable': true,
-  
-  });
-  var event2 = new MouseEvent('mouseup', {
-    'view': window,
-    'bubbles': true,
-    'cancelable': true,
-
-});
-//simulate changing fuel to update values
-    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event);
-    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event2);
-    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event);
-    dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event2);
-
-for(var i=0 ; i<6 ; i++)
-{
-  if(tyreD.childNodes[i].id!=tyre)
-  {
-    tyreD.childNodes[i].className = "inactive";
-  }else
-  tyreD.childNodes[i].className = "";
 }
+function injectExtraStints(plusDiv){
 
 
-
-  }
-  function injectCircuitMap(){
-
-    if(document.getElementById("customMap")==null)
-    {
-    circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-    code = /[^-]+(?=">)/g.exec(circuit)[0];
-    target = document.getElementById("stintDialog");
-    circuit = document.createElement("img");
-    circuit.id = "customMap";
+        return new Promise((resolve, reject) => {
+         
+          success =false;
     
-    circuit.src= chrome.runtime.getURL('images/circuits/'+code+'.png');
-    circuit.setAttribute("style","width:100%;");
-    target.parentNode.insertBefore(circuit, target.nextSibling);
+          if(plusDiv.tagName!="DIV")
+          {
+            var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
+            plusDiv = this;
+          }
+          else
+          pits = plusDiv.previousElementSibling.textContent.match(/\d+/)[0];
+      
+      
+          var driver = plusDiv.closest("form");
+          var pitRow = driver.getElementsByClassName("darkgrey")[0];
+          numberOfExtraPits = hasExtraStint(pits);
+          
+          if(pits>=4 && plusDiv.style.backgroundColor=="firebrick" && pitRow.childElementCount<8)
+          {
+          
+          var minus = plusDiv.nextElementSibling.parentElement.firstChild;
+          minus.className= "minus disabled";
+          minus.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+          plusDiv.nextElementSibling.setAttribute("style","visibility:visible");
+      
+          if(plusDiv.className == "plus disabled"){
+    
+            var strategyTable = driver.childNodes[3].childNodes[0];
+      
+            plusDiv.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan++;
+      
+          //clone last pit 
+          
+          var pitTh = pitRow.lastChild.cloneNode(true);
+          var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
+          
+          plusDiv.nextElementSibling.childNodes[1].textContent = pitRow.childElementCount-5; 
+          lastpit++;
+          pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
+          pitRow.appendChild(pitTh);
+      
+          //clone last tyre 
+          var tyreRow= strategyTable.childNodes[1];
+          var clonedTyre = tyreRow.lastChild.cloneNode(true);
+          clonedTyre.childNodes[0].name = "tyre"+(parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0])+1);
+          clonedTyre.addEventListener("click",openTyreDialog);
+          tyreRow.appendChild(clonedTyre);
+          //clone last lap
+          
+          var lapsRow = strategyTable.childNodes[3];
+          var clonedLap = lapsRow.lastChild.cloneNode(true);
+          //console.log(clonedLap);
+          observer.observe(clonedLap.childNodes[0], { characterData: false, attributes: false, childList: true, subtree: false });
+          
+          clonedLap.childNodes[1].name = "fuel"+(parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0])+1);
+          clonedLap.childNodes[2].name = "laps"+(parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0])+1);
+          lapsRow.appendChild(clonedLap);
+           //clone last push 
+          var pushRow = strategyTable.childNodes[5];
+          var clonedPush = pushRow.lastChild.cloneNode(true);
+          clonedPush.addEventListener("change",updateFuel)//-------------------------------------------------------------
+          pushRow.appendChild(clonedPush);
+          //clone last wear 
+          var wearRow = strategyTable.childNodes[6];
+          var clonedWear = wearRow.lastChild.cloneNode(true);
+          wearRow.appendChild(clonedWear);
+          updateFuel(clonedLap.closest('tbody'));
+          success=true;
+          }
+          }else if(pits==4)
+          {
+            plusDiv.setAttribute("style","background-color: firebrick;opacity: 100!important;");
+            //plusDiv.nextElementSibling.lastChild.textContent = 0;
+          }
+    
+          if (success) {
+            resolve(true);
+          } else {
+            //reject(false);
+          }
+    
+        });
+        
+}
+function hasExtraStint(pitNumber){
+            var extraStints = 0;
+            if(pitNumber<4)
+            extraStints =-1;
+            else if(pitNumber == 4)
+            extraStints = 0;
+            else if(pitNumber>4)
+            extraStints = 1;
+        return extraStints
+}
+function openTyreDialog(){
+
+            var tyre = this.className;
+            var stintId = this.lastChild.name.match(/\d+/)[0];
+            var fuelL = this.parentElement.parentElement.childNodes[3].childNodes[stintId].childNodes[1].value;
+            var laps = this.parentElement.parentElement.childNodes[3].childNodes[stintId].textContent;
+            this.parentElement.cells[5].click(); //last valid stint
+            var tyreD = document.getElementById("tyreSelect").childNodes[0].childNodes[0];
+            document.getElementsByName("stintId")[0].value = stintId; 
+            var dialog = document.getElementById("stintDialog");
+            dialog.childNodes[0].childNodes[0].textContent = "Pit "+(stintId-1); // name of dialog stint
+          
+            if(document.getElementById("fuelLapsPrediction").parentElement.parentElement.className==" hide")
+              document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = laps;
+            else
+              document.getElementById("tyreSelect").childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = fuelL;
+          
+          
+              var event = new MouseEvent('mousedown', {
+                'view': window,
+                'bubbles': true,
+                'cancelable': true,
+            
+            });
+            var event2 = new MouseEvent('mouseup', {
+              'view': window,
+              'bubbles': true,
+              'cancelable': true,
+          
+          });
+          //simulate changing fuel to update values
+              dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event);
+              dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event2);
+              dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event);
+              dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event2);
+          
+          for(var i=0 ; i<6 ; i++)
+          {
+            if(tyreD.childNodes[i].id!=tyre)
+            {
+              tyreD.childNodes[i].className = "inactive";
+            }else
+            tyreD.childNodes[i].className = "";
+          }
+          
+          
+          
+}         
+function addMoreStints()
+{     
+    function addExtraStintButton(pitDiv)
+    {
+      if(pitDiv.getAttribute('x')==null){
+        pitDiv.setAttribute('x','enabled');    
+      var  addStint = document.createElement("div");
+      addStint.textContent = "+";
+      var stintCounter = document.createElement("div");
+      stintCounter.textContent = -1;
+      addStint.append(stintCounter);
+      //addStint.id="extra "+id;
+      addStint.setAttribute("style","left: 140px;position: relative; visibility:hidden");
+     
+      
+      carPits = pitDiv;
+
+      var stops = parseInt(carPits.textContent.match(/\d+/)[0]);
+        if(stops>3)
+        {
+          stintCounter.textContent=0;
+          carPits.childNodes[0].childNodes[2].setAttribute("style","background-color: firebrick;opacity: 100!important;");
+        }
+        
+
+      carPits.childNodes[0].childNodes[2].addEventListener("touchstart",injectExtraStints);
+      carPits.childNodes[0].childNodes[2].addEventListener("click",injectExtraStints);
+
+      carPits.childNodes[0].childNodes[0].addEventListener("click",removeStints);
+      carPits.childNodes[0].childNodes[0].addEventListener("touchstart",removeStints);
+      carPits.childNodes[0].append(addStint)
+      }
+   
 
     }
-  }
+   
+    
+    var strategies = document.getElementsByClassName("fuel");
+
+      Object.keys(strategies).forEach(car=>{
+            addExtraStintButton(strategies[car].closest('form').querySelector(`.igpNum`).parentElement);
+      });
+
+}
 async function saveStint()
 {
-  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-  code = /[^-]+(?=">)/g.exec(circuit)[0];
+ 
+  code = getTrackCode();
   driverStrategy = this.closest("form");
   tyre = driverStrategy.getElementsByClassName("tyre")[0];
   fuel = driverStrategy.getElementsByClassName("fuel")[0];
-  push = driverStrategy.querySelector("tr[id*=push]");
+  push = driverStrategy.querySelector("tr[pushEvent]");
   tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
   fuelStrategy= fuel.querySelectorAll('td[style*="visibility: visible"]');
   pushStrategy =push.querySelectorAll('td[style*="visibility: visible"]');
@@ -1025,7 +1113,7 @@ async function loadStint()
   pitNum = driverStrategy.querySelectorAll("input[name='numPits']")[0];
   tyre = driverStrategy.getElementsByClassName("tyre")[0];
   fuel = driverStrategy.getElementsByClassName("fuel")[0];
-  push = driverStrategy.querySelector("tr[id*=push]");
+  push = driverStrategy.querySelector("tr[pushEvent]");
   wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
   tyreStrategy = tyre.querySelectorAll('td');
   fuelStrategy= fuel.querySelectorAll('td');
@@ -1083,8 +1171,8 @@ async function loadStint()
   }
   tyre = driverStrategy.getElementsByClassName("tyre")[0];
   fuel = driverStrategy.getElementsByClassName("fuel")[0];
-  push = driverStrategy.querySelector("tr[id*=push]");
-  wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
+  push = driverStrategy.querySelector("tr[pushEvent]");
+  wear = driverStrategy.querySelector("tr[wearEvent]");
   tyreStrategy = tyre.querySelectorAll('td');
   fuelStrategy= fuel.querySelectorAll('td');
   pushStrategy =push.querySelectorAll('td');
@@ -1094,8 +1182,10 @@ async function loadStint()
     tyreStrategy[i].style.visibility="hidden";
     fuelStrategy[i].style.visibility="hidden";
     pushStrategy[i].style.visibility="hidden";
-    wear[i].style.visibility = "hidden"
+    wear.cells[i+1].style.visibility = "hidden"
   }
+
+var fuelLap =fuel_calc(parseInt(document.getElementsByClassName("PLFE")[0].value))*track.length;
 
   for(var i=0; i< stints; i++)
     {
@@ -1108,13 +1198,15 @@ async function loadStint()
         
         fuelStrategy[i].childNodes[0].textContent = s[i].laps;
         fuelStrategy[i].style.visibility = "visible";
-        fuelStrategy[i].childNodes[1].value = Math.ceil((s[i].laps *eco[0]));
+        fuelStrategy[i].childNodes[1].value = Math.ceil((s[i].laps *fuelLap));
         fuelStrategy[i].childNodes[2].value = s[i].laps;
         
         pushStrategy[i].childNodes[0].selectedIndex = s[i].push;
         pushStrategy[i].style.visibility = "visible";
         
-        wear[i].style.visibility = "visible";
+        wear.cells[i+1].style.visibility = "visible";
+       // console.log(tyreStrategy[i]);
+        update_stint(fuelStrategy[i]);
       } catch (error) {
 
       }
@@ -1136,13 +1228,20 @@ async function loadStint()
       pits.nextElementSibling.className = "plus disabled";
       pits.previousElementSibling.className = "minus";
     }
-    update_stint();
-   
+
+    updateFuel(wear.closest('tbody'));
+    saveBox = driverStrategy.getElementsByClassName('show1');
+    Object.keys(saveBox).forEach(key=>{
+        saveBox[key].classList.toggle('show1');
+    });
 }
 async function generateSaveList() {
 
   code = getTrackCode();
-  data = await chrome.storage.local.get("save");
+  chrome.storage.local.get("save",function(data){
+  if (typeof data.save === "undefined") {
+    //empty
+  }else{
   if (typeof data.save[code] === "undefined") {
    //empty
   } else {
@@ -1166,8 +1265,10 @@ async function generateSaveList() {
         sList = createSaveDataPreview(data.save[code]);
         e.appendChild(sList)});
     }
-
   }
+  }
+  });
+  
 
 }
 async function addSaveButton()
@@ -1306,356 +1407,18 @@ async function deleteSave()
   }
   
 }
-function getTrackCode()
-{
-  circuit = document.querySelector("#race > div:nth-child(1) > h1 > img").outerHTML;
-  code = /[^-]+(?=">)/g.exec(circuit)[0];
-  return code;
-}
-function sortTable() {
-
-  n = this.cellIndex;
-
-  var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-  table = document.getElementById("importedTable");
-  switching = true;
-  //Set the sorting direction to ascending:
-  dir = "asc"; 
-  /*Make a loop that will continue until
-  no switching has been done:*/
-  while (switching) {
-    //start by saying: no switching is done:
-    switching = false;
-    rows = table.rows;
-    /*Loop through all table rows (except the
-    first, which contains table headers):*/
-    for (i = 1; i < (rows.length - 1); i++) {
-      //start by saying there should be no switching:
-      shouldSwitch = false;
-      /*Get the two elements you want to compare,
-      one from current row and one from the next:*/
-      x = rows[i].getElementsByTagName("TD")[n];
-      y = rows[i + 1].getElementsByTagName("TD")[n];
-      var cmpX=isNaN(parseInt(x.innerHTML))?x.innerHTML.toLowerCase():parseInt(x.innerHTML);
-                var cmpY=isNaN(parseInt(y.innerHTML))?y.innerHTML.toLowerCase():parseInt(y.innerHTML);
-cmpX=(cmpX=='-')?0:cmpX;
-cmpY=(cmpY=='-')?0:cmpY;
-      /*check if the two rows should switch place,
-      based on the direction, asc or desc:*/
-      if (dir == "asc") {
-        if (cmpX > cmpY) {
-          shouldSwitch= true;
-          break;
-      }
-      } else if (dir == "desc") {
-        if (cmpX < cmpY) {
-          shouldSwitch= true;
-          break;
-      }
-      }
-    }
-    if (shouldSwitch) {
-      /*If a switch has been marked, make the switch
-      and mark that a switch has been done:*/
-      rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-      switching = true;
-      //Each time a switch is done, increase this count by 1:
-      switchcount ++;      
-    } else {
-      /*If no switching has been done AND the direction is "asc",
-      set the direction to "desc" and run the while loop again.*/
-      if (switchcount == 0 && dir == "asc") {
-        dir = "desc";
-        switching = true;
-      }
-    }
-  }
-}
-async function readGSheets()
-{
-if(document.getElementById("importedTable")==null)
-{
-  savedLink = await chrome.storage.local.get({"gLink":""});
-
-  if(savedLink.gLink!="")
-  {
-t = await chrome.storage.local.get({"gTrack":"track"});
-sName = await chrome.storage.local.get({"gLinkName":"Sheet1"});
-
-idRegex =/spreadsheets\/d\/(.*)\/edit/;
-link = idRegex.exec(savedLink.gLink)[1]; 
-const sheetId = link;
-const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?`;
-//console.log(sName);
-const sheetName = sName.gLinkName;
-const query = encodeURIComponent('Select *');
-const url = `${base}&sheet=${sheetName}&tq=${query}`;
-const data = [];
-var output = document.createElement("table");//document.querySelector('.output')
-output.setAttribute("style","width: 100%;table-layout: auto;text-align: center;")
-output.id="importedTable";
-init();
-  async function init() {
-   await fetch(url)
-        .then(res => res.text())
-        .then(async rep => {
-            //Remove additional text and extract only JSON:
-            const jsonData = JSON.parse(rep.substring(47).slice(0, -2));
-            //console.log(jsonData);
-            const colz = [];
-            const tr = document.createElement('tr');
-            //Extract column labels
-            jsonData.table.cols.forEach((heading) => {  
-                if (heading.label) {
-                    let column = heading.label;
-                    if(column.toLowerCase()==t.gTrack)
-                    {
-                      column = column.toLowerCase();
-                    }
-                    colz.push(column);
-                    const th = document.createElement('th');
-                    th.setAttribute("style",'font-family: "RobotoCondensed","Open Sans","Helvetica Neue",Helvetica,Arial,sans-serif;cursor: pointer;background-color: #8f8f8f;color: #ffffff;border-radius: 5px;')
-                    th.addEventListener("click",sortTable);
-                    th.textContent = column;                              
-                    tr.appendChild(th);
-                   
-                }
-            })
-            output.appendChild(tr);
-            //extract row data:
-            jsonData.table.rows.forEach((rowData) => {
-                const row = {};
-                colz.forEach((ele, ind) => {
-                    row[ele] = (rowData.c[ind] != null) ? rowData.c[ind].v : '';
-                })
-                data.push(row);
-            })
-
-           await processRows(data);
-        })
-        
-       
-     
-
-        if(document.getElementById("importedTable")==null)
-        {
-          function removeColumn(table, columnName) {
-            // Find the index of the column to remove
-            let colIndex = -1;
-            for (let i = 0; i < table.rows[0].cells.length; i++) {
-              if (table.rows[0].cells[i].textContent === columnName) {
-                colIndex = i;
-                break;
-              }
-            }
-            
-            // If the column was found
-            if (colIndex !== -1) {
-              // Remove the cells from all rows
-              for (let i = 0; i < table.rows.length; i++) {
-                table.rows[i].deleteCell(colIndex);
-              }
-            }
-          }
-          
-         
-          document.querySelectorAll(".eight.columns.mOpt.aStrat")[0].append(output);
-          removeColumn(output,t.gTrack);
-        }
-
-
-  }
-  
-
-  
-        
-}
- 
-  async function processRows(json) {
-    //console.log(json);
-  track = getTrackCode;
-  json = await getCurrentTrack(json);
-  
-    json.forEach((row) => {
-        const tr = document.createElement('tr');
-        const keys = Object.keys(row);
-    
-        keys.forEach((key) => {
-            const td = document.createElement('td');
-            td.textContent = row[key];
-            tr.appendChild(td);
-        })
-        output.appendChild(tr);
-    })
-
-}
-}
-
-}
-async function getCurrentTrack(j){
-
-  jTrack = [];
-  var trackToSearch = getTrackCode();
-  var trackDictionary  ={
-    "au":["australia","au",1],//,//Australia
-    "my":["malaysia","my",2],//,//Malaysia
-    "cn":["china","cn",3],//,//China
-    "bh":["bahrain","bh",4],//,//Bahrain
-    "es":["spain","es",5],//,//Spain
-    "mc":["monaco","mc",6],//,//Monaco
-    "tr":["turkey","tr",7],//,//Turkey
-    "de":["germany","de",9],//,//Germany
-    "hu":["hungary",'hu',10],//,//Hungary
-    "eu":["europe",'eu',11],//,//Europe
-    "be":["belgium","be",12],//,//Belgium
-    "it":["italy","it",13],//,//Italy
-    "sg":["sg","singapore",14],//,//Singapore
-    "jp":["japan","jp",15],//,//Japan
-    "br":["brazil","br",16],//,//Brazil
-    "ae":["abu dhabi","abudhabi",17,"ae"],//,//AbuDhabi
-    "gb":["gb","gb 19","great britan",18],//,//Great Britain
-    "fr":["france","fr",19],//,//France
-    "at":["austria","at",20],//,//Austria
-    "ca":["canaada","ca",21],//,//Canada
-    "az":["azerbaijan","az",22],//,//Azerbaijan
-    "mx":["mexico","mx",23],//,//Mexico
-    "ru":["russia","ru",24],//,//Russia
-    "us":["usa","us",25]////USA 
-
-};
-
-  j.forEach((ele) =>
-  {
-    try {
-//console.log(ele);
-      
-      if(isNaN(ele[t.gTrack]))
-        requestedTrack = ele[t.gTrack].toLowerCase();
-      else
-        requestedTrack = ele[t.gTrack];
-
-      if(trackDictionary[trackToSearch].includes(requestedTrack))
-            jTrack.push(ele);
-
-    } catch (error) {
-      console.log(error);
-    }
+function addWeatherInStrategy(){
+  var strategy =document.getElementsByClassName("fuel");
+  Object.keys(strategy).forEach(car=>{
+    var w= (document.getElementsByClassName('pWeather text-right green')[0]).cloneNode(true);
+  w.className ="";
+  w.childNodes[0].setAttribute('style','filter:brightness(0) invert(1);');
+  w.childNodes[1].setAttribute('style','color:white');
+  w.childNodes[2].setAttribute('style','width: 28px;height: 28px;');
+  w.setAttribute('style','display: inline;padding-right: 10px;');
+    notice = strategy[car].closest('tbody').querySelector('.notice');
+    if(notice.querySelector('.waterLevel')==null)
+    notice.prepend(w);
   });
-  
-return jTrack;
 }
 
-function addFuelSlider(){
-  advancedFuel = document.getElementsByName("advancedFuel");
-  if(advancedFuel!=null)
-  {
-    advancedFuel.forEach(car => {
-      
-      if(car.previousElementSibling.childElementCount<4)
-      createSlider(car);
-
-    });
-  }
-
-  function createSlider(node){
-    nodeText = node.previousElementSibling.childNodes[1]; 
-    sliderContainer = document.createElement("div");
-    sliderContainer.setAttribute("style","position:absolute;top: -1.7rem;display:none");
-    slider = document.createElement("input");
-    slider.className = "sliderX";
-    slider.type= "range";
-    slider.max = 200;
-    slider.min = 0;
-    slider.value = nodeText.textContent;
-    slider.addEventListener("input",function(){this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;});
-    slider.addEventListener("change",function(){this.parentElement.style.display = 'none';this.parentElement.parentElement.nextElementSibling.value = this.value;
-    if(this.value == 0)
-    {
-      driverStrategyId = this.closest("form").id;
-      document.getElementsByName("fuel1")[driverStrategyId[1]-1].value = 0
-    }
-  });
-    sliderContainer.append(slider);
-  
-  
-    nodeText.addEventListener("click", function () {
-      slider= this.parentElement.childNodes[0];
-      if (slider.style.display=== "none")
-        slider.style.display= "block";
-      else
-        slider.style.display= "none";
-  
-    });
-  nodeText.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
-  
-  node.previousElementSibling.prepend(sliderContainer);
-  
-  }
-}
-function addEdit(){
-  advancedFuel = document.getElementsByName("advancedFuel");
-  if(advancedFuel!=null)
-  {
-    advancedFuel.forEach(car => {
-      
-      if(!car.getAttribute('event')) {
-         createEdit(car);
-         car.setAttribute('event',true);
-        }
-    
-
-    });
-  }
-
-
- 
-  function createEdit(node){
-
-    text = node.parentElement.querySelectorAll('.num')[0];
-    text.contentEditable = true;
- 
-    text.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
-    text.addEventListener('click',function(){
-      if(this.textContent!=""){
-        this.parentElement.nextElementSibling.value= this.textContent;
-      }
-      this.textContent="";
-    });
-    text.addEventListener('focusout',function(e){
-      this.textContent=this.parentElement.nextElementSibling.value ;
-    });
-    text.addEventListener('input',function(e){
-
-      stored =this.parentElement.nextElementSibling;
-     
-      if (!e.data.match(/^[0-9]{0,2}$/)) {
-        this.textContent = '';
-      }
-      currentValue = parseInt(this.textContent);
-      if(isNaN(currentValue))
-      {
-        currentValue = stored.value;
-      }
-      if(currentValue>parseInt(stored.max))
-      {
-        this.textContent = stored.max;
-        currentValue =stored.max;
-      } if(currentValue==0)
-      {
-        driverStrategyId = this.closest("form").id;
-        document.getElementsByName("fuel1")[driverStrategyId[1]-1].value = 0;
-      }
-      this.textContent=(currentValue);
-      stored.value= currentValue;
-    });
-
-  }
-
-  
-  
-  
-  
-}
-track =circuit_info(); //return [0]length and [1]wear
-
-main();

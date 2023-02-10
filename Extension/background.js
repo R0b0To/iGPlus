@@ -1,3 +1,4 @@
+let scriptRunning = false;
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
     tab_status = changeInfo.status;
@@ -8,7 +9,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     }
 
 
-    if (tab_status === "complete") {
+    if (tab_status === "complete" && !scriptRunning) {
 
         script ={
             "hq": true,
@@ -133,23 +134,32 @@ function injectScript(tabId, scriptFile) {
     chrome.scripting.executeScript({
         target: { tabId: tabId},
         files: [scriptFile]
-    });
+    }, function() {
+        scriptRunning = false;
+      });
 }
 function inject2Script(tabId, scriptFile, scriptFile2) {
+    scriptRunning = true;
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2]
-    });
+    }, function() {
+        scriptRunning = false;
+      });
 }
 function inject3Script(tabId, scriptFile, scriptFile2,scriptFile3) {
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2,scriptFile3]
-    });
+    }, function() {
+        scriptRunning = false;
+      });
 }
 function inject4Script(tabId, scriptFile, scriptFile2,scriptFile3,scriptFile4) {
     chrome.scripting.executeScript({
         target: { tabId: tabId },
         files: [scriptFile, scriptFile2,scriptFile3,scriptFile4]
-    });
+    }, function() {
+        scriptRunning = false;
+      });
 }

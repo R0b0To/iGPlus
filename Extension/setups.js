@@ -356,13 +356,11 @@ function edit(d){
     node.contentEditable = true;
     node.setAttribute("style","border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;");
     node.addEventListener('click',function(){
-      if(this.textContent!='');
+      if(this.textContent!='')
       {
-        if(this.textContent!=""){
-          this.closest('td').querySelector('.number').value =this.textContent;
-        }
-        this.textContent="";
-      }
+        this.closest('td').querySelector('.number').value =this.textContent;
+      } 
+      this.textContent="";
     });
     node.addEventListener('focusout',function(e){
       inputValue = this.closest('td').querySelector('.number');
@@ -372,7 +370,6 @@ function edit(d){
     });
     node.addEventListener('input',function(e){
       stored =this.parentElement.nextElementSibling;
-     
       if (!e.data.match(/^[0-9]{0,2}$/)) {
         this.textContent = '';
       }
@@ -389,7 +386,7 @@ function edit(d){
       {
         currentValue ++
       }
-      this.textContent=(currentValue);
+      //this.textContent=(currentValue);
       stored.value= currentValue;
     });
 

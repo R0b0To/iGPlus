@@ -2,7 +2,7 @@
     "manifest_version":2,
     "name": "iGP Extended",
     "description": "Enhance your iGPmanager experience",
-    "version":"0.990",
+    "version":"0.992",
      "icons":{
          "128": "./images/racing128.png"
      },
