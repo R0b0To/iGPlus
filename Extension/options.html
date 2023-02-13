@@ -56,6 +56,52 @@ input{
   background-color: RoyalBlue;
 }
 
+#fieldtip {
+       text-align: center;
+       font-size: .9em;
+	    display: inline-block;
+       border-radius: 8px;
+       position: absolute;
+	    padding: 5px 15px;
+	    background: #292d33;
+	    color: #fff;
+	    font-weight: 300;
+	    z-index: 100;
+	    min-width: 40px;
+       max-width: 200px;
+	    transition: all 200ms linear;
+	    -webkit-transition: all 200ms linear;
+	    -moz-transition: all 200ms linear;
+	    -o-transition: all 200ms linear;
+      z-index: 100;
+	}
+	#fieldtip:after {
+	    display: 'block';
+	    content: '';
+	    position: absolute;
+	    bottom: -10px;
+	    left: calc(50% - 16px);
+	    width: 0px;
+	    height: 0px;
+      
+       border-left: 8px solid transparent;
+       border-right: 8px solid transparent;
+       border-top: 12px solid #292d33;
+	    /*-webkit-transform:rotate(360deg);*/
+	}
+  .help{
+    cursor: help;
+    display: inline-block;  
+    text-align: center;  
+    border-radius: 50%; 
+     background-color: #96bf86;  
+     color: #ffffff;  
+     width: 18px; 
+     height: 17px;
+     margin-left: 4px;
+
+  }
+   
 </style>
 
 <html>
@@ -85,43 +131,43 @@ input{
     </div>
 </fieldset>
 <fieldset>
-  <legend id="Gsheet">Google Sheet</legend>
+  <legend id="Gsheet">Google Sheet<span style="position:relative"class="help" data-fieldtip="Import google data to be displayed in the strategy page below the advanced options">?</span></legend>
 <label for="link">Link:</label>
   <input style="width:-webkit-fill-available;" type="text" id="link">
   <label for="link">Track ID:<span> (The name you use for your track column)</span></label>
   <input placeholder="Track" type="text" id="track"><br>
   <label for="sname">Sheet Name:</label>
-  <input type="text" id="sname"><span> Optional</span>
+  <input type="text" id="sname"><span> Optional</span><a style="margin-left: 10px;"target="_blank"href="https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/edit?usp=sharing">(Example)</a>
 </fieldset>
 <fieldset>
   <legend id="Scripts">Scripts</legend>
   <div>
     <input type="checkbox" id="review">
-        <span>Race Review</span>
+        <span class="description">Race Review</span><span class="help" data-fieldtip="Home page review button. It opens https://igpmanager.com/app/d=raceReview">?</span>
         </div>
   <div>
   <input type="checkbox" id="league">
-      <span>League Home</span>
+      <span>League Home</span><span class="help" data-fieldtip="In the league page add a full race history button and position finished to each track">?</span>
       </div>
       <div>
         <input type="checkbox" id="research">
-      <span>Research</span>
+      <span>Research</span><span class="help" data-fieldtip="Add a table with the values from the bars in the research menu.">?</span>
       </div>
       <div>
         <input type="checkbox" id="train">
-      <span>Training</span>
+      <span>Training</span><span class="help" data-fieldtip="Add an extra column in the training page if driver is recovering.">?</span>
       </div>
       <div>
         <input type="checkbox" id="staff">
-      <span>Staff (strength icons)</span>
+      <span>My Staff</span><span class="help" data-fieldtip="Shows strenght of CD in the staff menus">?</span>
       </div>
       <div>
         <input type="checkbox" id="market">
-      <span>Market (strength and weakness icons)</span>
+      <span>Market (strength and weakness icons)</span><span class="help" data-fieldtip="Shows strenght and weakness of CD in the transfer market">?</span>
       </div>
       <div>
         <input type="checkbox" id="marketDriver">
-      <span>Market (Drivers)</span>
+      <span>Market (Drivers)</span><span class="help" data-fieldtip="Add talent column for drivers in the transfer market">?</span>
       </div>
       <div>
         <input type="checkbox" id="strategy">
@@ -144,7 +190,7 @@ input{
     
       <div>
         <input type="checkbox" id="overview">
-      <span>Race Overview</span>
+      <span>Car Overview</span><span class="help" data-fieldtip="Enable review button (design research) during a live race">?</span>
       </div>
       <div>
         <input type="checkbox" id="hq">
@@ -152,11 +198,11 @@ input{
       </div>
       <div>
         <input type="checkbox" id="refresh">
-      <span>Academy Auto-Refresh</span>
+      <span>Academy Auto-Refresh</span><span class="help" data-fieldtip="Add youth academy countdown. It will be placed as a notification beside the HQ menu option">?</span>
       </div>
       <div>
         <input type="checkbox" id="reports">
-      <span>Reports</span>
+      <span>Reports</span><span class="help" data-fieldtip="Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs">?</span>
       </div>
 </fieldset>
 <fieldset>

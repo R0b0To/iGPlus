@@ -1,38 +1,31 @@
 {
-    "manifest_version":3,
-    "name": "iGP Extended",
+    "manifest_version":2,
+    "name": "iGPlus",
     "description": "Enhance your iGPmanager experience",
-    "version":"0.994",
+    "version":"0.9962",
      "icons":{
-         "128": "./images/racing128.png"
+         "128": "./images/Icon128.png"
      },
      "background": {
-         "service_worker": "background.js"
-     },
-     "action":{
-         "default_popup": "popup.html",
-         "default_icons":{
-            "128": "./images/racing128.png"
-         }
+         "scripts": ["background.js"]
      },
      "options_ui": {
         "page": "options.html",
         "open_in_tab": false
       },
-      "web_accessible_resources": [
-        { 
-            "resources": [ "*.png", "*.PNG" ],
-            "matches": [ "*://igpmanager.com/*" ]
-        
-        }],
-     
+      "browser_action": {
+        "default_icon": "./images/Icon128.png",
+        "default_title": "iGPlus",
+        "default_popup": "popup.html"
+      },
      "permissions":[
          "tabs",
          "storage",
-         "scripting"
-     ],
-
-     "host_permissions": [
-         "*://igpmanager.com/*"
+         "scripting",
+         "*://igpmanager.com/*",
+         "*://api.open-meteo.com/*",
+         "*://docs.google.com/*"
      ]
+
+    
 }

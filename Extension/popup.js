@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
      downloadButton= document.getElementById('down'); 
      copyButton= document.getElementById('copy'); 
      pitLossButton= document.getElementById('averagePit'); 
+     csv = document.getElementById('CSV'); 
 
      
      driver = 0;
@@ -374,6 +375,32 @@ setText(race_timings);
       
     });
 
+      //------------------------------------------------------------------------------driver CSV---------------------------------------------- 
+      csv.addEventListener('click',function(){
+
+        chrome.storage.local.get('active', function(data) {
+          race = data.active;
+            
+            csvtext="";
+            race.forEach(driver=>{
+             for(var i=0 ; i<driver.driver_result.lap.length; i++)
+             {
+              
+              csvtext+=`${driver.name},${driver.team},${driver.driver_result.lap[i]},${driver.driver_result.time[i]},${driver.driver_result.gap_to_lead[i]},${driver.driver_result.average[i]},${driver.driver_result.rank[i]}\n`
+             }
+            });
+            
+           setText(csvtext);
+          
+
+            });
+  
+           
+          // downloadFile(string,"lap_trend");  
+      
+      
+    });
+
     //------------------------------------------------------------------------------new race---------------------------------------------- 
     newButton.addEventListener('click', function(){
       
@@ -462,7 +489,7 @@ setText(race_timings);
   });
 
 
-
+ 
 
   
   

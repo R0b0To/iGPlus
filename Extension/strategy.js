@@ -66,7 +66,6 @@ function circuit_info(){
   
 }
 main();
-//console.log('hey');
 async function main(){
     try {
            chrome.storage.local.get({language: 'eng'},async function(data){
@@ -85,12 +84,9 @@ async function main(){
                   .then(data => {
                       if (typeof data.vars !== 'undefined') {
                           rules = data.vars.rules;
-                          
-                          league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0] |100;
+                          var league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
                           const multipliers = { 100: 1, 75: 1.33, 50: 1.5, 25: 3 };
                           multiplier = multipliers[league_length] || 1; //<-------------------------------multiplier
-
-                          //fetch car economy
                           fetch(`https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=`)
                           .then(response => response.json())
                           .then(data => {
@@ -164,8 +160,13 @@ async function main(){
                                   var el = document.getElementById(params.id);
                                   if (el) {
                                     if(document.getElementsByClassName('fuelEst').length==0)
-                                    {                             
-                                      params.done(el);
+                                    {         
+                                      try {
+                                        params.done(el);
+                                      } catch (error) {
+                                        
+                                      }                    
+                                      
                                     }
                                     this.disconnect();
                                   }
@@ -625,7 +626,7 @@ if(document.getElementById("importedTable")==null)
           "gb":["gb","gb 19","great britan",18],//,//Great Britain
           "fr":["france","fr",19],//,//France
           "at":["austria","at",20],//,//Austria
-          "ca":["canaada","ca",21],//,//Canada
+          "ca":["canada","ca",21],//,//Canada
           "az":["azerbaijan","az",22],//,//Azerbaijan
           "mx":["mexico","mx",23],//,//Mexico
           "ru":["russia","ru",24],//,//Russia
@@ -636,7 +637,7 @@ if(document.getElementById("importedTable")==null)
         j.forEach((ele) =>
         {
           try {
-      //console.log(ele);
+     // console.log(ele);
             
             if(isNaN(ele[t.gTrack]))
               requestedTrack = ele[t.gTrack].toLowerCase();
@@ -725,6 +726,16 @@ init();
             //console.log(jsonData);
             const colz = [];
             const tr = document.createElement('tr');
+
+          //if data is without labels make the first row the labels
+          if(!jsonData.table.cols[0].label)
+          {
+            for(var i = 0 ; i<jsonData.table.cols.length; i++)
+            {
+                jsonData.table.cols[i].label = jsonData.table.rows[0].c[i].v;
+            }          
+          }
+
             //Extract column labels
             jsonData.table.cols.forEach((heading) => {  
                 if (heading.label) {
@@ -740,6 +751,10 @@ init();
                     th.textContent = column;                              
                     tr.appendChild(th);
                    
+                }
+                else
+                {
+
                 }
             })
             output.appendChild(tr);
@@ -790,7 +805,7 @@ init();
 }
  
   async function processRows(json) {
-    //console.log(json);
+  //  console.log(json);
   
   json = await getCurrentTrack(json);
   

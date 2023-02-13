@@ -49,7 +49,7 @@ function inject_button() {
   quali_button.addEventListener('click', quali_export);
   race_button.addEventListener('click', race_export)
   if (p.childElementCount == 5) {
- p.insertBefore(podium,p.childNodes[6]);
+    p.insertBefore(podium,p.childNodes[6]);
     p.insertBefore(quali_button,p.childNodes[6]);
    
   }
@@ -119,16 +119,16 @@ string = "🚦 🏁"+trackName+"🚦\n"+
 
 function race_export()
 {
-  cvs = "";
+  csv = "";
   r= document.querySelector("#race").childNodes[1];
-  cvs+=r.childNodes[0].childNodes[0].childNodes[0].textContent;//pos
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[1].textContent;//driver
-  cvs+=",Team";
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[2].textContent;//finish
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[3].textContent;//bestlap
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[4].textContent;//top
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[5].textContent;//pit
-  cvs+=","+r.childNodes[0].childNodes[0].childNodes[6].textContent;//pnt
+  csv+=r.childNodes[0].childNodes[0].childNodes[0].textContent;//pos
+  csv+=","+r.childNodes[0].childNodes[0].childNodes[1].textContent;//driver
+  csv+=",Team";
+  csv+=","+r.childNodes[0].childNodes[0].childNodes[2].textContent;//finish
+  csv+=","+r.childNodes[0].childNodes[0].childNodes[3].textContent;//bestlap
+  csv+=","+r.childNodes[0].childNodes[0].childNodes[4].textContent;//top
+  csv+=","+r.childNodes[0].childNodes[0].childNodes[5].textContent;//pit
+  csv+=","+r.childNodes[0].childNodes[0].childNodes[6].textContent;//pnt
 
   race_table = r.childNodes[1];
 
@@ -142,24 +142,24 @@ function race_export()
     pits = race_table.childNodes[i].childNodes[5].textContent;
     points = race_table.childNodes[i].childNodes[6].textContent;
 
-    cvs+="\n"+rank+","+driver_name+","+team_name+","+finish+","+best_lap+","+top_speed+","+pits+","+points;
+    csv+="\n"+rank+","+driver_name+","+team_name+","+finish+","+best_lap+","+top_speed+","+pits+","+points;
   }
   race_id = window.location.href.replace(/\D/g, "");
-  downloadFile(cvs,race_id+"_Race");
+  downloadFile(csv,race_id+"_Race");
 
 }
 function quali_export()
 {
   
-  cvs = '';
+  csv = '';
   q = document.querySelector("#qualifying").childNodes[0];
 
-  cvs+=q.childNodes[0].childNodes[0].childNodes[0].textContent;
-  cvs+=","+q.childNodes[0].childNodes[0].childNodes[1].textContent;
-  cvs+=",Team";
-  cvs+=","+q.childNodes[0].childNodes[0].childNodes[2].textContent;
-  cvs+=","+q.childNodes[0].childNodes[0].childNodes[3].textContent;
-  cvs+=","+q.childNodes[0].childNodes[0].childNodes[4].textContent;
+  csv+=q.childNodes[0].childNodes[0].childNodes[0].textContent;
+  csv+=","+q.childNodes[0].childNodes[0].childNodes[1].textContent;
+  csv+=",Team";
+  csv+=","+q.childNodes[0].childNodes[0].childNodes[2].textContent;
+  csv+=","+q.childNodes[0].childNodes[0].childNodes[3].textContent;
+  csv+=","+q.childNodes[0].childNodes[0].childNodes[4].textContent;
 
   quali_table = q.childNodes[1];
   for (let i = 1; i <= quali_table.childElementCount; i++) {
@@ -170,10 +170,32 @@ function quali_export()
     gap = quali_table.childNodes[i].childNodes[3].textContent;
     tyre = quali_table.childNodes[i].childNodes[4].className.replace("ts-","");
     race_id = window.location.href.replace(/\D/g, "");
-    cvs+="\n"+rank+","+driver_name+","+team_name+","+lap+","+gap+","+tyre;
+    csv+="\n"+rank+","+driver_name+","+team_name+","+lap+","+gap+","+tyre;
   }
 
-  downloadFile(cvs,race_id+"_Qualifying");
+  downloadFile(csv,race_id+"_Qualifying");
+  
+}
+function all_export()
+{
+  //console.log('test');
+  p = document.querySelector("#dialogs-container > div > div > div.mOpt");
+  export_button = p.childNodes[5];
+  all_button = export_button.cloneNode(true);
+  all_button.id = "alldrivers";
+  all_button.textContent = "All Drivers CSV";
+   if (p.childElementCount == 7) {
+      p.insertBefore(all_button,p.childNodes[7]);
+    }
+  all_button.addEventListener('click', function(){
+   
+chrome.storage.local.get('active',async function(data){
+    race_id = window.location.href.replace(/\D/g, "");
+    downloadFile(csvRaceResults(data.active),race_id+"_Drivers_CSV");
+  });
+
+  });
+ 
   
 }
 function progress() {
@@ -211,7 +233,15 @@ for (i = 1; i <= quali_results.childElementCount; i++) {
     "race_time": [],
     "lap_time": [],
     "pit_stop": "",
-    "pitTimeLoss":[]
+    "pitTimeLoss":[],
+    "driver_result":{
+      "lap":[],
+      "time":[],
+      "gap_to_lead":[],
+      "average":[],
+      "rank":[]
+    }
+
   }
   manager.push(manager_template);
 }
@@ -286,6 +316,7 @@ async function race_report() {
   }
   formatTable();
   document.getElementById("progress").remove();
+  all_export();
 }
 //handle server response
 function request(url) {
@@ -335,18 +366,51 @@ async function update_managers(table, index) {
     }
     
   }
+function pushLapData(average,gap,lap,rank,time){
 
+  manager[index].driver_result.average.push(average);
+  manager[index].driver_result.gap_to_lead.push(gap);
+  manager[index].driver_result.lap.push(lap);
+  manager[index].driver_result.rank.push(rank);
+  manager[index].driver_result.time.push(time);
+}
   try {
 
     race_table = table;
+
     laps_done = race_table.tBodies[0].rows.length; // getting last lap
 
-    startTyre = race_table.rows[1].childNodes[1].childNodes[0].textContent;
+    startTyre = race_table.rows[1].cells[1].textContent;
     manager[index].pit_stop = startTyre;
     last_pit_lap = 0;
-    
+
+    /*pushLapData(
+      table.rows[0].cells[3].textContent,//average
+      table.rows[0].cells[2].textContent,//gap
+      table.rows[0].cells[0].textContent,//lap
+      table.rows[0].cells[4].textContent,//lap/
+      table.rows[0].cells[1].textContent);//time*/
+    pushLapData("","",table.rows[1].cells[0].textContent,manager[index].quali,"");
+
+
     pitTimes = [];
     for (i = 2; i <= laps_done; i++) {
+
+      try {
+        var rank = table.rows[i].cells[4].textContent;
+      } catch (error) {
+        rank = "";
+      }
+     
+
+      pushLapData(
+        table.rows[i].cells[3].textContent,//average
+        table.rows[i].cells[2].textContent,//gap
+        table.rows[i].cells[0].textContent,//lap
+        rank,//rank
+        table.rows[i].cells[1].textContent);//time
+
+
 
       if (isNaN(race_table.rows[i].childNodes[0].textContent)) {
         pit_lap = race_table.rows[i - 1].childNodes[0].textContent;
@@ -363,10 +427,7 @@ async function update_managers(table, index) {
         c = toMs(race_table.rows[i-2].childNodes[1].textContent);
         d = toMs(race_table.rows[i+2].childNodes[1].textContent);
         }
-        
 
-        //console.log(a+"\n"+b+"\n"+c+"\n"+d+"\n");
-        
         if(a*b*c*d != false)
        {
          pitTime = a + b -c-d;
@@ -375,11 +436,6 @@ async function update_managers(table, index) {
        }
         else
         manager[index].pitTimeLoss.push(-1);
-        
-       
-        //console.log("pitime: "+pitTime);
-        
-
       }
       else {
         manager[index].rank.push(race_table.rows[i].childNodes[4].innerHTML); //track position
@@ -452,9 +508,6 @@ function formatTable(){
 //console.log(total/valid);
 document.querySelector("#race > div:nth-child(1)").appendChild(document.createTextNode("Average pit time loss: "+(total/valid).toFixed(2)));
 
-
-
-    
   
     var table = document.getElementById("race").childNodes[1];
 
@@ -623,7 +676,19 @@ switch (code) {
 
 }
 
-
+function csvRaceResults(race)
+{
+  csv="";
+  race.forEach(driver=>{
+   for(var i=0 ; i<driver.driver_result.lap.length; i++)
+   {
+    
+    csv+=`${driver.name},${driver.team},${driver.driver_result.lap[i]},${driver.driver_result.time[i]},${driver.driver_result.gap_to_lead[i]},${driver.driver_result.average[i]},${driver.driver_result.rank[i]}\n`
+   }
+  });
+  
+  return csv;
+}
 
 
 

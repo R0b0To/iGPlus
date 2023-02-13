@@ -4,6 +4,17 @@ link = document.getElementById("link");
 sname = document.getElementById("sname");
 trackName = document.getElementById("track");
 
+leagueCheckbox = document.getElementById('league').nextElementSibling.nextElementSibling;
+researchCheckbox = document.getElementById('research').nextElementSibling.nextElementSibling;
+trainingCheckbox = document.getElementById('train').nextElementSibling.nextElementSibling;
+staffCheckbox = document.getElementById('staff').nextElementSibling.nextElementSibling;
+marketCheckbox = document.getElementById('market').nextElementSibling.nextElementSibling;
+marketDriverCheckbox = document.getElementById('marketDriver').nextElementSibling.nextElementSibling;
+refreshCheckbox = document.getElementById('refresh').nextElementSibling.nextElementSibling;
+reportsCheckbox = document.getElementById('reports').nextElementSibling.nextElementSibling;
+reviewCheckbox = document.getElementById('review').nextElementSibling.nextElementSibling;
+gsheetCheckbox = document.getElementById('Gsheet').childNodes[1];
+overviewCheckbox = document.getElementById('overview').nextElementSibling.nextElementSibling;
 
 league = document.getElementById("league");
 league.addEventListener("click",function(){
@@ -38,7 +49,7 @@ checkEvent('reports');
 checkEvent('refresh');
 checkEvent('review');
 checkEvent('marketDriver');
-checkEvent('review');
+
 
 setup = document.getElementById("setup");
 
@@ -97,7 +108,7 @@ function testLink()
   .then(res => {
     if (res.ok) {
       link.className = "valid";
-      console.log(res);
+      //console.log(res);
 
 
       chrome.storage.local.set({"gLink": url});
@@ -120,6 +131,10 @@ function save_options() {
   }
 
 function restore_options() {
+
+  
+
+
     // Use default value language = 'eng'
     chrome.storage.local.get({
       language: 'eng',
@@ -129,6 +144,31 @@ function restore_options() {
       document.getElementById('signOpt').textContent = lang[items.language].signOption;
       raceSign.nextElementSibling.textContent = lang[items.language].RaceReport;
       overSign.nextElementSibling.textContent = lang[items.language].StartOvertakes;
+
+      gsheetCheckbox.attributes['data-fieldtip'].value= lang[items.language].scriptDescription.gsheet;
+      leagueCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.leagueHome;
+      researchCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.research;
+      trainingCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.training;
+      reviewCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.raceReview;
+      marketCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.market;
+      staffCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.myStaff;
+      marketDriverCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.marketDriver;
+      refreshCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.academyTimer;
+      reportsCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.reports;
+      overviewCheckbox.attributes['data-fieldtip'].value=lang[items.language].scriptDescription.carOverview;
+
+      addFieldtipEvent(gsheetCheckbox);
+      addFieldtipEvent(leagueCheckbox);
+      addFieldtipEvent(researchCheckbox);
+      addFieldtipEvent(trainingCheckbox);
+      addFieldtipEvent(reviewCheckbox);
+      addFieldtipEvent(staffCheckbox);
+      addFieldtipEvent(marketCheckbox);
+      addFieldtipEvent(marketDriverCheckbox);
+      addFieldtipEvent(refreshCheckbox);
+      addFieldtipEvent(reportsCheckbox);
+      addFieldtipEvent(overviewCheckbox);
+
     });
     chrome.storage.local.get("raceSign",function(data){
       raceSign.checked = data.raceSign;
@@ -175,7 +215,7 @@ function restore_options() {
          document.getElementById(item).checked = data.script[item];
       });
       chrome.storage.local.set({"script":data.script});
-      console.log(setup.checked);
+      //console.log(setup.checked);
      if(setup.checked==false){
       document.getElementById("edit").disabled=true;
       document.getElementById("slider").disabled=true;
@@ -404,6 +444,49 @@ overSign.addEventListener("click",function(){
 });
 languageSelection = document.getElementById("language");
 document.addEventListener('DOMContentLoaded', restore_options);
+function addFieldTip(){
+    var span = document.createElement('span');
+    span.id = 'fieldtip';
+    span.setAttribute("style",`opacity:0`);
+    return span;
+}
+function askHelpButton(text){
+  
+ var  span = document.createElement('span');
+  span.textContent = '?';
+ span.className = "help";
+  
+  span.setAttribute('data-fieldtip',text);
+addFieldtipEvent(span);
+  //span = 
 
+  return span;
+}
 
+function addFieldtipEvent(node){
+   fieldtip = document.getElementById('fieldtip');
+  if(fieldtip==null)
+  {
+   document.body.append(addFieldTip());
+  }
+  node.addEventListener('mouseenter',function(){
+   
+    fieldtip.textContent = node.dataset.fieldtip;
+    fieldtip.style.display ='inline-block';
+    var position = { 
+        top: node.offsetTop-fieldtip.offsetHeight-16,
+        left: node.offsetLeft-(fieldtip.offsetWidth/2)+16
+    };
+    fieldtip.style.opacity = 1;
+    
+    fieldtip.setAttribute('style',`top:${position.top}px;left:${position.left}px`);
+    
 
+});
+node.addEventListener('mouseleave',function(){
+    fieldtip = document.getElementById('fieldtip');
+    fieldtip.style.opacity = 0;
+    fieldtip.style.display ='none';
+});
+
+}
