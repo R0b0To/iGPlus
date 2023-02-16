@@ -50,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pitButton.disabled = true;
         startOvertakes.disabled= true;
         pitLossButton.disabled=true;
+        csv.disabled =true;
       }
       else{
         recapButton.disabled = false;
@@ -57,6 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pitButton.disabled = false;
         startOvertakes.disabled= false;
         pitLossButton.disabled=false;
+        csv.disabled=false;
       }
     }
     

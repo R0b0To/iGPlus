@@ -9,15 +9,15 @@ function fuel_calc(f){
       case f >= 100:
         return ((f ** -0.0792) * 0.652);
       case f >= 80:
-        return ((f ** -0.0819) * 0.66);
+        return ((f ** -0.081) * 0.657);
       case f >= 60:
-        return ((f ** -0.0849) * 0.668);
+        return ((f ** -0.0835) * 0.665);
       case f >= 40:
         return ((f ** -0.0854) * 0.669); //very good
       case f >= 20: //(20-40)
-        return ((f ** -0.0887) * 0.678);
+        return ((f ** -0.0886) * 0.678);
       default:  //(1-20)
-        return ((f ** -0.0945) * 0.69);
+        return ((f ** -0.0947) * 0.69);
     }}
 function getWear(tyre,laps){
        const tyreWearFactors = {SS: 2.03,S: 1.338,M: 1,H: 0.824};

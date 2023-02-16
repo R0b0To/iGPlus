@@ -377,10 +377,8 @@ function pushLapData(average,gap,lap,rank,time){
   try {
 
     race_table = table;
-
     laps_done = race_table.tBodies[0].rows.length; // getting last lap
-
-    startTyre = race_table.rows[1].cells[1].textContent;
+    startTyre = race_table.rows[1].cells[1].childNodes[0].textContent
     manager[index].pit_stop = startTyre;
     last_pit_lap = 0;
 
@@ -506,7 +504,7 @@ function formatTable(){
     }
     
 //console.log(total/valid);
-document.querySelector("#race > div:nth-child(1)").appendChild(document.createTextNode("Average pit time loss: "+(total/valid).toFixed(2)));
+document.querySelector("#race > div:nth-child(1)").append(document.createTextNode("Average pit time loss: "+(total/valid).toFixed(2)));
 
   
     var table = document.getElementById("race").childNodes[1];
@@ -545,7 +543,7 @@ document.querySelector("#race > div:nth-child(1)").appendChild(document.createTe
   return laptext;
   }
 function createTyreElement(code){
-
+//console.log(code);
   var tyre ="ts-M";
 
 switch (code) {
