@@ -197,7 +197,9 @@ function previewData(data) {
     offset = -new Date().getTimezoneOffset();
     let json =  {
         
-       
+        accessibility: {
+            enabled: false
+        },
         title: {
             text: ""
         },
@@ -219,52 +221,7 @@ function previewData(data) {
         { 
             visible:false
         },
-    ],/* [{ // Primary yAxis
-            labels: {
-                format: '{value}°C',
-                style: {
-                    color: Highcharts.getOptions().colors[3]
-                }
-            },
-            title: {
-                text: 'Temperature',
-                style: {
-                    color: Highcharts.getOptions().colors[3]
-                }
-            },
-            opposite: true
-    
-        }, { // Secondary yAxis
-            gridLineWidth: 0,
-            title: {
-                text: 'Humidity',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-            labels: {
-                format: '{value} %',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            }
-    
-        },{ // tert yAxis
-            gridLineWidth: 1,
-            title: {
-                text: 'WaterLevel',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            },
-            labels: {
-                format: '{value} mm',
-                style: {
-                    color: Highcharts.getOptions().colors[0]
-                }
-            }
-    
-        }],*/
+    ],
        
         xAxis: {
             type: 'datetime',
@@ -355,8 +312,13 @@ var weatherLocation = {
     24:[43.59,39.72],//russia
     25:[30.17,-97.62]//usa
 }
+try {
+ (function main(){
 if(document.getElementById("chartWeather")==null)
 addWeatherLink();
 swapMap();
-showValues();
+showValues();})();
+} catch (error) {
+    //console.log('page not loaded');
+}
 

@@ -294,7 +294,7 @@ function createPushRow(strategy)
                 tooltipElem.textContent = "?";
                 tooltipText = document.createElement("span");
                 tooltipText.className = "tooltiptext";
-                tooltipText.textContent = lang[language].pushDescriptionPart1 + ((eco.fuel).toFixed(3)) + "km/l " + lang[language].pushDescriptionPart2;
+                tooltipText.textContent = lang[language].pushDescriptionPart1 + ((eco.fuel).toFixed(3))+ lang[language].pushDescriptionPart2;
                 tooltipElem.append(tooltipText);
                 pushButtonHeader.append(tooltipElem);
                 row_name = pushButtonHeader;
@@ -332,24 +332,27 @@ function createPushRow(strategy)
             
             function createPushElement(i, value, step) {
                 var pushInputDiv = document.createElement("div");
-                pushInputDiv.className = "number-input";
+                pushInputDiv.className = "pushDiv";
 
                 var pushInputLabel = document.createElement('div');
                 pushInputLabel.textContent = i;
-                pushInputLabel.setAttribute("style", "font-size: 0.8rem; color:white;align-self:center;background-color:#96bf86;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
+                pushInputLabel.setAttribute("style", "font-size: 0.8rem; color:white;align-self:center;height:100%;display: flex;width:42px;justify-content: center;align-items: center;");
 
                 var pushInputDown = document.createElement('div');
-                pushInputDown.textContent = "−";
-                pushInputDown.setAttribute("style", "font-size:xx-large; color:black; width: 40px;")
+                
+               var  textSpan = document.createElement("span");
+                textSpan.textContent = "−";
+                pushInputDown.append(textSpan);
+                pushInputDown.className = 'pushPlusMin';
                 pushInputDown.addEventListener('click', function () {
                     this.parentNode.querySelector('input[type=number]').stepDown()
                 });
 
                 var pushInput = document.createElement('input');
-                pushInput.className = "PL" + i;
+                pushInput.className = "PL" + i + " pushInput";
                 pushInput.type = "number";
                 pushInput.step = step; "0.001";
-                pushInput.setAttribute("style", "margin: 9px;");
+                //pushInput.setAttribute("style", "margin: 9px;");
 
                 if (i == "FE")
                     pushInput.value = value;
@@ -358,8 +361,11 @@ function createPushRow(strategy)
 
 
                 var pushInputUp = document.createElement('div');
-                pushInputUp.setAttribute("style", "font-size:xx-large; color:black; width: 40px;")
-                pushInputUp.textContent = "+";
+                pushInputUp.className='pushPlusMin';
+               
+                var  textSpan = document.createElement("span");
+                textSpan.textContent = "+";
+                pushInputUp.append(textSpan);
                 pushInputUp.addEventListener('click', function () {
                     this.parentNode.querySelector('input[type=number]').stepUp()
                 });
@@ -546,10 +552,10 @@ function addFuelSlider()
 }
 function savePush(tbody){
    // console.log('saving');
+
     newPL = tbody.querySelectorAll('[class^=PL]');
     pushes = document.querySelectorAll('[class^=PL]');
-    Object.keys(newPL).forEach(key=>{
-    });
+
     var pl = [];
     pl.push(tbody.getElementsByClassName('PL1')[0].value);
     pl.push(tbody.getElementsByClassName('PL2')[0].value);
@@ -557,7 +563,8 @@ function savePush(tbody){
     pl.push(tbody.getElementsByClassName('PL4')[0].value);
     pl.push(tbody.getElementsByClassName('PL5')[0].value);
     fe = tbody.getElementsByClassName('PLFE')[0].value;
-
+    //console.log(fe)
+    eco.fuel = fuel_calc(parseInt(fe));
     for(var i=1; i<6 ;i++){
         p = document.querySelectorAll(`[class^=PL${i}]`);
         Object.keys(p).forEach(key=>{

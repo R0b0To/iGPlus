@@ -39,7 +39,17 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
             injectScript(tabId, "./home.js");
         }
         if (/^(https:\/\/igpmanager\.com\/app\/)/.test(title) && enabled.script.refresh) {
-        injectScript(tabId, "./timerAlert.js");
+
+            scriptRunning = false;
+            chrome.scripting.executeScript({
+                target: { tabId: tabId},
+                files: ["./timerAlert.js"]
+            }, function() {
+                scriptRunning = false;
+              });
+
+
+       // injectScript(tabId, "./timerAlert.js");
     }
         if (title ==`https://igpmanager.com/app/&tab=news` && enabled.script.review) {
 
@@ -48,6 +58,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
         if (title ==`https://igpmanager.com/app/p=training` && enabled.script.train) {
 
             injectScript(tabId, "./training.js");
+        }
+        if (title ==`https://igpmanager.com/app/d=history` && enabled.script.train) {
+
+           //injectScript(tabId, "./track_history.js");
         }
         if (title ==`https://igpmanager.com/app/p=login&tab=news`&& enabled.script.review) {
 
