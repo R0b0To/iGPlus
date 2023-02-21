@@ -237,24 +237,7 @@ async function injectAdvancedStint(){
         
      }                  
        
-     function handleClickOutsidePushBox(event) {
-        document.body.setAttribute('boxEvent', true);
-        const box = document.getElementsByClassName('not-selectable');
-        button = document.getElementsByClassName('dropbtn1');
-        Object.keys(box).forEach(key => {
-            //console.log(box[key].closest('th').contains(event.target));
-            if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
-
-                if( box[key].classList)
-                 box[key].classList.remove('show');
-                 box[key].nextElementSibling.classList.remove('show');
-
-                 savePush(box[key].closest('tbody'));
-                 //updateFuel(box[key].closest('tbody'));
-            }
-        });
-    }
-
+    
         
 
 
@@ -343,7 +326,7 @@ function createPushRow(strategy)
                var  textSpan = document.createElement("span");
                 textSpan.textContent = "−";
                 pushInputDown.append(textSpan);
-                pushInputDown.className = 'pushPlusMin';
+                pushInputDown.className = 'pushPlusMin minusX';
                 pushInputDown.addEventListener('click', function () {
                     this.parentNode.querySelector('input[type=number]').stepDown()
                 });
@@ -355,13 +338,20 @@ function createPushRow(strategy)
                 //pushInput.setAttribute("style", "margin: 9px;");
 
                 if (i == "FE")
-                    pushInput.value = value;
+                {
+                  pushInput.value = value;
+                  image = document.createElement("img");
+                  image.src=`data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAABj1BMVEUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD/////JqWyAAAAg3RSTlMAAQIDBQYHCAkKDQ8QExQWFxkaHR4iIyQlJigqLC03ODo7PD4/QEJGSEtMTVJVV1hZXF1fYGFjbXFyeIGEhYaHiImLjI2PkJKTlJWXmJmdnqGsra6vsLGytLe4vsLExcbHyMrMz9XW19jZ2tzd3uDh4uTs7e7w8vP09fb3+Pn6+/z9/h6CTusAAAABYktHRIRi0FpxAAACWklEQVR42u3ZSVNTQRSG4RPEkYCCEyrihKJgBBHHCMZZFDGAGgecZ0QEVCJqIsn7x12YBBxKb7q76iw43+4u+n5Puqs7XYmIxWKxWCz/zZ7B15+JntzUaE9twPqmu1Sf8b3B+rdN45L8kUD99RO4JV+agxWr/QADuGa8VkTk6Nx8yqd/Xd4ZwGERWTkHJD0Ax9z7GRWRNfMApzVWACZFRFIAnHEGDFde9/FZtLxdOA9ERCQJwFlXQKb8tvTyqEMOFctjfj73AXDeF9AYfcyTXwGlVbgY8wP4jOkHYDCmBijNwfUaNUDsMgCX1AASuwpQ3KoGkLYCQIcaYPcsAJ1agFK/GqDcrwWo9CsBFvp1AIv6VQAti+/TGoAbKAMyBjDAkgcMawOuaAN6tQH135QBckEbUPdKGSCb3wUBbIw+5vlv6IaREIAHGyKOWHaCP2atdeBF1hdAcXIiUrLw12XzBjjEAAYwgAEMYAADGMAABjCAAdQB8PXluUZVAJA9qAzge7sygKlVWoBEovcpQJfiLqibAa5pbsN7wE1NQAbIGEAbcEdEanz/O3YFpIFPTSLdADsVACcBplNDOSAfVwCsX/Rj9YhofB0nK4+zW1QANely/34RnQtJzxsgP+Ly+UPdiJr37YqLKAI8stQBDa2PfQBtzV7tsa6HBd/b2Pu+uHP/2jFCZKbdtX+CMJlPuM3/GKHyZbsLoJtwue8CeBQQQIvD/iuEBJyqHrAjZD9D1QMOBAXcrh7QGRSQMYABqgd0aO+CTUEPon6Ho/j4h2D1uVt1YrFYLBbLv/IDGZamfbAGWYsAAAAASUVORK5CYII=`;
+                  image.setAttribute("style","filter: brightness(0)invert(1);height:1.35rem;");
+                  pushInputLabel.textContent = "";
+                  pushInputLabel.append(image);
+                }   
                 else
                     pushInput.value = pushToUse[i - 1];
 
 
                 var pushInputUp = document.createElement('div');
-                pushInputUp.className='pushPlusMin';
+                pushInputUp.className='pushPlusMin plusX';
                
                 var  textSpan = document.createElement("span");
                 textSpan.textContent = "+";
@@ -407,6 +397,23 @@ function createWearRow(strategy) {
       }
   
 }
+ function handleClickOutsidePushBox(event) {
+        document.body.setAttribute('boxEvent', true);
+        const box = document.getElementsByClassName('not-selectable');
+        button = document.getElementsByClassName('dropbtn1');
+        Object.keys(box).forEach(key => {
+            //console.log(box[key].closest('th').contains(event.target));
+            if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
+
+                if( box[key].classList)
+                 box[key].classList.remove('show');
+                 box[key].nextElementSibling.classList.remove('show');
+
+                 savePush(box[key].closest('tbody'));
+                 //updateFuel(box[key].closest('tbody'));
+            }
+        });
+    }
 
 var observer = new MutationObserver(function(mutations){ mutations.forEach(mut=>{if(mut.target.parentElement.style.visibility=='visible'&&mut.addedNodes.length>0)update_stint(mut.target.closest('td'));});});
 
@@ -575,7 +582,7 @@ function savePush(tbody){
     feToolTip = document.getElementsByClassName('tooltiptext');
     for (var i = 0; i < pFE.length; i++) {
         pFE[i].value = fe;
-        feToolTip[i].textContent =  lang[language].pushDescriptionPart1 + ((fuel_calc(fe) * track.length).toFixed(3)) + " " + lang[language].pushDescriptionPart2;
+        feToolTip[i].textContent =  lang[language].pushDescriptionPart1 + ((eco.fuel).toFixed(3))+ lang[language].pushDescriptionPart2;
       }
     chrome.storage.local.set({"pushLevels":pl}, function() { 
       
@@ -1386,8 +1393,8 @@ function createSaveDataPreview(s)
     strategyContainer.setAttribute("style","background-color: #dfdfdf;");
     strategyContainer.id= k;
     deleteB = document.createElement("th");
-    deleteB.textContent = "del";
-    deleteB.setAttribute("style","background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white");
+    deleteB.innerHTML= `<svg style=height:24px;filter:brightness(0)invert(1); xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. --><path d="M135.2 17.7C140.6 6.8 151.7 0 163.8 0H284.2c12.1 0 23.2 6.8 28.6 17.7L320 32h96c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 96 0 81.7 0 64S14.3 32 32 32h96l7.2-14.3zM32 128H416V448c0 35.3-28.7 64-64 64H96c-35.3 0-64-28.7-64-64V128zm96 64c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16zm96 0c-8.8 0-16 7.2-16 16V432c0 8.8 7.2 16 16 16s16-7.2 16-16V208c0-8.8-7.2-16-16-16z"/></svg>`;
+    deleteB.setAttribute("style","background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white;cursor:pointer");
     deleteB.addEventListener("click",deleteSave);
     strategyContainer.appendChild(deleteB);
     //download = docum ---------------------------------------------

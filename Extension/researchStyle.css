@@ -8,7 +8,7 @@
     
  }
  .hoverCopyTd:hover::after{ 
-    background-color: rgba(0, 162, 255, 0.5);
+    background-color: #00a2ff80;
     content: '';  
     height: 10000px;    
     left: 0;

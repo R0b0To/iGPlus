@@ -38,6 +38,7 @@
   appearance: textfield;
   text-align: center;
   font-family: 'Roboto';
+  
 }
 
 .pushInput[type=number]::-webkit-inner-spin-button,
@@ -47,17 +48,21 @@
 
 .pushInput {
   border: none;
+  border-radius:0;
   display: inline-flex;
-  height: 36px;
+  height: 2rem;
   width:100px;
   margin:0;
   font-weight: 500;
+  font-size: 1rem;
+  font-family: 'Roboto';
+  background-color: #f0f1f2;
 }
 
 .pushDiv,
 .pushDiv * {
   box-sizing: border-box;
-  height: 36px;
+  height: 2rem;
   display: inline-flex;
 }
 
@@ -151,21 +156,26 @@
 .pushPlusMin{
   cursor:pointer;
   justify-content: center;
-  margin-left: 1%;
-  margin-right: 1%;
   border-radius: 20%;
   align-items: center;
-  font-size:xx-large; 
   color:rgb(255, 255, 255); 
-  width: 40px;
+  height: 2rem;
+    width: 2rem;
   transition: all 100ms linear;
   -webkit-transition: all 100ms linear;
   -moz-transition: all 100ms linear;
   -o-transition: all 100ms linear;
   background: #689954;
 }
+.plusX{
+  border-radius: 0 20% 20% 0;
+}
+.minusX{
+  border-radius: 20% 0 0 20%;
+}
 .pushPlusMin span{
   align-items: center;
+  font-size: 1.25rem;
 }
 .pushPlusMin:hover{
  
