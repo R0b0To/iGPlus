@@ -1,38 +1,42 @@
 {
-    "manifest_version":3,
-    "name": "iGPlus",
-    "description": "Enhance your iGPmanager experience",
-    "version":"0.9964",
-     "icons":{
-         "128": "./images/Icon128.png"
-     },
-     "background": {
-         "service_worker": "background.js"
-     },
-     "action":{
-         "default_popup": "popup.html",
-         "default_icons":{
-            "128": "./images/Icon128.png"
-         }
-     },
-     "options_ui": {
-        "page": "options.html",
-        "open_in_tab": false
-      },
-      "web_accessible_resources": [
-        { 
-            "resources": [ "*.png", "*.PNG" ],
-            "matches": [ "*://igpmanager.com/*" ]
-        
-        }],
-     
-     "permissions":[
-         "tabs",
-         "storage",
-         "scripting"
-     ],
-
-     "host_permissions": [
-         "*://igpmanager.com/*"
-     ]
+  "manifest_version": 3,
+  "name": "iGPlus",
+  "version": "1.1.0",
+  "description": "Enhance your iGPmanager experience",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "action": {
+    "default_icons": {
+      "128": "images/Icon128.png"
+    },
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "host_permissions": [
+    "*://igpmanager.com/*"
+  ],
+  "icons": {
+    "128": "images/Icon128.png"
+  },
+  "options_ui": {
+    "open_in_tab": true,
+    "page": "options/options.html"
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://igpmanager.com/*"
+      ],
+      "resources": [
+        "*.png",
+        "*.PNG"
+      ]
+    }
+  ]
 }
