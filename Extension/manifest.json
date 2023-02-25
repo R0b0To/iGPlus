@@ -35,7 +35,9 @@
       ],
       "resources": [
         "*.png",
-        "*.PNG"
+        "*.PNG",
+        "*.svg",
+        "*.js"
       ]
     }
   ]

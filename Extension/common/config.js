@@ -27,11 +27,12 @@ const scriptDefaults = {
 const tabScripts = {
   '/app/p=training': {
     key: 'train',
-    scripts: ['training.js']
+    scripts: ['training.js'],
+    styles: ['common.css']
   },
   '/app/d=research': {
     key: 'research',
-    scripts: ['research.js', 'common/localization.js'],
+    scripts: ['research.js'], // TODO dynamically import localization!
     styles: ['researchStyle.css']
   },
   '/app/p=cars': {
@@ -77,7 +78,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['strategy.js', 'common/localization.js'],
+    scripts: ['strategy.js'],
     styles: ['style.css']
   },
   '/app/p=league&id=': {
@@ -86,7 +87,7 @@ const tabScripts = {
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['reports.js', 'purify.js', 'common/localization.js']
+    scripts: ['reports.js', 'purify.js'] // TODO dynamically import localization!
   },
   '/app/d=teamSettings': {
     scripts: ['team_settings.js']

@@ -1,0 +1,10 @@
+/* Training page */
+#dateHeader {
+  width: 10%;
+}
+
+#dateHeader > img {
+  width: 1.6em;
+  padding-top: 0.3em;
+  filter: invert(.35);
+}
