@@ -1,0 +1,30 @@
+{
+  "name": "igplus",
+  "version": "1.0.0",
+  "description": "Extension for igpmanager game. Chrome and Firefox compatibility",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/R0b0To/iGPlus.git"
+  },
+  "author": {
+    "name": "R0b0To"
+  },
+  "contributors": [
+    {
+      "name": "evhenious",
+      "email": "evhenious@gmail.com"
+    }
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/R0b0To/iGPlus/issues"
+  },
+  "homepage": "https://github.com/R0b0To/iGPlus#readme",
+  "devDependencies": {
+    "eslint": "^8.34.0"
+  }
+}
