@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html>
+<head>
+  <title>iGPx Options</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
+</head>
+
+<body>
+  <div id="langTitle">Language:
+    <select id="language">
+      <option value="eng">English</option>
+      <option value="ita">Italiano</option>
+    </select>
+  </div>
+
+  <fieldset>
+    <legend id="signOpt">Invert Report Sign</legend>
+
+    <div>
+      <input type="checkbox" id="race" name="race">
+      <span for="race">Race Report</span>
+    </div>
+
+    <div>
+      <input type="checkbox" id="over" name="over">
+      <span for="over">Overtakes</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend id="Gsheet">Google Sheet<span style="position:relative" class="help"
+        data-fieldtip="Import google data to be displayed in the strategy page below the advanced options">?</span>
+    </legend>
+    <label for="link">Link:</label>
+    <input style="width:-webkit-fill-available;" type="text" id="link">
+    <label for="link">Track ID:<span> (The name you use for your track column)</span></label>
+    <input placeholder="Track" type="text" id="track"><br>
+    <label for="sname">Sheet Name:</label>
+    <input type="text" id="sname"><span> Optional</span><a style="margin-left: 10px;" target="_blank"
+      href="https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/edit?usp=sharing">(Example)</a>
+  </fieldset>
+
+  <fieldset>
+    <legend id="Scripts">Scripts</legend>
+    <div>
+      <input type="checkbox" id="review">
+      <span class="description">Race Review</span><span class="help"
+        data-fieldtip="Home page review button. It opens https://igpmanager.com/app/d=raceReview">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="league">
+      <span>League Home</span><span class="help"
+        data-fieldtip="In the league page add a full race history button and position finished to each track">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="research">
+      <span>Research</span><span class="help"
+        data-fieldtip="Add a table with the values from the bars in the research menu.">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="train">
+      <span>Training</span><span class="help"
+        data-fieldtip="Add an extra column in the training page if driver is recovering.">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="staff">
+      <span>My Staff</span><span class="help" data-fieldtip="Shows strenght of CD in the staff menus">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="market">
+      <span>Market (strength and weakness icons)</span><span class="help"
+        data-fieldtip="Shows strenght and weakness of CD in the transfer market">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="marketDriver">
+      <span>Market (Drivers)</span><span class="help"
+        data-fieldtip="Add talent column for drivers in the transfer market">?</span>
+    </div>
+    <div>
+      <input type="checkbox" id="strategy">
+      <span>Race Strategy</span>
+      <input type="checkbox" id="sliderS">
+      <span>Slider</span>
+      <input type="checkbox" id="editS">
+      <span>Editable</span>
+    </div>
+
+    <div>
+      <input type="checkbox" id="setup">
+      <span>Race Setup</span>
+      <input type="checkbox" id="slider">
+      <span>Slider</span>
+      <input type="checkbox" id="edit">
+      <span>Editable</span>
+    </div>
+
+    <div>
+      <input type="checkbox" id="overview">
+      <span>Car Overview</span><span class="help"
+        data-fieldtip="Enable review button (design research) during a live race">?</span>
+    </div>
+
+    <div>
+      <input type="checkbox" id="hq">
+      <span>HQ Level Labels</span>
+    </div>
+
+    <div>
+      <input type="checkbox" id="refresh">
+      <span>Academy Auto-Refresh</span><span class="help"
+        data-fieldtip="Add youth academy countdown. It will be placed as a notification beside the HQ menu option">?</span>
+    </div>
+
+    <div>
+      <input type="checkbox" id="reports">
+      <span>Reports</span><span class="help"
+        data-fieldtip="Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs">?</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend id="ssaves">Strategies</legend>
+    <div>
+      <span>Export</span>
+      <select id="exportSave"></select>
+    </div>
+    <div style="margin-top: 3px;">
+      <span>Import</span>
+      <input style="border-radius: 5px;" type="file" id="myFile" name="filename">
+    </div>
+  </fieldset>
+
+  <script src="options.js" type="module"></script>
+</body>
+
+</html>
