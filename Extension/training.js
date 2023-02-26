@@ -24,7 +24,7 @@ function startHealthMonitor() {
     drivers.forEach((driver) => {
       const health = parseInt(driver.style.width);
 
-      // TODO the game considers a driver is healthy approx at 80%
+      // TODO the game considers a driver is healthy approx at 80%, not 100%
       const hoursToFull = Math.ceil((100 - health) / 5);
 
       const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
@@ -60,15 +60,15 @@ function startHealthMonitor() {
   checkTimeToFullHealth();
 }
 
-try {
-  startHealthMonitor.initAttempts = 0;
-  startHealthMonitor();
-} catch (err) {
-  if (startHealthMonitor.initAttempts < 3) {
-    startHealthMonitor.initAttempts += 1;
-    console.warn(`Retry to start health monitoring #${startHealthMonitor.initAttempts}/3`);
-    setTimeout(startHealthMonitor, 500);
-  } else {
-    console.error('Cannot init health monitoring', err);
+// TODO move to separate retry module?
+(async () => {
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit
+      startHealthMonitor();
+      break;
+    } catch (err) {
+      console.warn(`Retry to start health monitoring #${i + 1}/3`);
+    }
   }
-}
+})();

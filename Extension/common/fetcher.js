@@ -5,13 +5,27 @@ The intention is to have a simple centralized point of fetching game data,
 And some abstraction on the top of fetch mechanism and error handling
 */
 
-const getBuildingInfoUrl = (id) => `action=fetch&d=facility&id=${id}&csrfName=&csrfToken=`;
+const getBuildingInfoUrl = (id) => `action=fetch&d=facility&id=${id}`;
+const getStaffUrl = (id) => `action=fetch&d=staff&id=${id}`;
+
+function getData(itemLocator) {
+  return fetch(`${baseUrl}?${itemLocator}&csrfName=&csrfToken=`)
+    .then((response) => response.json());
+}
 
 async function fetchBuildingInfo(buildingId) {
   try {
-    const data = await fetch(`${baseUrl}?${getBuildingInfoUrl(buildingId)}`)
-      .then((response) => response.json())
-      .catch((error) => console.error(`Cannot get info about building with id ${buildingId}`, error));
+    const data = await getData(getBuildingInfoUrl(buildingId));
+
+    return data || null;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function fetchStaffInfo(personId) {
+  try {
+    const data = await getData(getStaffUrl(personId));
 
     return data || null;
   } catch (err) {
@@ -20,5 +34,6 @@ async function fetchBuildingInfo(buildingId) {
 }
 
 export {
-  fetchBuildingInfo
+  fetchBuildingInfo,
+  fetchStaffInfo
 };

@@ -1,13 +1,14 @@
 async function addLevelLabels() {
   const { fetchBuildingInfo } = await import('./common/fetcher.js');
 
-  if (document.getElementsByClassName('levelLabel')[0] != null) return;
+  if (document.getElementsByClassName('levelSpan')?.length) return;
 
   /** @type {HTMLAnchorElement[]} */
   const buildingAnchors = document.querySelectorAll('div.c-wrap.text-center > a');
 
   buildingAnchors.forEach(async (building) => {
     const levelDiv = document.createElement('span');
+    levelDiv.classList.add('levelSpan');
 
     const buildingParams = new URLSearchParams(building.pathname.replace('/app/', '?'));
     const id = buildingParams.get('id');
