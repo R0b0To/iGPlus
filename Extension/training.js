@@ -24,20 +24,28 @@ function startHealthMonitor() {
     drivers.forEach((driver) => {
       const health = parseInt(driver.style.width);
 
-      // TODO the game considers a driver is healthy approx at 80%, not 100%
+      // TODO the game considers a driver is healthy approx at 80%, not 100%. Move to config?
       const hoursToFull = Math.ceil((100 - health) / 5);
 
       const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
       const dateString = `~${padValue(fullDate.getHours())}:01`;
+      const healthText = health < 100 ? dateString : '';
 
-      const healthbarCell = driver.closest('td');
+      const healthBarCell = driver.closest('td');
+      let estimatedHealTimeCell;
+
       if (driver.closest('tr').cells.length < 7) {
-        const dateTd = document.createElement('td');
-        dateTd.id = 'dateTd';
-        dateTd.textContent = health < 100 ? dateString : '';
+        // works when you refresh the page
+        estimatedHealTimeCell = document.createElement('td');
+        estimatedHealTimeCell.id = 'dateTd';
 
-        healthbarCell.parentElement.insertBefore(dateTd, healthbarCell);
+        healthBarCell.parentElement.insertBefore(estimatedHealTimeCell, healthBarCell);
+      } else {
+        // works when you train a driver and the health has to be updated
+        estimatedHealTimeCell = driver.closest('tr').querySelector('#dateTd');
       }
+
+      estimatedHealTimeCell.textContent = healthText;
     });
   }
 
@@ -64,7 +72,7 @@ function startHealthMonitor() {
 (async () => {
   for (let i = 0; i < 3; i += 1) {
     try {
-      await new Promise((res) => setTimeout(res, 200)); // sleep a bit
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
       startHealthMonitor();
       break;
     } catch (err) {
