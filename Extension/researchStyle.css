@@ -1,85 +1,85 @@
 .hoverCopy {
-    overflow: hidden;
- }
- .hoverCopyTd {
-    padding: 10px;
-    position: relative;
-    cursor: pointer;
-    
- }
- .hoverCopyTd:hover::after{ 
-    background-color: rgba(0, 162, 255, 0.5);
-    content: '';  
-    height: 10000px;    
-    left: 0;
-    position: absolute;  
-    top: -5000px;
-    width: 100%;
-    
- }
- .hoverCopyTd:active::after {
-    opacity: 0.5;
-  }
-  @media only screen and (max-width: 294px){
-.hoverCopy {
-      width: 100% !important;
-  }
-
-  }
-  @media only screen and (max-width: 442px){
-   .ratings {
-         display: none;
-     }
-   
-     }
-  
-
- /* @import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700);
-
-body {
-  color: #333;
-  font-family: PT Sans, sans-serif;
-  line-height: 1.8em;
-  background: #F2EAD9;
+  overflow: hidden;
+  float: left;
+  width: auto;
+  margin-right: 1px !important;
 }
 
-.wrapper {
-  width: 50%;
-  margin: 0 auto;
-}*/
+.hoverCopyTd {
+  padding: 10px;
+  position: relative;
+  cursor: pointer;
+}
+.hoverCopyTd:hover::after {
+  background-color: rgba(0, 162, 255, 0.5);
+  content: '';
+  height: 10000px;
+  left: 0;
+  position: absolute;
+  top: -5000px;
+  width: 100%;
+}
+.hoverCopyTd:active::after {
+  opacity: 0.5;
+}
 
+@media only screen and (max-width: 294px) {
+  .hoverCopy {
+    width: 100% !important;
+  }
+}
+
+@media only screen and (max-width: 442px) {
+  .ratings {
+    display: none;
+  }
+}
 
 #fieldtip {
-       text-align: center;
-       font-size: .9em;
-	    display: inline-block;
-       border-radius: 8px;
-       position: absolute;
-	    padding: 5px 15px;
-	    background: #292d33;
-	    color: #fff;
-	    font-weight: 300;
-	    z-index: 100;
-	    min-width: 40px;
-       max-width: 200px;
-	    transition: all 200ms linear;
-	    -webkit-transition: all 200ms linear;
-	    -moz-transition: all 200ms linear;
-	    -o-transition: all 200ms linear;
-      z-index: 100;
-	}
-	#fieldtip:after {
-	    display: 'block';
-	    content: '';
-	    position: absolute;
-	    bottom: -10px;
-	    left: 10px;
-	    width: 0px;
-	    height: 0px;
-      
-       border-left: 8px solid transparent;
-       border-right: 8px solid transparent;
-       border-top: 12px solid #292d33;
-	    /*-webkit-transform:rotate(360deg);*/
-	}
-   
+  text-align: center;
+  font-size: 0.9em;
+  display: inline-block;
+  border-radius: 8px;
+  position: absolute;
+  padding: 5px 15px;
+  background: #292d33;
+  color: #fff;
+  font-weight: 300;
+  z-index: 100;
+  min-width: 40px;
+  max-width: 200px;
+  transition: all 200ms linear;
+  -webkit-transition: all 200ms linear;
+  -moz-transition: all 200ms linear;
+  -o-transition: all 200ms linear;
+  z-index: 100;
+}
+#fieldtip:after {
+  display: 'block';
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 10px;
+  width: 0px;
+  height: 0px;
+
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #292d33;
+  /*-webkit-transform:rotate(360deg);*/
+}
+
+.statColTh {
+  min-width: 32px;
+  height: 2em;
+}
+
+.researchImg {
+  height: 1.4em;
+  filter: invert(0.3);
+}
+
+#carResearch {
+  width: -webkit-fill-available;
+  width: -moz-available;
+}

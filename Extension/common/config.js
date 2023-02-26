@@ -83,7 +83,7 @@ const tabScripts = {
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['reports.js', 'purify.js'] // TODO dynamically import localization!
+    scripts: ['reports.js', 'purify.js']
   },
   // main Staff page
   '/app/p=staff&tab=staff': {

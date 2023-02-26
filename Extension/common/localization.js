@@ -20,6 +20,7 @@ const language = {
     pushDescriptionPart1: 'Each PL indicates the fuel amount (in liters) that will be added to the fuel consumption. Your fuel consuption is ',
     pushDescriptionPart2: 'L/km (Fuel per lap/track length). selection does not change the stints push for the race',
     commentText: 'Any thoughts ',
+    researchHelp: 'The highlighted row denotes the recommended research, determined through a weighted system.',
     scriptDescription: {
       gsheet: 'Import google data to be displayed in the strategy page below the advanced options',
       raceReview: 'Home page review button. It opens https://igpmanager.com/app/d=raceReview',
@@ -55,6 +56,7 @@ const language = {
     pushDescriptionPart1: 'Ogni spinta equivale alla quantità di carburante (in litri) da aggiungere al consumo di carburante. Il tuo consumo attuale è: ',
     pushDescriptionPart2: 'L/km (Litri per giro/ lunghezza circuito). La scelta della spinta non verrà salvata per la gara.',
     commentText: 'Commenti',
+    researchHelp: 'The highlighted row denotes the recommended research, determined through a weighted system.', // TODO: TRANSLATE ME
     scriptDescription: {
       gsheet: 'Importa dati da google sheets da essere visualizzati al di sotto della strategia avanzata',
       raceReview: 'Pulsante nella home page, apre https://igpmanager.com/app/d=raceReview',
