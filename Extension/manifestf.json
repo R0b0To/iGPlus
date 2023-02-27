@@ -2,12 +2,12 @@
     "manifest_version":2,
     "name": "iGPlus",
     "description": "Enhance your iGPmanager experience",
-    "version":"0.9964",
+    "version":"1.1.0",
      "icons":{
          "128": "./images/Icon128.png"
      },
      "background": {
-         "scripts": ["background.js"]
+         "page": "background.html"  
      },
      "options_ui": {
         "page": "options.html",
