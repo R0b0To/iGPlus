@@ -23,15 +23,22 @@
   opacity: 0.5;
 }
 
-@media only screen and (max-width: 294px) {
+@media only screen and (max-width: 376px) {
   .hoverCopy {
     width: 100% !important;
+  }
+  #carResearch {
+    width: -moz-available;
   }
 }
 
 @media only screen and (max-width: 442px) {
   .ratings {
     display: none;
+  }
+  div.bgGrey {
+    height: 0px;
+    overflow: hidden;
   }
 }
 
@@ -88,9 +95,9 @@
 }
 
 #carResearch {
+  width: calc(100% - 164px);
   width: fill-available;
   width: -webkit-fill-available;
-  width: -moz-available;
 }
 
 .sponsorEffect {

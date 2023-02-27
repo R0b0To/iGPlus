@@ -30,6 +30,10 @@ async function enhanceResearchTable() {
     /** @type { NodeListOf<HTMLDivElement> } */
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
     const researchStatsRows = [...ratingBars].map((bar) => {
+      // this will hide Comparsion column for narrow screens
+      gameTable.tHead.rows[0].cells[2].className = 'ratings';
+      bar.parentElement.classList.add('ratings');
+
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
 
@@ -71,8 +75,6 @@ async function enhanceResearchTable() {
       }
     });
 
-    gameTable.parentElement.insertBefore(statsTable, gameTable);
-
     const helpmark = createHelpButton(i18n[language].researchHelp);
 
     const tfoot = document.createElement('tfoot');
@@ -86,6 +88,8 @@ async function enhanceResearchTable() {
 
     tfoot.append(helpmark, thf, total);
     statsTable.append(tfoot);
+
+    gameTable.parentElement.insertBefore(statsTable, gameTable);
   }
 
   observer.observe(researchPowerSpan, { characterData: false, attributes: false, childList: true, subtree: false });
