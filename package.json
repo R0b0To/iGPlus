@@ -4,7 +4,9 @@
   "description": "Extension for igpmanager game. Chrome and Firefox compatibility",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "run:ff": "./node_modules/.bin/web-ext run --source-dir ./Extension",
+    "lint:ff": "./node_modules/.bin/web-ext lint --source-dir ./Extension"
   },
   "repository": {
     "type": "git",
@@ -25,6 +27,7 @@
   },
   "homepage": "https://github.com/R0b0To/iGPlus#readme",
   "devDependencies": {
-    "eslint": "^8.34.0"
+    "eslint": "^8.34.0",
+    "web-ext": "^7.5.0"
   }
 }

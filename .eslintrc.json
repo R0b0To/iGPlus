@@ -30,6 +30,8 @@
             "error",
             "always"
         ],
+        "no-trailing-spaces": "error",
+        "space-infix-ops": "error",
         "no-unused-vars": "warn",
         "no-shadow": "warn"
     }
