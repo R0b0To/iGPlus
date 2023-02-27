@@ -1,4 +1,4 @@
-const { icons } = await import('../common/config.js');
+const { icons } = await import(chrome.runtime.getURL('/common/config.js'));
 
 /**
    * Adds Strength and Weakness labels to those who has them

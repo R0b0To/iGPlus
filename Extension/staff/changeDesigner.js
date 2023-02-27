@@ -2,8 +2,8 @@ async function addStaffSkillLabels() {
   /** @type HTMLTBodyElement[] */
   const staffTable = document.querySelector('#dialogs-container form table tbody');
 
-  const { fetchStaffInfo } = await import('../common/fetcher.js');
-  const { createSkillLabel, parseSkills } = await import('./helpers.js');
+  const { fetchStaffInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
+  const { createSkillLabel, parseSkills } = await import(chrome.runtime.getURL('/staff/helpers.js'));
 
   await Promise.all(
     [...staffTable.rows].map(async (row) => {

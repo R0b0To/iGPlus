@@ -11,19 +11,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
 
   if (tab_status === 'complete' && !isScriptRunning) {
-    //await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
-    chrome.storage.local.get({ script: scriptDefaults },function(data){
+    // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
+    chrome.storage.local.get({ script: scriptDefaults }, function (data) {
+      const enabledScripts = data.script;
+      chrome.storage.local.set({ script: enabledScripts });
 
-    const  enabledScripts = data.script;
-    chrome.storage.local.set({ script: enabledScripts });
+      const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
+      const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
 
-    const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
-    const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
-    
-    if (!key || enabledScripts[key]) {
-      styles.length && injectStyles(tabId, styles);
-      scripts.length && injectScripts(tabId, scripts);
-    }
+      if (!key || enabledScripts[key]) {
+        styles.length && injectStyles(tabId, styles);
+        scripts.length && injectScripts(tabId, scripts);
+      }
     });
   }
 });
