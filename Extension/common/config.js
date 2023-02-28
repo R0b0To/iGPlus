@@ -28,7 +28,7 @@ const tabScripts = {
   '/app/p=training': {
     key: 'train',
     scripts: ['training.js'],
-    styles: ['common.css']
+    styles: ['css/training.css']
   },
   '/app/d=research': {
     key: 'research',
@@ -41,15 +41,18 @@ const tabScripts = {
   },
   '/app/p=home': {
     key: 'review',
-    scripts: ['home.js']
+    scripts: ['home.js'],
+    styles: ['css/home.css']
   },
   '/app/&tab=news': {
     key: 'review',
-    scripts: ['home.js']
+    scripts: ['home.js'],
+    styles: ['css/home.css']
   },
   '/app/p=login&tab=news': {
     key: 'review',
-    scripts: ['home.js']
+    scripts: ['home.js'],
+    styles: ['css/home.css']
   },
   '/app/p=race&tab=setup': {
     key: 'setup',
@@ -89,7 +92,7 @@ const tabScripts = {
   '/app/p=staff&tab=staff': {
     key: 'staff',
     scripts: ['staff/staff.js'],
-    styles: ['common.css']
+    styles: ['css/staff.css']
   },
   // dialog to change active Chief Designer
   '/app/d=change&eType=2&sType=design': {
