@@ -26,7 +26,7 @@ async function enhanceResearchTable() {
     statsTable.append(header);
 
     const gameTable = document.getElementById('carResearch');
-
+    
     /** @type { NodeListOf<HTMLDivElement> } */
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
     const researchStatsRows = [...ratingBars].map((bar) => {
@@ -59,8 +59,9 @@ async function enhanceResearchTable() {
     body.append(...researchStatsRows);
     statsTable.append(body);
 
-    // TODO improve this. Looks like sponsor values are inaccurate if get the diff from rating bars
-    const currentCarAttributes = [...document.querySelectorAll('#overview #carAttribTable [class*=block]')].map((node) => ({
+    // TODO improve this. Looks like sponsor values are inaccurate if get the diff from rating bars 
+    try {
+      const currentCarAttributes = [...document.querySelectorAll('#overview #carAttribTable [class*=block]')].map((node) => ({
       id: node.parentElement.id,
       value: node.textContent
     }));
@@ -74,6 +75,10 @@ async function enhanceResearchTable() {
         row.childNodes[0].append(realCarDiff(sponsorEffect));
       }
     });
+    } catch (error) {
+      //happens when page is refreshed or loaded directly instead of being opened from the button. The sponsor values are being retrieved from https://igpmanager.com/app/p=cars so if the page is not loaded before it won't find the elements.
+    }
+    
 
     const helpmark = createHelpButton(i18n[language].researchHelp);
 
@@ -101,7 +106,7 @@ async function enhanceResearchTable() {
 (async () => {
   for (let i = 0; i < 3; i += 1) {
     try {
-      await new Promise((res) => setTimeout(res, 100)); // sleep a bit, while page loads
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
       await enhanceResearchTable();
       break;
     } catch (err) {
