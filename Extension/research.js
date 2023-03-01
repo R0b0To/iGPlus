@@ -26,7 +26,7 @@ async function enhanceResearchTable() {
     statsTable.append(header);
 
     const gameTable = document.getElementById('carResearch');
-    
+
     /** @type { NodeListOf<HTMLDivElement> } */
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
     const researchStatsRows = [...ratingBars].map((bar) => {
@@ -59,26 +59,25 @@ async function enhanceResearchTable() {
     body.append(...researchStatsRows);
     statsTable.append(body);
 
-    // TODO improve this. Looks like sponsor values are inaccurate if get the diff from rating bars 
+    // TODO improve this. Looks like sponsor values are inaccurate if get the diff from rating bars
     try {
       const currentCarAttributes = [...document.querySelectorAll('#overview #carAttribTable [class*=block]')].map((node) => ({
-      id: node.parentElement.id,
-      value: node.textContent
-    }));
+        id: node.parentElement.id,
+        value: node.textContent
+      }));
 
-    researchStatsRows.forEach((row) => {
-      const rowId = row.dataset.id;
-      const currentValue = currentCarAttributes.find(({ id }) => id.includes(rowId)).value;
-      const sponsorEffect = currentValue - row.childNodes[0].textContent;
+      researchStatsRows.forEach((row) => {
+        const rowId = row.dataset.id;
+        const currentValue = currentCarAttributes.find(({ id }) => id.includes(rowId)).value;
+        const sponsorEffect = currentValue - row.childNodes[0].textContent;
 
-      if (sponsorEffect) {
-        row.childNodes[0].append(realCarDiff(sponsorEffect));
-      }
-    });
+        if (sponsorEffect) {
+          row.childNodes[0].append(realCarDiff(sponsorEffect));
+        }
+      });
     } catch (error) {
       //happens when page is refreshed or loaded directly instead of being opened from the button. The sponsor values are being retrieved from https://igpmanager.com/app/p=cars so if the page is not loaded before it won't find the elements.
     }
-    
 
     const helpmark = createHelpButton(i18n[language].researchHelp);
 
@@ -165,53 +164,56 @@ async function copyColumnData() {
   console.log('text copied');
 }
 
-// TODO revisit and finish here
-function weightedResearch() {
-  try {
-    rPower = parseFloat(document.getElementById('checkboxTotal').textContent.slice(0, -1) / 100);
-    table = document.getElementById('statsTable');
-    tableMap = { acc: 0, bra: 1, han: 5, dow: 3 };
-    //'fe':4,'col':2,'te':7,'rel':6};
-    if (table != null) {
-      function getStats(t, index) {
-        value = parseInt(t.rows[index].childNodes[0].childNodes[0].textContent);
-        gap = parseInt(t.rows[index].childNodes[2].childNodes[0].textContent);
-        return { value: value, gap: gap };
-      }
-      carDesign = {};
-      Object.keys(tableMap).forEach((key) => {
-        design = getStats(table, tableMap[key]);
-        carDesign[key] = weightResult(design.value, design.gap, rPower, key);
-      });
-      //console.log(carDesign);
-      function weightResult(currentS, gap, rPower, code) {
-        weight = {
-          acc: 1,
-          bra: 0.5,
-          han: 0.8,
-          dow: 0.3,
-          fe: 0.1,
-          te: 0.1,
-          col: 0.01,
-          rel: 0.01
-        };
-        return (2.23 + 4.23 * Math.log(currentS + gap * rPower) - (2.23 + 4.23 * Math.log(currentS))) * weight[code];
-      }
+function getStatsForResearchField(statsTableRows, fieldId) {
+  const fieldRow = statsTableRows.find((r) => r.dataset.id === fieldId);
+  const value = parseInt(fieldRow.childNodes[0].childNodes[0].textContent);
+  const gap = parseInt(fieldRow.childNodes[2].childNodes[0].textContent);
+  return { value, gap };
+}
 
-      bestWResearch = Math.max(...Object.values(carDesign));
-      table.querySelectorAll('.hoverCopyTr').forEach((row) => {
-        row.style.background = 'transparent';
+function getWeightedResearchGain({ value, gap }, rPower, code) {
+  // research field names are data-id for a row in statsTable
+  const weight = {
+    acceleration: 1,
+    handling: 0.8,
+    braking: 0.5,
+    downforce: 0.3,
+    fuel_economy: 0.1,
+    tyre_economy: 0.1,
+    cooling: 0.01,
+    reliability: 0.01
+  };
+
+  return (2.23 + 4.23 * Math.log(value + gap * rPower) - (2.23 + 4.23 * Math.log(value))) * weight[code];
+}
+
+function weightedResearch() {
+  const currentResearchPower = document.getElementById('checkboxTotal').textContent.slice(0, -1) / 100;
+  const statsTable = document.getElementById('statsTable');
+
+  const mainResearchFields = ['acceleration', 'braking', 'handling', 'downforce'];
+  if (statsTable != null) {
+    const statsTableRows = [...statsTable.rows];
+    const carDesign = {};
+
+    mainResearchFields.forEach((field) => {
+      const design = getStatsForResearchField(statsTableRows, field);
+      carDesign[field] = getWeightedResearchGain(design, currentResearchPower, field);
+    });
+
+    const bestWResearch = Math.max(...Object.values(carDesign));
+
+    statsTableRows.forEach((row) => {
+      row.classList.remove('researchSuggestion');
+    });
+
+    if (bestWResearch > 0) {
+      const bestKeys = Object.keys(carDesign).filter((key) => carDesign[key] === bestWResearch);
+      bestKeys.forEach((key) => {
+        statsTableRows.find((r) => r.dataset.id === key).classList.add('researchSuggestion');
       });
-      if (bestWResearch > 0) {
-        bestKey = Object.keys(carDesign).filter((key) => carDesign[key] === bestWResearch);
-        bestKey.forEach((key) => {
-          table.rows[tableMap[key]].style.background = '#ADD8E6';
-        });
-      }
-    } else {
-      setTimeout(weightedResearch, 200);
     }
-  } catch (error) {}
+  }
 }
 
 function createHelpButton(text) {
