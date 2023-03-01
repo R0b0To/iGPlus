@@ -33,7 +33,17 @@ async function fetchStaffInfo(personId) {
   }
 }
 
+async function fetchNextRace() {
+  try {
+    const data = await getData('action=fetch&p=race');
+    return data || null;
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 export {
   fetchBuildingInfo,
+  fetchNextRace,
   fetchStaffInfo
 };

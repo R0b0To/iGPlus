@@ -1,8 +1,16 @@
-function startHealthMonitor() {
+async function startHealthMonitor() {
+  const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
+  const nextRaceData = await fetchNextRace();
+
   const padValue = (val) => `${val}`.padStart(2, '0');
 
   const trainTable = document.getElementById('trainTable');
-  const drivers = trainTable.querySelectorAll('.green > div');
+  const drivers = trainTable.querySelectorAll('.ratingBar.green > div, .ratingBar.healthWarn > div, .ratingBar.healthAlert > div');
+  drivers.forEach((d) => {
+    d.parentElement.classList.remove('healthWarn', 'healthAlert');
+    d.parentElement.classList.add('green');
+  });
+
 
   const healthObserver = new MutationObserver(function (_mutations) {
     checkTimeToFullHealth();
@@ -24,10 +32,19 @@ function startHealthMonitor() {
     drivers.forEach((driver) => {
       const health = parseInt(driver.style.width);
 
-      // TODO the game considers a driver is healthy approx at 80%, not 100%. Move to config?
       const hoursToFull = Math.ceil((100 - health) / 5);
-
       const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
+
+      // highlight healthbar depending on the next race time & estimated health to that moment
+      if (nextRaceData) {
+        const hoursDiff = (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000;
+        if (hoursDiff > 0) {
+          const alertClass = hoursDiff < 3 ? 'healthWarn' : 'healthAlert';
+          driver.parentElement.classList.remove('green', 'healthWarn', 'healthAlert');
+          driver.classList.add(alertClass);
+        }
+      }
+
       const dateString = `~${padValue(fullDate.getHours())}:01`;
       const healthText = health < 100 ? dateString : '';
 
@@ -73,7 +90,7 @@ function startHealthMonitor() {
   for (let i = 0; i < 3; i += 1) {
     try {
       await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
-      startHealthMonitor();
+      await startHealthMonitor();
       break;
     } catch (err) {
       console.warn(`Retry to start health monitoring #${i + 1}/3`);

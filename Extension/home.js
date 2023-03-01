@@ -6,6 +6,7 @@ function addExtraButtons() {
   try {
     const previousRaceBtn = document.querySelector('a.btn2.fill-w');
     previousRaceBtn.classList.remove('fill-w');
+    previousRaceBtn.classList.add('home-prev-race'); // need this to not interfere with other .btn2
     previousRaceBtn.removeAttribute('style', ''); // let's drive with css
 
     const raceReviewBtn = document.createElement('a');
