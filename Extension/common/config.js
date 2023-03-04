@@ -69,7 +69,8 @@ const tabScripts = {
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',
-    scripts: ['staffMarket.js']
+    scripts: ['staff/staffMarket.js'],
+    styles: ['css/staff.css']
   },
   '/app/p=headquarters': {
     key: 'hq',
