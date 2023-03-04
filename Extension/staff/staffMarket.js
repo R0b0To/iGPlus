@@ -14,7 +14,6 @@ function convertToSeconds(time) {
 
   (async function addLabels(){
     try {
-      console.log('test');
       let contDowntime = document.getElementById('cdTransfersRefresh').textContent;
       //after timer runs out page doesn't load immediately, adding half second extra before running the script again
       let timeToAddLabelsAgain = convertToSeconds(contDowntime) + 500;
