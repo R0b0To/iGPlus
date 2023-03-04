@@ -1,29 +1,14 @@
-function convertToSeconds(time) {
-  const parts = time.split('m ') ;
-  if (parts.length === 1) {
-    return parseInt(parts[0].slice(0, -1), 10) ;
-  } else {
-    const [minutes, seconds] = parts ;
-    return (parseInt(minutes, 10) * 60 + parseInt(seconds.slice(0, -1), 10))*1000 ;
-  }
-}
-
 (async () => {
   const { fetchStaffInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
   const { createSkillLabel, parseSkills } = await import(chrome.runtime.getURL('/staff/helpers.js'));
+  Promise.all([getCDStaffDiv()]);
+  const tableStaffObserver = new MutationObserver(function (_mutations) {
+    console.log(_mutations);
+    getCDStaffDiv();
+  });
 
-  (async function addLabels(){
-    try {
-      let contDowntime = document.getElementById('cdTransfersRefresh').textContent;
-      //after timer runs out page doesn't load immediately, adding half second extra before running the script again
-      let timeToAddLabelsAgain = convertToSeconds(contDowntime) + 500;
-      //in case the page didn't load new CDs in time the function will keep trying every 0.5 sec
-      setTimeout(addLabels, timeToAddLabelsAgain);
-      await Promise.all([getCDStaffDiv()]);
-
-    }catch (error) {}
-  })();
-
+  //observing change in the table istead of the timer because of the irregular server response time
+  tableStaffObserver.observe(document.getElementById('staff-table'), { childList: true, subtree: true });
 
   async function addDesignerSkills(staffDiv) {
     /** @type HTMLAnchorElement */
@@ -46,14 +31,17 @@ function convertToSeconds(time) {
 
     const  CDNames = ['CD','JD','LE','DC','CC','HO','gł. inż.','KD','VT','ГК','PS','BT','رئيس مصممين','수석 디자이너','光盘'];
 
-    for (let i = 0; i < CDNames.length; i++) {
+    //continue only on first page load or countdown refresh. Meaning the staff rows doesn't have the labels
+    if(document.getElementsByClassName('skillWrapper').length == 0 )
+    {
+      for (let i = 0; i < CDNames.length; i++) {
+        const name = CDNames[i];
+        const elements = document.querySelectorAll(`[data-sort="${name}"]`);
 
-      const name = CDNames[i];
-      const elements = document.querySelectorAll(`[data-sort="${name}"]`);
-
-      if (elements.length > 0) {
-        elements.forEach((cdStaff)=>addDesignerSkills(cdStaff));
-        break; //stop looking for correct CD language
+        if (elements.length > 0) {
+          elements.forEach((cdStaff)=>addDesignerSkills(cdStaff));
+          break; //stop looking for correct CD language
+        }
       }
     }
   }

@@ -63,7 +63,7 @@ const tabScripts = {
     key: 'marketDriver',
     scripts: ['driverMarket.js']
   },
-  '/app/p=race&tab=race': {
+  '/app/p=race': {
     key: 'overview',
     scripts: ['highcharts.js', 'race.js']
   },
