@@ -1,8 +1,24 @@
 async function startHealthMonitor() {
+  const padValue = (val) => `${val}`.padStart(2, '0');
+
   const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
 
-  const padValue = (val) => `${val}`.padStart(2, '0');
+  if (nextRaceData) {
+    const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
+    const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
+    const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : 'tomorrow';
+
+    const noticeDiv = document.querySelector('div.notice');
+
+    const healthNotice = document.createElement('span');
+    healthNotice.innerText = `${noticeDiv.textContent}.`;
+
+    const nextRaceNotice = document.createElement('span');
+    nextRaceNotice.innerText = `Next race: ${raceDay} at ${raceTme}`;
+
+    noticeDiv.replaceChildren(healthNotice, nextRaceNotice);
+  }
 
   const trainTable = document.getElementById('trainTable');
   const drivers = trainTable.querySelectorAll('.ratingBar.green > div, .ratingBar.healthWarn > div, .ratingBar.healthAlert > div');

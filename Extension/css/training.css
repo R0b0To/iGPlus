@@ -15,3 +15,13 @@
 .healthWarn {
   background: #b0a858 !important;
 }
+
+#trainingForm div.notice {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+#trainingForm div.notice > span {
+  padding: 0 .2em;
+}
