@@ -8,38 +8,37 @@ And some abstraction on the top of fetch mechanism and error handling
 const getBuildingInfoUrl = (id) => `action=fetch&d=facility&id=${id}`;
 const getStaffUrl = (id) => `action=fetch&d=staff&id=${id}`;
 
-function getData(itemLocator) {
-  return fetch(`${baseUrl}?${itemLocator}&csrfName=&csrfToken=`)
-    .then((response) => response.json());
-}
-
-async function fetchBuildingInfo(buildingId) {
+async function getData(itemLocator) {
   try {
-    const data = await getData(getBuildingInfoUrl(buildingId));
-
-    return data || null;
+    return await fetch(`${baseUrl}?${itemLocator}&csrfName=&csrfToken=`)
+      .then((response) => response.json());
   } catch (err) {
     console.error(err);
+    return null;
   }
 }
 
-async function fetchStaffInfo(personId) {
-  try {
-    const data = await getData(getStaffUrl(personId));
-
-    return data || null;
-  } catch (err) {
-    console.error(err);
-  }
+/**
+ * @param {string} buildingId
+ * @returns {Promise<Object|null>}
+ */
+function fetchBuildingInfo(buildingId) {
+  return getData(getBuildingInfoUrl(buildingId));
 }
 
-async function fetchNextRace() {
-  try {
-    const data = await getData('action=fetch&p=race');
-    return data || null;
-  } catch (err) {
-    console.error(err);
-  }
+/**
+ * @param {string} personId
+ * @returns {Promise<Object|null>}
+ */
+function fetchStaffInfo(personId) {
+  return getData(getStaffUrl(personId));
+}
+
+/**
+ * @returns {Promise<{nextLeagueRaceTime: number}|null>}
+ */
+function fetchNextRace() {
+  return getData('action=fetch&p=race');
 }
 
 export {
