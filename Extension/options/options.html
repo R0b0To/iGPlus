@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
 </head>
 
-<body>
+<body style="font-family: RobotoCondensed;">
   <div id="langTitle">Language:
     <select id="language">
       <option value="eng">English</option>
@@ -19,12 +19,12 @@
     <legend id="signOpt">Invert Report Sign</legend>
 
     <div>
-      <input type="checkbox" id="race" name="race">
+      <input type="checkbox" id="raceSign" name="race">
       <span for="race">Race Report</span>
     </div>
 
     <div>
-      <input type="checkbox" id="over" name="over">
+      <input type="checkbox" id="overSign" name="over">
       <span for="over">Overtakes</span>
     </div>
   </fieldset>
@@ -44,77 +44,86 @@
 
   <fieldset>
     <legend id="Scripts">Scripts</legend>
-    <div>
-      <input type="checkbox" id="review">
+    <div id="review">
+      <input type="checkbox" >
       <span class="description">Race Review</span><span class="help"
         data-fieldtip="Home page review button. It opens https://igpmanager.com/app/d=raceReview">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="league">
+    <div id="league">
+      <input type="checkbox" >
       <span>League Home</span><span class="help"
         data-fieldtip="In the league page add a full race history button and position finished to each track">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="research">
+    <div id="research">
+      <input type="checkbox" >
       <span>Research</span><span class="help"
         data-fieldtip="Add a table with the values from the bars in the research menu.">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="train">
+    <div id="train">
+      <input type="checkbox" >
       <span>Training</span><span class="help"
         data-fieldtip="Add an extra column in the training page if driver is recovering.">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="staff">
+    <div id="staff">
+      <input type="checkbox" >
       <span>My Staff</span><span class="help" data-fieldtip="Shows strenght of CD in the staff menus">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="market">
+    <div id="market">
+      <input type="checkbox" >
       <span>Market (strength and weakness icons)</span><span class="help"
         data-fieldtip="Shows strenght and weakness of CD in the transfer market">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="marketDriver">
+    <div id="marketDriver">
+      <input type="checkbox" >
       <span>Market (Drivers)</span><span class="help"
         data-fieldtip="Add talent column for drivers in the transfer market">?</span>
     </div>
-    <div>
-      <input type="checkbox" id="strategy">
+    <div id="strategy">
+      <input type="checkbox" >
       <span>Race Strategy</span>
-      <input type="checkbox" id="sliderS">
-      <span>Slider</span>
-      <input type="checkbox" id="editS">
-      <span>Editable</span>
+      <div  style="display: inline-block;" id="sliderS">
+        <input type="checkbox" >
+        <span>Slider</span>
+        </div>
+        <div style="display: inline-block;" id="editS">
+        <input type="checkbox">
+        <span>Editable</span>
+        </div>
     </div>
 
-    <div>
-      <input type="checkbox" id="setup">
+    <div id="setup">
+      <input type="checkbox" >
       <span>Race Setup</span>
-      <input type="checkbox" id="slider">
+      <div  style="display: inline-block;" id="slider">
+      <input type="checkbox" >
       <span>Slider</span>
-      <input type="checkbox" id="edit">
+      </div>
+      <div style="display: inline-block;" id="edit">
+      <input type="checkbox">
       <span>Editable</span>
+      </div>
+      
     </div>
 
-    <div>
-      <input type="checkbox" id="overview">
+    <div id="overview">
+      <input type="checkbox" >
       <span>Car Overview</span><span class="help"
         data-fieldtip="Enable review button (design research) during a live race">?</span>
     </div>
 
-    <div>
-      <input type="checkbox" id="hq">
+    <div id="hq">
+      <input type="checkbox" >
       <span>HQ Level Labels</span>
     </div>
 
-    <div>
-      <input type="checkbox" id="refresh">
+    <div id="refresh">
+      <input type="checkbox" >
       <span>Academy Auto-Refresh</span><span class="help"
         data-fieldtip="Add youth academy countdown. It will be placed as a notification beside the HQ menu option">?</span>
     </div>
 
-    <div>
-      <input type="checkbox" id="reports">
+    <div id="reports">
+      <input type="checkbox" >
       <span>Reports</span><span class="help"
         data-fieldtip="Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs">?</span>
     </div>
