@@ -1,22 +1,23 @@
 import { language } from '../common/localization.js';
 
-const raceSign = document.getElementById('race');
-const overSign = document.getElementById('over');
+const raceSign = document.getElementById('raceSign');
+const overSign = document.getElementById('overSign');
 const link = document.getElementById('link');
 const sname = document.getElementById('sname');
 const trackName = document.getElementById('track');
 
-const leagueCheckbox = document.getElementById('league').nextElementSibling.nextElementSibling;
-const researchCheckbox = document.getElementById('research').nextElementSibling.nextElementSibling;
-const trainingCheckbox = document.getElementById('train').nextElementSibling.nextElementSibling;
-const staffCheckbox = document.getElementById('staff').nextElementSibling.nextElementSibling;
-const marketCheckbox = document.getElementById('market').nextElementSibling.nextElementSibling;
-const marketDriverCheckbox = document.getElementById('marketDriver').nextElementSibling.nextElementSibling;
-const refreshCheckbox = document.getElementById('refresh').nextElementSibling.nextElementSibling;
-const reportsCheckbox = document.getElementById('reports').nextElementSibling.nextElementSibling;
-const reviewCheckbox = document.getElementById('review').nextElementSibling.nextElementSibling;
-const gsheetCheckbox = document.getElementById('Gsheet').childNodes[1];
-const overviewCheckbox = document.getElementById('overview').nextElementSibling.nextElementSibling;
+const leagueCheckbox = document.getElementById('league').querySelector('.help');
+const researchCheckbox = document.getElementById('research').querySelector('.help');
+const trainingCheckbox = document.getElementById('train').querySelector('.help');
+const staffCheckbox = document.getElementById('staff').querySelector('.help');
+const marketCheckbox = document.getElementById('market').querySelector('.help');
+const marketDriverCheckbox = document.getElementById('marketDriver').querySelector('.help');
+const refreshCheckbox = document.getElementById('refresh').querySelector('.help');
+const reportsCheckbox = document.getElementById('reports').querySelector('.help');
+const reviewCheckbox = document.getElementById('review').querySelector('.help');
+const gsheetCheckbox = document.getElementById('Gsheet').querySelector('.help');
+const overviewCheckbox = document.getElementById('overview').querySelector('.help');
+
 
 // init
 document.addEventListener('DOMContentLoaded', restoreOptions);
@@ -25,58 +26,45 @@ const languageSelection = document.getElementById('language');
 languageSelection.addEventListener('change', saveOptions);
 
 
-function addCheckEvent(cName) {
-  const checkbox = document.getElementById(cName);
-  checkbox.addEventListener('click', () => scriptCheck(cName, checkbox.checked));
+function addCheckEvent(checkbox) {
+  checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('[id]').id, checkbox.checked));
 }
 
 async function scriptCheck(scriptName, status) {
-  const data = await chrome.storage.local.get({ script: '' }); //! FIXME
-  data.script[scriptName] = status;
-  chrome.storage.local.set({ script: data.script });
+  console.log('saving status of:',scriptName,status);
+  if(scriptName == 'overSign' || scriptName == 'raceSign')
+  {
+    chrome.storage.local.set({ [scriptName]: status });
+  }
+  else
+  {
+    const data = await chrome.storage.local.get({ script: '' }); //! FIXME
+    data.script[scriptName] = status;
+    chrome.storage.local.set({ script: data.script });
+  }
+
 }
 
 // todo - use config to init and control flags?
-[
-  'league',
-  'edit',
-  'slider',
-  'editS',
-  'sliderS',
-  'research',
-  'staff',
-  'market',
-  'overview',
-  'hq',
-  'reports',
-  'refresh',
-  'review',
-  'marketDriver'
-].forEach(addCheckEvent);
+document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
 
-const setup = document.getElementById('setup');
-setup.addEventListener('click', function () {
-  if (this.checked) {
-    document.getElementById('edit').disabled = false;
-    document.getElementById('slider').disabled = false;
+function subCheckboxStatus(checkboxList){
+  if (checkboxList[0].checked) {
+    checkboxList[1].disabled = false;
+    checkboxList[2].disabled = false;
   } else {
-    document.getElementById('edit').disabled = true;
-    document.getElementById('slider').disabled = true;
+    checkboxList[1].disabled = true;
+    checkboxList[2].disabled = true;
   }
-  scriptCheck('setup', this.checked);
-});
+}
+function mainCheckboxEvent(divId) {
+  const divNode = document.getElementById(divId);
+  const checkboxes = divNode.getElementsByTagName('input');
+  checkboxes[0].addEventListener('click',subCheckboxStatus.bind(null,checkboxes));
+}
 
-const strategy = document.getElementById('strategy');
-strategy.addEventListener('click', function () {
-  if (this.checked) {
-    document.getElementById('editS').disabled = false;
-    document.getElementById('sliderS').disabled = false;
-  } else {
-    document.getElementById('editS').disabled = true;
-    document.getElementById('sliderS').disabled = true;
-  }
-  scriptCheck('strategy', this.checked);
-});
+['strategy','setup'].forEach(mainCheckboxEvent);
+
 
 const exportSave = document.getElementById('exportSave');
 link.addEventListener('change', testLink);
@@ -134,24 +122,25 @@ function restoreOptions() {
     {
       language: 'eng'
     },
-    function (items) {
-      document.getElementById('language').value = items.language;
-      document.getElementById('langTitle').childNodes[0].textContent = language[items.language].languageText + ': ';
-      document.getElementById('signOpt').textContent = language[items.language].signOption;
-      raceSign.nextElementSibling.textContent = language[items.language].RaceReport;
-      overSign.nextElementSibling.textContent = language[items.language].StartOvertakes;
+    function (selected) {
+      const code = selected.language;
+      document.getElementById('language').value = code;
+      document.getElementById('langTitle').childNodes[0].textContent = language[code].optionsText.languageText + ': ';
+      document.getElementById('signOpt').textContent = language[code].optionsText.signOption;
+      raceSign.nextElementSibling.textContent = language[code].optionsText.RaceReport;
+      overSign.nextElementSibling.textContent = language[code].optionsText.StartOvertakes;
 
-      gsheetCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.gsheet;
-      leagueCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.leagueHome;
-      researchCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.research;
-      trainingCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.training;
-      reviewCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.raceReview;
-      marketCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.market;
-      staffCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.myStaff;
-      marketDriverCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.marketDriver;
-      refreshCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.academyTimer;
-      reportsCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.reports;
-      overviewCheckbox.attributes['data-fieldtip'].value = language[items.language].scriptDescription.carOverview;
+      gsheetCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.gsheet;
+      leagueCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.leagueHome;
+      researchCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.research;
+      trainingCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.training;
+      reviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.raceReview;
+      marketCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.market;
+      staffCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.myStaff;
+      marketDriverCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.marketDriver;
+      refreshCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.academyTimer;
+      reportsCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.reports;
+      overviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.carOverview;
 
       addFieldtipEvent(gsheetCheckbox);
       addFieldtipEvent(leagueCheckbox);
@@ -209,20 +198,15 @@ function restoreOptions() {
 
   chrome.storage.local.get({ script: script }, function (data) {
     Object.keys(script).forEach((item) => {
-      document.getElementById(item).checked = data.script[item];
+      document.getElementById(item).querySelector('input[type="checkbox"]').checked = data.script[item];
     });
 
     chrome.storage.local.set({ script: data.script });
-    //console.log(setup.checked);
-    if (setup.checked == false) {
-      document.getElementById('edit').disabled = true;
-      document.getElementById('slider').disabled = true;
-    }
+    const strategy = document.getElementById('strategy').querySelectorAll('input');
+    const setup = document.getElementById('setup').querySelectorAll('input');
+    subCheckboxStatus(strategy);
+    subCheckboxStatus(setup);
 
-    if (strategy.checked == false) {
-      document.getElementById('editS').disabled = true;
-      document.getElementById('sliderS').disabled = true;
-    }
   });
 
   chrome.storage.local.get('save', function (d) {
@@ -417,8 +401,9 @@ importSave.addEventListener('change', async function () {
 
 
 
-raceSign.addEventListener('click', function () {
+/*raceSign.addEventListener('click', function () {
   var checkStatus = this.checked;
+  console.log('saving',this)
   chrome.storage.local.set({ raceSign: checkStatus });
 });
 
@@ -426,34 +411,21 @@ overSign.addEventListener('click', function () {
   var checkStatus = this.checked;
   chrome.storage.local.set({ overSign: checkStatus });
 });
-
+*/
 
 
 function addFieldTip() {
-  var span = document.createElement('span');
+  const span = document.createElement('span');
   span.id = 'fieldtip';
-  span.setAttribute('style', `opacity:0`);
+  span.setAttribute('style', 'opacity:0');
   return span;
 }
-
-function askHelpButton(text) {
-  var span = document.createElement('span');
-  span.textContent = '?';
-  span.className = 'help';
-
-  span.setAttribute('data-fieldtip', text);
-  addFieldtipEvent(span);
-  //span =
-
-  return span;
-}
-
 function addFieldtipEvent(node) {
-  const fieldtip = document.getElementById('fieldtip');
+  let fieldtip = document.getElementById('fieldtip');
   if (fieldtip == null) {
-    document.body.append(addFieldTip());
+    fieldtip = addFieldTip();
+    document.body.append(fieldtip);
   }
-
   node.addEventListener('mouseenter', function () {
     fieldtip.textContent = node.dataset.fieldtip;
     fieldtip.style.display = 'inline-block';
