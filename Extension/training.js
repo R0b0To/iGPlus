@@ -1,9 +1,13 @@
 async function startHealthMonitor() {
+  
+  //If drivers are not found error is invoked stopping executing the task any further
+  const trainTable = document.getElementById('trainTable');
+  const drivers = trainTable.querySelectorAll('.ratingBar.green > div, .ratingBar.healthWarn > div, .ratingBar.healthAlert > div');
   const padValue = (val) => `${val}`.padStart(2, '0');
 
   const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
-
+  
   if (nextRaceData) {
     const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
     const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
@@ -20,8 +24,6 @@ async function startHealthMonitor() {
     noticeDiv.replaceChildren(healthNotice, nextRaceNotice);
   }
 
-  const trainTable = document.getElementById('trainTable');
-  const drivers = trainTable.querySelectorAll('.ratingBar.green > div, .ratingBar.healthWarn > div, .ratingBar.healthAlert > div');
   drivers.forEach((d) => {
     d.parentElement.classList.remove('healthWarn', 'healthAlert');
     d.parentElement.classList.add('green');
