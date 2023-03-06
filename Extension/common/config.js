@@ -65,7 +65,7 @@ const tabScripts = {
   },
   '/app/p=race': {
     key: 'overview',
-    scripts: ['highcharts.js', 'race/race.js'],
+    scripts: ['lib/highcharts.js', 'race/race.js'],
     styles: ['race/style.css']
   },
   '/app/p=transfers&tab=staff': {
