@@ -25,38 +25,39 @@ function addWeatherLink() {
   weather.parentElement.appendChild(weatherContainer);
 }
 
+/**
+ * Replaces plain default map to the more detailed one
+ */
 function swapMap() {
-  circuit = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML;
-  code = /[^-]+(?=">)/g.exec(circuit)[0];
-  image = document.querySelector('#race > div.eight.columns.text-center > img');
-  image.src = chrome.runtime.getURL('images/circuits/' + code + '.png');
-  image.setAttribute('style', 'width:90%');
+  const countryFlagImg = document.querySelector('#race > div:nth-child(1) > h1 > img');
+  const mapCode = [...countryFlagImg.classList.values()]
+    .find((val) => val !== 'flag')
+    .split('-')[1];
+
+  const circuitImg = document.querySelector('#race > div.eight.columns.text-center > img');
+  circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
+  circuitImg.style.width = '90%';
 }
 
-function showValues() {
-  function createEle(value) {
-    number = document.createElement('span');
-    number.setAttribute('style', 'position:absolute; top:-90%; left:' + value + ';font-size:90%');
-    number.className = 'showStat';
-    number.textContent = value;
-    return number;
+/**
+ * Adds numeric percentage values to the circuit param bars
+ */
+function showBarValues() {
+  function createValueSpan(value) {
+    const barValue = document.createElement('span');
+    barValue.className = 'showStat';
+    barValue.textContent = value;
+    return barValue;
   }
 
   if (document.getElementsByClassName('showStat').length == 0) {
-    table = document.querySelector('#race > div:nth-child(1) > table > tbody');
-
-    table.rows[2].childNodes[1].childNodes[0].appendChild(
-      createEle(table.rows[2].childNodes[1].childNodes[0].childNodes[0].style.width)
-    );
-    table.rows[3].childNodes[1].childNodes[0].appendChild(
-      createEle(table.rows[3].childNodes[1].childNodes[0].childNodes[0].style.width)
-    );
-    table.rows[4].childNodes[1].childNodes[0].appendChild(
-      createEle(table.rows[4].childNodes[1].childNodes[0].childNodes[0].style.width)
-    );
-    table.rows[5].childNodes[1].childNodes[0].appendChild(
-      createEle(table.rows[5].childNodes[1].childNodes[0].childNodes[0].style.width)
-    );
+    const parameterBars = document.querySelectorAll('#race > div:nth-child(1) > table > tbody .ratingBar');
+    parameterBars.forEach((bar) => {
+      bar.classList.add('statBarWithVaue');
+      bar.appendChild(
+        createValueSpan(bar.childNodes[0].style.width)
+      );
+    });
   }
 }
 
@@ -347,11 +348,15 @@ var weatherLocation = {
   25: [30.17, -97.62], //usa
 };
 
+
+//! entrypoint
 try {
   (function main() {
-    if (document.getElementById('chartWeather') == null) addWeatherLink();
+    if (document.getElementById('chartWeather') == null) {
+      //addWeatherLink();
+    }
     swapMap();
-    showValues();
+    showBarValues();
   })();
 } catch (error) {
   //console.log('page not loaded');

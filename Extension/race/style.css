@@ -1,0 +1,10 @@
+.showStat {
+  position: inherit;
+  font-size: 90%;
+  margin-left: .1em;
+}
+
+.statBarWithVaue {
+  display: inline-flex !important;
+  align-items: center;
+}
