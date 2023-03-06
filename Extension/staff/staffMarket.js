@@ -2,10 +2,7 @@
   const { fetchStaffInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
   const { createSkillLabel, parseSkills } = await import(chrome.runtime.getURL('/staff/helpers.js'));
   Promise.all([getCDStaffDiv()]);
-  const tableStaffObserver = new MutationObserver(function (_mutations) {
-    console.log(_mutations);
-    getCDStaffDiv();
-  });
+  const tableStaffObserver = new MutationObserver(function (_mutations) {getCDStaffDiv();});
 
   //observing change in the table istead of the timer because of the irregular server response time
   tableStaffObserver.observe(document.getElementById('staff-table'), { childList: true, subtree: true });
