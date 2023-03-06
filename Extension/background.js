@@ -1,4 +1,7 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
+
+let scriptRunning = 'none';
+
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   let tab_status = changeInfo.status;
   const { pathname } = new URL(tab.url);
@@ -6,8 +9,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     tab_status = 'complete';
   }
-
-  if (tab_status === 'complete') {
+  //changed to allow execution of only one instance of the same script
+  if (tab_status === 'complete' && pathname != scriptRunning) {
     // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
       const enabledScripts = data.script;
@@ -17,6 +20,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
 
       if (!key || enabledScripts[key]) {
+        scriptRunning = pathname;
         styles.length && injectStyles(tabId, styles);
         scripts.length && injectScripts(tabId, scripts);
       }
@@ -35,7 +39,7 @@ function injectScripts(tabId, scriptFiles) {
       files: scriptFiles
     },
     function () {
-      //end
+      scriptRunning = 'none';
     }
   );
 }
