@@ -11,13 +11,12 @@ async function startHealthMonitor() {
 
   const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
+  const noticeDiv = document.querySelector('div.notice');
 
-  if (nextRaceData) {
+  if (nextRaceData && !noticeDiv.querySelectorAll('span').length) {
     const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
     const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
     const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : 'tomorrow';
-
-    const noticeDiv = document.querySelector('div.notice');
 
     const healthNotice = document.createElement('span');
     healthNotice.innerText = `${noticeDiv.textContent}.`;
