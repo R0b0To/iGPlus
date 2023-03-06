@@ -1,7 +1,4 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
-
-let isScriptRunning = false;
-
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   let tab_status = changeInfo.status;
   const { pathname } = new URL(tab.url);
@@ -10,7 +7,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     tab_status = 'complete';
   }
 
-  if (tab_status === 'complete' && !isScriptRunning) {
+  if (tab_status === 'complete') {
     // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
       const enabledScripts = data.script;
@@ -32,14 +29,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
  * @param {string[]} scriptFiles
  */
 function injectScripts(tabId, scriptFiles) {
-  isScriptRunning = true;
   chrome.scripting.executeScript(
     {
       target: { tabId },
       files: scriptFiles
     },
     function () {
-      isScriptRunning = false;
+      //end
     }
   );
 }
