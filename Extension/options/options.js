@@ -27,6 +27,7 @@ languageSelection.addEventListener('change', saveOptions);
 
 
 function addCheckEvent(checkbox) {
+  //add event listener to checkbox that stores the checkbox status, passing the script name (id)
   checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('[id]').id, checkbox.checked));
 }
 
@@ -46,8 +47,14 @@ async function scriptCheck(scriptName, status) {
 }
 
 // todo - use config to init and control flags?
+// adding the eventlister to all the checkboxes as the function is the same
 document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
 
+/**
+ * Enable or disable the checkboxes affiliated with the main div
+ *
+ * @param {HTMLCollection} checkboxList - The 3 checkbox elements .
+ */
 function subCheckboxStatus(checkboxList){
   if (checkboxList[0].checked) {
     checkboxList[1].disabled = false;
@@ -398,20 +405,6 @@ importSave.addEventListener('change', async function () {
     }
   }
 });
-
-
-
-/*raceSign.addEventListener('click', function () {
-  var checkStatus = this.checked;
-  console.log('saving',this)
-  chrome.storage.local.set({ raceSign: checkStatus });
-});
-
-overSign.addEventListener('click', function () {
-  var checkStatus = this.checked;
-  chrome.storage.local.set({ overSign: checkStatus });
-});
-*/
 
 
 function addFieldTip() {
