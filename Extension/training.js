@@ -1,13 +1,17 @@
 async function startHealthMonitor() {
-  
-  //If drivers are not found error is invoked stopping executing the task any further
-  const trainTable = document.getElementById('trainTable');
-  const drivers = trainTable.querySelectorAll('.ratingBar.green > div, .ratingBar.healthWarn > div, .ratingBar.healthAlert > div');
+  // green bar -> 100% healthy to the race
+  // yellow (.healthWarn) -> 85% to 100% health at the race time
+  // red (.healthAlert) -> less than 85% health at the race time
+  const healthClasses = ['green', 'healthWarn', 'healthAlert'];
   const padValue = (val) => `${val}`.padStart(2, '0');
+
+  // If drivers are not found error is invoked stopping executing the task any further
+  const trainTable = document.getElementById('trainTable');
+  const drivers = trainTable.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
 
   const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
-  
+
   if (nextRaceData) {
     const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
     const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
@@ -24,11 +28,11 @@ async function startHealthMonitor() {
     noticeDiv.replaceChildren(healthNotice, nextRaceNotice);
   }
 
+  // reset custom health colors before updating current health states
   drivers.forEach((d) => {
     d.parentElement.classList.remove('healthWarn', 'healthAlert');
     d.parentElement.classList.add('green');
   });
-
 
   const healthObserver = new MutationObserver(function (_mutations) {
     checkTimeToFullHealth();
@@ -57,9 +61,9 @@ async function startHealthMonitor() {
       if (nextRaceData) {
         const hoursDiff = (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000;
         if (hoursDiff > 0) {
-          const alertClass = hoursDiff < 3 ? 'healthWarn' : 'healthAlert';
-          driver.parentElement.classList.remove('green', 'healthWarn', 'healthAlert');
-          driver.classList.add(alertClass);
+          const alertClass = hoursDiff < 3 ? healthClasses[1] : healthClasses[2];
+          driver.parentElement.classList.remove(...healthClasses);
+          driver.parentElement.classList.add(alertClass);
         }
       }
 

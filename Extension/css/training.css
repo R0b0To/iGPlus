@@ -8,11 +8,11 @@
   filter: invert(.35);
 }
 
-.healthAlert {
+.healthAlert > div{
   background: #ae6562 !important;
 }
 
-.healthWarn {
+.healthWarn > div {
   background: #b0a858 !important;
 }
 
