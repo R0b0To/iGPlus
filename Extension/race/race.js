@@ -21,9 +21,7 @@ function addCustomWeatherLink() {
  */
 function swapMap() {
   const countryFlagImg = document.querySelector('#race > div:nth-child(1) > h1 > img');
-  const mapCode = [...countryFlagImg.classList.values()]
-    .find((val) => val !== 'flag')
-    .split('-')[1];
+  const mapCode = [...countryFlagImg.classList.values()].find((val) => val !== 'flag').split('-')[1];
 
   const circuitImg = document.querySelector('#race > div.eight.columns.text-center > img');
   circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
@@ -45,9 +43,7 @@ function showBarValues() {
     const parameterBars = document.querySelectorAll('#race > div:nth-child(1) > table > tbody .ratingBar');
     parameterBars.forEach((bar) => {
       bar.classList.add('statBarWithVaue');
-      bar.appendChild(
-        createValueSpan(bar.childNodes[0].style.width)
-      );
+      bar.appendChild(createValueSpan(bar.childNodes[0].style.width));
     });
   }
 }
@@ -66,7 +62,7 @@ async function getWeather() {
   const params = {
     lat: raceTrackCoords[trackID][0],
     lon: raceTrackCoords[trackID][1],
-    temp: manager.format.temperature
+    temp: manager.format.temperature,
   };
   const data = await fetchRaceWeather(params);
 
@@ -81,124 +77,82 @@ async function getWeather() {
   buildWeatherCharts(data);
 }
 
-// TODO evhenious: to continue here
 async function buildWeatherCharts(data) {
-  const { weatherCodes } = await import(chrome.runtime.getURL('race/const.js'));
+  const { weatherCodes, weatherStats } = await import(chrome.runtime.getURL('race/const.js'));
 
   Object.keys(data.hourly).forEach((ele) => {
     data.hourly[ele] = data.hourly[ele].slice(0, 48);
   });
 
-  const yAxis = [];
   const series = [];
+  let axisId = 0;
 
-  ['hourly', 'six_hourly', 'three_hourly', 'daily'].forEach(function (section, index) {
-    if (!(section in data)) {
+  let startTime = new Date(`${data.hourly.time[0]}Z`);
+  let secondPointTime = new Date(`${data.hourly.time[1]}Z`);
+  const chartStartTime = startTime.getTime();
+  const pointInterval = secondPointTime.getTime() - startTime.getTime();
+
+  Object.entries(data.hourly).forEach(([category, values]) => {
+    if (!Object.keys(weatherStats).includes(category)) {
       return;
     }
 
-    Object.entries(data[section] || []).forEach(function (k) {
-      if (k[0] == 'time' || k[0] == 'sunrise' || k[0] == 'sunset') {
-        return;
-      }
-      let date = new Date(data[section].time[0]);
-      let date2 = new Date(data[section].time[1]);
-      offset = -new Date().getTimezoneOffset();
-      let hourly_starttime = date.getTime() + offset;
-      let pointInterval = date2.getTime() - date.getTime();
-      let unit = data[`${section}_units`][k[0]];
-      var axisId = null;
-      for (let i = 0; i < yAxis.length; i++) {
-        if (yAxis[i].title.text == unit) {
-          axisId = i;
-        }
-      }
-      if (axisId == null) {
-        yAxis.push({ title: { text: unit } });
-        axisId = yAxis.length - 1;
-      }
+    const unit = data.hourly_units[category];
+    const chartConfig = weatherStats[category];
 
-      typeP = '';
+    const chart = {
+      name: chartConfig.title || category,
+      data: values,
+      color: chartConfig.color,
+      type: chartConfig.type || '',
+      yAxis: axisId,
+      pointStart: chartStartTime,
+      pointInterval: pointInterval,
+      tooltip: {
+        valueSuffix: ` ${unit}`,
+      },
+    };
 
-      if (k[0] == 'precipitation') {
-        var colorP = Highcharts.getOptions().colors[0];
-        typeP = 'area';
-      }
-      if (k[0] == 'relativehumidity_2m') {
-        colorP = Highcharts.getOptions().colors[1];
-        k[0] = 'humidity';
-      }
+    series.push(chart);
 
-      if (k[0] == 'temperature_2m') {
-        colorP = Highcharts.getOptions().colors[3];
-        k[0] = 'temperature';
-      }
-
-      var ser = {
-        name: k[0],
-        data: k[1],
-        color: colorP,
-        type: typeP,
-        yAxis: axisId,
-        pointStart: hourly_starttime,
-        pointInterval: pointInterval,
-        tooltip: {
-          valueSuffix: ' ' + unit,
-        },
-      };
-
-      if (k[0] == 'weathercode') {
-        ser.tooltip.pointFormatter = function () {
-          let condition = weatherCodes[this.y];
-          return (
-            '<span style="color:' +
-            this.series.color +
-            '">\u25CF</span> ' +
-            this.series.name +
-            ': <b>' +
-            condition +
-            '</b> (' +
-            this.y +
-            ' wmo)<br/>'
-          );
-        };
-      }
-      //console.log(ser);
-      series.push(ser);
-    });
+    axisId += 1;
   });
 
-  var plotBands = [];
-  if ('daily' in data && 'sunrise' in data.daily && 'sunset' in data.daily) {
-    let rise = data.daily.sunrise;
-    let set = data.daily.sunset;
-    var plotBands = rise.map(function (r, i) {
-      return {
-        color: 'rgb(255, 255, 194)',
-        from: (r + data.utc_offset_seconds) * 1000,
-        to: (set[i] + data.utc_offset_seconds) * 1000,
-      };
-    });
+  const { sunrise = [], sunset = [], weathercode = [] } = data.daily || {};
+  let plotBands = [];
+
+  if (sunrise.length && sunset.length) {
+    plotBands = sunrise.map((riseTime, index) => ({
+      color: 'rgba(255, 255, 194, .4)',
+      from: new Date(`${riseTime}Z`),
+      to: new Date(`${sunset[index]}Z`)
+    }));
   }
 
-  let latitude = data.latitude.toFixed(2);
-  let longitude = data.longitude.toFixed(2);
+  const latitude = data.latitude.toFixed(2);
+  const longitude = data.longitude.toFixed(2);
   let title = `${latitude}°N ${longitude}°E`;
 
   if ('elevation' in data) {
-    let elevation = data.elevation.toFixed(0);
-    title = `${title} ${elevation}m above sea level`;
+    const elevation = data.elevation.toFixed(0);
+    title += `, ${elevation}m above sea level`;
   }
 
-  offset = -new Date().getTimezoneOffset();
-  let json = {
+  if (weathercode.length) {
+    title += ` | ${weatherCodes[Math.max(...weathercode)]} `;
+  }
+
+  const offset = -new Date().getTimezoneOffset();
+  const chartSetup = {
     accessibility: {
       enabled: false,
     },
     title: {
-      text: '',
+      text: ''
     },
-
+    subtitle: {
+      text: title,
+    },
     chart: {
       type: 'spline',
       zoomType: 'x',
@@ -206,37 +160,23 @@ async function buildWeatherCharts(data) {
       panKey: 'shift',
       backgroundColor: '#e3e4e5',
     },
-
-    yAxis: [
-      {
-        visible: false,
-      },
-      {
-        visible: false,
-      },
-      {
-        visible: false,
-      },
-    ],
-
+    yAxis: new Array(3).fill({ visible: false }, 0, 3),
     xAxis: {
       type: 'datetime',
       plotLines: [
         {
           value: Date.now() + offset * 60000,
-          color: 'red',
+          color: 'rgba(255, 0, 0, .6)',
           width: 2,
         },
       ],
       plotBands: plotBands,
     },
-
     legend: {
       layout: 'vertical',
       align: 'right',
       verticalAlign: 'middle',
     },
-
     plotOptions: {
       series: {
         marker: {
@@ -247,9 +187,7 @@ async function buildWeatherCharts(data) {
         },
       },
     },
-
-    series: series,
-
+    series,
     responsive: {
       rules: [
         {
@@ -276,10 +214,11 @@ async function buildWeatherCharts(data) {
   };
 
   if (document.getElementById('container')) {
-    Highcharts.chart('container', json);
+    Highcharts.chart('container', chartSetup);
   }
+
   if (document.getElementById('containerStockcharts')) {
-    Highcharts.stockChart('containerStockcharts', json);
+    Highcharts.stockChart('containerStockcharts', chartSetup);
   }
 }
 

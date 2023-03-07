@@ -26,6 +26,21 @@ const raceTrackCoords = {
   25: [30.17, -97.62], //usa
 };
 
+const weatherStats = {
+  'temperature_2m': {
+    color: Highcharts.getOptions().colors[3],
+    title: 'temperature'
+  },
+  'relativehumidity_2m': {
+    color: Highcharts.getOptions().colors[1],
+    title: 'humidity'
+  },
+  'precipitation': {
+    type: 'area',
+    color: Highcharts.getOptions().colors[0]
+  }
+};
+
 const weatherCodes = {
   0: 'fair',
   1: 'mainly clear',
@@ -59,5 +74,6 @@ const weatherCodes = {
 
 export {
   raceTrackCoords,
-  weatherCodes
+  weatherCodes,
+  weatherStats
 };

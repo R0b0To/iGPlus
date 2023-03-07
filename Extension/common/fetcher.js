@@ -29,10 +29,12 @@ function fetchRaceWeather({ lat, lon, temp }) {
     latitude: lat,
     longitude: lon,
     models: 'gfs_seamless',
-    ...(temp === '2' ? { temperature_unit: 'fahrenheit' } : {})
+    ...(temp === '2' ? { temperature_unit: 'fahrenheit' } : {}),
+    timezone: 'GMT'
   });
 
   ['temperature_2m', 'relativehumidity_2m', 'precipitation'].forEach((p) => params.append('hourly', p));
+  ['sunrise', 'sunset', 'weathercode'].forEach((p) => params.append('daily', p));
 
   return getData(`${weatherBaseUrl}?${params.toString()}`, true);
 }
