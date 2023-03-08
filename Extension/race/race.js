@@ -26,6 +26,7 @@ function swapMap() {
   const circuitImg = document.querySelector('#race > div.eight.columns.text-center > img');
   circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
   circuitImg.style.width = '90%';
+  circuitImg.style.margin = 'auto';
 }
 
 /**
@@ -53,10 +54,11 @@ function showBarValues() {
  * Shows weather data as charts
  */
 async function getWeather() {
-  const { fetchManagerData, fetchRaceWeather } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const { fetchNextRace, fetchManagerData, fetchRaceWeather } = await import(chrome.runtime.getURL('common/fetcher.js'));
   const { raceTrackCoords } = await import(chrome.runtime.getURL('race/const.js'));
 
   const { manager } = await fetchManagerData();
+  const { nextLeagueRaceTime } = await fetchNextRace();
   const trackID = document.getElementById('race').childNodes[0].lastChild.childNodes[1].href.match(/\d+/)[0];
 
   const params = {
@@ -66,57 +68,46 @@ async function getWeather() {
   };
   const data = await fetchRaceWeather(params);
 
-  // TODO: still need this commented code?
-  // url3 = "http://api.weatherunlocked.com/api/forecast/51.50,-0.12?app_id=ba14cfca&app_key=637253385cd6ff853a6cf83c85132a4b";
-  /*  chrome.runtime.sendMessage( // goes to bg_page.js
-  url3,
-  data => previewData2(data) // your callback
-  );
-  */
-
-  buildWeatherCharts(data);
+  buildWeatherCharts(data, nextLeagueRaceTime);
 }
 
-async function buildWeatherCharts(data) {
+/**
+ * Compiles weather data into charts
+ * @param {Object} data
+ * @param {number} nextLeagueRaceTime in epoch seconds
+ */
+async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const { weatherCodes, weatherStats } = await import(chrome.runtime.getURL('race/const.js'));
+  const { makeChartConfig } = await import(chrome.runtime.getURL('race/chartConfig.js'));
 
+  // we care only about closest 2 days
   Object.keys(data.hourly).forEach((ele) => {
     data.hourly[ele] = data.hourly[ele].slice(0, 48);
   });
 
-  const series = [];
-  let axisId = 0;
+  const pointStart = new Date(`${data.hourly.time[0]}Z`).getTime();
+  const secondPointTime = new Date(`${data.hourly.time[1]}Z`).getTime();
+  const pointInterval = secondPointTime - pointStart;
 
-  let startTime = new Date(`${data.hourly.time[0]}Z`);
-  let secondPointTime = new Date(`${data.hourly.time[1]}Z`);
-  const chartStartTime = startTime.getTime();
-  const pointInterval = secondPointTime.getTime() - startTime.getTime();
+  const series = Object.entries(data.hourly)
+    .filter(([category]) => Object.keys(weatherStats).includes(category))
+    .map(([category, values], index) => {
+      const unit = data.hourly_units[category];
+      const chartConfig = weatherStats[category];
 
-  Object.entries(data.hourly).forEach(([category, values]) => {
-    if (!Object.keys(weatherStats).includes(category)) {
-      return;
-    }
-
-    const unit = data.hourly_units[category];
-    const chartConfig = weatherStats[category];
-
-    const chart = {
-      name: chartConfig.title || category,
-      data: values,
-      color: chartConfig.color,
-      type: chartConfig.type || '',
-      yAxis: axisId,
-      pointStart: chartStartTime,
-      pointInterval: pointInterval,
-      tooltip: {
-        valueSuffix: ` ${unit}`,
-      },
-    };
-
-    series.push(chart);
-
-    axisId += 1;
-  });
+      return {
+        name: chartConfig.title || category,
+        data: values,
+        color: chartConfig.color,
+        type: chartConfig.type || '',
+        yAxis: index,
+        pointStart,
+        pointInterval,
+        tooltip: {
+          valueSuffix: ` ${unit}`,
+        },
+      };
+    });
 
   const { sunrise = [], sunset = [], weathercode = [] } = data.daily || {};
   let plotBands = [];
@@ -129,96 +120,26 @@ async function buildWeatherCharts(data) {
     }));
   }
 
-  const latitude = data.latitude.toFixed(2);
-  const longitude = data.longitude.toFixed(2);
-  let title = `${latitude}°N ${longitude}°E`;
+  const { latitude, longitude, elevation} = data;
+  let title = `${latitude.toFixed(2)}°N ${longitude.toFixed(2)}°E`;
 
-  if ('elevation' in data) {
-    const elevation = data.elevation.toFixed(0);
-    title += `, ${elevation}m above sea level`;
+  if (elevation) {
+    title += `, ${elevation.toFixed(0)}m above sea level`;
   }
 
+  // considering the most severe condition code for this day
   if (weathercode.length) {
     title += ` | ${weatherCodes[Math.max(...weathercode)]} `;
   }
 
-  const offset = -new Date().getTimezoneOffset();
-  const chartSetup = {
-    accessibility: {
-      enabled: false,
-    },
-    title: {
-      text: ''
-    },
-    subtitle: {
-      text: title,
-    },
-    chart: {
-      type: 'spline',
-      zoomType: 'x',
-      panning: true,
-      panKey: 'shift',
-      backgroundColor: '#e3e4e5',
-    },
-    yAxis: new Array(3).fill({ visible: false }, 0, 3),
-    xAxis: {
-      type: 'datetime',
-      plotLines: [
-        {
-          value: Date.now() + offset * 60000,
-          color: 'rgba(255, 0, 0, .6)',
-          width: 2,
-        },
-      ],
-      plotBands: plotBands,
-    },
-    legend: {
-      layout: 'vertical',
-      align: 'right',
-      verticalAlign: 'middle',
-    },
-    plotOptions: {
-      series: {
-        marker: {
-          enabled: false,
-        },
-        label: {
-          connectorAllowed: false,
-        },
-      },
-    },
-    series,
-    responsive: {
-      rules: [
-        {
-          condition: {
-            maxWidth: 800,
-          },
-          chartOptions: {
-            legend: {
-              layout: 'horizontal',
-              align: 'center',
-              verticalAlign: 'bottom',
-            },
-          },
-        },
-      ],
-    },
-    tooltip: {
-      shared: true,
-      crosshairs: true,
-    },
-    caption: {
-      text: '<b> Click and drag in the chart to zoom in and inspect the data.</b>',
-    },
-  };
+  const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series });
 
   if (document.getElementById('container')) {
-    Highcharts.chart('container', chartSetup);
+    Highcharts.chart('container', chartConfig);
   }
 
   if (document.getElementById('containerStockcharts')) {
-    Highcharts.stockChart('containerStockcharts', chartSetup);
+    Highcharts.stockChart('containerStockcharts', chartConfig);
   }
 }
 
