@@ -15,8 +15,8 @@ function pit(){
   // 'pitTime' is a class added by the script. Used to detect whether the function has already been executed
   if(document.getElementsByClassName('pitTime').length == 0)
   {
-    table.classList.add('pitTime'); 
     const table = document.getElementById('csvRaceResult');
+    table.classList.add('pitTime'); 
     const pits = Array.from(document.querySelectorAll('.pit')).slice(1);
     const pitTimes = [];
     pits.forEach(pitLap =>{
