@@ -395,10 +395,115 @@ function edit(d){
   }
   
 }
+function copyPractice(rowNode)
+{
+  if(rowNode.target)
+  {
+    rowNode = this;
+  }
+  var tyre = rowNode.childNodes[0].className.slice(3);
+  var fuelLap = rowNode.childNodes[4].textContent;
+  var wear = rowNode.childNodes[5].textContent;
+  string = `${tyre},${fuelLap},${wear}`;
+  navigator.clipboard.writeText(string).then(() => {
+    //console.log("text copied");
+}, () => { });
+return string;
+}
+function copyAll(){
+
+  list ="";
+  for(var i=1; i<this.parentElement.parentElement.rows.length;i++)
+    { 
+      list+=`${copyPractice(this.parentElement.parentElement.rows[i])}\n`;
+    }
+    navigator.clipboard.writeText(list).then(() => {
+      //console.log("text copied");
+  }, () => { });
+}
+function copyPreviewEnter()
+{
+  setColorOfNode(this,'#00a2ff80');
+}
+function copyPreviewLeave()
+{
+  setColorOfNode(this,'transparent');
+}
+function setColorOfNode(node,color){
+  try {
+  node.childNodes[0].style.transition = "all 0.3s";
+  node.childNodes[4].style.transition = "all 0.3s";
+  node.childNodes[5].style.transition = "all 0.3s";
+  node.childNodes[0].style.backgroundColor = color;
+  node.childNodes[4].style.backgroundColor = color;
+  node.childNodes[5].style.backgroundColor = color;
+  } catch (error) {
+
+  }
+
+}
+function copyAllPreviewEnter()
+{
+  node = this.parentElement.parentElement;
+
+  for(var i=1; i<node.rows.length;i++)
+    {
+      setColorOfNode(node.rows[i],"#00a2ff80");
+    } 
+}
+function copyAllPreviewLeave()
+{
+  node = this.parentElement.parentElement;
+  for(var i=1; i<node.rows.length;i++)
+    {
+      setColorOfNode(node.rows[i],"transparent");
+    }
+}
+function copyTable(){
+
+  table = document.querySelectorAll('.acp[id*="Laps"]');
+  table.forEach(element => {
+    element.rows[0].addEventListener('click',copyAll);
+    element.rows[0].addEventListener('mouseenter',copyAllPreviewEnter);
+    element.rows[0].addEventListener('mouseleave',copyAllPreviewLeave);
+    element.rows[0].style.cursor="pointer";
+    for(var i=1; i<element.rows.length;i++)
+    {
+      element.rows[i].style.cursor="pointer";
+      element.rows[i].addEventListener('click',copyPractice);
+      element.rows[i].addEventListener('mouseenter',copyPreviewEnter);
+      element.rows[i].addEventListener('mouseleave',copyPreviewLeave);
+    }
+    observer.observe(element, { childList: true,subtree: true});
+  });
+}
+var observer = new MutationObserver(function(mutationsList) {
+
+  for (let mutation of mutationsList) {
+    if (mutation.type === 'childList' && mutation.target.tagName === 'TBODY') {
+      // Loop through each added node
+      mutation.addedNodes.forEach(function(node) {
+        // Check if the added node is an element
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          // Do something with the added element
+          node.style.cursor="pointer";
+          node.addEventListener('click',copyPractice);
+          node.addEventListener('mouseenter',copyPreviewEnter);
+          node.addEventListener('mouseleave',copyPreviewLeave);
+
+        }
+      });
+    }
+  }
+});
 
 //code execution ==>
     if(document.getElementById("suggestedSetup")==null)
-      getDrivers()
+    {
+      getDrivers();
+      copyTable();
+    }
+      
 
     
    
