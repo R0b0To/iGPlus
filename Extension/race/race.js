@@ -48,13 +48,32 @@ function showBarValues() {
     });
   }
 }
-
+function weatherMerger(data,interval3h){
+try {
+    interval3h.list.forEach(timestamp => {
+    const dateObj = new Date(timestamp.dt * 1000);
+    const isoFormat = dateObj.toISOString().slice(0, 16);
+    const index = data.hourly.time.indexOf(isoFormat);
+    data.hourly.temperature_2m[index] = timestamp.main.temp;
+    data.hourly.relativehumidity_2m[index] = timestamp.main.humidity;
+    if(timestamp.hasOwnProperty('rain'))
+    {
+      data.hourly.precipitation[index] = timestamp.main.rain['3h'];
+    }
+    
+  });
+} catch (error) {
+  return data;
+}
+  
+  return data;
+}
 /**
  * Fetches detailed weather data from __api.open-meteo.com__.
  * Shows weather data as charts
  */
 async function getWeather() {
-  const { fetchNextRace, fetchManagerData, fetchRaceWeather } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const { fetchNextRace, fetchManagerData, fetchRaceWeather, fetchIGPRaceWeather } = await import(chrome.runtime.getURL('common/fetcher.js'));
   const { raceTrackCoords } = await import(chrome.runtime.getURL('race/const.js'));
 
   const { manager } = await fetchManagerData();
@@ -67,8 +86,9 @@ async function getWeather() {
     temp: manager.format.temperature,
   };
   const data = await fetchRaceWeather(params);
+  const data2 = await fetchIGPRaceWeather(params);
 
-  buildWeatherCharts(data, nextLeagueRaceTime);
+  buildWeatherCharts(weatherMerger(data,data2), nextLeagueRaceTime);
 }
 
 /**
