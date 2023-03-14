@@ -61,7 +61,7 @@ const tabScripts = {
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
-    scripts: ['driverMarket.js']
+    scripts: ['driver/driverMarket.js']
   },
   '/app/p=race': {
     key: 'overview',
