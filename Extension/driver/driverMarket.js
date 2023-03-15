@@ -1,6 +1,6 @@
 (async () => {
   const { fetchDriverInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
-  const { parseSpecialSkill, createSpecialSkillLabel } = await import(chrome.runtime.getURL('/driver/driverHelpers.js'));
+  const { parseAttributes, createSpecialSkillLabel } = await import(chrome.runtime.getURL('/driver/driverHelpers.js'));
   Promise.all([addTalent()]);
   const tableStaffObserver = new MutationObserver(function (_mutations) {addTalent();});
 
@@ -39,13 +39,13 @@
   }
 
   async function addSpecialAbility(talentTd){
-  const driverLink = talentTd.closest('tr').querySelector('a');
-  const designerParams = new URLSearchParams(driverLink.pathname.replace('/app/', '?'));
-  const personId = designerParams.get('id');
-  const data = await fetchDriverInfo(personId);
-  const params = await parseSpecialSkill(data);
-  talentTd.append(createSpecialSkillLabel(params));
-}
+    const driverLink = talentTd.closest('tr').querySelector('a');
+    const designerParams = new URLSearchParams(driverLink.pathname.replace('/app/', '?'));
+    const personId = designerParams.get('id');
+    const data = await fetchDriverInfo(personId);
+    const driver = await parseAttributes(data);
+    talentTd.append(createSpecialSkillLabel(driver.sSpecial));
+  }
 
 
 })();
