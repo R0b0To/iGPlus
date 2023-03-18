@@ -1,39 +1,52 @@
-function pit(){
-  if(document.getElementsByClassName("pitTime").length==0)
-  {
-    try {
-    table = document.getElementById("csvRaceResult");
-    table.classList.add("pitTime");
-    pitTimes = [];
-    for (i = 2; i <= table.tBodies[0].rows.length; i++) {
-        if (isNaN(table.rows[i].childNodes[0].textContent)) { 
-            a = table.rows[i-1].childNodes[1].textContent;
-            b = table.rows[i+1].childNodes[1].textContent;
-            c = table.rows[i-2].childNodes[1].textContent;
-            d = table.rows[i+2].childNodes[1].textContent;
-            pitTime = toMs(a) + toMs(b) -toMs(c) - toMs(d);
-            table.rows[i].childNodes[0].textContent+=" "+(pitTime/1000);
-            //console.log(table.rows[i].childNodes[0].textContent);
-            pitTimes.push(pitTime/1000);
-        }
-      }
-      function toMs(timeString)
-      {
-        time = timeString.split(":");
-        m = parseInt(time[0])*60000;
-        secondAndMs = time[1].split(".");
-        return m + (parseInt(secondAndMs[0])*1000) + (parseInt(secondAndMs[1]));
-      }
-      sum = pitTimes.reduce((a, b) => a + b, 0);
-      avg = (sum / pitTimes.length) || 0;
-      console.log("average is: "+avg);
-    } catch (error) {
-      setTimeout(pit,500);
-    }
-   
-  }
-   
-    }
 
-    pit();
+function toMs(timeString)
+    {
+      const [minStr, secStr, msStr] = timeString.split(/[:.]/);
+      const time = {
+        msInMin: parseInt(minStr) * 60000,
+        msInSec: parseInt(secStr) * 1000,
+        ms: parseInt(msStr)
+      };
+      return time.msInMin + time.msInSec + time.ms;
+    }
+/* rename the pit stop text with the time loss included*/
+function pit(){    
+  
+  // 'pitTime' is a class added by the script. Used to detect whether the function has already been executed
+  if(document.getElementsByClassName('pitTime').length == 0)
+  {
+    const table = document.getElementById('csvRaceResult');
+    table.classList.add('pitTime'); 
+    const pits = Array.from(document.querySelectorAll('.pit')).slice(1);
+    const pitTimes = [];
+    pits.forEach(pitLap =>{
+      try {
+      const a  = pitLap.previousElementSibling.childNodes[1].textContent;
+      const b = pitLap.nextElementSibling.childNodes[1].textContent;
+      const c  = pitLap.previousElementSibling.previousElementSibling.childNodes[1].textContent;
+      const d = pitLap.nextElementSibling.nextElementSibling.childNodes[1].textContent;
+      const pitTime = toMs(a) + toMs(b) - toMs(c) - toMs(d);
+      pitLap.childNodes[0].textContent += ' ' + (pitTime / 1000);
+      pitTimes.push(pitTime / 1000);
+      } catch (error) {
+        //doing consecutive pitstops or last laps
+        pitTimes.push(-1);
+      } 
+    });
     
+    const sum = pitTimes.reduce((a, b) => a + b, 0);
+    const avg = (sum / pitTimes.length) || 0;
+    console.log('average is: ' + avg); //TODO display in the page?
+  }
+}
+
+// TODO move to separate retry module?
+(async () => {
+  try {
+    await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+    pit();
+  } catch (err) {
+    console.log('page not loaded');
+  }
+})();
+

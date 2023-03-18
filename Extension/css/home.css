@@ -1,0 +1,23 @@
+#splash {
+  margin-bottom: .6em;
+}
+
+#raceReview {
+  display: inline-block;
+  width: inherit;
+  float: right;
+}
+
+.home-prev-race {
+  width: inherit;
+}
+
+@media only screen and (max-width: 442px) {
+  #raceReview {
+    width: 100% !important;
+  }
+
+  a.btn2 {
+    width: 100% !important;
+  }
+}

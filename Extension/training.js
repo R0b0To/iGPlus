@@ -1,68 +1,120 @@
-var observer = new MutationObserver(function(mutations) {
-    //each time a mutation is detected an attempt at launching the main function will be made. Until the mutation is stable this will keep reseting the timer
-    clearInterval(myInterval);
-    myInterval = setInterval(timeToFullHeath, 100);
-      
-});
+async function startHealthMonitor() {
+  // green bar -> 100% healthy to the race
+  // yellow (.healthWarn) -> 85% to 100% health at the race time
+  // red (.healthAlert) -> less than 85% health at the race time
+  const healthClasses = ['green', 'healthWarn', 'healthAlert'];
+  const padValue = (val) => `${val}`.padStart(2, '0');
 
-function observeHealth()
-{
-    table = document.getElementById("trainTable");
-    drivers = table.querySelectorAll(".green >div");
-    statusD = false;
-    drivers.forEach(driver => {
-        health = driver.style.width.slice(0,-1);
-        //this observer will observe mutations on the width of the health indicator
-        observer.observe(driver, { attributes : true, attributeFilter : ['style'] });
-        if(health<100)
-        statusD = true;
+  // If drivers are not found error is invoked stopping executing the task any further
+  const trainTable = document.getElementById('trainTable');
+  const drivers = trainTable.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
+
+  const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
+  const nextRaceData = await fetchNextRace();
+  const noticeDiv = document.querySelector('div.notice');
+
+  if (nextRaceData && !noticeDiv.querySelectorAll('span').length) {
+    const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
+    const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
+    const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : 'tomorrow';
+
+    const healthNotice = document.createElement('span');
+    healthNotice.innerText = `${noticeDiv.textContent}.`;
+
+    const nextRaceNotice = document.createElement('span');
+    nextRaceNotice.innerText = `Next race: ${raceDay} at ${raceTme}`;
+
+    noticeDiv.replaceChildren(healthNotice, nextRaceNotice);
+  }
+
+  // reset custom health colors before updating current health states
+  drivers.forEach((d) => {
+    d.parentElement.classList.remove('healthWarn', 'healthAlert');
+    d.parentElement.classList.add('green');
+  });
+
+  const healthObserver = new MutationObserver(function (_mutations) {
+    checkTimeToFullHealth();
+  });
+
+  /**
+   * This observer will observe mutations on the width of the health indicator
+   */
+  function monitorDriversHealth() {
+    drivers.forEach((driver) => {
+      healthObserver.observe(driver, { attributes: true, attributeFilter: ['style'] });
     });
-}
-function timeToFullHeath(){
+  }
 
-    clearInterval(myInterval);
-    if(statusD)
-    addHeader()
-drivers.forEach(driver => {
-        health = driver.style.width.slice(0,-1);
-        hoursToFull = (100 -health)/5;
-        date = new Date();
-        fullDate = new Date(date.getTime()+(3600000*hoursToFull))
-        dateString =  `~${("0" + fullDate.getHours()).slice(-2)}:${("0" +fullDate.getMinutes()).slice(-2)}`;
-        if(driver.closest('tr').cells.length<7){
-        dateTd = document.createElement("td");
-        dateTd.id = "dateTd";
-        if(statusD && health<100)
-            {      
-                dateTd.textContent = dateString;
-                driver.closest("td").parentElement.insertBefore(dateTd,driver.closest("td"));
-                
-            }
-            else if(statusD){
-                driver.closest("td").parentElement.insertBefore(dateTd,driver.closest("td"));
-            }
-   
+  /**
+   * Health regenerates 5% each time new hour starts (first minute of the next hour)
+   */
+  function checkTimeToFullHealth() {
+    drivers.forEach((driver) => {
+      const health = parseInt(driver.style.width);
+
+      const hoursToFull = Math.ceil((100 - health) / 5);
+      const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
+
+      // highlight healthbar depending on the next race time & estimated health to that moment
+      if (nextRaceData) {
+        const hoursDiff = (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000;
+        if (hoursDiff > 0) {
+          const alertClass = hoursDiff < 3 ? healthClasses[1] : healthClasses[2];
+          driver.parentElement.classList.remove(...healthClasses);
+          driver.parentElement.classList.add(alertClass);
         }
-        else if(health==100){
-           driver.closest('td').previousElementSibling.textContent = ``;
-        }
-        else{
-            driver.closest('td').previousElementSibling.textContent = dateString;
-        }  
-});
-}
-function addHeader(){
-    if(document.getElementById("dateHeader")==null)
-    {
-        header = document.createElement("th");
-        header.style.width = '10%';
-        header.id = "dateHeader";
-        header.innerHTML =`<svg style="height: 32px;"xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Pro 6.2.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2022 Fonticons, Inc. --><path d="M216.1 408.1C207.6 418.3 192.4 418.3 183 408.1L119 344.1C109.7 335.6 109.7 320.4 119 311C128.4 301.7 143.6 301.7 152.1 311L200 358.1L295 263C304.4 253.7 319.6 253.7 328.1 263C338.3 272.4 338.3 287.6 328.1 296.1L216.1 408.1zM128 0C141.3 0 152 10.75 152 24V64H296V24C296 10.75 306.7 0 320 0C333.3 0 344 10.75 344 24V64H384C419.3 64 448 92.65 448 128V448C448 483.3 419.3 512 384 512H64C28.65 512 0 483.3 0 448V128C0 92.65 28.65 64 64 64H104V24C104 10.75 114.7 0 128 0zM400 192H48V448C48 456.8 55.16 464 64 464H384C392.8 464 400 456.8 400 448V192z"/></svg>`;
-        table.tHead.rows[0].insertBefore(header,table.tHead.rows[0].cells[4]);
-    }   
+      }
+
+      const dateString = `~${padValue(fullDate.getHours())}:01`;
+      const healthText = health < 100 ? dateString : '';
+
+      const healthBarCell = driver.closest('td');
+      let estimatedHealTimeCell;
+
+      if (driver.closest('tr').cells.length < 7) {
+        // works when you refresh the page
+        estimatedHealTimeCell = document.createElement('td');
+        estimatedHealTimeCell.id = 'dateTd';
+
+        healthBarCell.parentElement.insertBefore(estimatedHealTimeCell, healthBarCell);
+      } else {
+        // works when you train a driver and the health has to be updated
+        estimatedHealTimeCell = driver.closest('tr').querySelector('#dateTd');
+      }
+
+      estimatedHealTimeCell.textContent = healthText;
+    });
+  }
+
+  function addHeader() {
+    if (document.getElementById('dateHeader') == null) {
+      const iconUrl = chrome.runtime.getURL('images/calendar-check-regular.svg');
+      const image = document.createElement('img');
+      image.src = iconUrl;
+
+      const header = document.createElement('th');
+      header.id = 'dateHeader';
+
+      header.append(image);
+      trainTable.tHead.rows[0].insertBefore(header, trainTable.tHead.rows[0].cells[4]);
+    }
+  }
+
+  addHeader(); // makes sense to add it anyway?
+  monitorDriversHealth();
+  checkTimeToFullHealth();
 }
 
-
-observeHealth();
-var myInterval;
-timeToFullHeath();
+// TODO move to separate retry module?
+(async () => {
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+      await startHealthMonitor();
+      break;
+    } catch (err) {
+      console.warn(`Retry to start health monitoring #${i + 1}/3`);
+    }
+  }
+})();

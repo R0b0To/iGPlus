@@ -1,0 +1,16 @@
+.showStat {
+  position: inherit;
+  font-size: 90%;
+  margin-left: .1em;
+}
+
+.statBarWithVaue {
+  display: inline-flex !important;
+  align-items: center;
+}
+
+.three-btn > #container {
+  position: absolute;
+  left: 0;
+  right: 0;
+}

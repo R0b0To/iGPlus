@@ -1,0 +1,16 @@
+.skillIcon {
+  height: 24px;
+  border-radius: 4px;
+  padding: 0 0.25em;
+  margin-left: 0.25em;
+}
+
+.skillIcon img {
+  width: 22px;
+}
+
+.skillWrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}

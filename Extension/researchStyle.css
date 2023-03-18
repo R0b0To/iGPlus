@@ -1,85 +1,149 @@
 .hoverCopy {
-    overflow: hidden;
- }
- .hoverCopyTd {
-    padding: 10px;
-    position: relative;
-    cursor: pointer;
-    
- }
- .hoverCopyTd:hover::after{ 
-    background-color: #00a2ff80;
-    content: '';  
-    height: 10000px;    
-    left: 0;
-    position: absolute;  
-    top: -5000px;
-    width: 100%;
-    
- }
- .hoverCopyTd:active::after {
-    opacity: 0.5;
-  }
-  @media only screen and (max-width: 294px){
-.hoverCopy {
-      width: 100% !important;
-  }
-
-  }
-  @media only screen and (max-width: 442px){
-   .ratings {
-         display: none;
-     }
-   
-     }
-  
-
- /* @import url(https://fonts.googleapis.com/css?family=PT+Sans:400,700);
-
-body {
-  color: #333;
-  font-family: PT Sans, sans-serif;
-  line-height: 1.8em;
-  background: #F2EAD9;
+  overflow: hidden;
+  float: left;
+  width: auto;
+  margin-right: 1px !important;
 }
 
-.wrapper {
-  width: 50%;
-  margin: 0 auto;
-}*/
+.hoverCopyTd {
+  padding: 10px;
+  position: relative;
+  cursor: pointer;
+}
+.hoverCopyTd:hover::after {
+  background-color: #00a2ff80;
+  content: '';
+  height: 10000px;
+  left: 0;
+  position: absolute;
+  top: -5000px;
+  width: 100%;
+}
+.hoverCopyTd:active::after {
+  opacity: 0.5;
+}
 
+@media only screen and (max-width: 376px) {
+  .hoverCopy {
+    width: 100% !important;
+  }
+  #carResearch {
+    width: -moz-available;
+  }
+}
+
+@media only screen and (max-width: 442px) {
+  .ratings {
+    display: none;
+  }
+  div.bgGrey {
+    height: 0px;
+    overflow: hidden;
+  }
+}
 
 #fieldtip {
-       text-align: center;
-       font-size: .9em;
-	    display: inline-block;
-       border-radius: 8px;
-       position: absolute;
-	    padding: 5px 15px;
-	    background: #292d33;
-	    color: #fff;
-	    font-weight: 300;
-	    z-index: 100;
-	    min-width: 40px;
-       max-width: 200px;
-	    transition: all 200ms linear;
-	    -webkit-transition: all 200ms linear;
-	    -moz-transition: all 200ms linear;
-	    -o-transition: all 200ms linear;
-      z-index: 100;
-	}
-	#fieldtip:after {
-	    display: 'block';
-	    content: '';
-	    position: absolute;
-	    bottom: -10px;
-	    left: 10px;
-	    width: 0px;
-	    height: 0px;
-      
-       border-left: 8px solid transparent;
-       border-right: 8px solid transparent;
-       border-top: 12px solid #292d33;
-	    /*-webkit-transform:rotate(360deg);*/
-	}
-   
+  position: absolute;
+  text-align: center;
+  font-size: 0.9em;
+  display: none;
+  border-radius: 8px;
+  padding: 5px 15px;
+  background: #292d33;
+  color: #fff;
+  font-weight: 300;
+  z-index: 100;
+  min-width: 40px;
+  max-width: 200px;
+  transition: all 200ms linear;
+  -webkit-transition: all 200ms linear;
+  -moz-transition: all 200ms linear;
+  -o-transition: all 200ms linear;
+  z-index: 100;
+  opacity: 0;
+}
+#fieldtip:after {
+  display: 'block';
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 10px;
+  width: 0px;
+  height: 0px;
+
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 12px solid #292d33;
+  /*-webkit-transform:rotate(360deg);*/
+}
+
+.tipVisible {
+  display: inline-block !important;
+  top: 390px;
+  left: 5px;
+  opacity: 1 !important;
+}
+
+.statColTh {
+  min-width: 32px;
+  height: 2em;
+}
+
+.researchImg {
+  height: 1.4em;
+  filter: invert(0.3);
+}
+
+#carResearch {
+  width: calc(100% - 164px);
+  width: fill-available;
+  width: -webkit-fill-available;
+}
+
+.sponsorEffect {
+  font-size: x-small;
+  position: absolute;
+  padding-left: 2px;
+}
+
+.positiveEffect {
+  color: green;
+}
+.positiveEffect::before {
+  content: '+';
+}
+
+.negativeEffect {
+  color: red;
+}
+
+.helpLabel {
+  cursor: help;
+  display:block;
+  text-align: center;
+  border-radius: 50%;
+  background-color: #96bf86;
+  color: #ffffff;
+  width: 23px;
+  height: 23px;
+}
+
+.researchFooter {
+  position: relative;
+  background: #e3e4e5 !important;
+  z-index: 2;
+}
+
+.researchFooter > th {
+  border-right: 0 !important;
+  background: #e3e4e5 !important;
+}
+
+.researchFooter > #totalGain {
+  font-weight: bold;
+  text-align: center;
+}
+
+.researchSuggestion {
+  background: #ADD8E6;
+}

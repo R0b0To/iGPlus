@@ -2,9 +2,11 @@
   position: relative;
   z-index: 1;
   height: 15px;
+  margin: 0px;
+  width: 100%;
   -webkit-appearance: none;
   padding: 0;
-  border-radius: 5px;  
+  border-radius: 5px;
   background: #d3d3d3;
   outline: none;
   opacity: 0.7;
@@ -17,17 +19,26 @@
 .sliderX::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%; 
+  width: 20px;
+  height: 20px;
+  border-radius: 8px;
   background: hsl(158, 95%, 34%);
   cursor: pointer;
 }
 
+.slider-label{
+  position: absolute;
+	top: -120%;
+  background-color: #292d33!important;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%,0);
+}
+
 .sliderX::-moz-range-thumb {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 8px;
   background: #04AA6D;
   cursor: pointer;
 }
@@ -38,7 +49,6 @@
   appearance: textfield;
   text-align: center;
   font-family: 'Roboto';
-  
 }
 
 .pushInput[type=number]::-webkit-inner-spin-button,
@@ -48,21 +58,17 @@
 
 .pushInput {
   border: none;
-  border-radius:0;
   display: inline-flex;
-  height: 2rem;
+  height: 36px;
   width:100px;
   margin:0;
   font-weight: 500;
-  font-size: 1rem;
-  font-family: 'Roboto';
-  background-color: #f0f1f2;
 }
 
 .pushDiv,
 .pushDiv * {
   box-sizing: border-box;
-  height: 2rem;
+  height: 36px;
   display: inline-flex;
 }
 
@@ -80,7 +86,7 @@
 }
 
 .sbutton {
-  
+
   background-color: #6e7880;
   color: rgb(255, 255, 255);
   padding: 5px;
@@ -156,29 +162,24 @@
 .pushPlusMin{
   cursor:pointer;
   justify-content: center;
+  margin-left: 1%;
+  margin-right: 1%;
   border-radius: 20%;
   align-items: center;
-  color:rgb(255, 255, 255); 
-  height: 2rem;
-    width: 2rem;
+  font-size:xx-large;
+  color:rgb(255, 255, 255);
+  width: 40px;
   transition: all 100ms linear;
   -webkit-transition: all 100ms linear;
   -moz-transition: all 100ms linear;
   -o-transition: all 100ms linear;
   background: #689954;
 }
-.plusX{
-  border-radius: 0 20% 20% 0;
-}
-.minusX{
-  border-radius: 20% 0 0 20%;
-}
 .pushPlusMin span{
   align-items: center;
-  font-size: 1.25rem;
 }
 .pushPlusMin:hover{
- 
+
   color: rgb(0, 0, 0);
     opacity: 1;
 }
@@ -272,7 +273,7 @@
   border-radius: 6px;
   padding: 5px 0;
   width: 472px;
-  
+
 
   /* Position the tooltip */
   position: absolute;
@@ -282,4 +283,3 @@
 .tooltip1:hover .tooltiptext {
   visibility: visible;
 }
-
