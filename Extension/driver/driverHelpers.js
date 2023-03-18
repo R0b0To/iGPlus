@@ -1,15 +1,13 @@
 /**
-   *
-   * @param {Object} personData
-   * @param {Object} personData.vars
-   *    * @returns {{ dName: string, favTrack: string, sTalent: string, sHeight: string, starRating: number, sBMI: float, tName: string, tLink: string|null, sSpecial: {skill:string, gradeId:string} }}
-   */
+ * @param {Object} personData
+ * @param {Object} personData.vars
+ * @returns {{ dName: string, favTrack: string, sTalent: string, sHeight: string, starRating: number, sBMI: float, tName: string, tLink: string|null, sSpecial: {skill:string, gradeId:string} }}
+ */
 function parseAttributes(personData) {
-  
-  function createHTMLElement(varName){
-  const fragmentToParse = document.createElement('table');
-  fragmentToParse.innerHTML = personData.vars[varName];
-  return fragmentToParse;
+  function createHTMLElement(varName) {
+    const fragmentToParse = document.createElement('table');
+    fragmentToParse.innerHTML = personData.vars[varName];
+    return fragmentToParse;
   }
 
   const dName = createHTMLElement('dName').textContent.slice(1); //removing extra space
@@ -19,12 +17,12 @@ function parseAttributes(personData) {
   const starRating = /\d+/.exec(personData.vars.starRating);
   const sBMI = createHTMLElement('sBMI').textContent;
   const tName = createHTMLElement('tName').textContent;
-  const tLink = createHTMLElement('tName').querySelector('a')?.href  || null;
+  const tLink = createHTMLElement('tName').querySelector('a')?.href || null;
   const skill = createHTMLElement('sSpecial').querySelector('span')?.textContent || null;
   const gradeId = createHTMLElement('sSpecial').querySelector('span')?.classList[0] || null;
-  const sSpecial = {name:skill,grade:gradeId};
+  const sSpecial = { name: skill, grade: gradeId };
 
-  return {dName, favTrack, sTalent, sHeight, starRating, sBMI, tName, tLink, sSpecial};
+  return { dName, favTrack, sTalent, sHeight, starRating, sBMI, tName, tLink, sSpecial };
 }
 
 function toCentimeters(height) {
@@ -50,16 +48,12 @@ function toCentimeters(height) {
  * @param {'grade'} type
  * @returns {HTMLSpanElement}
  */
-function createSpecialSkillLabel({name, grade}) {
+function createSpecialSkillLabel({ name, grade }) {
   const skillSpan = document.createElement('span');
   skillSpan.style.position = 'absolute';
   skillSpan.classList.add(grade);
-  if(grade != 'specialA0')
-    skillSpan.textContent = name;
+  if (grade != 'specialA0') skillSpan.textContent = name;
   return skillSpan;
 }
 
-export {
-  createSpecialSkillLabel,
-  parseAttributes
-};
+export { createSpecialSkillLabel, parseAttributes };

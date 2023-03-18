@@ -89,8 +89,14 @@ function fetchManagerData() {
   return getData(managerUrl);
 }
 
+function fetchLeagueData(leagueId) {
+  const leagueUrl = `action=fetch&p=league&id=${leagueId}`;
+  return getData(leagueUrl);
+}
+
 export {
   fetchBuildingInfo,
+  fetchLeagueData,
   fetchManagerData,
   fetchNextRace,
   fetchRaceWeather,
