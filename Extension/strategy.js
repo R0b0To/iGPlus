@@ -558,15 +558,26 @@ function addFuelSlider()
   function createSlider(node){
     nodeText = node.previousElementSibling.childNodes[1];
     sliderContainer = document.createElement('div');
-    sliderContainer.setAttribute('style','position:absolute;top: -1.7rem;display:none');
+    sliderContainer.setAttribute('style','position:absolute;width:100%;;display:none');
     slider = document.createElement('input');
     slider.className = 'sliderX';
     slider.type = 'range';
     slider.max = 200;
     slider.min = 0;
     slider.value = nodeText.textContent;
-    slider.addEventListener('input',function(){this.parentElement.nextElementSibling.nextElementSibling.textContent = this.value;});
-    slider.addEventListener('change',function(){this.parentElement.style.display = 'none';this.parentElement.parentElement.nextElementSibling.value = this.value;
+    slider.addEventListener('input',function(){
+      const divSetup = this.parentElement.nextElementSibling.nextElementSibling
+      divSetup.textContent = this.value;
+  
+      divSetup.classList.add('slider-label');
+      const	newValue = Number( (this.value - this.min) * 100 / (this.max - this.min) ),	newPosition = 10 - (newValue * 0.2);
+      divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
+    });
+    slider.addEventListener('change',function(){
+      const divSetup = this.parentElement.nextElementSibling.nextElementSibling
+      divSetup.classList.remove('slider-label');
+      this.parentElement.style.display = 'none';
+      this.parentElement.parentElement.nextElementSibling.value = this.value;
       if(this.value == 0)
       {
         driverStrategyId = this.closest('form').id;
@@ -577,11 +588,22 @@ function addFuelSlider()
 
 
     nodeText.addEventListener('click', function () {
-      slider = this.parentElement.childNodes[0];
-      if (slider.style.display === 'none')
-        slider.style.display = 'block';
-      else
-        slider.style.display = 'none';
+      const divSetup = this;
+      const sliderE = this.parentElement.childNodes[0];
+  
+      if (sliderE.style.display === 'none')
+      {
+        sliderE.style.display = 'block';
+        divSetup.classList.add('slider-label');
+        const	newValue = Number( (sliderE.childNodes[0].value - sliderE.childNodes[0].min) * 100 / (sliderE.childNodes[0].max - sliderE.childNodes[0].min) ),	newPosition = 10 - (newValue * 0.2);
+        divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
+  
+      } 
+      else{
+        sliderE.style.display = 'none';
+        divSetup.classList.remove('slider-label');
+      }
+        
 
     });
     nodeText.setAttribute('style','border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;');

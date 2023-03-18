@@ -2,6 +2,8 @@
   position: relative;
   z-index: 1;
   height: 15px;
+  margin: 0px;
+  width: 100%;
   -webkit-appearance: none;
   padding: 0;
   border-radius: 5px;
@@ -17,17 +19,26 @@
 .sliderX::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 8px;
   background: hsl(158, 95%, 34%);
   cursor: pointer;
 }
 
+.slider-label{
+  position: absolute;
+	top: -120%;
+  background-color: #292d33!important;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%,0);
+}
+
 .sliderX::-moz-range-thumb {
-  width: 25px;
-  height: 25px;
-  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  border-radius: 8px;
   background: #04AA6D;
   cursor: pointer;
 }
