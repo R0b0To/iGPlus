@@ -3,7 +3,7 @@ async function getHeightAdjustment(driverHeight, tier) {
   const { scale } = await import(chrome.runtime.getURL('raceSetup/const.js'));
 
   const heightKey = Object.keys(scale)
-    .sort((a,b) => b - a)
+    .sort((a, b) => b - a)
     .find((k) => +k <= driverHeight);
 
   return heightKey ? scale[heightKey][tier] : 0;
@@ -13,29 +13,29 @@ async function getDrivers() {
   const [{ fetchDriverInfo }, { parseAttributes }, { circuits }] = await Promise.all([
     import(chrome.runtime.getURL('common/fetcher.js')),
     import(chrome.runtime.getURL('driver/driverHelpers.js')),
-    import(chrome.runtime.getURL('raceSetup/const.js'))
+    import(chrome.runtime.getURL('raceSetup/const.js')),
   ]);
 
-  chrome.storage.local.get('script', async function (d) {
-    const driverIds = {};
-    [...document.getElementsByClassName('staffImage')].forEach((d, index) => {
-      const id = d.dataset.staffid;
-      if (!driverIds[id]) driverIds[id] = index += 1;
-    });
-    const leagueTier = await findCurrentTier();
-    const trackSetup = getTrackSetup(circuits, leagueTier);
+  const { script } = await chrome.storage.local.get('script');
 
-    for await (const [driverId, index] of Object.entries(driverIds)) {
-      const driverData = await fetchDriverInfo(driverId);
-      const driverHeight = parseAttributes(driverData).sHeight;
-      const heightAdjustment = await getHeightAdjustment(driverHeight, leagueTier);
-
-      if (d.script.slider) addSlider(index);
-      if (d.script.edit) edit(index);
-
-      setCar(trackSetup, heightAdjustment, index);
-    }
+  const driverIds = {};
+  [...document.getElementsByClassName('staffImage')].forEach((d, index) => {
+    const id = d.dataset.staffid;
+    if (!driverIds[id]) driverIds[id] = index += 1;
   });
+  const leagueTier = await findCurrentTier();
+  const trackSetup = getTrackSetup(circuits, leagueTier);
+
+  for await (const [driverId, index] of Object.entries(driverIds)) {
+    const driverData = await fetchDriverInfo(driverId);
+    const driverHeight = parseAttributes(driverData).sHeight;
+    const heightAdjustment = await getHeightAdjustment(driverHeight, leagueTier);
+
+    if (script.slider) addSettingSliders(index);
+    if (script.edit) edit(index);
+
+    addSetupSuggestions(trackSetup, heightAdjustment, index);
+  }
 }
 
 /**
@@ -46,45 +46,38 @@ async function getDrivers() {
  * @param {number} trackSetup.wing The wing setup value.
  * @param {number} driverIndex The driver number.
  */
-function setCar(trackSetup, heightAdjustment, driverIndex) {
-  const { ride, wing, suspension} = trackSetup;
+function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
+  const { ride, wing, suspension } = trackSetup;
 
-  // ride element
-  const rideHeightSetting = document.querySelector(`#d${driverIndex}setup > table.acp.linkFill.pad > tbody > tr:nth-child(2)`);
-  if (rideHeightSetting.childElementCount == 2) {
-    const heightSuggestion = document.createElement('td');
-    heightSuggestion.setAttribute(
-      'style',
-      'text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;'
-    );
-    heightSuggestion.append(document.createTextNode(ride + heightAdjustment));
-    rideHeightSetting.insertBefore(heightSuggestion, rideHeightSetting.childNodes[0]);
-  }
+  const setupForm = document.querySelector(`#d${driverIndex}setup`);
 
-  // wing element
-  const wingSetting = document.querySelector(`#d${driverIndex}setup > table.acp.linkFill.pad > tbody > tr:nth-child(3)`);
-  if (wingSetting.childElementCount == 2) {
-    const wingSuggestion = document.createElement('td');
-    wingSuggestion.setAttribute(
-      'style',
-      'text-align:center; background:#f0f1f2; color:#477337; font-size:20px; font-family:RobotoCondensedBold;'
-    );
-    wingSuggestion.append(document.createTextNode(wing));
-    wingSetting.insertBefore(wingSuggestion, wingSetting.childNodes[0]);
+  if (setupForm.classList.contains('withSuggestion')) {
+    return;
   }
 
   // suspension element
-  const suspensionSetting = document.querySelector(`#d${driverIndex}setup > table.acp.linkFill.pad > tbody > tr:nth-child(1)`);
+  const suspensionSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(1)');
   suspensionSetting.id = 'suggestedSetup';
-  if (suspensionSetting.childElementCount == 2) {
-    const suspensionSuggestion = document.createElement('td');
-    suspensionSuggestion.setAttribute(
-      'style',
-      'text-align:center; background:#f0f1f2; font-size:14.44px; font-family:RobotoCondensedBold;'
-    );
-    suspensionSuggestion.append(document.createTextNode(suspension));
-    suspensionSetting.insertBefore(suspensionSuggestion, suspensionSetting.childNodes[0]);
-  }
+  const suspensionSuggestion = document.createElement('td');
+  suspensionSuggestion.classList.add('suspensionSetup');
+  suspensionSuggestion.append(document.createTextNode(suspension));
+  suspensionSetting.insertBefore(suspensionSuggestion, suspensionSetting.childNodes[0]);
+
+  // ride element
+  const rideHeightSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(2)');
+  const heightSuggestion = document.createElement('td');
+  heightSuggestion.classList.add('suggestedSetup');
+  heightSuggestion.append(document.createTextNode(ride + heightAdjustment));
+  rideHeightSetting.insertBefore(heightSuggestion, rideHeightSetting.childNodes[0]);
+
+  // wing element
+  const wingSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(3)');
+  const wingSuggestion = document.createElement('td');
+  wingSuggestion.classList.add('suggestedSetup');
+  wingSuggestion.append(document.createTextNode(wing));
+  wingSetting.insertBefore(wingSuggestion, wingSetting.childNodes[0]);
+
+  setupForm.classList.add('withSuggestion');
 }
 
 // Fixed circuit setup
@@ -111,13 +104,9 @@ async function findCurrentTier() {
   const { fetchLeagueData } = await import(chrome.runtime.getURL('common/fetcher.js'));
 
   const leagueUrl = document.getElementById('mLeague').href;
-  if (!leagueUrl) {
-    return;
-  }
-
   const leagueId = /id=(.*)/.exec(leagueUrl)[1];
 
-  const { vars = {} } = await fetchLeagueData(leagueId) || {};
+  const { vars = {} } = (await fetchLeagueData(leagueId)) || {};
 
   let tier = 1;
   for (/* no-op */; tier <= 2; tier += 1) {
@@ -128,72 +117,72 @@ async function findCurrentTier() {
 }
 
 function createSlider(node) {
-  const nodeText = node.previousElementSibling.childNodes[1];
+  const settingValueDiv = node.previousElementSibling.childNodes[1];
+  settingValueDiv.classList.remove('green');
+
   const sliderContainer = document.createElement('div');
-  sliderContainer.setAttribute('style', 'width:100%;position:absolute;display:none');
+  sliderContainer.classList.add('sliderContainer');
+
   const slider = document.createElement('input');
   slider.className = 'sliderX';
   slider.type = 'range';
   slider.max = 50;
   slider.min = 1;
-  slider.value = nodeText.textContent;
-  slider.addEventListener('input', function () {
-    const divSetup = this.parentElement.nextElementSibling.nextElementSibling;
-    divSetup.textContent = this.value;
+  slider.value = settingValueDiv.textContent;
 
-    divSetup.classList.add('slider-label');
-    const newValue = Number(((this.value - this.min) * 100) / (this.max - this.min)),
-      newPosition = 10 - newValue * 0.2;
-    divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
+  slider.addEventListener('input', function () {
+    settingValueDiv.textContent = this.value;
+
+    settingValueDiv.classList.add('slider-label');
+    const newValue = Number(((this.value - this.min) * 100) / (this.max - this.min));
+    const newPosition = 10 - newValue * 0.2;
+    settingValueDiv.style.left = `calc(${newValue}% + (${newPosition}px))`;
   });
+
   slider.addEventListener('change', function () {
-    const divSetup = this.parentElement.nextElementSibling.nextElementSibling;
-    divSetup.classList.remove('slider-label');
-    this.parentElement.style.display = 'none';
-    this.parentElement.parentElement.nextElementSibling.value = this.value;
+    settingValueDiv.classList.remove('slider-label');
+    sliderContainer.classList.remove('visible');
+    slider.parentElement.parentElement.nextElementSibling.value = slider.value;
+  });
+
+  settingValueDiv.addEventListener('click', function () {
+    if (!sliderContainer.classList.contains('visible')) {
+      sliderContainer.classList.add('visible');
+      settingValueDiv.classList.add('slider-label');
+      const newValue = Number(((slider.value - slider.min) * 100) / (slider.max - slider.min)),
+        newPosition = 10 - newValue * 0.2;
+      settingValueDiv.style.left = `calc(${newValue}% + (${newPosition}px))`;
+    } else {
+      sliderContainer.classList.remove('visible');
+      settingValueDiv.classList.remove('slider-label');
+    }
   });
 
   sliderContainer.append(slider);
-
-  nodeText.addEventListener('click', function () {
-    const divSetup = this;
-    const sliderE = this.parentElement.childNodes[0];
-
-    if (sliderE.style.display === 'none') {
-      sliderE.style.display = 'block';
-      divSetup.classList.add('slider-label');
-      const newValue = Number(
-          ((sliderE.childNodes[0].value - sliderE.childNodes[0].min) * 100) /
-            (sliderE.childNodes[0].max - sliderE.childNodes[0].min)
-        ),
-        newPosition = 10 - newValue * 0.2;
-      divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
-    } else {
-      sliderE.style.display = 'none';
-      divSetup.classList.remove('slider-label');
-    }
-  });
-  nodeText.setAttribute(
-    'style',
-    'border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;'
-  );
+  settingValueDiv.classList.add('withSlider');
 
   node.previousElementSibling.prepend(sliderContainer);
 }
-function addSlider(d) {
+
+function addSettingSliders(driverIndex) {
   try {
-    const setup = document.getElementById(`d${d}setup`);
+    const setup = document.getElementById(`d${driverIndex}setup`);
+    if (setup.classList.contains('withSliders')) {
+      return;
+    }
 
     const ride = setup.querySelector('[name=ride]');
-    if (ride.previousElementSibling.childElementCount < 4) createSlider(ride);
+    createSlider(ride);
 
     const aero = setup.querySelector('[name=aerodynamics]');
-    if (aero.previousElementSibling.childElementCount < 4) createSlider(aero);
+    createSlider(aero);
+
+    setup.classList.add('withSliders');
   } catch (error) {
     console.log(error);
   }
-  return true;
 }
+
 function edit(d) {
   if (document.getElementsByClassName('edit').length < 2) {
     setup = document.getElementById(`d${d}setup`);
@@ -251,6 +240,7 @@ function edit(d) {
     }
   }
 }
+
 function copyPractice(rowNode) {
   if (rowNode.target) {
     rowNode = this;
@@ -267,6 +257,7 @@ function copyPractice(rowNode) {
   );
   return string;
 }
+
 function copyAll() {
   list = '';
   for (var i = 1; i < this.parentElement.parentElement.rows.length; i++) {
@@ -279,12 +270,15 @@ function copyAll() {
     () => {}
   );
 }
+
 function copyPreviewEnter() {
   setColorOfNode(this, '#00a2ff80');
 }
+
 function copyPreviewLeave() {
   setColorOfNode(this, 'transparent');
 }
+
 function setColorOfNode(node, color) {
   try {
     node.childNodes[0].style.transition = 'all 0.3s';
@@ -295,6 +289,7 @@ function setColorOfNode(node, color) {
     node.childNodes[5].style.backgroundColor = color;
   } catch (error) {}
 }
+
 function copyAllPreviewEnter() {
   node = this.parentElement.parentElement;
 
@@ -302,12 +297,14 @@ function copyAllPreviewEnter() {
     setColorOfNode(node.rows[i], '#00a2ff80');
   }
 }
+
 function copyAllPreviewLeave() {
   node = this.parentElement.parentElement;
   for (var i = 1; i < node.rows.length; i++) {
     setColorOfNode(node.rows[i], 'transparent');
   }
 }
+
 function copyTable() {
   table = document.querySelectorAll('.acp[id*="Laps"]');
   table.forEach((element) => {
@@ -324,6 +321,7 @@ function copyTable() {
     observer.observe(element, { childList: true, subtree: true });
   });
 }
+
 var observer = new MutationObserver(function (mutationsList) {
   for (let mutation of mutationsList) {
     if (mutation.type === 'childList' && mutation.target.tagName === 'TBODY') {

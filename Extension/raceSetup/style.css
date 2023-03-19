@@ -1,0 +1,33 @@
+.suggestedSetup {
+  text-align: center;
+  background: #f0f1f2;
+  color: #477337;
+  font-size: 20px;
+  font-family: RobotoCondensedBold;
+}
+
+.suspensionSetup {
+  text-align: center;
+  background: #f0f1f2;
+  font-size: 14.44px;
+  font-family: RobotoCondensedBold;
+}
+
+.withSlider {
+  border-radius: 50%;
+  background-color: #96bf86;
+  color: #ffffff;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.sliderContainer {
+  width: 100%;
+  position: absolute;
+  visibility: hidden;
+}
+
+.visible {
+  visibility: visible;
+}

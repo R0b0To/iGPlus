@@ -57,7 +57,7 @@ const tabScripts = {
   '/app/p=race&tab=setup': {
     key: 'setup',
     scripts: ['raceSetup/setups.js'],
-    styles: ['style.css']
+    styles: ['style.css', 'raceSetup/style.css']
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
