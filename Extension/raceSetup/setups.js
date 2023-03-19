@@ -55,27 +55,41 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
     return;
   }
 
+  /** @type {HTMLTableElement} */
+  const settingTable = setupForm.querySelector('table.acp.linkFill.pad');
+  const header = settingTable.createTHead();
+  header.id = 'setupSuggestionHeader';
+  header.append(document.createElement('tr'));
+
+  const headers = ['Parameter', 'Value', 'Suggested'].map((txt) => {
+    const elem = document.createElement('td');
+    elem.textContent = txt;
+    return elem;
+  });
+
+  header.rows[0].append(...headers);
+
   // suspension element
   const suspensionSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(1)');
   suspensionSetting.id = 'suggestedSetup';
   const suspensionSuggestion = document.createElement('td');
-  suspensionSuggestion.classList.add('suspensionSetup');
+  suspensionSuggestion.classList.add('suggestedSetup');
   suspensionSuggestion.append(document.createTextNode(suspension));
-  suspensionSetting.insertBefore(suspensionSuggestion, suspensionSetting.childNodes[0]);
+  suspensionSetting.append(suspensionSuggestion);
 
   // ride element
   const rideHeightSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(2)');
   const heightSuggestion = document.createElement('td');
   heightSuggestion.classList.add('suggestedSetup');
   heightSuggestion.append(document.createTextNode(ride + heightAdjustment));
-  rideHeightSetting.insertBefore(heightSuggestion, rideHeightSetting.childNodes[0]);
+  rideHeightSetting.append(heightSuggestion);
 
   // wing element
   const wingSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(3)');
   const wingSuggestion = document.createElement('td');
   wingSuggestion.classList.add('suggestedSetup');
   wingSuggestion.append(document.createTextNode(wing));
-  wingSetting.insertBefore(wingSuggestion, wingSetting.childNodes[0]);
+  wingSetting.append(wingSuggestion);
 
   setupForm.classList.add('withSuggestion');
 }

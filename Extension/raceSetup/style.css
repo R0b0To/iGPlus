@@ -1,16 +1,12 @@
 .suggestedSetup {
-  text-align: center;
-  background: #f0f1f2;
+  text-align: left;
   color: #477337;
-  font-size: 20px;
-  font-family: RobotoCondensedBold;
 }
 
-.suspensionSetup {
-  text-align: center;
-  background: #f0f1f2;
-  font-size: 14.44px;
-  font-family: RobotoCondensedBold;
+.suggestedSetup::before {
+  content: '\2190'; /* left arrow */
+  font-size: 20px;
+  padding: 0 .4em 0 0;
 }
 
 .withSlider {
@@ -30,4 +26,24 @@
 
 .visible {
   visibility: visible;
+}
+
+#setupSuggestionHeader > tr {
+  line-height: 1;
+  text-align: center;
+}
+
+#setupSuggestionHeader > tr > td {
+  background-color: #f4f4f5;
+  border-right: 1px solid #d4d7d9;
+}
+
+#setupSuggestionHeader > tr > td:nth-child(1) {
+  text-align: right;
+  width: 25%
+}
+
+#setupSuggestionHeader > tr > td:last-child {
+  text-align: left;
+  width: 25%
 }
