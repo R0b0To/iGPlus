@@ -48,7 +48,11 @@ function injectScripts(tabId, scriptFiles) {
  * @param {number} tabId
  * @param {string[]} styleFiles
  */
-function injectStyles(tabId, styleFiles) {
+async function injectStyles(tabId, styleFiles) {
+  await chrome.scripting.removeCSS({
+    target: { tabId },
+    files: styleFiles
+  });
   chrome.scripting.insertCSS({
     target: { tabId },
     files: styleFiles
