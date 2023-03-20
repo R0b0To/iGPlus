@@ -6,7 +6,7 @@
 .suggestedSetup::before {
   content: '\2190'; /* left arrow */
   font-size: 20px;
-  padding: 0 .4em 0 0;
+  padding: 0 0.4em 0 0;
 }
 
 .withSlider {
@@ -40,10 +40,43 @@
 
 #setupSuggestionHeader > tr > td:nth-child(1) {
   text-align: right;
-  width: 25%
+  width: 25%;
 }
 
 #setupSuggestionHeader > tr > td:last-child {
   text-align: left;
-  width: 25%
+  width: 25%;
+}
+
+/* practice table */
+.acp[id*='Laps'] {
+  cursor: pointer;
+}
+
+.acp[id*='Laps'] tbody td {
+  transition: all 0.3s;
+}
+
+/* for hovering on head */
+.highlighted tbody td:nth-child(1),
+.highlighted tbody td:nth-child(3),
+.highlighted tbody td:nth-child(4) {
+  background-color: #00a2ff80;
+}
+
+/* for hovering on particular row */
+.acp[id*='Laps'] tbody tr:hover td:nth-child(1),
+.acp[id*='Laps'] tbody tr:hover td:nth-child(3),
+.acp[id*='Laps'] tbody tr:hover td:nth-child(4) {
+  background-color: #00a2ff80;
+}
+
+.tableCopyHint {
+  background-color: #f4f4f5;
+  text-align: center;
+  font-size: 90%;
+}
+
+.tableCopyHint:last-of-type {
+  border-radius: 0 0 6px 6px;
 }

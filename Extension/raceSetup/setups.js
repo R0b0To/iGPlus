@@ -9,7 +9,7 @@ async function getHeightAdjustment(driverHeight, tier) {
   return heightKey ? scale[heightKey][tier] : 0;
 }
 
-async function getDrivers() {
+async function addSetupSuggestionsForDrivers() {
   const [{ fetchDriverInfo }, { parseAttributes }, { circuits }] = await Promise.all([
     import(chrome.runtime.getURL('common/fetcher.js')),
     import(chrome.runtime.getURL('driver/driverHelpers.js')),
@@ -255,112 +255,76 @@ function edit(d) {
   }
 }
 
-function copyPractice(rowNode) {
-  if (rowNode.target) {
-    rowNode = this;
-  }
-  var tyre = rowNode.childNodes[0].className.slice(3);
-  var fuelLap = rowNode.childNodes[4].textContent;
-  var wear = rowNode.childNodes[5].textContent;
-  string = `${tyre},${fuelLap},${wear}`;
-  navigator.clipboard.writeText(string).then(
-    () => {
-      //console.log("text copied");
-    },
-    () => {}
-  );
-  return string;
-}
+function copyPracticeRow(row, toClipboard = true) {
+  const tyre = row.childNodes[0].className.split('-')[1];
+  const fuelLap = row.childNodes[4].textContent;
+  const wear = row.childNodes[5].textContent;
 
-function copyAll() {
-  list = '';
-  for (var i = 1; i < this.parentElement.parentElement.rows.length; i++) {
-    list += `${copyPractice(this.parentElement.parentElement.rows[i])}\n`;
+  const data = `${tyre},${fuelLap},${wear}`;
+  if (!toClipboard) {
+    return data;
   }
-  navigator.clipboard.writeText(list).then(
+
+  navigator.clipboard.writeText(data).then(
     () => {
-      //console.log("text copied");
+      showTableHint(row.closest('table'), 'Row data copied!');
     },
     () => {}
   );
 }
 
-function copyPreviewEnter() {
-  setColorOfNode(this, '#00a2ff80');
+function copyAllPracticeData() {
+  const list = [];
+
+  this.closest('table').querySelectorAll('tbody tr').forEach((row) => {
+    list.push(copyPracticeRow(row, false));
+  });
+
+  navigator.clipboard.writeText(list.join('\n')).then(
+    () => {
+      showTableHint(this.closest('table'), 'All rows data copied!');
+    },
+    () => {}
+  );
 }
 
-function copyPreviewLeave() {
-  setColorOfNode(this, 'transparent');
+function showTableHint(table, text) {
+  const hint = document.createElement('div');
+  hint.innerText = text;
+  hint.classList.add('tableCopyHint');
+
+  table.insertAdjacentElement('afterend', hint);
+  setTimeout(() => {
+    hint.remove();
+  }, 1500);
 }
 
-function setColorOfNode(node, color) {
-  try {
-    node.childNodes[0].style.transition = 'all 0.3s';
-    node.childNodes[4].style.transition = 'all 0.3s';
-    node.childNodes[5].style.transition = 'all 0.3s';
-    node.childNodes[0].style.backgroundColor = color;
-    node.childNodes[4].style.backgroundColor = color;
-    node.childNodes[5].style.backgroundColor = color;
-  } catch (error) {}
-}
+function makePracticeTableCopiable() {
+  // could be 2 of them - one per a driver
 
-function copyAllPreviewEnter() {
-  node = this.parentElement.parentElement;
+  /** @type {HTMLTableElement[]} */
+  const practiceTables = document.querySelectorAll('.acp[id*="Laps"]');
 
-  for (var i = 1; i < node.rows.length; i++) {
-    setColorOfNode(node.rows[i], '#00a2ff80');
-  }
-}
+  practiceTables.forEach((table) => {
+    // click on a header copies all table
+    table.tHead.addEventListener('click', copyAllPracticeData);
+    table.tHead.addEventListener('mouseenter', () => table.classList.add('highlighted'));
+    table.tHead.addEventListener('mouseleave', () => table.classList.remove('highlighted'));
 
-function copyAllPreviewLeave() {
-  node = this.parentElement.parentElement;
-  for (var i = 1; i < node.rows.length; i++) {
-    setColorOfNode(node.rows[i], 'transparent');
-  }
-}
-
-function copyTable() {
-  table = document.querySelectorAll('.acp[id*="Laps"]');
-  table.forEach((element) => {
-    element.rows[0].addEventListener('click', copyAll);
-    element.rows[0].addEventListener('mouseenter', copyAllPreviewEnter);
-    element.rows[0].addEventListener('mouseleave', copyAllPreviewLeave);
-    element.rows[0].style.cursor = 'pointer';
-    for (var i = 1; i < element.rows.length; i++) {
-      element.rows[i].style.cursor = 'pointer';
-      element.rows[i].addEventListener('click', copyPractice);
-      element.rows[i].addEventListener('mouseenter', copyPreviewEnter);
-      element.rows[i].addEventListener('mouseleave', copyPreviewLeave);
-    }
-    observer.observe(element, { childList: true, subtree: true });
+    // click on a row copies only this row.
+    table.tBodies[0].addEventListener('click', (event) => {
+      copyPracticeRow(event.target.closest('tr'));
+    });
   });
 }
-
-var observer = new MutationObserver(function (mutationsList) {
-  for (let mutation of mutationsList) {
-    if (mutation.type === 'childList' && mutation.target.tagName === 'TBODY') {
-      // Loop through each added node
-      mutation.addedNodes.forEach(function (node) {
-        // Check if the added node is an element
-        if (node.nodeType === Node.ELEMENT_NODE) {
-          // Do something with the added element
-          node.style.cursor = 'pointer';
-          node.addEventListener('click', copyPractice);
-          node.addEventListener('mouseenter', copyPreviewEnter);
-          node.addEventListener('mouseleave', copyPreviewLeave);
-        }
-      });
-    }
-  }
-});
 
 // TODO move to separate retry module?
 (async () => {
   try {
     await new Promise((res) => setTimeout(res, 100)); // sleep a bit, while page loads
     if (document.getElementById('suggestedSetup') == null) {
-      getDrivers();
-      copyTable();
+      addSetupSuggestionsForDrivers();
+      makePracticeTableCopiable();
     }
   } catch (err) {
     console.log('page not loaded');
