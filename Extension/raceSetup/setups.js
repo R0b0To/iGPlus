@@ -32,7 +32,7 @@ async function addSetupSuggestionsForDrivers() {
     const heightAdjustment = await getHeightAdjustment(driverHeight, leagueTier);
 
     if (script.slider) addSettingSliders(index);
-    if (script.edit) edit(index);
+    if (script.edit) allowDirectEdit(index);
 
     addSetupSuggestions(trackSetup, heightAdjustment, index);
   }
@@ -180,79 +180,79 @@ function createSlider(node) {
 
 function addSettingSliders(driverIndex) {
   try {
-    const setup = document.getElementById(`d${driverIndex}setup`);
-    if (setup.classList.contains('withSliders')) {
+    const setupTable = document.getElementById(`d${driverIndex}setup`);
+    if (setupTable.classList.contains('withSliders')) {
       return;
     }
 
-    const ride = setup.querySelector('[name=ride]');
+    const ride = setupTable.querySelector('[name=ride]');
     createSlider(ride);
 
-    const aero = setup.querySelector('[name=aerodynamics]');
+    const aero = setupTable.querySelector('[name=aerodynamics]');
     createSlider(aero);
 
-    setup.classList.add('withSliders');
+    setupTable.classList.add('withSliders');
   } catch (error) {
     console.log(error);
   }
 }
 
-function edit(d) {
-  if (document.getElementsByClassName('edit').length < 2) {
-    setup = document.getElementById(`d${d}setup`);
-
-    carSetup = setup.querySelectorAll('.num');
-    ride = carSetup[0];
-    aero = carSetup[1];
-
-    //add flag to avoid creating duplicate events
-    if (!aero.getAttribute('event')) {
-      editEvent(aero);
-      aero.setAttribute('event', true);
-    }
-    if (!ride.getAttribute('event')) {
-      editEvent(ride);
-      ride.setAttribute('event', true);
-    }
-
-    function editEvent(node) {
-      node.contentEditable = true;
-      node.setAttribute(
-        'style',
-        'border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;'
-      );
-      node.addEventListener('click', function () {
-        if (this.textContent != '') {
-          this.closest('td').querySelector('.number').value = this.textContent;
-        }
-        this.textContent = '';
-      });
-      node.addEventListener('focusout', function (e) {
-        inputValue = this.closest('td').querySelector('.number');
-        value = this.closest('td').querySelector('.number').value;
-        if (!isNaN(value)) this.textContent = inputValue.value;
-      });
-      node.addEventListener('input', function (e) {
-        stored = this.parentElement.nextElementSibling;
-        if (!e.data.match(/^[0-9]{0,2}$/)) {
-          this.textContent = '';
-        }
-        currentValue = parseInt(this.textContent);
-        if (isNaN(currentValue)) {
-          currentValue = stored.value;
-        }
-        if (currentValue > parseInt(stored.max)) {
-          this.textContent = stored.max;
-          currentValue = stored.max;
-        }
-        if (currentValue == 0) {
-          currentValue++;
-        }
-        //this.textContent=(currentValue);
-        stored.value = currentValue;
-      });
-    }
+function allowDirectEdit(driverIndex) {
+  const setupTable = document.getElementById(`d${driverIndex}setup`);
+  if (setupTable.classList.contains('directEdit')) {
+    return;
   }
+
+  const [ride, wing] = setupTable.querySelectorAll('.num');
+  makeEditable(wing);
+  makeEditable(ride);
+}
+
+/**
+ * Changes div to be directly editable by clicking and typing
+ * @param {HTMLDivElement} node
+ */
+function makeEditable(node) {
+  node.contentEditable = true;
+  node.classList.add('withSlider');
+  node.classList.remove('green');
+
+  /** @type {HTMLInputElement} */
+  const inputConrol = node.closest('td').querySelector('input.number');
+
+  node.addEventListener('click', () => {
+    if (node.textContent) {
+      inputConrol.value = node.textContent;
+    }
+    node.textContent = '';
+  });
+
+  node.addEventListener('focusout', () => {
+    const value = inputConrol.value;
+    if (!isNaN(value)) node.textContent = inputConrol.value;
+  });
+
+  node.addEventListener('input', (e) => {
+    if (!e.data.match(/^[0-9]{0,2}$/)) {
+      node.textContent = '';
+    }
+
+    let settingValue = parseInt(node.textContent);
+    if (isNaN(settingValue)) {
+      settingValue = inputConrol.value;
+    }
+
+    if (settingValue > parseInt(inputConrol.max)) {
+      node.textContent = inputConrol.max;
+      settingValue = inputConrol.max;
+    }
+
+    if (settingValue == 0) {
+      settingValue++;
+    }
+
+    inputConrol.value = settingValue;
+  });
 }
 
 function copyPracticeRow(row, toClipboard = true) {
@@ -276,9 +276,11 @@ function copyPracticeRow(row, toClipboard = true) {
 function copyAllPracticeData() {
   const list = [];
 
-  this.closest('table').querySelectorAll('tbody tr').forEach((row) => {
-    list.push(copyPracticeRow(row, false));
-  });
+  this.closest('table')
+    .querySelectorAll('tbody tr')
+    .forEach((row) => {
+      list.push(copyPracticeRow(row, false));
+    });
 
   navigator.clipboard.writeText(list.join('\n')).then(
     () => {
