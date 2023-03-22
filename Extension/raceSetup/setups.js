@@ -136,7 +136,9 @@ function createSlider(node) {
 
   const sliderContainer = document.createElement('div');
   sliderContainer.classList.add('sliderContainer');
-
+  const sliderLabelTrack = document.createElement('div');
+  sliderLabelTrack.classList.add('track');
+  sliderContainer.append(sliderLabelTrack);
   const slider = document.createElement('input');
   slider.className = 'sliderX';
   slider.type = 'range';
@@ -144,31 +146,33 @@ function createSlider(node) {
   slider.min = 1;
   slider.value = settingValueDiv.textContent;
 
+  function getRangePercent(sliderE){
+    return (sliderE.value - sliderE.min) / (sliderE.max - sliderE.min) * 100;
+  }
   slider.addEventListener('input', function () {
+    sliderLabelTrack.append(settingValueDiv);
     settingValueDiv.textContent = this.value;
-
     settingValueDiv.classList.add('slider-label');
-    const newValue = Number(((this.value - this.min) * 100) / (this.max - this.min));
-    const newPosition = 10 - newValue * 0.2;
-    settingValueDiv.style.left = `calc(${newValue}% + (${newPosition}px))`;
+    settingValueDiv.style.left = getRangePercent(slider) + '%';
   });
 
   slider.addEventListener('change', function () {
     settingValueDiv.classList.remove('slider-label');
     sliderContainer.classList.remove('visible');
+    slider.parentElement.parentElement.append(settingValueDiv);
     slider.parentElement.parentElement.nextElementSibling.value = slider.value;
   });
 
   settingValueDiv.addEventListener('click', function () {
     if (!sliderContainer.classList.contains('visible')) {
+      sliderLabelTrack.append(settingValueDiv);
       sliderContainer.classList.add('visible');
       settingValueDiv.classList.add('slider-label');
-      const newValue = Number(((slider.value - slider.min) * 100) / (slider.max - slider.min)),
-        newPosition = 10 - newValue * 0.2;
-      settingValueDiv.style.left = `calc(${newValue}% + (${newPosition}px))`;
+      settingValueDiv.style.left = getRangePercent(slider) + '%';
     } else {
       sliderContainer.classList.remove('visible');
       settingValueDiv.classList.remove('slider-label');
+      slider.parentElement.parentElement.append(settingValueDiv);
     }
   });
 

@@ -557,14 +557,17 @@ function addFuelSlider()
 
   function createSlider(node){
     nodeText = node.previousElementSibling.childNodes[1];
+    nodeText.classList.remove('green');
     sliderContainer = document.createElement('div');
     sliderContainer.setAttribute('style','position:absolute;width:100%;;display:none');
     slider = document.createElement('input');
-    slider.className = 'sliderX';
+    slider.classList.add('sliderX');
     slider.type = 'range';
     slider.max = 200;
     slider.min = 0;
     slider.value = nodeText.textContent;
+    sliderContainer.style.backgroundColor = '#f2f2f2';
+    sliderContainer.style.zIndex = 2;
     slider.addEventListener('input',function(){
       const divSetup = this.parentElement.nextElementSibling.nextElementSibling
       divSetup.textContent = this.value;
@@ -606,7 +609,7 @@ function addFuelSlider()
         
 
     });
-    nodeText.setAttribute('style','border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;');
+    nodeText.classList.add('withSlider');
 
     node.previousElementSibling.prepend(sliderContainer);
 
