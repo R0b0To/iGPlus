@@ -5,6 +5,7 @@ const overSign = document.getElementById('overSign');
 const link = document.getElementById('link');
 const sname = document.getElementById('sname');
 const trackName = document.getElementById('track');
+const languageSelection = document.getElementById('language');
 
 const leagueCheckbox = document.getElementById('league').querySelector('.help');
 const researchCheckbox = document.getElementById('research').querySelector('.help');
@@ -22,9 +23,8 @@ const overviewCheckbox = document.getElementById('overview').querySelector('.hel
 // init
 document.addEventListener('DOMContentLoaded', restoreOptions);
 
-const languageSelection = document.getElementById('language');
-languageSelection.addEventListener('change', saveOptions);
 
+languageSelection.addEventListener('change', saveOptions);
 
 function addCheckEvent(checkbox) {
   //add event listener to checkbox that stores the checkbox status, passing the script name (id)
@@ -32,7 +32,7 @@ function addCheckEvent(checkbox) {
 }
 
 async function scriptCheck(scriptName, status) {
-  console.log('saving status of:',scriptName,status);
+  //console.log('saving status of:',scriptName,status);
   if(scriptName == 'overSign' || scriptName == 'raceSign')
   {
     chrome.storage.local.set({ [scriptName]: status });
@@ -79,19 +79,11 @@ sname.addEventListener('change', sName);
 
 trackName.addEventListener('change', sTrack);
 
-function sName() {
-  sheetName = sname.value;
-  chrome.storage.local.set({ gLinkName: sheetName });
-}
-
-function sTrack() {
-  lowName = trackName.value.toLowerCase();
-  //console.log("saving "+trackNameT);
-  chrome.storage.local.set({ gTrack: lowName });
-}
+function sName() { chrome.storage.local.set({ gLinkName: sname.value }); }
+function sTrack() { chrome.storage.local.set({ gTrack: trackName.value.toLowerCase() }); }
 
 function testLink() {
-  url = link.value;
+  const url = link.value;
 
   if (url == '') {
     link.className = '';
@@ -101,8 +93,6 @@ function testLink() {
       .then((res) => {
         if (res.ok) {
           link.className = 'valid';
-          //console.log(res);
-
           chrome.storage.local.set({ gLink: url });
         }
       })
@@ -119,7 +109,6 @@ function testLink() {
 function saveOptions() {
   const lang = document.getElementById('language').value;
   chrome.storage.local.set({ language: lang });
-  //chrome.storage.local.set({sign: ,});
   restoreOptions();
 }
 
@@ -239,36 +228,39 @@ function restoreOptions() {
         }
       }
 
-      all = document.getElementById('exportSave').value;
+      const all = document.getElementById('exportSave').value;
+      let filename = 'save';
+      let saved = d;
+
       if (all == 0) {
         saved = d;
         filename = 'save';
       } else {
-        saveID = document.getElementById('trackSave').value;
-        track = document.getElementById('exportSave').value;
+        const saveID = document.getElementById('trackSave').value;
+        const track = document.getElementById('exportSave').value;
         saved = { [track]: { [saveID]: d.save[track][saveID] } };
         filename = `${track}_${saveID}`;
       }
-      saveJSON = JSON.stringify(saved);
+      const saveJSON = JSON.stringify(saved);
       downloadFile(saveJSON, filename);
     }
 
     function addButton() {
-      dButton = document.createElement('div');
+      const dButton = document.createElement('div');
       dButton.className = 'btn fa fa-download';
       return dButton;
     }
 
     if (typeof d.save === 'undefined') {
     } else {
-      defaultOption = document.createElement('option');
+      const defaultOption = document.createElement('option');
       defaultOption.textContent = 'All';
       defaultOption.value = 0;
       exportSave.parentElement.append(addButton());
       exportSave.append(defaultOption);
       Object.keys(d.save).forEach((item) => {
         if (Object.keys(d.save[item]).length > 0) {
-          option = document.createElement('option');
+          const option = document.createElement('option');
           option.textContent = item;
           option.value = item;
           exportSave.append(option);
@@ -279,15 +271,15 @@ function restoreOptions() {
       exportSave.addEventListener('change', function () {
         //console.log("changing");
         try {
-          select = document.createElement('select');
+          const select = document.createElement('select');
           select.id = 'trackSave';
 
           if (this.value != 0) {
             Object.keys(d.save[this.value]).forEach((item) => {
-              option = document.createElement('option');
+              const option = document.createElement('option');
               // console.log(d.save[this.value][item]);
 
-              downloadButtons = document.querySelectorAll('.fa-download');
+              const downloadButtons = document.querySelectorAll('.fa-download');
               downloadButtons.forEach((button) => {
                 button.remove();
               });
@@ -305,7 +297,7 @@ function restoreOptions() {
               exportSave.parentElement.append(addButton());
             }
           } else {
-            downloadButtons = document.querySelectorAll('.fa-download');
+            const downloadButtons = document.querySelectorAll('.fa-download');
             downloadButtons.forEach((button) => {
               button.remove();
             });
@@ -324,7 +316,7 @@ function restoreOptions() {
 }
 
 function getStrategyString(saveObject) {
-  string = '';
+  let string = '';
   Object.keys(saveObject).forEach((stint) => {
     string += `${saveObject[stint].laps}${saveObject[stint].tyre.slice(3)} `;
   });
@@ -339,9 +331,9 @@ importSave.addEventListener('change', async function () {
   async function onReaderLoad(event) {
     try {
       var obj = JSON.parse(event.target.result);
-      track = Object.keys(obj)[0];
-      hashID = Object.keys(obj[track])[0];
-      validTrack = [
+      const track = Object.keys(obj)[0];
+      const hashID = Object.keys(obj[track])[0];
+      const validTrack = [
         'be',
         'it',
         'sg',
