@@ -6,6 +6,7 @@ const link = document.getElementById('link');
 const sname = document.getElementById('sname');
 const trackName = document.getElementById('track');
 const languageSelection = document.getElementById('language');
+const separator  = document.getElementById('separator');
 
 const leagueCheckbox = document.getElementById('league').querySelector('.help');
 const researchCheckbox = document.getElementById('research').querySelector('.help');
@@ -36,12 +37,11 @@ async function scriptCheck(scriptName, status) {
   if(scriptName == 'overSign' || scriptName == 'raceSign')
   {
     chrome.storage.local.set({ [scriptName]: status });
+    restoreOptions();
   }
   else
   {
-    const data = await chrome.storage.local.get({ script: '' }); //! FIXME
-    data.script[scriptName] = status;
-    chrome.storage.local.set({ script: data.script });
+    mergeStorage(scriptName,status);
   }
 
 }
@@ -50,6 +50,10 @@ async function scriptCheck(scriptName, status) {
 // adding the eventlister to all the checkboxes as the function is the same
 document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
 
+separator.addEventListener('beforeinput',function(){this.value = '';});
+separator.addEventListener('input',function(){
+  chrome.storage.local.set({ separator: this.value });
+});
 /**
  * Enable or disable the checkboxes affiliated with the main div
  *
@@ -70,8 +74,35 @@ function mainCheckboxEvent(divId) {
   checkboxes[0].addEventListener('click',subCheckboxStatus.bind(null,checkboxes));
 }
 
-['strategy','setup'].forEach(mainCheckboxEvent);
+async function mergeStorage(scriptName,scriptValue)
+{
+  const data = await chrome.storage.local.get({ script: '' });
+  data.script[scriptName] = scriptValue;
+  chrome.storage.local.set({ script: data.script });
+}
 
+async function onlyOne(){
+
+  const checkboxes = this.parentElement.parentElement.querySelectorAll('input[type="checkbox"]');
+  const options = Array.prototype.slice.call(checkboxes, -2); //getting only the 2 options
+  options.forEach(async checkbox =>  {
+    const id = checkbox.parentElement.id;
+    if(id != this.parentElement.id)
+      checkbox.checked = false;
+  });
+  const data = await chrome.storage.local.get({ script: '' });
+  data.script[options[0].parentElement.id] = options[0].checked;
+  data.script[options[1].parentElement.id] = options[1].checked;
+  chrome.storage.local.set({ script: data.script });
+
+}
+function onlyOneEvent(check){
+  const checkbox = document.getElementById(check).querySelector('input');
+  checkbox.addEventListener('change',onlyOne);
+}
+
+['strategy','setup'].forEach(mainCheckboxEvent);
+['edit','slider','editS','sliderS'].forEach(onlyOneEvent);
 
 const exportSave = document.getElementById('exportSave');
 link.addEventListener('change', testLink);
@@ -122,7 +153,8 @@ function restoreOptions() {
       const code = selected.language;
       document.getElementById('language').value = code;
       document.getElementById('langTitle').childNodes[0].textContent = language[code].optionsText.languageText + ': ';
-      document.getElementById('signOpt').textContent = language[code].optionsText.signOption;
+      document.getElementById('preferences').textContent = language[code].optionsText.preferences;
+      separator.previousElementSibling.textContent = language[code].optionsText.separator;
       raceSign.nextElementSibling.textContent = language[code].optionsText.RaceReport;
       overSign.nextElementSibling.textContent = language[code].optionsText.StartOvertakes;
 
@@ -152,12 +184,17 @@ function restoreOptions() {
     }
   );
 
+  chrome.storage.local.get({'separator':','}, function (data) {
+    separator.value = data.separator;
+  });
   chrome.storage.local.get('raceSign', function (data) {
     raceSign.checked = data.raceSign;
+    (raceSign.checked) ? raceSign.nextElementSibling.textContent += ' ( - )' : raceSign.nextElementSibling.textContent += ' ( + )';
   });
 
   chrome.storage.local.get('overSign', function (data) {
     overSign.checked = data.overSign;
+    (overSign.checked) ? overSign.nextElementSibling.textContent += ' ( - )' : overSign.nextElementSibling.textContent += ' ( + )';
   });
 
   chrome.storage.local.get('gLink', function (data) {
