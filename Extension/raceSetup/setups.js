@@ -259,12 +259,13 @@ function makeEditable(node) {
   });
 }
 
-function copyPracticeRow(row, toClipboard = true) {
+async function copyPracticeRow(row, toClipboard = true) {
   const tyre = row.childNodes[0].className.split('-')[1];
   const fuelLap = row.childNodes[4].textContent;
   const wear = row.childNodes[5].textContent;
-
-  const data = `${tyre},${fuelLap},${wear}`;
+  const separatorData = await chrome.storage.local.get({separator:','})
+  const separator = separatorData.separator;
+  const data = `${tyre}${separator}${fuelLap}${separator}${wear}`;
   if (!toClipboard) {
     return data;
   }
