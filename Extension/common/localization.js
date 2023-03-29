@@ -1,10 +1,11 @@
 const language = {
   eng: {
     optionsText:{
-      signOption: 'Invert Report Sign',
+      preferences: 'Preferences',
       languageText: 'Language',
-      RaceReport: 'Race Report',
-      StartOvertakes: 'End lap2 Overtakes',
+      RaceReport: 'Race Report Sign',
+      StartOvertakes: 'End lap2 Overtakes Sign',
+      separator: 'Custom Separator'
     },
     popupText:{
       saveText: 'Save',
@@ -14,6 +15,8 @@ const language = {
       newRace: 'New Race',
       downloadText: 'Download',
       copyText: 'Copy',
+      raceRecap: 'Race Recap',
+      startOvertakes:'End lap 2 Overtakes'
     },
     fuelText: 'Fuel',
     lapText: 'Lap',
@@ -38,10 +41,11 @@ const language = {
   },
   ita: {
     optionsText:{
-      signOption: 'Inverti Segno Dei Resoconti',
+      preferences: 'Preferenze',
       languageText: 'Lingua',
-      RaceReport: 'Resoconto gara',
-      StartOvertakes: 'Sorpassi fine 2° giro',
+      RaceReport: 'Segno Resoconto gara',
+      StartOvertakes: 'Segno Sorpassi fine 2° giro',
+      separator: 'Separatore di elenco'
     },
     popupText:{
       saveText: 'Salva',
@@ -51,6 +55,8 @@ const language = {
       newRace: 'Nuova gara',
       downloadText: 'Scarica',
       copyText: 'Copia',
+      raceRecap: 'Resoconto Gara',
+      startOvertakes:'Sorpassi a fine 2° giro'
     },
     fuelText: 'Carburante',
     lapText: 'Giri',
