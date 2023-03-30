@@ -1,36 +1,10 @@
-t = {
-  'au': 'd=circuit&id=1&tab=history' ,//Australia
-  'my': 'd=circuit&id=2&tab=history' ,//Malaysia
-  'cn': 'd=circuit&id=3&tab=history' ,//China
-  'bh': 'd=circuit&id=4&tab=history' ,//Bahrain
-  'es': 'd=circuit&id=5&tab=history' ,//Spain
-  'mc': 'd=circuit&id=6&tab=history' ,//Monaco
-  'tr': 'd=circuit&id=7&tab=history' ,//Turkey
-  'de': 'd=circuit&id=9&tab=history' ,//Germany
-  'hu': 'd=circuit&id=10&tab=history' ,//Hungary
-  'eu': 'd=circuit&id=11&tab=history' ,//Europe
-  'be': 'd=circuit&id=12&tab=history' ,//Belgium
-  'it': 'd=circuit&id=13&tab=history' ,//Italy
-  'sg': 'd=circuit&id=14&tab=history' ,//Singapore
-  'jp': 'd=circuit&id=15&tab=history' ,//Japan
-  'br': 'd=circuit&id=16&tab=history' ,//Brazil
-  'ae': 'd=circuit&id=17&tab=history' ,//AbuDhabi
-  'gb': 'd=circuit&id=18&tab=history' ,//Great Britain
-  'fr': 'd=circuit&id=19&tab=history' ,//France
-  'at': 'd=circuit&id=20&tab=history' ,//Austria
-  'ca': 'd=circuit&id=21&tab=history' ,//Canada
-  'az': 'd=circuit&id=22&tab=history' ,//Azerbaijan
-  'mx': 'd=circuit&id=23&tab=history' ,//Mexico
-  'ru': 'd=circuit&id=24&tab=history' ,//Russia
-  'us': 'd=circuit&id=25&tab=history' //USA
-};
 
 function addExtraTable (size)
 {
-  var t = document.createElement('table');
-  t.id = 'extraTable';
-  t.setAttribute('style','float: left;border-collapse:initial;width: auto;');
-  t.className = 'hover acp';
+  var table = document.createElement('table');
+  table.id = 'extraTable';
+  table.setAttribute('style','float: left;border-collapse:initial;width: auto;');
+  table.className = 'hover acp';
   for(var i = 0 ; i < size ;i++)
   {
     var row = document.createElement('tr');
@@ -39,24 +13,49 @@ function addExtraTable (size)
     icon.setAttribute('style','display: block;width:18px;cursor:pointer');
     icon.className = 'hover pointer';
     icon.addEventListener('click',openHistory);
-    a = document.createElement('a');
+    const a = document.createElement('a');
     a.href = '#';
     icon.append(a);
     row.append(icon);
-    t.append(row);
+    table.append(row);
   }
-  return t;
+  return table;
 }
 function openHistory()
 {
+  const historyLink = {
+    'au': 'd=circuit&id=1&tab=history' ,//Australia
+    'my': 'd=circuit&id=2&tab=history' ,//Malaysia
+    'cn': 'd=circuit&id=3&tab=history' ,//China
+    'bh': 'd=circuit&id=4&tab=history' ,//Bahrain
+    'es': 'd=circuit&id=5&tab=history' ,//Spain
+    'mc': 'd=circuit&id=6&tab=history' ,//Monaco
+    'tr': 'd=circuit&id=7&tab=history' ,//Turkey
+    'de': 'd=circuit&id=9&tab=history' ,//Germany
+    'hu': 'd=circuit&id=10&tab=history' ,//Hungary
+    'eu': 'd=circuit&id=11&tab=history' ,//Europe
+    'be': 'd=circuit&id=12&tab=history' ,//Belgium
+    'it': 'd=circuit&id=13&tab=history' ,//Italy
+    'sg': 'd=circuit&id=14&tab=history' ,//Singapore
+    'jp': 'd=circuit&id=15&tab=history' ,//Japan
+    'br': 'd=circuit&id=16&tab=history' ,//Brazil
+    'ae': 'd=circuit&id=17&tab=history' ,//AbuDhabi
+    'gb': 'd=circuit&id=18&tab=history' ,//Great Britain
+    'fr': 'd=circuit&id=19&tab=history' ,//France
+    'at': 'd=circuit&id=20&tab=history' ,//Austria
+    'ca': 'd=circuit&id=21&tab=history' ,//Canada
+    'az': 'd=circuit&id=22&tab=history' ,//Azerbaijan
+    'mx': 'd=circuit&id=23&tab=history' ,//Mexico
+    'ru': 'd=circuit&id=24&tab=history' ,//Russia
+    'us': 'd=circuit&id=25&tab=history' //USA
+  };
   const scheduleTable = document.getElementById('scheduleTable');
   const raceRow = this.parentElement.rowIndex;
   const track = scheduleTable.rows[raceRow].childNodes[1].childNodes[0];
   const code = track.className.slice(-2);
   try {
-    link = track.parentElement.previousSibling.childNodes[0];
-    a = this.querySelector('a');
-    a.href = t[code];
+    const a = this.querySelector('a');
+    a.href = historyLink[code];
     a.click();
   } catch (error) {
     console.log(error);
@@ -85,9 +84,9 @@ async function inject_history()
         .then(response => response.json())
         .then(data =>
         {
-          arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
-          arrayID = [...data.src.matchAll(/id=(\d+)/g)];
-          historyObj = {};
+          const arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
+          const arrayID = [...data.src.matchAll(/id=(\d+)/g)];
+          const historyObj = {};
 
           arrayID.forEach((element, index) => {
             historyObj[element[1]] = arrayPositions[index][1];
@@ -95,7 +94,7 @@ async function inject_history()
           // return historyObj;
           //console.log(historyObj);
           racesCompleted.forEach(race => {
-            raceID = race.querySelector('[href]').href.match(/\d+/)[0];
+            const raceID = race.querySelector('[href]').href.match(/\d+/)[0];
             if(historyObj[raceID] != null)
               race.childNodes[0].childNodes[1].textContent += ` [${historyObj[raceID]}]`;
           });
@@ -108,8 +107,6 @@ async function inject_history()
   } catch (error) {
 
   }
-
-
 }
 
 
