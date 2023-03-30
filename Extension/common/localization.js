@@ -36,7 +36,8 @@ const language = {
       marketDriver: 'Adds a talent column in the driver transfer market',
       carOverview: 'Enable review button (design research) during a live race',
       academyTimer: 'Add youth academy countdown. It will be placed as a notification beside the HQ menu option',
-      reports: 'Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs'
+      reports: 'Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs',
+      history: 'Add track characteristics to the race history page'
     }
   },
   ita: {
@@ -76,7 +77,8 @@ const language = {
       marketDriver: 'Rivela forza e debolezza del CD nel mercato trasferimenti',
       carOverview: 'Il pulsante di ricerca diventa disponibile anche durante una gara in corso',
       academyTimer: 'Aggiunge il timer dell\'accademia piloti nel menu laterale oltre ad aggiornare il timer in automatico',
-      reports: 'Aggiunge il pulsante per estrarre i dati delle gare di ogni pilota, il CVS della qualifica e gara con i nomi delle squadre'
+      reports: 'Aggiunge il pulsante per estrarre i dati delle gare di ogni pilota, il CVS della qualifica e gara con i nomi delle squadre',
+      history: 'Aggiunge caratteristiche del circuito nella pagina storico gare'
     }
   }
 };
