@@ -19,8 +19,7 @@ const reportsCheckbox = document.getElementById('reports').querySelector('.help'
 const reviewCheckbox = document.getElementById('review').querySelector('.help');
 const gsheetCheckbox = document.getElementById('Gsheet').querySelector('.help');
 const overviewCheckbox = document.getElementById('overview').querySelector('.help');
-
-
+const advancedHisCheckbox = document.getElementById('history').querySelector('.help');
 // init
 document.addEventListener('DOMContentLoaded', restoreOptions);
 
@@ -169,6 +168,7 @@ function restoreOptions() {
       refreshCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.academyTimer;
       reportsCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.reports;
       overviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.carOverview;
+      advancedHisCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.history;
 
       addFieldtipEvent(gsheetCheckbox);
       addFieldtipEvent(leagueCheckbox);
@@ -181,6 +181,7 @@ function restoreOptions() {
       addFieldtipEvent(refreshCheckbox);
       addFieldtipEvent(reportsCheckbox);
       addFieldtipEvent(overviewCheckbox);
+      addFieldtipEvent(advancedHisCheckbox);
     }
   );
 
@@ -226,7 +227,8 @@ function restoreOptions() {
     edit: false,
     slider: true,
     editS: false,
-    sliderS: true
+    sliderS: true,
+    history:true
   };
 
   chrome.storage.local.get({ script: script }, function (data) {
