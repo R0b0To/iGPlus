@@ -43,7 +43,7 @@ function showBarValues() {
   if (document.getElementsByClassName('showStat').length == 0) {
     const parameterBars = document.querySelectorAll('#race > div:nth-child(1) > table > tbody .ratingBar');
     parameterBars.forEach((bar) => {
-      bar.classList.add('statBarWithVaue');
+      bar.classList.add('statBarWithValue');
       bar.appendChild(createValueSpan(bar.childNodes[0].style.width));
     });
   }
