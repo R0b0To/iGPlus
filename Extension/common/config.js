@@ -16,7 +16,8 @@ const scriptDefaults = {
   edit: false,
   slider: true,
   editS: false,
-  sliderS: true
+  sliderS: true,
+  history:true
 };
 
 /**
@@ -110,6 +111,11 @@ const tabScripts = {
   '/app/': {
     key: 'refresh',
     scripts: ['timerAlert.js']
+  },
+  '/app/d=history': {
+    key: 'history',
+    scripts: ['track_history.js'],
+    styles: ['race/style.css']
   }
 };
 
