@@ -84,13 +84,14 @@ function loadTrack()
   const image = document.createElement('img');
   const trackId = selectedTrack.value;
   const tableDiv = document.getElementById('history');
-  if(trackId != 0){
+  const imageContainer = document.createElement('div');
+  imageContainer.append(image);
+  imageContainer.classList.add('statsContainer');
+
+  if(trackId != 0 && trackId != 8){
     image.src = chrome.runtime.getURL(`images/circuits/${trackCharacteristics[trackId].code}.png`);
     image.classList.add('trackImage');
     image.id = 'trackMap';
-    const imageContainer = document.createElement('div');
-    imageContainer.append(image);
-    imageContainer.classList.add('statsContainer');
 
     (!document.getElementById('trackMap')) ?  tableDiv.prepend(imageContainer) : document.getElementById('trackMap').src = image.src;
 
@@ -98,7 +99,7 @@ function loadTrack()
 
 
   }else{
-    //this is not a circuit
+    document.getElementsByClassName('statsContainer')[0].remove();
   }
 
 
