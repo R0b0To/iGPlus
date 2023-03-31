@@ -75,9 +75,11 @@ function mainCheckboxEvent(divId) {
 
 async function mergeStorage(scriptName,scriptValue)
 {
-  const data = await chrome.storage.local.get({ script: '' });
-  data.script[scriptName] = scriptValue;
-  chrome.storage.local.set({ script: data.script });
+  chrome.storage.local.get({ script: '' },(data)=>{
+    data.script[scriptName] = scriptValue;
+    chrome.storage.local.set({ script: data.script });
+  });
+
 }
 
 async function onlyOne(){
@@ -89,10 +91,12 @@ async function onlyOne(){
     if(id != this.parentElement.id)
       checkbox.checked = false;
   });
-  const data = await chrome.storage.local.get({ script: '' });
-  data.script[options[0].parentElement.id] = options[0].checked;
-  data.script[options[1].parentElement.id] = options[1].checked;
-  chrome.storage.local.set({ script: data.script });
+  chrome.storage.local.get({ script: '' },(data)=>{
+    data.script[options[0].parentElement.id] = options[0].checked;
+    data.script[options[1].parentElement.id] = options[1].checked;
+    chrome.storage.local.set({ script: data.script });
+  });
+
 
 }
 function onlyOneEvent(check){
