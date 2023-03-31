@@ -1,8 +1,18 @@
 
 document.addEventListener('DOMContentLoaded', async function() {
   const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
-  const data = await chrome.storage.local.get({separator:','})
-  const separator = data.separator;
+  let separator;
+  const data = await chrome.storage.local.get({separator:','});
+  
+  if(typeof data == 'undefined')
+  {
+    //firefox browser.storage works with await
+    const data2 = await browser.storage.local.get({separator:','});
+    separator = data2.separator;
+  }
+  else
+  separator = data.separator;
+
   const startOvertakes = document.getElementById('start');
   const deleteButton = document.getElementById('delete');
   const select = document.getElementById('select');
@@ -92,7 +102,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     if(data.active == null)
     {
-      console.log('data not found');
       disableButton(true);
     }else{
       const storage_list = Object.keys(data);
@@ -356,8 +365,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         {
           laps_position[driver_ele.rank[i] - 1] += 1;
         }
-
-        console.log(laps_position)
         string += driver_ele.name + separator + laps_position.join(separator) + '\n';
 
       });
