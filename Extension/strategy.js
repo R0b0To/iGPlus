@@ -24,14 +24,14 @@ function getWear(tyre,laps){
   const tyreWear  = tyreWearFactors[tyre] || 0.5;
   const t = (1.43 * eco.te ** -0.0778) * (0.00364 * track_info().wear + 0.354) * track_info().length * 1.384612 * multiplier * tyreWear;
   //calculate stint wear
-  stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
-  stint2 = (1 - (1 * ((t) + (0.0212 * laps - 0.00926) * track_info().length) / 100));
-  for(j = 1 ; j < laps ; j++)
+  const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
+  let stint2 = (1 - (1 * ((t) + (0.0212 * laps - 0.00926) * track_info().length) / 100));
+  for(let j = 1 ; j < laps ; j++)
   {
     stint2 *= (1 - (1 * ((t) + (0.0212 * j - 0.00926) * track_info().length) / 100));
   }
   stint2 = stint2 * 100;
-  average = ((stint + stint2) / 2).toFixed(2);
+  const average = ((stint + stint2) / 2).toFixed(2);
   return average;
 }
 function track_info(){
@@ -333,7 +333,7 @@ function track_info(){
             rules = data.vars.rules;
             var league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
             const multipliers = { 100: 1, 75: 1.33, 50: 1.5, 25: 3 };
-            multiplier = multipliers[league_length] || 1; //<-------------------------------multiplier
+            multiplier = multipliers[league_length] || 1; //<-------------------------------multiplier (important, used globally)
             fetch('https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=')
               .then(response => response.json())
               .then(data => {
@@ -343,7 +343,7 @@ function track_info(){
                 
    
                         
-                eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy
+                eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy (important, used globally)
                 
                 injectAdvancedStint();
                 injectCircuitMap();
@@ -700,8 +700,6 @@ async function readGSheets()
       j.forEach((ele) =>
       {
         try {
-          // console.log(ele);
-
           if(isNaN(ele[t.gTrack]))
             requestedTrack = ele[t.gTrack].toLowerCase();
           else
@@ -764,7 +762,7 @@ async function readGSheets()
 
     if(savedLink.gLink != '')
     {
-      t = await chrome.storage.local.get({'gTrack':'track_info()'});
+      t = await chrome.storage.local.get({'gTrack':'track'});
       sName = await chrome.storage.local.get({'gLinkName':'Sheet1'});
 
       idRegex = /spreadsheets\/d\/(.*)\/edit/;
