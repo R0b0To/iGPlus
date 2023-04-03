@@ -1,6 +1,5 @@
 (async () => {
-  const { fetchDriverInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
-  const { parseAttributes, createSpecialSkillLabel } = await import(chrome.runtime.getURL('/driver/driverHelpers.js'));
+  const { createSpecialSkillLabel } = await import(chrome.runtime.getURL('/driver/driverHelpers.js'));
   Promise.all([addTalent()]);
   const tableStaffObserver = new MutationObserver(function (_mutations) {addTalent();});
 
@@ -26,27 +25,19 @@
       const body = table.tBodies[0];
       for(var i = 0; i < body.rows.length ;i++){
         const tEle = document.createElement('td');
-        tEle.id = 'talentRow';
-        const talentValue = body.rows[i].childNodes[2].dataset.driver.split(',')[1];
+        tEle.id = 'talentRow';  
+        const stats = body.rows[i].querySelector('.hoverData').dataset;
+        const talentValue = stats.driver.split(',')[1];
+        const skill = {grade: /'(.*)'/.exec(stats.append)[1].slice(0,-2), name:/>(.*)<\//.exec(stats.append)[1] };
+
         tEle.textContent = talentValue;
+        tEle.append(createSpecialSkillLabel(skill));
         talentWithIndex.push({talent:talentValue,row:tEle});
         body.rows[i].insertBefore(tEle, body.rows[i].childNodes[2]);
       }
-      talentWithIndex.sort((a, b) => b.talent - a.talent);
-      //only requesting most relevant drivers to reduce server interaction
-      talentWithIndex.slice(0,4).forEach(driver => addSpecialAbility(driver.row));
+
     }
   }
-
-  async function addSpecialAbility(talentTd){
-    const driverLink = talentTd.closest('tr').querySelector('a');
-    const designerParams = new URLSearchParams(driverLink.pathname.replace('/app/', '?'));
-    const personId = designerParams.get('id');
-    const data = await fetchDriverInfo(personId);
-    const driver = await parseAttributes(data);
-    talentTd.append(createSpecialSkillLabel(driver.sSpecial));
-  }
-
 
 })();
 

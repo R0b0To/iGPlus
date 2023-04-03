@@ -51,6 +51,7 @@ function toCentimeters(height) {
 function createSpecialSkillLabel({ name, grade }) {
   const skillSpan = document.createElement('span');
   skillSpan.style.position = 'absolute';
+  skillSpan.style.marginLeft = '5px';
   skillSpan.classList.add(grade);
   if (grade != 'specialA0') skillSpan.textContent = name;
   return skillSpan;

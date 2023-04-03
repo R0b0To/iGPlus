@@ -1,6 +1,5 @@
 (async () => {
-  const { fetchStaffInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
-  const { createSkillLabel, parseSkills } = await import(chrome.runtime.getURL('/staff/helpers.js'));
+  const { createSkillLabel} = await import(chrome.runtime.getURL('/staff/helpers.js'));
   Promise.all([getCDStaffDiv()]);
   const tableStaffObserver = new MutationObserver(function (_mutations) {getCDStaffDiv();});
 
@@ -9,12 +8,11 @@
 
   async function addDesignerSkills(staffDiv) {
     /** @type HTMLAnchorElement */
-    const chiefDesigner = staffDiv.previousSibling.querySelector('a');
-    const designerParams = new URLSearchParams(chiefDesigner.pathname.replace('/app/', '?'));
-    const personId = designerParams.get('id');
-
-    const personData = await fetchStaffInfo(personId);
-    const { strength, weakness } = parseSkills(personData);
+    const fragmentToParse = document.createElement('table');
+    fragmentToParse.innerHTML = staffDiv.nextElementSibling.dataset.append;
+    const skills = fragmentToParse.querySelectorAll('icon');
+    const strength = skills[0].textContent;
+    const weakness = skills[1].textContent;
 
     // adding strength for designer
     if (staffDiv.childElementCount === 0) {
