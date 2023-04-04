@@ -263,7 +263,7 @@ async function copyPracticeRow(row, toClipboard = true) {
   const tyre = row.childNodes[0].className.split('-')[1];
   const fuelLap = row.childNodes[4].textContent;
   const wear = row.childNodes[5].textContent;
-  const separatorData = await chrome.storage.local.get({separator:','})
+  const separatorData = await chrome.storage.local.get({separator:','});
   const separator = separatorData.separator;
   const data = `${tyre}${separator}${fuelLap}${separator}${wear}`;
   if (!toClipboard) {
@@ -281,18 +281,20 @@ async function copyPracticeRow(row, toClipboard = true) {
 function copyAllPracticeData() {
   const list = [];
 
-  this.closest('table')
-    .querySelectorAll('tbody tr')
-    .forEach((row) => {
-      list.push(copyPracticeRow(row, false));
-    });
+  const promises = Array.from(this.closest('table').querySelectorAll('tbody tr')).map(async row =>{
+    const rowData = await copyPracticeRow(row, false);
+    list.push(rowData);
+  });
 
-  navigator.clipboard.writeText(list.join('\n')).then(
-    () => {
-      showTableHint(this.closest('table'), 'All rows data copied!');
-    },
-    () => {}
-  );
+  Promise.all(promises).then(()=>{
+    navigator.clipboard.writeText(list.join('\n')).then(
+      () => {
+        showTableHint(this.closest('table'), 'All rows data copied!');
+      },
+      () => {}
+    );
+
+  });
 }
 
 function showTableHint(table, text) {
