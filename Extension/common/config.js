@@ -17,7 +17,8 @@ const scriptDefaults = {
   slider: true,
   editS: false,
   sliderS: true,
-  history:true
+  history:true,
+  sponsor:true
 };
 
 /**
@@ -26,6 +27,11 @@ const scriptDefaults = {
  * @type {{ [pathname: string]: { key?: string, scripts: string[], styles?: string[] } }}
  */
 const tabScripts = {
+  '/app/d=sponsor&location=': {
+    key: 'sponsor',
+    scripts: ['sponsor.js'],
+    styles: ['sponsor.css']
+  },
   '/app/p=training': {
     key: 'train',
     scripts: ['training.js'],
@@ -108,14 +114,14 @@ const tabScripts = {
   '/app/d=resultDetail&id=': {
     scripts: ['raceResult.js']
   },
-  '/app/': {
-    key: 'refresh',
-    scripts: ['timerAlert.js']
-  },
   '/app/d=history': {
     key: 'history',
     scripts: ['track_history.js'],
     styles: ['race/style.css']
+  },
+  '/app/': {
+    key: 'refresh',
+    scripts: ['timerAlert.js']
   }
 };
 
