@@ -20,6 +20,7 @@ const reviewCheckbox = document.getElementById('review').querySelector('.help');
 const gsheetCheckbox = document.getElementById('Gsheet').querySelector('.help');
 const overviewCheckbox = document.getElementById('overview').querySelector('.help');
 const advancedHisCheckbox = document.getElementById('history').querySelector('.help');
+const sponsorCheckbox = document.getElementById('sponsor').querySelector('.help');
 // init
 document.addEventListener('DOMContentLoaded', restoreOptions);
 
@@ -173,19 +174,11 @@ function restoreOptions() {
       reportsCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.reports;
       overviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.carOverview;
       advancedHisCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.history;
+      sponsorCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.sponsor;
 
-      addFieldtipEvent(gsheetCheckbox);
-      addFieldtipEvent(leagueCheckbox);
-      addFieldtipEvent(researchCheckbox);
-      addFieldtipEvent(trainingCheckbox);
-      addFieldtipEvent(reviewCheckbox);
-      addFieldtipEvent(staffCheckbox);
-      addFieldtipEvent(marketCheckbox);
-      addFieldtipEvent(marketDriverCheckbox);
-      addFieldtipEvent(refreshCheckbox);
-      addFieldtipEvent(reportsCheckbox);
-      addFieldtipEvent(overviewCheckbox);
-      addFieldtipEvent(advancedHisCheckbox);
+      [gsheetCheckbox,leagueCheckbox,researchCheckbox,trainingCheckbox,reviewCheckbox,staffCheckbox,marketCheckbox,marketDriverCheckbox,refreshCheckbox,reportsCheckbox,overviewCheckbox,advancedHisCheckbox,sponsorCheckbox]
+        .forEach(addFieldtipEvent);
+
     }
   );
 
@@ -232,7 +225,8 @@ function restoreOptions() {
     slider: true,
     editS: false,
     sliderS: true,
-    history:true
+    history:true,
+    sponsor:true
   };
 
   chrome.storage.local.get({ script: script }, function (data) {
@@ -376,33 +370,7 @@ importSave.addEventListener('change', async function () {
       var obj = JSON.parse(event.target.result);
       const track = Object.keys(obj)[0];
       const hashID = Object.keys(obj[track])[0];
-      const validTrack = [
-        'be',
-        'it',
-        'sg',
-        'my',
-        'jp',
-        'us',
-        'mx',
-        'br',
-        'ae',
-        'bh',
-        'eu',
-        'de',
-        'es',
-        'ru',
-        'tr',
-        'au',
-        'at',
-        'hu',
-        'gb',
-        'ca',
-        'az',
-        'mc',
-        'cn',
-        'fr',
-        'save'
-      ];
+      const validTrack = ['be','it','sg','my','jp','us','mx','br','ae','bh','eu','de','es','ru','tr','au','at','hu','gb','ca','az','mc','cn','fr','save'];
 
       if (validTrack.includes(track)) {
         chrome.storage.local.get('save', function (data) {
