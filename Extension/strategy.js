@@ -461,14 +461,18 @@ function dropzoneLeave(e){
 }
 
 function dragStint(){
-  const eventStored = [];
+
   if(document.getElementById('eventAdded') == null){
     const eventa = document.createElement('h1');
     eventa.id = 'eventAdded';
     eventa.style.display = 'none';
     document.getElementsByClassName('fuel')[0].parentElement.parentElement.append(eventa);
     const plusMinus = document.querySelectorAll('form[id$=strategy] .plus,form[id$=strategy] .minus');
-    plusMinus.forEach(button => button.addEventListener('click',addEvent,true));
+    plusMinus.forEach(button => {
+      button.addEventListener('click',addEvent,true);
+      button.addEventListener('touchstart',addEvent,true);
+  });
+    
   }
 addEvent();
   function addEvent(){
@@ -484,13 +488,16 @@ addEvent();
     driver.forEach(stintRow =>{
       stintRow.querySelectorAll('th:not(:first-child)').forEach(th => {
         th.classList.remove('dragMe');
-        th.removeEventListener('mousedown',dragMousedown,true)});
+        th.removeEventListener('mousedown',dragMousedown,true);
+        th.removeEventListener('touchstart',dragMousedown,true);
+      });
       visibleStints = visibleStints.concat(getVisibleStints(stintRow));
     });
 
     let info = null;
     visibleStints.forEach(th => {
-      th.addEventListener('mousedown',dragMousedown,true)
+      th.addEventListener('mousedown',dragMousedown,true);
+      th.addEventListener('touchstart',dragMousedown,true);
       th.classList.add('dragMe');
     });
     },100)
@@ -520,29 +527,39 @@ function setStintInfo(stintColumn,tyre,fuel,push,laps){
   stintColumn[3].querySelector('select').selectedIndex = push;
 
 }
-
+function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
+  while((c=c.parentNode)&&c!==p); 
+  return !!c; 
+}
 function closeDragElement(e) {
-
+  let isChild = false;
   const pointerOnTop = document.elementFromPoint(e.clientX, e.clientY);
+  const strat = document.getElementsByClassName('strategy');
+  
+  for(s of strat){
+    if (childOf(pointerOnTop,s))isChild=true;
+  }
 
   //try to set new info
   try {
-    setStintInfo(getColumnElements(pointerOnTop),info.tyre,info.fuel,info.push,info.laps);
-    update_stint(pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex]);
+    if(isChild){
+      setStintInfo(getColumnElements(pointerOnTop),info.tyre,info.fuel,info.push,info.laps);
+      update_stint((pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex])||(pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.closest('td').cellIndex]));
+    }
+    
   } catch (error) {
-    console.log(error);
-    //dropped outside the table
+    
   }
 
   /* stop moving when mouse button is released:*/
   document.querySelectorAll('.dropzone,.dragging,.dropzonebottom').forEach(otherStint => {
     otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
-    otherStint.removeEventListener('mouseenter',dropzoneEnter,true);
-    otherStint.removeEventListener('mouseleave',dropzoneLeave,true);
-    document.removeEventListener('mouseup',closeDragElement);
+    otherStint.removeEventListener('pointerenter',dropzoneEnter,true);
+    otherStint.removeEventListener('pointerleave',dropzoneLeave,true);
+    document.removeEventListener('pointerup',closeDragElement);
   });
 
-  document.removeEventListener('mousemove',elementDrag,true);
+  document.removeEventListener('pointermove',elementDrag,true);
 
   const preview = document.getElementsByClassName('drag');
   for(ele of preview) ele.remove();
@@ -578,12 +595,13 @@ function previewDrag(stintHeader,coord){
 }
 
 function dragMousedown(e){
-  e.preventDefault();
-  const coord = {x:e.clientX,y:e.clientY};
+ e.preventDefault();
+  if(e.target.closest('tbody').querySelector('.tyre').cells[e.target.cellIndex].style.visibility == 'visible'){
+ const coord = {x:e.clientX,y:e.clientY};
   const preview = previewDrag(e.target,coord);
 
   document.body.append(preview);
-  document.addEventListener('mousemove',elementDrag,true);
+  document.addEventListener('pointermove',elementDrag,true);
   info = getStintInfo(getColumnElements(e.target));
 
   const otherstints = getVisibleStints(e.target.closest('tr'));
@@ -597,14 +615,17 @@ function dragMousedown(e){
         ele.classList.add('dropzone');
         if (ele.parentElement.getAttribute('wearevent'))
           ele.classList.add('dropzonebottom');
-        ele.addEventListener('mouseenter',dropzoneEnter,true);
-        ele.addEventListener('mouseleave',dropzoneLeave,true);
+        ele.addEventListener('pointerenter',dropzoneEnter,true);
+        ele.addEventListener('pointerleave',dropzoneLeave,true);
 
       });
     }
-    document.addEventListener('mouseup',closeDragElement);
+    document.addEventListener('pointerup',closeDragElement);
   });
 
+  }
+ 
+ 
 }
 function getVisibleStints(stintHeader){
   const visibleS = [];
