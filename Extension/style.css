@@ -123,7 +123,8 @@
 }
 
 .sbutton {
-
+position: absolute;
+top:-14px;
   background-color: #6e7880;
   color: rgb(255, 255, 255);
   padding: 5px;
@@ -134,14 +135,22 @@
   border: none;
   cursor: pointer;
   display: inline;
+  height: 12px;
   width: fit-content;
   font-family: "RobotoCondensedBold";
-  cursor: pointer;
   border-radius:8px;
+  display: flex;
+    align-items: center;
 }
-
+.saveContainer{
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
 .lbutton
 {
+  top:10px;
+  position: absolute;
   background-color: #6e7880;
   color: rgb(255, 255, 255);
   padding: 5px;
@@ -149,12 +158,7 @@
   border-radius: 5px;
   font-size: .8em;
   font-weight: normal;
-  border: none;
-  cursor: pointer;
-  display: inline;
-  width: fit-content;
-  font-family: "RobotoCondensedBold";
-  cursor: pointer;
+
   border-radius:8px;
 }
 
@@ -170,7 +174,22 @@
   opacity: 0.5;
 }
 
-
+.loadStint
+{
+  margin:1px;
+}
+.loadStint.preview-laps{
+  width:5px;
+  font-size: 1.25rem;
+  color: black;
+  font-family: "Roboto";
+  margin:1px
+}
+.loadStint.preview-tyre{
+  height:32px;
+  width:32px; 
+  background-color: #dfdfdf;
+}
 .dropbtn1 {
   background-color: #689954;
   color: rgb(255, 255, 255);
@@ -319,4 +338,43 @@
 
 .tooltip1:hover .tooltiptext {
   visibility: visible;
+}
+
+.drag {
+  position: absolute;
+}
+.dropzone{
+  
+  background-color: rgba(155, 155, 155, 0.5);
+  border-radius: 0!important;
+  z-index: 99;
+   
+}
+.dropzone.ts-S, .dropzone.ts-S, .dropzone.ts-M, .dropzone.ts-H, .dropzone.ts-I, .dropzone.ts-W {
+  color: black
+}
+
+th.dropzone{
+ border-top: 2px dashed ;
+ border-left: 2px dashed ;
+ border-right: 2px dashed;
+}
+td.dropzone{
+  border-left: 2px dashed ;
+  border-right: 2px dashed ;
+}
+.dropzonebottom{
+  border-bottom: 2px dashed;
+}
+.dropzone.accept{
+  background-color: #768a6e!important;
+}
+.dragging{
+  opacity: 0.2;
+}
+.dragMe{
+  background-color: #467bb1;
+  color: #ffffff;
+  border-radius: 8px;
+  cursor: pointer;
 }

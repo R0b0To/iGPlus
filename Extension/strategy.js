@@ -70,10 +70,10 @@ function track_info(){
 
   function savePush(tbody){
     // console.log('saving');
-  
+
     const newPL = tbody.querySelectorAll('[class^=PL]');
     const pushes = document.querySelectorAll('[class^=PL]');
-  
+
     let pl = [];
     pl.push(tbody.getElementsByClassName('PL1')[0].value);
     pl.push(tbody.getElementsByClassName('PL2')[0].value);
@@ -81,7 +81,7 @@ function track_info(){
     pl.push(tbody.getElementsByClassName('PL4')[0].value);
     pl.push(tbody.getElementsByClassName('PL5')[0].value);
     const fe = tbody.getElementsByClassName('PLFE')[0].value;
-  
+
     eco.fuel = fuel_calc(parseInt(fe));
 
     //get the push value from all the select elements
@@ -98,7 +98,7 @@ function track_info(){
       feToolTip[i].textContent =  i18n[language].pushDescriptionPart1 + ((fuel_calc(fe) * track_info().length).toFixed(3)) + ' ' + i18n[language].pushDescriptionPart2;
     }
     chrome.storage.local.set({'pushLevels':pl}, function() {
-  
+
     });
     for(var j = 0 ; j < 5 ; j++)
     {
@@ -115,10 +115,10 @@ function track_info(){
   }
   async function injectAdvancedStint(){
     dstrategy = document.getElementsByClassName('fuel');
-  
+
     Object.keys(dstrategy).forEach(async driver =>{
       strategyIDNumber = dstrategy[driver].closest('form').id[1];
-  
+
       //add fuel div if the race is no refuel
       if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length > 2)
       {
@@ -129,25 +129,25 @@ function track_info(){
         if(placement.childElementCount < 2)
           placement.append(elem);
       }
-  
-  
+
+
       Promise.all([createWearRow(dstrategy[driver]),createPushRow(dstrategy[driver])]).then((test) => {
         //after wear and push rows are generated execute this
         update_stint(dstrategy[driver].cells[1]);
-  
-  
+
+
       });
-  
-  
+
+
     });
-  
+
     if(document.body.getAttribute('boxEvent') == null)
     {
       document.body.removeEventListener('click',handleClickOutsidePushBox,false);
       document.body.addEventListener('click',handleClickOutsidePushBox,false);
-  
+
     }
-  
+
     function handleClickOutsidePushBox(event) {
       document.body.setAttribute('boxEvent', true);
       const box = document.getElementsByClassName('not-selectable');
@@ -155,17 +155,17 @@ function track_info(){
       Object.keys(box).forEach(key => {
         //console.log(box[key].closest('th').contains(event.target));
         if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
-  
+
           if( box[key].classList)
             box[key].classList.remove('show');
           box[key].nextElementSibling.classList.remove('show');
-  
+
           savePush(box[key].closest('tbody'));
           //updateFuel(box[key].closest('tbody'));
         }
       });
     }
-  
+
     function createPushRow(strategy)
     {
       return new Promise((resolve, reject) => {
@@ -184,7 +184,7 @@ function track_info(){
             this.nextSibling.classList.toggle('show');
             this.nextSibling.nextSibling.classList.toggle('show');
             //savePush();
-  
+
           });
           pushButtonHeader.append(pushButton);
           var pushDiv = document.createElement('div');
@@ -208,7 +208,7 @@ function track_info(){
           row_name = pushButtonHeader;
           row_name.setAttribute('style', 'color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;');
           pushEle.append(row_name);
-  
+
           for (var i = 1; i < strategy.childElementCount; i++) {
             var stint = document.createElement('td');
             var pushSelect = document.createElement('select');
@@ -227,27 +227,27 @@ function track_info(){
             stint.append(pushSelect);
             stint.style.visibility = strategy.childNodes[i].style.visibility;
             pushEle.append(stint);
-  
+
           }
           if (strategy.parentElement.querySelector('[pushevent=true]') == null) {
             strategy.parentElement.insertBefore(pushEle, strategy.parentElement.childNodes[5]);
-  
+
             resolve(`driver ${strategy.closest('form').id[1]} push is done`);
           }
         });
-  
-  
-  
+
+
+
         function createPushElement(i, value, step) {
           var pushInputDiv = document.createElement('div');
           pushInputDiv.className = 'pushDiv';
-  
+
           var pushInputLabel = document.createElement('div');
           pushInputLabel.textContent = i;
           pushInputLabel.setAttribute('style', 'font-size: 0.8rem; color:white;align-self:center;height:100%;display: flex;width:42px;justify-content: center;align-items: center;');
-  
+
           var pushInputDown = document.createElement('div');
-  
+
           var  textSpan = document.createElement('span');
           textSpan.textContent = '−';
           pushInputDown.append(textSpan);
@@ -255,34 +255,34 @@ function track_info(){
           pushInputDown.addEventListener('click', function () {
             this.parentNode.querySelector('input[type=number]').stepDown();
           });
-  
+
           var pushInput = document.createElement('input');
           pushInput.className = 'PL' + i + ' pushInput';
           pushInput.type = 'number';
           pushInput.step = step; '0.001';
           //pushInput.setAttribute("style", "margin: 9px;");
-  
+
           if (i == 'FE')
             pushInput.value = value;
           else
             pushInput.value = pushToUse[i - 1];
-  
-  
+
+
           var pushInputUp = document.createElement('div');
           pushInputUp.className = 'pushPlusMin';
-  
+
           var  textSpan = document.createElement('span');
           textSpan.textContent = '+';
           pushInputUp.append(textSpan);
           pushInputUp.addEventListener('click', function () {
             this.parentNode.querySelector('input[type=number]').stepUp();
           });
-  
+
           pushInputDiv.append(pushInputLabel);
           pushInputDiv.append(pushInputDown);
           pushInputDiv.append(pushInput);
           pushInputDiv.append(pushInputUp);
-  
+
           return pushInputDiv;
         }
       });
@@ -313,14 +313,15 @@ function track_info(){
         }
       });
     }
-  
+
   }
-  
+
 
   try {
 
     if (document.getElementById('igpXvars') == null) {
 
+      document.body.append();
       //extract league id from page
       league = document.querySelector('#mLeague').href;
       league_id = /(?<=id=).*/gm.exec(league)[0];
@@ -340,17 +341,18 @@ function track_info(){
                 const fuel_eco = data.vars.fuel_economyBar;
                 const tyre_eco = data.vars.tyre_economyBar;
                 const fuel = fuel_calc(fuel_eco);
-                
-   
-                        
+
+
                 eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy (important, used globally)
-                
+
                 injectAdvancedStint();
                 injectCircuitMap();
                 readGSheets();
                 addMoreStints();
                 addSaveButton();
                 addWeatherInStrategy();
+                if(document.getElementById('eventAdded') == null)
+                  dragStint();
                 chrome.storage.local.get('script',async function(d){
                   if(d.script.sliderS)
                     addFuelSlider();
@@ -444,6 +446,179 @@ function track_info(){
 
 })();
 
+function getColumnElements(elementOfColumn){
+  const index = (elementOfColumn.cellIndex + 1) || (elementOfColumn.closest('td').cellIndex + 1) ;
+  const column = elementOfColumn.closest('tbody').querySelectorAll(`th:nth-child(${index}),td:nth-child(${index}):not(.loadStint)`);
+  return column;
+}
+function dropzoneEnter(e){
+  const column = getColumnElements(e.target);
+  column.forEach(c => c.classList.add('accept'));
+}
+function dropzoneLeave(e){
+  const column = getColumnElements(e.target);
+  column.forEach(c => c.classList.remove('accept'));
+}
+
+function dragStint(){
+  const eventStored = [];
+  if(document.getElementById('eventAdded') == null){
+    const eventa = document.createElement('h1');
+    eventa.id = 'eventAdded';
+    eventa.style.display = 'none';
+    document.getElementsByClassName('fuel')[0].parentElement.parentElement.append(eventa);
+    const plusMinus = document.querySelectorAll('form[id$=strategy] .plus,form[id$=strategy] .minus');
+    plusMinus.forEach(button => button.addEventListener('click',addEvent,true));
+  }
+addEvent();
+  function addEvent(){
+    //waiting in case new stint is created
+    setTimeout(()=>{
+       const strategies = document.getElementsByClassName('fuel');
+    const driver = [];
+    let visibleStints = [];
+
+    for(strategy of strategies){
+      driver.push(strategy.closest('tbody').firstChild); 
+    }
+    driver.forEach(stintRow =>{
+      stintRow.querySelectorAll('th:not(:first-child)').forEach(th => {
+        th.classList.remove('dragMe');
+        th.removeEventListener('mousedown',dragMousedown,true)});
+      visibleStints = visibleStints.concat(getVisibleStints(stintRow));
+    });
+
+    let info = null;
+    visibleStints.forEach(th => {
+      th.addEventListener('mousedown',dragMousedown,true)
+      th.classList.add('dragMe');
+    });
+    },100)
+   
+
+
+  }
+
+}
+
+function getStintInfo(stintColumn){
+
+  const tyre = stintColumn[1].querySelector('input').value;
+  const fuel = stintColumn[2].querySelector('input').value;
+  const laps = stintColumn[2].querySelector('span').textContent;
+  const push = stintColumn[3].querySelector('select').selectedIndex;
+
+  return {tyre,fuel,push,laps};
+}
+function setStintInfo(stintColumn,tyre,fuel,push,laps){
+  stintColumn[1].querySelector('input').value = tyre;
+  stintColumn[1].className = 'ts-' + tyre;
+  stintColumn[1].setAttribute('data-tyre',tyre);
+  stintColumn[2].querySelector('span').textContent = laps;
+  stintColumn[2].querySelectorAll('input')[0].value = fuel;
+  stintColumn[2].querySelectorAll('input')[1].value = laps;
+  stintColumn[3].querySelector('select').selectedIndex = push;
+
+}
+
+function closeDragElement(e) {
+
+  const pointerOnTop = document.elementFromPoint(e.clientX, e.clientY);
+
+  //try to set new info
+  try {
+    setStintInfo(getColumnElements(pointerOnTop),info.tyre,info.fuel,info.push,info.laps);
+    update_stint(pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex]);
+  } catch (error) {
+    console.log(error);
+    //dropped outside the table
+  }
+
+  /* stop moving when mouse button is released:*/
+  document.querySelectorAll('.dropzone,.dragging,.dropzonebottom').forEach(otherStint => {
+    otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
+    otherStint.removeEventListener('mouseenter',dropzoneEnter,true);
+    otherStint.removeEventListener('mouseleave',dropzoneLeave,true);
+    document.removeEventListener('mouseup',closeDragElement);
+  });
+
+  document.removeEventListener('mousemove',elementDrag,true);
+
+  const preview = document.getElementsByClassName('drag');
+  for(ele of preview) ele.remove();
+
+}
+function elementDrag(e){
+
+  const ele = document.getElementsByClassName('drag');
+  Array.from(ele).forEach(stintPreview=>{
+    stintPreview.style.top = e.clientY + 10 + 'px';
+    stintPreview.style.left = e.clientX - 5 + 'px';
+  });
+  
+
+}
+
+function previewDrag(stintHeader,coord){
+  const preview = document.getElementsByClassName('drag');
+  for(ele of preview) ele.remove();
+  const table = document.createElement('table');
+  const row = document.createElement('tr');
+  row.append(stintHeader.cloneNode(true));
+  const tyreRow = document.createElement('tr');
+  const tyre = stintHeader.closest('tr').nextElementSibling.cells[stintHeader.cellIndex].cloneNode(true);
+  tyreRow.append(tyre);
+  tyreRow.classList.add('tyre');
+  table.append(row,tyreRow);
+  table.classList.add('drag');
+  table.id = 'previewDrag';
+  table.style.top = coord.y + 5 + 'px';
+  table.style.left = coord.x + 5 + 'px';
+  return table;
+}
+
+function dragMousedown(e){
+  e.preventDefault();
+  const coord = {x:e.clientX,y:e.clientY};
+  const preview = previewDrag(e.target,coord);
+
+  document.body.append(preview);
+  document.addEventListener('mousemove',elementDrag,true);
+  info = getStintInfo(getColumnElements(e.target));
+
+  const otherstints = getVisibleStints(e.target.closest('tr'));
+  otherstints.forEach(s => {
+    const stintColumns = getColumnElements(s);
+    if(s == e.target){
+      stintColumns.forEach(e => e.classList.add('dragging'));
+    }else{
+      //other visible elements that will be dropzones
+      stintColumns.forEach(ele => {
+        ele.classList.add('dropzone');
+        if (ele.parentElement.getAttribute('wearevent'))
+          ele.classList.add('dropzonebottom');
+        ele.addEventListener('mouseenter',dropzoneEnter,true);
+        ele.addEventListener('mouseleave',dropzoneLeave,true);
+
+      });
+    }
+    document.addEventListener('mouseup',closeDragElement);
+  });
+
+}
+function getVisibleStints(stintHeader){
+  const visibleS = [];
+  const stints = stintHeader.querySelectorAll('th:not(:first-child)')
+  stints.forEach(stint =>{
+    if (stint.closest('tbody').querySelector('.tyre').cells[stint.cellIndex].style.visibility == 'visible')
+      visibleS.push(stint);
+  });
+  return visibleS;
+}
+
+
+
+
 
 
 var observer = new MutationObserver(function(mutations){ mutations.forEach(mut=>{if(mut.target.parentElement.style.visibility == 'visible' && mut.addedNodes.length > 0)update_stint(mut.target.closest('td'));});});
@@ -474,10 +649,10 @@ function updateFuel(tbod)
   let totalLaps = 0;
   for(var i = 1 ;i < stintNumber ;i++)
   {
-   let push = parseFloat(pushRow.cells[i].childNodes[0].value);
-   let laps = lapsRow.cells[i].textContent;
+    let push = parseFloat(pushRow.cells[i].childNodes[0].value);
+    let laps = lapsRow.cells[i].textContent;
     totalLaps += parseInt(laps);
-   const fuellap = ((ecoFuel + push) * track_info().length);
+    const fuellap = ((ecoFuel + push) * track_info().length);
     totalfuel += parseInt(laps) * fuellap;
   }
   const fuelEle = tbod.closest('form').getElementsByClassName('fuelEst')[0];
@@ -569,15 +744,15 @@ function addFuelSlider()
     sliderContainer.style.backgroundColor = '#f2f2f2';
     sliderContainer.style.zIndex = 2;
     slider.addEventListener('input',function(){
-      const divSetup = this.parentElement.nextElementSibling.nextElementSibling
+      const divSetup = this.parentElement.nextElementSibling.nextElementSibling;
       divSetup.textContent = this.value;
-  
+
       divSetup.classList.add('slider-label');
       const	newValue = Number( (this.value - this.min) * 100 / (this.max - this.min) ),	newPosition = 10 - (newValue * 0.2);
       divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
     });
     slider.addEventListener('change',function(){
-      const divSetup = this.parentElement.nextElementSibling.nextElementSibling
+      const divSetup = this.parentElement.nextElementSibling.nextElementSibling;
       divSetup.classList.remove('slider-label');
       this.parentElement.style.display = 'none';
       this.parentElement.parentElement.nextElementSibling.value = this.value;
@@ -593,20 +768,20 @@ function addFuelSlider()
     nodeText.addEventListener('click', function () {
       const divSetup = this;
       const sliderE = this.parentElement.childNodes[0];
-  
+
       if (sliderE.style.display === 'none')
       {
         sliderE.style.display = 'block';
         divSetup.classList.add('slider-label');
         const	newValue = Number( (sliderE.childNodes[0].value - sliderE.childNodes[0].min) * 100 / (sliderE.childNodes[0].max - sliderE.childNodes[0].min) ),	newPosition = 10 - (newValue * 0.2);
         divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
-  
-      } 
+
+      }
       else{
         sliderE.style.display = 'none';
         divSetup.classList.remove('slider-label');
       }
-        
+
 
     });
     nodeText.classList.add('withSlider');
@@ -618,48 +793,48 @@ function addFuelSlider()
 
 function injectCircuitMap(){
 
-  const trackLink ={
-    "au": "d=circuit&id=1&tab=history" ,//Australia
-    "my": "d=circuit&id=2&tab=history" ,//Malaysia
-    "cn": "d=circuit&id=3&tab=history" ,//China
-    "bh": "d=circuit&id=4&tab=history" ,//Bahrain
-    "es": "d=circuit&id=5&tab=history" ,//Spain
-    "mc": "d=circuit&id=6&tab=history" ,//Monaco
-    "tr": "d=circuit&id=7&tab=history" ,//Turkey
-    "de": "d=circuit&id=9&tab=history" ,//Germany
-    "hu": "d=circuit&id=10&tab=history" ,//Hungary
-    "eu": "d=circuit&id=11&tab=history" ,//Europe
-    "be": "d=circuit&id=12&tab=history" ,//Belgium
-    "it": "d=circuit&id=13&tab=history" ,//Italy
-    "sg": "d=circuit&id=14&tab=history" ,//Singapore
-    "jp": "d=circuit&id=15&tab=history" ,//Japan
-    "br": "d=circuit&id=16&tab=history" ,//Brazil
-    "ae": "d=circuit&id=17&tab=history" ,//AbuDhabi
-    "gb": "d=circuit&id=18&tab=history" ,//Great Britain
-    "fr": "d=circuit&id=19&tab=history" ,//France
-    "at": "d=circuit&id=20&tab=history" ,//Austria
-    "ca": "d=circuit&id=21&tab=history" ,//Canada
-    "az": "d=circuit&id=22&tab=history" ,//Azerbaijan
-    "mx": "d=circuit&id=23&tab=history" ,//Mexico
-    "ru": "d=circuit&id=24&tab=history" ,//Russia
-    "us": "d=circuit&id=25&tab=history" //USA    
-}
+  const trackLink = {
+    'au': 'd=circuit&id=1&tab=history' ,//Australia
+    'my': 'd=circuit&id=2&tab=history' ,//Malaysia
+    'cn': 'd=circuit&id=3&tab=history' ,//China
+    'bh': 'd=circuit&id=4&tab=history' ,//Bahrain
+    'es': 'd=circuit&id=5&tab=history' ,//Spain
+    'mc': 'd=circuit&id=6&tab=history' ,//Monaco
+    'tr': 'd=circuit&id=7&tab=history' ,//Turkey
+    'de': 'd=circuit&id=9&tab=history' ,//Germany
+    'hu': 'd=circuit&id=10&tab=history' ,//Hungary
+    'eu': 'd=circuit&id=11&tab=history' ,//Europe
+    'be': 'd=circuit&id=12&tab=history' ,//Belgium
+    'it': 'd=circuit&id=13&tab=history' ,//Italy
+    'sg': 'd=circuit&id=14&tab=history' ,//Singapore
+    'jp': 'd=circuit&id=15&tab=history' ,//Japan
+    'br': 'd=circuit&id=16&tab=history' ,//Brazil
+    'ae': 'd=circuit&id=17&tab=history' ,//AbuDhabi
+    'gb': 'd=circuit&id=18&tab=history' ,//Great Britain
+    'fr': 'd=circuit&id=19&tab=history' ,//France
+    'at': 'd=circuit&id=20&tab=history' ,//Austria
+    'ca': 'd=circuit&id=21&tab=history' ,//Canada
+    'az': 'd=circuit&id=22&tab=history' ,//Azerbaijan
+    'mx': 'd=circuit&id=23&tab=history' ,//Mexico
+    'ru': 'd=circuit&id=24&tab=history' ,//Russia
+    'us': 'd=circuit&id=25&tab=history' //USA
+  };
 
-if(document.getElementById("customMap")==null)
-{
-const target = document.getElementById("stintDialog");
-const circuit = document.createElement("img");
-circuit.id = "customMap";
-circuit.src= chrome.runtime.getURL('images/circuits/'+getTrackCode()+'.png');
-const trackCode = getTrackCode();
-circuit.src= chrome.runtime.getURL(`images/circuits/${trackCode}.png`);
-circuit.setAttribute("style","width:100%;");
-target.parentNode.insertBefore(circuit, target.nextSibling);
-const imageLink = document.createElement('a');
-imageLink.href = trackLink[trackCode];
-imageLink.append(circuit);
-target.parentNode.insertBefore(imageLink, target.nextSibling);
-}
+  if(document.getElementById('customMap') == null)
+  {
+    const target = document.getElementById('stintDialog');
+    const circuit = document.createElement('img');
+    circuit.id = 'customMap';
+    circuit.src = chrome.runtime.getURL('images/circuits/' + getTrackCode() + '.png');
+    const trackCode = getTrackCode();
+    circuit.src = chrome.runtime.getURL(`images/circuits/${trackCode}.png`);
+    circuit.setAttribute('style','width:100%;');
+    target.parentNode.insertBefore(circuit, target.nextSibling);
+    const imageLink = document.createElement('a');
+    imageLink.href = trackLink[trackCode];
+    imageLink.append(circuit);
+    target.parentNode.insertBefore(imageLink, target.nextSibling);
+  }
 }
 async function readGSheets()
 {
@@ -1016,6 +1191,7 @@ function injectExtraStints(plusDiv){
         var clonedWear = wearRow.lastChild.cloneNode(true);
         wearRow.appendChild(clonedWear);
         updateFuel(clonedLap.closest('tbody'));
+
         success = true;
       }
     }else if(pits == 4)
@@ -1318,6 +1494,7 @@ async function loadStint()
   }
 
   updateFuel(wear.closest('tbody'));
+  dragStint();
   saveBox = driverStrategy.getElementsByClassName('show1');
   Object.keys(saveBox).forEach(key=>{
     saveBox[key].classList.toggle('show1');
@@ -1367,8 +1544,7 @@ async function addSaveButton()
     {
       containerDiv = document.createElement('div');
       containerDiv.id = 'save&load';
-
-      containerDiv.setAttribute('style','position:relative; display: flex;');
+      containerDiv.classList.add("saveContainer");
       saveDiv = document.createElement('div');
       loadDiv = document.createElement('div');
       loadContainer = document.createElement('div');
@@ -1453,10 +1629,11 @@ function createSaveDataPreview(s)
         const strategyL = document.createElement('td');
         strategyL.addEventListener('click',loadStint);
         strategy.addEventListener('click',loadStint);
-        strategy.setAttribute('style','height:32px; width:32px;margin:1px; background-color: #dfdfdf;');
-        strategyL.setAttribute('style','width:5px; font-size: 1.25rem;color: black;font-family: roboto;margin:1px');
+        strategy.classList.add('loadStint','preview-tyre',a[key].tyre);
+        //strategy.setAttribute('style','height:32px; width:32px;margin:1px; background-color: #dfdfdf;');
+        strategyL.classList.add('loadStint','preview-laps');
         strategyL.textContent = a[key].laps;
-        strategy.className = a[key].tyre;
+      
         strategyContainer.appendChild(strategyL);
         strategyContainer.appendChild(strategy);
       }
@@ -1499,8 +1676,8 @@ function addWeatherInStrategy(){
   Object.keys(strategy).forEach(car=>{
     const w = (document.getElementsByClassName('pWeather text-right green')[0]).cloneNode(true);
     w.className = '';
-    w.childNodes[0].style.filter ='brightness(0) invert(1)';
-    w.childNodes[1].style.color ='white';
+    w.childNodes[0].style.filter = 'brightness(0) invert(1)';
+    w.childNodes[1].style.color = 'white';
     w.childNodes[2].setAttribute('style','width: 28px;height: 28px;');
     w.setAttribute('style','display: inline;padding-right: 10px;');
     const notice = strategy[car].closest('tbody').querySelector('.notice');
