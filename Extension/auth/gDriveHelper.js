@@ -96,7 +96,6 @@ async function prepareDataForUpload(){
 }
 async function getAllFilesInfoInFolder(folderID){
   const accessToken = ACCESS_TOKEN;
-  console.log('getting files from',folderID);
   return fetch(`https://www.googleapis.com/drive/v3/files?q='${folderID}'+in+parents&fields=files(name,id)&access_token=${accessToken}`)
     .then(response => response.json())
     .then(data => {
@@ -120,7 +119,6 @@ async function getGFile(fileId){
     .catch(error => console.error(error));
 }
 async function setStorage(name,data){
-
   chrome.storage.local.set({[name]:data});
 }
 async function updateFile(fileId,newJson){
@@ -250,19 +248,22 @@ async function cloudToLocal(){
     const reportName = report.name.slice(0,-5); //removing .json from name
     const reportId = report.id;
     const cloudReport = await getGFile(reportId);
-    console.log(cloudReport);
     setStorage(reportName,cloudReport);
   });
 
-  const save = {};
-  cloudStrategies.forEach(async function(folder){
+  //using for intead because of the async functions
+  const trackSave = {};
+  for(const folder of cloudStrategies){
+    trackSave[folder.name] = {};
     const strategyFile = await getAllFilesInfoInFolder(folder.id);
-    strategyFile.forEach(async function(file){
+    for(const file of strategyFile){
       const json = await getGFile(file.id);
-      save[file.name] = json;
-    });
-  });
-  setStorage('save',save);
+      const saveId = file.name.slice(0,-5);
+      trackSave[folder.name][saveId] = json;
+    }
+  }
+
+    chrome.storage.local.set({'save':trackSave});
 
 
 }
