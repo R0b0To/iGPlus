@@ -3,16 +3,22 @@
   "name": "iGPlus",
   "version": "1.1.0",
   "description": "Enhance your iGPmanager experience",
+  "key":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnUe8HeNjRMPeZa7maP/SFuVuN9d8Zi/76LVeI5lv5ycUwvz6vATphN42paO61NNzxcuGKWFhq59yIwS145zbUTEuErt4g6shq10rn62pkagkmQc3JnVz/ZiB95N81ljsuyXwI5HUtYkeHdMdduhYnQNE0ZPF24+ybcEDfDASnfMOqgxnajKNEAk4DKp33yX5Qb0xPfOd8p40cm1esMMwtIlO3GAf4QCRFirXqPqvgjkMLFwnFivIKAHywTKLnn9+ELhLXvDIoi4ZmdWgRhyqaFoDJtkef/YWbk4XIt30efdSejzViviLcfK6O+I1/+zIhEFpYthj5GqAhuwxdelROQIDAQAB",
   "permissions": [
     "tabs",
     "storage",
-    "scripting"
+    "scripting",
+    "identity"
   ],
   "action": {
     "default_icons": {
       "128": "images/Icon128.png"
     },
     "default_popup": "popup/popup.html"
+  },
+  "oauth2": {
+    "client_id": "771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/drive.file"]
   },
   "background": {
     "service_worker": "background.js",
