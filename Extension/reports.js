@@ -303,10 +303,17 @@ async function race_report() {
     }
   }
   formatTable();
+  storeCopyOfActive();
   document.getElementById('progress').remove();
   all_export();
 }
 
+async function storeCopyOfActive(){
+  const report = await chrome.storage.local.get('active_option');
+  chrome.storage.local.get('active', function(data) {
+    chrome.storage.local.set({[report.active_option]:data.active});
+  });
+}
 
 //get only the table from the response
 function decode_result(data) {
