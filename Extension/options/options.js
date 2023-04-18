@@ -1,5 +1,6 @@
 import { language } from '../common/localization.js';
 
+const DEBUG = true;
 const raceSign = document.getElementById('raceSign');
 const overSign = document.getElementById('overSign');
 const link = document.getElementById('link');
@@ -21,19 +22,29 @@ const gsheetCheckbox = document.getElementById('Gsheet').querySelector('.help');
 const overviewCheckbox = document.getElementById('overview').querySelector('.help');
 const advancedHisCheckbox = document.getElementById('history').querySelector('.help');
 const sponsorCheckbox = document.getElementById('sponsor').querySelector('.help');
+const gdrive = document.getElementById('gdrive');
+
 // init
+
+
+
 document.addEventListener('DOMContentLoaded', restoreOptions);
 
 
 languageSelection.addEventListener('change', saveOptions);
 
+// todo - use config to init and control flags?
+// adding the eventlister to all the checkboxes as the function is the same
+document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
+
 function addCheckEvent(checkbox) {
   //add event listener to checkbox that stores the checkbox status, passing the script name (id)
-  checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('[id]').id, checkbox.checked));
+  if(DEBUG)console.log('adding click event to',checkbox.closest('div'));
+  checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('div').id, checkbox.checked));
 }
 
 async function scriptCheck(scriptName, status) {
-  //console.log('saving status of:',scriptName,status);
+  if(DEBUG)console.log('saving status of:',scriptName,status);
   if(scriptName == 'overSign' || scriptName == 'raceSign')
   {
     chrome.storage.local.set({ [scriptName]: status });
@@ -41,14 +52,16 @@ async function scriptCheck(scriptName, status) {
   }
   else
   {
+    if(scriptName == 'gdrive') {
+      if(status) checkAuth();
+      chrome.storage.local.set({ [scriptName]: status });
+    }
     mergeStorage(scriptName,status);
   }
 
 }
 
-// todo - use config to init and control flags?
-// adding the eventlister to all the checkboxes as the function is the same
-document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
+
 
 separator.addEventListener('beforeinput',function(){this.value = '';});
 separator.addEventListener('input',function(){
@@ -147,52 +160,49 @@ function saveOptions() {
   restoreOptions();
 }
 
-function restoreOptions() {
+async function restoreOptions() {
   // Use default value language = 'eng'
-  chrome.storage.local.get(
-    {
-      language: 'eng'
-    },
-    function (selected) {
-      const code = selected.language;
-      document.getElementById('language').value = code;
-      document.getElementById('langTitle').childNodes[0].textContent = language[code].optionsText.languageText + ': ';
-      document.getElementById('preferences').textContent = language[code].optionsText.preferences;
-      separator.previousElementSibling.textContent = language[code].optionsText.separator;
-      raceSign.nextElementSibling.textContent = language[code].optionsText.RaceReport;
-      overSign.nextElementSibling.textContent = language[code].optionsText.StartOvertakes;
+  chrome.storage.local.get({language: 'eng'},function (selected){
+    const code = selected.language;
+    document.getElementById('language').value = code;
+    document.getElementById('langTitle').childNodes[0].textContent = language[code].optionsText.languageText + ': ';
+    document.getElementById('preferences').textContent = language[code].optionsText.preferences;
+    separator.previousElementSibling.textContent = language[code].optionsText.separator;
 
-      gsheetCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.gsheet;
-      leagueCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.leagueHome;
-      researchCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.research;
-      trainingCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.training;
-      reviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.raceReview;
-      marketCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.market;
-      staffCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.myStaff;
-      marketDriverCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.marketDriver;
-      refreshCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.academyTimer;
-      reportsCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.reports;
-      overviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.carOverview;
-      advancedHisCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.history;
-      sponsorCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.sponsor;
+    raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport;
+    overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes;
 
-      [gsheetCheckbox,leagueCheckbox,researchCheckbox,trainingCheckbox,reviewCheckbox,staffCheckbox,marketCheckbox,marketDriverCheckbox,refreshCheckbox,reportsCheckbox,overviewCheckbox,advancedHisCheckbox,sponsorCheckbox]
-        .forEach(addFieldtipEvent);
+    gsheetCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.gsheet;
+    leagueCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.leagueHome;
+    researchCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.research;
+    trainingCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.training;
+    reviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.raceReview;
+    marketCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.market;
+    staffCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.myStaff;
+    marketDriverCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.marketDriver;
+    refreshCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.academyTimer;
+    reportsCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.reports;
+    overviewCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.carOverview;
+    advancedHisCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.history;
+    sponsorCheckbox.attributes['data-fieldtip'].value = language[code].scriptDescription.sponsor;
 
-    }
+    [gsheetCheckbox,leagueCheckbox,researchCheckbox,trainingCheckbox,reviewCheckbox,staffCheckbox,marketCheckbox,marketDriverCheckbox,refreshCheckbox,reportsCheckbox,overviewCheckbox,advancedHisCheckbox,sponsorCheckbox]
+      .forEach(addFieldtipEvent);
+
+  }
   );
 
   chrome.storage.local.get({'separator':','}, function (data) {
     separator.value = data.separator;
   });
   chrome.storage.local.get('raceSign', function (data) {
-    raceSign.checked = data.raceSign;
-    (raceSign.checked) ? raceSign.nextElementSibling.textContent += ' ( - )' : raceSign.nextElementSibling.textContent += ' ( + )';
+    raceSign.querySelector('input').checked = data.raceSign;
+    (data.raceSign) ? raceSign.querySelector('span').textContent += ' ( - )' : raceSign.querySelector('span').textContent += ' ( + )';
   });
 
   chrome.storage.local.get('overSign', function (data) {
-    overSign.checked = data.overSign;
-    (overSign.checked) ? overSign.nextElementSibling.textContent += ' ( - )' : overSign.nextElementSibling.textContent += ' ( + )';
+    overSign.querySelector('input').checked = data.overSign;
+    (data.overSign) ? overSign.querySelector('span').textContent += ' ( - )' : overSign.querySelector('span').textContent += ' ( + )';
   });
 
   chrome.storage.local.get('gLink', function (data) {
@@ -206,32 +216,21 @@ function restoreOptions() {
   chrome.storage.local.get('gTrack', function (data) {
     if (typeof data.gTrack != 'undefined') trackName.value = data.gTrack;
   });
+  chrome.storage.local.get('gdrive', function (data) {
+    if (typeof data.gdrive != 'undefined') gdrive.querySelector('input').checked = data.gdrive;
+  });
 
-  const script = {
-    hq: true,
-    league: true,
-    market: true,
-    overview: true,
-    reports: true,
-    research: true,
-    setup: true,
-    staff: true,
-    strategy: true,
-    review: true,
-    refresh: true,
-    marketDriver: true,
-    train: true,
-    edit: false,
-    slider: true,
-    editS: false,
-    sliderS: true,
-    history:true,
-    sponsor:true
-  };
+  const { scriptDefaults } = await import(chrome.runtime.getURL('/common/config.js'));
 
-  chrome.storage.local.get({ script: script }, function (data) {
-    Object.keys(script).forEach((item) => {
-      document.getElementById(item).querySelector('input[type="checkbox"]').checked = data.script[item];
+
+  chrome.storage.local.get({ script: scriptDefaults }, function (data) {
+    Object.keys(scriptDefaults).forEach((item) => {
+      if(DEBUG)console.log('restoring checked status of',item,'with',data.script[item]);
+      let checkedStatus = data.script[item];
+
+      if(item == 'gdrive' && checkedStatus) checkAuth();
+
+      document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
     });
 
     chrome.storage.local.set({ script: data.script });
@@ -352,6 +351,25 @@ function restoreOptions() {
   });
 }
 
+
+async function checkAuth(){
+  const { getAccessToken } = await import(chrome.runtime.getURL('/auth/authorize.js'));
+  const token = await getAccessToken();
+  console.log(token);
+  if(token == -1 || token == -2)
+  {
+    mergeStorage('gdrive',false);
+    document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
+  }
+  return token;
+}
+
+function syncData(){
+//1 see if data exists in gdrive
+//2 retrive config from drive
+//3 update strategies
+}
+
 function getStrategyString(saveObject) {
   let string = '';
   Object.keys(saveObject).forEach((stint) => {
@@ -439,3 +457,12 @@ function addFieldtipEvent(node) {
     fieldtip.style.display = 'none';
   });
 }
+
+document.getElementById('getTest').addEventListener('click',async function(){
+  const { localToCloud,cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+   //cloudToLocal();
+  localToCloud();
+
+});
+
+ 

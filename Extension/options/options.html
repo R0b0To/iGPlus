@@ -7,7 +7,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.1/css/all.min.css">
 </head>
 
-<body style="font-family: RobotoCondensed;">
+<body>
+ 
   <div id="langTitle">Language:
     <select id="language">
       <option value="eng">English</option>
@@ -18,25 +19,179 @@
   <fieldset>
     <legend id="preferences">Preferences</legend>
 
-    <div>
-      <input type="checkbox" id="raceSign" name="race">
-      <span for="race">Race Report Sign</span>
+    <div id ="raceSign" class="checkbox-wrapper">
+      <input type="checkbox" id="raceSigncheck">
+      <label for="raceSigncheck">
+        <div class="tick_mark"></div>  
+      </label> <span for="raceSigncheck">Race Report Sign</span>
     </div>
 
-    <div>
-      <input type="checkbox" id="overSign" name="over">
-      <span for="over">Overtakes Sign</span>
+    <div id="overSign" class="checkbox-wrapper">
+      <input type="checkbox" id="overSigncheck">
+      <label for="overSigncheck">
+        <div class="tick_mark"></div>
+      </label> <span for="overSigncheck">Overtakes Sign</span>
     </div>
+
     <div>
       <span style="margin-left: 4px;" for="sep">Custom Separator</span>
       <input placeholder="," style="width: 1%;" maxlength="1" type="text" id="separator" name="sep">
-      
     </div>
+
+  </fieldset>
+
+
+
+  <fieldset>
+    <legend id="Scripts">Scripts</legend>
+
+    <div id="review" class="checkbox-wrapper">
+      <input type="checkbox" id="reviewcheck">
+      <label for="reviewcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="reviewcheck">Race Review</span> <span class="help fa-solid fa-circle-info" data-fieldtip="Home page review button. It opens https://igpmanager.com/app/d=raceReview"></span>
+    </div>
+
+    <div id="league" class="checkbox-wrapper">
+      <input type="checkbox" id="leaguecheck">
+      <label for="leaguecheck">
+        <div class="tick_mark"></div>
+      </label> <span  for="leaguecheck" >League Home</span><span class="help fa-solid fa-circle-info"data-fieldtip="In the league page add a full race history button and position finished to each track"></span>
+    </div>
+
+    <div id="research" class="checkbox-wrapper">
+      <input type="checkbox" id="researchcheck">
+      <label for="researchcheck">
+        <div class="tick_mark"></div>
+      </label> <span  for="researchcheck">Research</span><span class="help fa-solid fa-circle-info"   data-fieldtip="Add a table with the values from the bars in the research menu."></span>
+    </div>
+
+    <div id="train" class="checkbox-wrapper">
+      <input type="checkbox" id="traincheck">
+      <label for="traincheck">
+        <div class="tick_mark"></div>
+      </label> <span for="traincheck">Training</span><span class="help fa-solid fa-circle-info"  data-fieldtip="Add an extra column in the training page if driver is recovering."></span>
+    </div>
+
+    <div id="staff" class="checkbox-wrapper">
+      <input type="checkbox" id="staffcheck">
+      <label for="staffcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="staffcheck">My Staff</span><span class="help fa-solid fa-circle-info" data-fieldtip="Shows strenght of CD in the staff menus"></span>
+    </div>
+
+    <div id="market" class="checkbox-wrapper">
+      <input type="checkbox" id="marketcheck">
+      <label for="marketcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="marketcheck">Market (strength and weakness icons)</span><span class="help fa-solid fa-circle-info"   data-fieldtip="Shows strenght and weakness of CD in the transfer market"></span>
+    </div>
+
+    <div id="marketDriver" class="checkbox-wrapper">
+      <input type="checkbox" id="marketDrivercheck">
+      <label for="marketDrivercheck">
+        <div class="tick_mark"></div>
+      </label> <span for="marketDrivercheck">Market (Drivers)</span><span class="help fa-solid fa-circle-info" data-fieldtip="Add talent column for drivers in the transfer market"></span>
+    </div>
+
+    <div id="strategy" class="checkbox-wrapper">
+      <input type="checkbox" id="strategycheck">
+      <label for="strategycheck">
+        <div class="tick_mark"></div>
+      </label> <span for="strategycheck">Race Strategy</span>
+
+      <div style="display: inherit;" id="sliderS">
+        <input type="checkbox" id="sliderScheck">
+        <label for="sliderScheck">
+          <div class="tick_mark"></div>
+        </label>
+        <span>Slider</span>
+      </div>
+      
+      <div style="display: inherit;" id="editS">
+        <input type="checkbox" id="editScheck">
+        <label for="editScheck">
+          <div class="tick_mark"></div>
+        </label>
+        <span>Editable</span>
+      </div>
+
+    </div>
+
+    <div id="setup" class="checkbox-wrapper">
+      <input type="checkbox" id="setupcheck">
+      <label for="setupcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="setupcheck">Race Setup</span>
+
+      <div style="display: inherit;" id="slider">
+        <input type="checkbox" id="slidercheck">
+        <label for="slidercheck">
+          <div class="tick_mark"></div>
+        </label>
+        <span>Slider</span>
+      </div>
+      
+      <div style="display: inherit;" id="edit">
+        <input type="checkbox" id="editcheck">
+        <label for="editcheck">
+          <div class="tick_mark"></div>
+        </label>
+        <span>Editable</span>
+      </div>
+
+    </div>
+
+    <div id="overview" class="checkbox-wrapper">
+      <input type="checkbox" id="overviewcheck">
+      <label for="overviewcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="overviewcheck">Car Overview</span><span class="help fa-solid fa-circle-info"  data-fieldtip="Enable review button (design research) during a live race"></span>
+    </div>
+
+
+    <div id="hq" class="checkbox-wrapper">
+      <input type="checkbox" id="hqcheck">
+      <label for="hqcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="hqcheck">HQ Level Labels</span>
+    </div>
+
+    <div id="refresh" class="checkbox-wrapper">
+      <input type="checkbox" id="refreshcheck">
+      <label for="refreshcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="refreshcheck">Academy Auto-Refresh</span><span class="help fa-solid fa-circle-info"   data-fieldtip="Add youth academy countdown. It will be placed as a notification beside the HQ menu option"></span>
+    </div>
+
+    
+    <div id="reports" class="checkbox-wrapper">
+      <input type="checkbox" id="reportscheck">
+      <label for="reportscheck">
+        <div class="tick_mark"></div>
+      </label> <span for="reportscheck">Reports</span><span class="help fa-solid fa-circle-info"  data-fieldtip="Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs"></span>
+    </div>
+
+    <div id="history" class="checkbox-wrapper">
+      <input type="checkbox" id="historycheck">
+      <label for="historycheck">
+        <div class="tick_mark"></div>
+      </label> <span for="historycheck">Advanced History</span><span class="help fa-solid fa-circle-info fa-solid fa-circle-info"  data-fieldtip="Add track charateristics to the history page"></span>
+    </div>
+
+    <div id="sponsor" class="checkbox-wrapper">
+      <input type="checkbox" id="sponsorcheck">
+      <label for="sponsorcheck">
+        <div class="tick_mark"></div>
+      </label> <span for="sponsorcheck">Vertical Sponsor</span><span class="help fa-solid fa-circle-info"  data-fieldtip="Display the sponsor options vertically"></span>
+    </div>
+
   </fieldset>
 
   <fieldset>
-    <legend id="Gsheet">Google Sheet<span style="position:relative" class="help"
-        data-fieldtip="Import google data to be displayed in the strategy page below the advanced options">?</span>
+
+    <legend id="Gsheet">Google Sheet<span style="position:relative" class="help fa-solid fa-circle-info"
+        data-fieldtip="Import google data to be displayed in the strategy page below the advanced options"></span>
     </legend>
     <label for="link">Link:</label>
     <input style="width:-webkit-fill-available;" type="text" id="link">
@@ -44,109 +199,8 @@
     <input placeholder="Track" type="text" id="track"><br>
     <label for="sname">Sheet Name:</label>
     <input type="text" id="sname"><span> Optional</span><a style="margin-left: 10px;" target="_blank"
-      href="https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/edit?usp=sharing">(Example)</a>
+      href="https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/editusp=sharing">(Example)</a>
   </fieldset>
-
-  <fieldset>
-    <legend id="Scripts">Scripts</legend>
-    <div id="review">
-      <input type="checkbox" >
-      <span class="description">Race Review</span><span class="help"
-        data-fieldtip="Home page review button. It opens https://igpmanager.com/app/d=raceReview">?</span>
-    </div>
-    <div id="league">
-      <input type="checkbox" >
-      <span>League Home</span><span class="help"
-        data-fieldtip="In the league page add a full race history button and position finished to each track">?</span>
-    </div>
-    <div id="research">
-      <input type="checkbox" >
-      <span>Research</span><span class="help"
-        data-fieldtip="Add a table with the values from the bars in the research menu.">?</span>
-    </div>
-    <div id="train">
-      <input type="checkbox" >
-      <span>Training</span><span class="help"
-        data-fieldtip="Add an extra column in the training page if driver is recovering.">?</span>
-    </div>
-    <div id="staff">
-      <input type="checkbox" >
-      <span>My Staff</span><span class="help" data-fieldtip="Shows strenght of CD in the staff menus">?</span>
-    </div>
-    <div id="market">
-      <input type="checkbox" >
-      <span>Market (strength and weakness icons)</span><span class="help"
-        data-fieldtip="Shows strenght and weakness of CD in the transfer market">?</span>
-    </div>
-    <div id="marketDriver">
-      <input type="checkbox" >
-      <span>Market (Drivers)</span><span class="help"
-        data-fieldtip="Add talent column for drivers in the transfer market">?</span>
-    </div>
-    <div id="strategy">
-      <input type="checkbox" >
-      <span>Race Strategy</span>
-      <div  style="display: inline-block;" id="sliderS">
-        <input type="checkbox" >
-        <span>Slider</span>
-        </div>
-        <div style="display: inline-block;" id="editS">
-        <input type="checkbox">
-        <span>Editable</span>
-        </div>
-    </div>
-
-    <div id="setup">
-      <input type="checkbox" >
-      <span>Race Setup</span>
-      <div  style="display: inline-block;" id="slider">
-      <input type="checkbox" >
-      <span>Slider</span>
-      </div>
-      <div style="display: inline-block;" id="edit">
-      <input type="checkbox">
-      <span>Editable</span>
-      </div>
-      
-    </div>
-
-    <div id="overview">
-      <input type="checkbox" >
-      <span>Car Overview</span><span class="help"
-        data-fieldtip="Enable review button (design research) during a live race">?</span>
-    </div>
-
-    <div id="hq">
-      <input type="checkbox" >
-      <span>HQ Level Labels</span>
-    </div>
-
-    <div id="refresh">
-      <input type="checkbox" >
-      <span>Academy Auto-Refresh</span><span class="help"
-        data-fieldtip="Add youth academy countdown. It will be placed as a notification beside the HQ menu option">?</span>
-    </div>
-
-    <div id="reports">
-      <input type="checkbox" >
-      <span>Reports</span><span class="help"
-        data-fieldtip="Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs">?</span>
-    </div>
-
-    <div id="history">
-      <input type="checkbox" >
-      <span>Advanced History</span><span class="help"
-        data-fieldtip="Add track charateristics to the history page">?</span>
-    </div>
-
-    <div id="sponsor">
-      <input type="checkbox" >
-      <span>Vertical Sponsor</span><span class="help"
-        data-fieldtip="Display the sponsor options vertically">?</span>
-    </div>
-
-  </fieldset>
-
   <fieldset>
     <legend id="ssaves">Strategies</legend>
     <div>
@@ -156,9 +210,18 @@
     <div style="margin-top: 3px;">
       <span>Import</span>
       <input style="border-radius: 5px;" type="file" id="myFile" name="filename">
-    </div>
+    </div> 
   </fieldset>
-
+   <fieldset>
+     <div id="gdrive" class="checkbox-wrapper">
+      <input type="checkbox" id="gdrivecheck">
+      <label for="gdrivecheck">
+        <div class="tick_mark"></div>
+      </label> <span for="gdrivecheck">Cloud Sync (Google Drive)</span>
+    </div>
+    <button id="getTest">Force Sync</button>
+  </fieldset>
+ 
   <script src="options.js" type="module"></script>
 </body>
 
