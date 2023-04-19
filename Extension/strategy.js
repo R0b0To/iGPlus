@@ -1375,7 +1375,10 @@ async function saveStint()
   });
   list = document.getElementById('myDropdown2');
   list.classList.remove('show1');
-
+  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+  if(isSyncEnabled.gdrive){
+    chrome.runtime.sendMessage({type: 'saveStrategyToCloud',strategy:{name:s,track:code,data:saveData}});
+  }
 
 }
 function hashCode(string){
@@ -1677,6 +1680,7 @@ function createSaveDataPreview(s)
 }
 async function deleteSave()
 {
+  
   const saveToDelete = this.parentElement.id;
   const code = getTrackCode();
   data = await chrome.storage.local.get('save');
@@ -1689,6 +1693,11 @@ async function deleteSave()
     document.querySelectorAll('.lbutton').forEach((element) => {
       element.className += ' disabled';
     });
+  }
+  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+  if(isSyncEnabled.gdrive){
+    console.log(saveToDelete)
+    chrome.runtime.sendMessage({type: 'deleteFile', name:saveToDelete+'.json'});
   }
 
 }

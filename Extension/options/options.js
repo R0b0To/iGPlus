@@ -1,6 +1,6 @@
 import { language } from '../common/localization.js';
 
-const DEBUG = true;
+const DEBUG = false;
 const raceSign = document.getElementById('raceSign');
 const overSign = document.getElementById('overSign');
 const link = document.getElementById('link');
@@ -281,9 +281,16 @@ async function restoreOptions() {
       downloadFile(saveJSON, filename);
     }
 
+    //remove old values in case restore is called
+    if(document.getElementById('exportBtn')){
+      document.getElementById('exportBtn').remove()
+      document.getElementById('exportSave').replaceChildren();
+    } 
+
     function addButton() {
       const dButton = document.createElement('div');
-      dButton.className = 'btn fa fa-download';
+      dButton.classList.add('btn','fa','fa-download');
+      dButton.id = 'exportBtn';
       return dButton;
     }
 
@@ -353,21 +360,18 @@ async function restoreOptions() {
 
 
 async function checkAuth(){
-  const { getAccessToken } = await import(chrome.runtime.getURL('/auth/authorize.js'));
-  const token = await getAccessToken();
-  console.log(token);
-  if(token == -1 || token == -2)
+  const { checkAccessToken } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+  const ACCESS_TOKEN = await checkAccessToken();
+  if(ACCESS_TOKEN == -1 || ACCESS_TOKEN == -2)
   {
     mergeStorage('gdrive',false);
     document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
+    return false;
   }
-  return token;
-}
 
-function syncData(){
-//1 see if data exists in gdrive
-//2 retrive config from drive
-//3 update strategies
+  const loader = addLoader(document.getElementById('forceSync'))
+  syncData(false).then(()=>{loader.remove();document.getElementById('forceSync').style.display = 'flex'});; //priority to get first the settings on the cloud
+  return ACCESS_TOKEN;
 }
 
 function getStrategyString(saveObject) {
@@ -457,12 +461,26 @@ function addFieldtipEvent(node) {
     fieldtip.style.display = 'none';
   });
 }
-
-document.getElementById('getTest').addEventListener('click',async function(){
-  const { localToCloud,cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-   //cloudToLocal();
-  localToCloud();
+function addLoader(parent){
+  parent.style.display = 'none';
+  const loader = document.createElement('span');
+  loader.classList.add('loader');
+  parent.parentElement.append(loader);
+  return loader;
+}
+document.getElementById('forceSync').addEventListener('click',async function(){
+  const loader = addLoader(this);
+  syncData(true).then(()=>{loader.remove();document.getElementById('forceSync').style.display = 'flex'});
 
 });
-
- 
+/**
+ * sync all data to and from the cloud
+ * @param {Boolean} direction true is local to cloud , false is cloud to local
+ */
+async function syncData(direction){
+  const { localToCloud,cloudToLocal,getAccessToken } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+  const token = await getAccessToken();
+  if(direction)  {await localToCloud(token); await cloudToLocal(token);}
+  else  {await cloudToLocal(token); await localToCloud(token)};
+  restoreOptions();
+}
