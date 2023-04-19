@@ -309,6 +309,11 @@ async function race_report() {
 }
 
 async function storeCopyOfActive(){
+  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+  if(isSyncEnabled.gdrive){
+    chrome.runtime.sendMessage({type: 'saveReportToCloud'});
+  }
+
   const report = await chrome.storage.local.get('active_option');
   chrome.storage.local.get('active', function(data) {
     chrome.storage.local.set({[report.active_option]:data.active});
