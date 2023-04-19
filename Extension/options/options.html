@@ -203,23 +203,25 @@
   </fieldset>
   <fieldset>
     <legend id="ssaves">Strategies</legend>
-    <div>
-      <span>Export</span>
+    
+    <div class="exportContainer">
+      <label class="upload btn" for="myFile">Upload</label>
+      <input style="border-radius: 5px;" type="file" id="myFile" name="filename">
+      <span id="exportLabel">Export:</span>
       <select id="exportSave"></select>
     </div>
-    <div style="margin-top: 3px;">
-      <span>Import</span>
-      <input style="border-radius: 5px;" type="file" id="myFile" name="filename">
-    </div> 
+    
+
   </fieldset>
-   <fieldset>
+   
+  <fieldset>
      <div id="gdrive" class="checkbox-wrapper">
       <input type="checkbox" id="gdrivecheck">
       <label for="gdrivecheck">
         <div class="tick_mark"></div>
-      </label> <span for="gdrivecheck">Cloud Sync (Google Drive)</span>
+      </label> <span for="gdrivecheck">Cloud Sync (Google Drive)</span><button class="btn" id="getTest">Force Sync</button>
     </div>
-    <button id="getTest">Force Sync</button>
+    
   </fieldset>
  
   <script src="options.js" type="module"></script>
