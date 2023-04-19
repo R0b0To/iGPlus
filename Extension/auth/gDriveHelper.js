@@ -1,7 +1,6 @@
 
 //TODO change chrome to browser when using firefox
 const DEBUG = true;
-let ACCESS_TOKEN = false;
 //-----------------------------Auth region
 //#region Google drive auth
 const REDIRECT_URL = chrome.identity.getRedirectURL();

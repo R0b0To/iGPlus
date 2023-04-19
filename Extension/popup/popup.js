@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async function() {
   const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
   const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
@@ -101,12 +100,22 @@ document.addEventListener('DOMContentLoaded', async function() {
   //-------------------------------------------------------------------------------Popup initialization-------------------------------------------
   chrome.storage.local.get(null, function(data) {
 
+    const storage_list = Object.keys(data);
+    const valid_saves = storage_list.filter(name => name.includes('LRID'));
+    
+    if(valid_saves.length > 0 && data.active == null) {
+      chrome.storage.local.set({'active_option':valid_saves[0]});
+      chrome.storage.local.set({'active':data[valid_saves[0]]});
+      data.active_option = valid_saves[0];
+      data.active = data[valid_saves[0]];
+    }
+
+
+
     if(data.active == null)
     {
       disableButton(true);
     }else{
-      const storage_list = Object.keys(data);
-      const valid_saves = storage_list.filter(name => name.includes('LRID'));
 
       //generate a "default" save for the data that was found but not named
       if(valid_saves.length == 0)
@@ -140,8 +149,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         disableButton(true);
       else
         disableButton(false);
-
-
 
       driver = data.active;
     }
@@ -406,7 +413,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   newButton.addEventListener('click', function(){
 
     const leagueName = prompt('enter league name');
-    
+
     if(leagueName == null || leagueName == '')
     {
       return;
@@ -455,11 +462,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     chrome.storage.local.remove(opt, async function() {
       select.remove(select.selectedIndex);
       if(isSyncEnabled.gdrive){
-        const { deleteFile } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-        console.log('deleting from cloud',opt)
-        deleteFile(opt + '.json');
+        const { deleteFile,getAccessToken } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+        console.log('deleting from cloud',opt);
+        const token = await getAccessToken();
+        deleteFile(opt + '.json',token);
       }
-      let newOption ='RaceLRID';
+      let newOption = 'RaceLRID';
       if(select.length > 0)
         newOption = select.selectedOptions[0].textContent + 'LRID';
       else
@@ -472,7 +480,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         let is_save_empty = true;
         (reportData[newOption] == 0 || reportData[newOption] == 'undefined') ? is_save_empty = true : is_save_empty = false;
-        
+
         chrome.storage.local.set({'active_option':newOption,'active':reportData[newOption]},function(){
           disableButton(is_save_empty);
         });
