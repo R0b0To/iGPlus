@@ -1,4 +1,5 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
+import { localReportsToCloud } from './auth/gDriveHelper.js';
 
 let scriptRunning = 'none';
 
@@ -58,3 +59,11 @@ async function injectStyles(tabId, styleFiles) {
     files: styleFiles
   });
 }
+
+chrome.runtime.onMessage.addListener(async function(request) {
+  if (request.type === "saveReportToCloud") {
+    console.log('saving...');
+    localReportsToCloud();
+    return true;
+  }
+});
