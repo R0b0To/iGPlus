@@ -63,17 +63,14 @@ async function injectStyles(tabId, styleFiles) {
 chrome.runtime.onMessage.addListener(async function(request) {
   const token = await getAccessToken();
   if (request.type === "saveReportToCloud") {
-    console.log('saving...');
     localReportsToCloud(token);
     return true;
   }
   if (request.type === "saveStrategyToCloud") {
-    console.log('saving...');
     localStrategyToCloud(request.strategy,token);
     return true;
   }
   if (request.type === "deleteFile") {
-    console.log('deleting...',request.name);
     deleteFile(request.name,token);
     return true;
   }

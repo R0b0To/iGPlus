@@ -1,9 +1,9 @@
 
 //TODO change chrome to browser when using firefox
-const DEBUG = true;
+const DEBUG = false;
 //-----------------------------Auth region
 //#region Google drive auth
-const REDIRECT_URL = chrome.identity.getRedirectURL();
+const REDIRECT_URL = chrome.identity.getRedirectURL() || browser.identity.getRedirectURL() ;
 const CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
 const AUTH_URL =
@@ -54,10 +54,8 @@ function validate(redirectURL) {
 
 
 function authorize() {
-  return chrome.identity.launchWebAuthFlow({
-    interactive: true,
-    url: AUTH_URL
-  });
+  const res = chrome.identity.launchWebAuthFlow({interactive: true,url: AUTH_URL}) || browser.identity.launchWebAuthFlow({interactive: true,url: AUTH_URL});
+  return res;
 }
 
 function getAccessToken() {
@@ -73,14 +71,14 @@ function getAccessToken() {
 async function checkAccessToken(token)
 {
   let accessToken = token;
-    if(token == false || typeof token == 'undefined')
-    {
-      if(DEBUG)console.log('requesting new token..............');
-      accessToken = await getAccessToken();
-      if(DEBUG)console.log('Access token:',accessToken);
-    }
-    return accessToken;
-};
+  if(token == false || typeof token == 'undefined')
+  {
+    if(DEBUG)console.log('requesting new token..............');
+    accessToken = await getAccessToken();
+    if(DEBUG)console.log('Access token:',accessToken);
+  }
+  return accessToken;
+}
 /**
  * Returns the folder of the folder searched by name.
  * Returns false if folder is not found
@@ -156,22 +154,23 @@ async function prepareDataForUpload(){
   let savedStrategies = {};
   const configInfo = {};
   const raceReports = {};
-  const allData = await chrome.storage.local.get();
+    chrome.storage.local.get(null,function(allData){
+    Object.keys(allData).forEach(key=>{
 
-  Object.keys(allData).forEach(key=>{
-
-    if(key == 'save') savedStrategies = allData.save;
-    if(key == 'script') configInfo.script = allData.script;
-    if(key == 'overSign') configInfo.overSign = allData.overSign;
-    if(key == 'raceSign') configInfo.raceSign = allData.raceSign;
-    if(key == 'gLink') configInfo.gLink = allData.gLink;
-    if(key == 'gLinkName') configInfo.gLinkName = allData.gLinkName;
-    if(key == 'gTrack') configInfo.gTrack = allData.gTrack;
-    if(key.endsWith('LRID')) raceReports[key] = allData[key];
+      if(key == 'save') savedStrategies = allData.save;
+      if(key == 'script') configInfo.script = allData.script;
+      if(key == 'overSign') configInfo.overSign = allData.overSign;
+      if(key == 'raceSign') configInfo.raceSign = allData.raceSign;
+      if(key == 'gLink') configInfo.gLink = allData.gLink;
+      if(key == 'gLinkName') configInfo.gLinkName = allData.gLinkName;
+      if(key == 'gTrack') configInfo.gTrack = allData.gTrack;
+      if(key.endsWith('LRID')) raceReports[key] = allData[key];
+    });
+    //store race reports in race reports folder, strategies in the strategies, and config in main folder
+    
   });
-
-  //store race reports in race reports folder, strategies in the strategies, and config in main folder
   return {configInfo,savedStrategies,raceReports};
+
 }
 async function getAllFilesInfoInFolder(folderID,accessToken){
   return fetch(`https://www.googleapis.com/drive/v3/files?q='${folderID}'+in+parents&fields=files(name,id)&access_token=${accessToken}`)
@@ -303,12 +302,12 @@ async function localStrategyToCloud(strategy,accessToken){
   if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
   let strategyFolder = await searchFolder('strategies',accessToken);
   if (strategyFolder == false) strategyFolder = await createFolderGDrive('strategies', mainFolder.id,accessToken);
-  
+
   let trackFolder = await searchFolder(strategy.track,accessToken);
   if (trackFolder == false) {
     trackFolder = await createFolderGDrive(strategy.track, strategyFolder.id,accessToken);
   }
-    storeFileIn(trackFolder.id, strategy.name, JSON.stringify(strategy.data),accessToken);
+  storeFileIn(trackFolder.id, strategy.name, JSON.stringify(strategy.data),accessToken);
 }
 
 async function localConfigToCloud(accessToken){
@@ -370,11 +369,12 @@ async function cloudToLocal(accessToken){
       trackSave[folder.name][saveId] = json;
     }
   }
-  const localStrategiesData = await chrome.storage.local.get('save');
-  const merged = {...localStrategiesData.save, ...trackSave};
-  if(DEBUG)console.log('restoring',merged);
-  chrome.storage.local.set({'save':merged});
 
+  chrome.storage.local.get('save',function(localStrategiesData){
+    const merged = {...localStrategiesData.save, ...trackSave};
+    if(DEBUG)console.log('restoring',merged);
+    chrome.storage.local.set({'save':merged});
+  });
 
 }
 async function deleteFile(fileName,accessToken){

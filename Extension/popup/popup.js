@@ -463,7 +463,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       select.remove(select.selectedIndex);
       if(isSyncEnabled.gdrive){
         const { deleteFile,getAccessToken } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-        console.log('deleting from cloud',opt);
         const token = await getAccessToken();
         deleteFile(opt + '.json',token);
       }

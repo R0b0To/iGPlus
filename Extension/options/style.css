@@ -26,7 +26,6 @@ select {
   padding: 3px;
 }
 
-div {}
 
 a {
   color: #96bf86;
@@ -324,4 +323,8 @@ input[type="file"] {
   grid-row: 1;
   text-align: center;
   width: 50px;
+}
+
+.visible{
+  display: block!important;
 }

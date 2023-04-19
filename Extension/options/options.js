@@ -23,6 +23,7 @@ const overviewCheckbox = document.getElementById('overview').querySelector('.hel
 const advancedHisCheckbox = document.getElementById('history').querySelector('.help');
 const sponsorCheckbox = document.getElementById('sponsor').querySelector('.help');
 const gdrive = document.getElementById('gdrive');
+const forceSyncBtn = document.getElementById('forceSync');
 
 // init
 
@@ -53,7 +54,10 @@ async function scriptCheck(scriptName, status) {
   else
   {
     if(scriptName == 'gdrive') {
-      if(status) checkAuth();
+      if(status) {
+        checkAuth();
+      }else forceSyncBtn.classList.remove('visible');
+
       chrome.storage.local.set({ [scriptName]: status });
     }
     mergeStorage(scriptName,status);
@@ -217,7 +221,11 @@ async function restoreOptions() {
     if (typeof data.gTrack != 'undefined') trackName.value = data.gTrack;
   });
   chrome.storage.local.get('gdrive', function (data) {
-    if (typeof data.gdrive != 'undefined') gdrive.querySelector('input').checked = data.gdrive;
+    if (typeof data.gdrive != 'undefined') {
+      if(DEBUG)console.log('restoring',data.gdrive);
+      gdrive.querySelector('input').checked = data.gdrive;
+      (data.gdrive) ? forceSyncBtn.classList.add('visible') : forceSyncBtn.classList.remove('visible');
+    }
   });
 
   const { scriptDefaults } = await import(chrome.runtime.getURL('/common/config.js'));
@@ -366,11 +374,12 @@ async function checkAuth(){
   {
     mergeStorage('gdrive',false);
     document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
+    forceSyncBtn.classList.remove('visible');
     return false;
   }
 
   const loader = addLoader(document.getElementById('forceSync'))
-  syncData(false).then(()=>{loader.remove();document.getElementById('forceSync').style.display = 'flex'});; //priority to get first the settings on the cloud
+  syncData(false).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');}); //priority to get first the settings on the cloud
   return ACCESS_TOKEN;
 }
 
@@ -468,9 +477,10 @@ function addLoader(parent){
   parent.parentElement.append(loader);
   return loader;
 }
-document.getElementById('forceSync').addEventListener('click',async function(){
+forceSyncBtn.addEventListener('click',async function(){
+  forceSyncBtn.classList.remove('visible');
   const loader = addLoader(this);
-  syncData(true).then(()=>{loader.remove();document.getElementById('forceSync').style.display = 'flex'});
+  syncData(true).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');});
 
 });
 /**
