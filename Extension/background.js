@@ -60,6 +60,7 @@ async function injectStyles(tabId, styleFiles) {
   });
 }
 
+//handling requests from the content scripts.
 chrome.runtime.onMessage.addListener(async function(request) {
   const token = await getAccessToken();
   if (request.type === "saveReportToCloud") {

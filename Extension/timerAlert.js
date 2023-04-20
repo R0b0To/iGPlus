@@ -3,7 +3,6 @@ function checkAcademyTimer()
   const timerAlert = document.getElementById('academyAlert');
   if(timerAlert == null)
   {
-    console.log('doing');
     const url = 'https://igpmanager.com/index.php?action=fetch&d=facility&id=11&csrfName=&csrfToken=';
     fetch(url)
       .then(response => response.json())

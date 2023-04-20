@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "iGPlus",
   "description": "Enhance your iGPmanager experience",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "icons": {
     "128": "./images/Icon128.png"
   },

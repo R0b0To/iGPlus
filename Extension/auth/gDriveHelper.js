@@ -1,17 +1,10 @@
-
-//TODO change chrome to browser when using firefox
 const DEBUG = false;
 //-----------------------------Auth region
 //#region Google drive auth
 const REDIRECT_URL = chrome.identity.getRedirectURL() || browser.identity.getRedirectURL() ;
 const CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
 const SCOPES = ['https://www.googleapis.com/auth/drive.file'];
-const AUTH_URL =
-`https://accounts.google.com/o/oauth2/auth\
-?client_id=${CLIENT_ID}\
-&response_type=token\
-&redirect_uri=${encodeURIComponent(REDIRECT_URL)}\
-&scope=${encodeURIComponent(SCOPES.join(' '))}`;
+const AUTH_URL = `https://accounts.google.com/o/oauth2/auth\?client_id=${CLIENT_ID}\&response_type=token\&redirect_uri=${encodeURIComponent(REDIRECT_URL)}\&scope=${encodeURIComponent(SCOPES.join(' '))}`;
 const VALIDATION_BASE_URL = 'https://www.googleapis.com/oauth2/v3/tokeninfo';
 
 function extractAccessToken(redirectUri) {
@@ -30,9 +23,7 @@ function validate(redirectURL) {
     return -2;
   }
   const validationURL = `${VALIDATION_BASE_URL}?access_token=${accessToken}`;
-  const validationRequest = new Request(validationURL, {
-    method: 'GET'
-  });
+  const validationRequest = new Request(validationURL, { method: 'GET'});
 
   function checkResponse(response) {
     return new Promise((resolve, reject) => {
@@ -89,13 +80,8 @@ async function searchFolder(folderName,accessToken) {
   return fetch(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder'&access_token=${accessToken}`)
     .then(response => response.json())
     .then(data => {
-      if (data.files.length > 0) {
-        //console.log(`Folder ID: ${data.files[0].id}`);
-        return data.files[0];
-      } else {
-        if(DEBUG)console.log('folder not found',folderName);
-        return false;
-      }
+      if (data.files.length > 0) return data.files[0];
+      else return false;
     })
     .catch(error => console.error(error));
 }
@@ -103,17 +89,13 @@ async function searchFolder(folderName,accessToken) {
  * Create new "iGPlus" folder in goodle drive
  */
 async function createMainFolderGDrive(accessToken){
-  const metadata = {
-    'name': 'iGPlus', // Filename at Google Drive
-    'mimeType': 'application/vnd.google-apps.folder', // mimeType at Google Drive
-  };
+  const metadata = {'name': 'iGPlus','mimeType': 'application/vnd.google-apps.folder',};
   const form = new FormData();
   form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
   return fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
-    method: 'POST',
-    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-    body: form,
-  }).then((res) => { return res.json(); }).then(function(val) { return val; });
+    method: 'POST',headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }), body: form,})
+    .then((res) => { return res.json(); })
+    .then(function(val) { return val; });
 }
 /**
  * Creates a new folder inside the parent folder
@@ -122,39 +104,27 @@ async function createMainFolderGDrive(accessToken){
  * @param {String} parentFolderId The id of the parent folder
  */
 async function createFolderGDrive(folderName,parentFolderId,accessToken){
-  const metadata = {
-    'name': folderName, // Filename at Google Drive
-    'mimeType': 'application/vnd.google-apps.folder', // mimeType at Google Drive
-    'parents': [parentFolderId]
-  };
+  const metadata = {'name': folderName,'mimeType': 'application/vnd.google-apps.folder','parents': [parentFolderId]};
   const form = new FormData();
   form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
 
-  return fetch('https://www.googleapis.com/upload/drive/v3/files', {
-    method: 'POST',
-    headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),
-    body: form,
-  }).then((res) => {
-    return res.json();
-  }).then(function(val) {
-    return val;
-  });
+  return fetch('https://www.googleapis.com/upload/drive/v3/files', {method: 'POST', headers: new Headers({ 'Authorization': 'Bearer ' + accessToken }),body: form,})
+    .then((res) => { return res.json(); })
+    .then(function(val) { return val; });
 }
 
 async function getGDriveFileInfo(fileName,accessToken){
   const mainFolderID = await searchFolder('iGPlus',accessToken);
   return fetch(`https://www.googleapis.com/drive/v3/files?q='${mainFolderID.id}'+in+parents+and+name+=+'${fileName}'&fields=files(name,id)&access_token=${accessToken}`)
     .then(response => response.json())
-    .then(data => {
-      console.log((data));
-      return data.files[0];})
+    .then(data => {return data.files[0];})
     .catch(error => console.error(error));
 }
 async function prepareDataForUpload(){
   let savedStrategies = {};
   const configInfo = {};
   const raceReports = {};
-    chrome.storage.local.get(null,function(allData){
+  chrome.storage.local.get(null,function(allData){
     Object.keys(allData).forEach(key=>{
 
       if(key == 'save') savedStrategies = allData.save;
@@ -167,7 +137,7 @@ async function prepareDataForUpload(){
       if(key.endsWith('LRID')) raceReports[key] = allData[key];
     });
     //store race reports in race reports folder, strategies in the strategies, and config in main folder
-    
+
   });
   return {configInfo,savedStrategies,raceReports};
 
@@ -175,40 +145,23 @@ async function prepareDataForUpload(){
 async function getAllFilesInfoInFolder(folderID,accessToken){
   return fetch(`https://www.googleapis.com/drive/v3/files?q='${folderID}'+in+parents&fields=files(name,id)&access_token=${accessToken}`)
     .then(response => response.json())
-    .then(data => {
-      console.log((data));
-      return data.files;})
-    .catch(error => {
-      console.log(error);
+    .then(data => {return data.files;})
+    .catch(error => { console.log(error);
       return false;
     });
 }
 
 async function getGFile(fileId,accessToken){
-  return fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media', {
-    method: 'GET',
-    headers: {
-      'Authorization': 'Bearer ' + accessToken
-    }
-  })
+  return fetch('https://www.googleapis.com/drive/v3/files/' + fileId + '?alt=media', { method: 'GET', headers: {'Authorization': 'Bearer ' + accessToken}})
     .then(response => response.json())
     .then(data => {return data;})
     .catch(error => console.error(error));
 }
-async function setStorage(name,data){
-  chrome.storage.local.set({[name]:data});
-}
+
 async function updateFile(fileId,newJson,accessToken){
   const url = `https://www.googleapis.com/upload/drive/v3/files/${fileId}`;
-  const headers = {
-    'Authorization': `Bearer ${accessToken}`,
-    'Content-Type': 'application/json'
-  };
-  fetch(url, {
-    method: 'PATCH',
-    headers: headers,
-    body: newJson
-  })
+  const headers = {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json'};
+  fetch(url, { method: 'PATCH', headers: headers, body: newJson })
     .then(response => response.json())
     .then(data => {if(DEBUG)console.log(data);})
     .catch(error => console.error(error));
@@ -216,10 +169,7 @@ async function updateFile(fileId,newJson,accessToken){
 
 async function searchFile(fileName,accessToken){
   return fetch(`https://www.googleapis.com/drive/v3/files?q=name+=+'${fileName}'&fields=files(name,id)&access_token=${accessToken}`)
-    .then(response => response.json())
-    .then(data => {
-      return data.files[0] || false;})
-    .catch(error => console.error(error));
+    .then(response => response.json()).then(data => {return data.files[0] || false;}).catch(error => console.error(error));
 }
 async function storeFileIn(folderId,fileName,jsonData,accessToken){
   fetch('https://www.googleapis.com/drive/v3/files', {
@@ -296,17 +246,14 @@ async function localStrategiesToCloud(accessToken) {
 
 }
 async function localStrategyToCloud(strategy,accessToken){
-  console.log(strategy);
   let mainFolder = await searchFolder('iGPlus',accessToken);
-  if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
   if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
   let strategyFolder = await searchFolder('strategies',accessToken);
   if (strategyFolder == false) strategyFolder = await createFolderGDrive('strategies', mainFolder.id,accessToken);
 
   let trackFolder = await searchFolder(strategy.track,accessToken);
-  if (trackFolder == false) {
-    trackFolder = await createFolderGDrive(strategy.track, strategyFolder.id,accessToken);
-  }
+  if (trackFolder == false) trackFolder = await createFolderGDrive(strategy.track, strategyFolder.id,accessToken);
+
   storeFileIn(trackFolder.id, strategy.name, JSON.stringify(strategy.data),accessToken);
 }
 
@@ -315,89 +262,84 @@ async function localConfigToCloud(accessToken){
   let mainFolder = await searchFolder('iGPlus',accessToken);
   if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
   const cloudConfig = await searchFile('config.json',accessToken);
-  if(cloudConfig == false)
-    storeFileIn(mainFolder.id,'config',JSON.stringify(localData.configInfo),accessToken);
-  else
-    updateFile(cloudConfig.id,JSON.stringify(localData.configInfo),accessToken);
+  if(cloudConfig == false)  storeFileIn(mainFolder.id,'config',JSON.stringify(localData.configInfo),accessToken);
+  else updateFile(cloudConfig.id,JSON.stringify(localData.configInfo),accessToken);
 
 }
 
-
-
-function localToCloud(accessToken){
-  localConfigToCloud(accessToken);
-  localReportsToCloud(accessToken);
-  localStrategiesToCloud(accessToken);
+async function localToCloud(accessToken){
+  await localConfigToCloud(accessToken);
+  await localReportsToCloud(accessToken);
+  await localStrategiesToCloud(accessToken);
 }
-
-
 
 
 async function cloudToLocal(accessToken){
+  const setStorage = async function (name,data){chrome.storage.local.set({[name]:data});};
   const strategyFolder = await getGDriveFileInfo('Strategies',accessToken);
   const reportsFolder = await getGDriveFileInfo('Reports',accessToken);
   const config = await getGDriveFileInfo('config.json',accessToken);
 
+  if(config != false){
+    const cloudConfig = await getGFile(config.id,accessToken);
+
+    // -----Config file ------
+    Object.keys(cloudConfig).forEach(option=>{
+      if(DEBUG)console.log('restoring',option,cloudConfig[option]);
+      setStorage(option,cloudConfig[option]);
+    });
+
+  }
   const cloudReports = await getAllFilesInfoInFolder(reportsFolder.id,accessToken);
   const cloudStrategies = await getAllFilesInfoInFolder(strategyFolder.id,accessToken);
-  const cloudConfig = await getGFile(config.id,accessToken);
 
 
-  console.log(config,cloudConfig);
-  Object.keys(cloudConfig).forEach(option=>{
-    if(DEBUG)console.log('restoring',option,cloudConfig[option]);
-    setStorage(option,cloudConfig[option]);
-  });
-
-  console.log('these are the reports in the cloud',cloudReports);
-  cloudReports.forEach(async function(report){
-    const reportName = report.name.slice(0,-5); //removing .json from name
-    const reportId = report.id;
-    const cloudReport = await getGFile(reportId,accessToken);
-    if(DEBUG)console.log('restoring',reportName,cloudReport);
-    setStorage(reportName,cloudReport);
-  });
-
-  //using for intead because of the async functions
-  const trackSave = {};
-  for(const folder of cloudStrategies){
-    trackSave[folder.name] = {};
-    const strategyFile = await getAllFilesInfoInFolder(folder.id,accessToken);
-    for(const file of strategyFile){
-      const json = await getGFile(file.id,accessToken);
-      const saveId = file.name.slice(0,-5);
-      trackSave[folder.name][saveId] = json;
-    }
+  //#region ------Reports section-------
+  if(reportsFolder != false){
+    if(DEBUG)console.log('these are the reports in the cloud',cloudReports);
+    cloudReports.forEach(async function(report){
+      const reportName = report.name.slice(0,-5); //removing .json from name
+      const reportId = report.id;
+      const cloudReport = await getGFile(reportId,accessToken);
+      if(DEBUG)console.log('restoring',reportName,cloudReport);
+      setStorage(reportName,cloudReport);
+    });
   }
+  //#endregion
 
-  chrome.storage.local.get('save',function(localStrategiesData){
-    const merged = {...localStrategiesData.save, ...trackSave};
-    if(DEBUG)console.log('restoring',merged);
-    chrome.storage.local.set({'save':merged});
-  });
-
+  //#region ------Strategies section-------
+  //using for instead because of the async functions
+  if(strategyFolder != false)
+  {
+    const trackSave = {};
+    for(const folder of cloudStrategies){
+      trackSave[folder.name] = {};
+      const strategyFile = await getAllFilesInfoInFolder(folder.id,accessToken);
+      for(const file of strategyFile){
+        const json = await getGFile(file.id,accessToken);
+        const saveId = file.name.slice(0,-5);
+        trackSave[folder.name][saveId] = json;
+      }
+    }
+    chrome.storage.local.get('save',function(localStrategiesData){
+      const merged = {...localStrategiesData.save, ...trackSave};
+      if(DEBUG)console.log('restoring',merged);
+      chrome.storage.local.set({'save':merged});
+    });
+  }
+  //#endregion
 }
 async function deleteFile(fileName,accessToken){
   const fileId = await searchFile(fileName,accessToken);
   if(fileId != false)
-    fetch(`https://www.googleapis.com/drive/v3/files/${fileId.id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-      },
-    })
+    fetch(`https://www.googleapis.com/drive/v3/files/${fileId.id}`,{method:'DELETE',headers:{'Authorization': `Bearer ${accessToken}`,},})
       .then(response => {
-        if (response.ok) {
-          console.log('File deleted successfully.');
-        } else {
-          console.error('Error deleting file:', response.statusText);
-        }
+        if (response.ok) console.log('File deleted successfully.');
+        else console.error('Error deleting file:', response.statusText);
       })
-      .catch(error => {
-        console.error('Error deleting file:', error);
+      .catch(error => { console.error('Error deleting file:', error);
       });
 }
-
 
 
 export{
