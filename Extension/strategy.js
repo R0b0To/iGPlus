@@ -65,7 +65,7 @@ function track_info(){
 
 (async function main(){
 
-  const {language}  = await chrome.storage.local.get({ language: 'eng' });
+  const {language}  = await chrome.storage.local.get({ language: 'en' });
   const {language: i18n}  = await import(chrome.runtime.getURL('/common/localization.js'));
 
   function savePush(tbody){

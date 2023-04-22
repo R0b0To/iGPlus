@@ -9,7 +9,7 @@
 function injectIGPlusOptions(){
   const generalContainer = document.getElementById('general');
   if(!generalContainer)
-  return
+    return;
 
   const create = (tag)=>{return document.createElement(tag);};
   const mainContainer = create('div');
@@ -60,7 +60,7 @@ function injectIGPlusOptions(){
     separatorContainer
   );
 
-    function appendSubCheks(a,b,c){  a.append(b,c);  return a;  }
+  function appendSubCheks(a,b,c){  a.append(b,c);  return a;  }
 
 
 
@@ -92,8 +92,8 @@ function injectIGPlusOptions(){
     appendWithDescription(createScriptCheckbox('marketDriver','Market (Drivers)'),
       addDescription('Add talent column for drivers in the transfer market')),
 
-      appendSubCheks(createScriptCheckbox('strategy','Race Strategy'), createScriptCheckbox('sliderS','Slider'), createScriptCheckbox('editS','Editable')),
-   appendSubCheks( createScriptCheckbox('setup','Race Setup'), createScriptCheckbox('slider','Slider'), createScriptCheckbox('edit','Editable')),
+    appendSubCheks(createScriptCheckbox('strategy','Race Strategy'), createScriptCheckbox('sliderS','Slider'), createScriptCheckbox('editS','Editable')),
+    appendSubCheks( createScriptCheckbox('setup','Race Setup'), createScriptCheckbox('slider','Slider'), createScriptCheckbox('edit','Editable')),
 
     appendWithDescription(createScriptCheckbox('overview','Car Overview'),
       addDescription('Enable review button (design research) during a live race')),
@@ -174,14 +174,20 @@ function injectIGPlusOptions(){
   const gdrive = create('fieldset');
   const forceSync = create('span');
   forceSync.classList.add('btn');
-  forceSync.textContent = 'Force Sync';
+  forceSync.textContent = 'Upload';
   forceSync.style.display = 'none';
   forceSync.id = 'forceSync';
-  gdrive.append(appendWithDescription(createScriptCheckbox('gdrive','Cloud Sync'),forceSync));
+
+  const forceSyncDown = create('span');
+  forceSyncDown.classList.add('btn');
+  forceSyncDown.textContent = 'Download';
+  forceSyncDown.style.display = 'none';
+  forceSyncDown.id = 'forceSyncDown';
+  gdrive.append(appendWithDescription(appendWithDescription(createScriptCheckbox('gdrive','Cloud Sync'),forceSync),forceSyncDown));
 
   mainContainer.append(preferencesContainer,scriptsContainer,strategiesContainer,googleSheetContainer,gdrive);
   mainContainer.id = 'iGPlus';
-  
+
   generalContainer.append(mainContainer);
 
 
@@ -215,12 +221,13 @@ function handleSettings(){
   const sponsorCheckbox = document.getElementById('sponsor').querySelector('.help');
   const gdrive = document.getElementById('gdrive');
   const forceSyncBtn = document.getElementById('forceSync');
+  const forceSyncBtnDown = document.getElementById('forceSyncDown');
 
   // init
 
 
 
- restoreOptions();
+  restoreOptions();
 
 
   languageSelection.addEventListener('change', saveOptions);
@@ -247,7 +254,7 @@ function handleSettings(){
       if(scriptName == 'gdrive') {
         if(status) {
           checkAuth();
-        }else forceSyncBtn.classList.remove('visible');
+        }else {forceSyncBtn.classList.remove('visible');forceSyncBtnDown.classList.remove('visible');}
 
         chrome.storage.local.set({ [scriptName]: status });
       }
@@ -351,14 +358,21 @@ function handleSettings(){
 
   function saveOptions() {
     let lang = languageSelection.value;
-    if(lang == 'en ') lang ='eng'; if(lang == 'it') lang = 'ita'; if(lang!= 'en' || lang!= 'it') lang = 'eng';
+    //if(lang == 'en ') lang = 'eng'; if(lang == 'it') lang = 'ita'; if(lang != 'en' && lang != 'it') lang = 'eng';
+    switch (lang) {
+    case 'it': lang = 'it';
+      break;
+    default: lang = 'en';
+      break;
+    }
+    //console.log('setting language to',lang);
     chrome.storage.local.set({ language: lang });
     restoreOptions();
   }
 
   async function restoreOptions() {
     const {language}  = await import(chrome.runtime.getURL('/common/localization.js'));
-    chrome.storage.local.get({language: 'eng'},function (selected){
+    chrome.storage.local.get({language: 'en'},function (selected){
       const code = selected.language;
 
       //languageSelection.value = code;
@@ -419,6 +433,7 @@ function handleSettings(){
         if(DEBUG)console.log('restoring',data.gdrive);
         gdrive.querySelector('input').checked = data.gdrive;
         (data.gdrive) ? forceSyncBtn.classList.add('visible') : forceSyncBtn.classList.remove('visible');
+        (data.gdrive) ? forceSyncBtnDown.classList.add('visible') : forceSyncBtnDown.classList.remove('visible');
       }
     });
 
@@ -491,7 +506,7 @@ function handleSettings(){
 
       function addButton() {
         const dButton = document.createElement('div');
-        dButton.textContent = 'Download'
+        dButton.textContent = 'Download';
         dButton.classList.add('btn','fa-download');
         dButton.id = 'exportBtn';
         return dButton;
@@ -570,6 +585,7 @@ function handleSettings(){
       mergeStorage('gdrive',false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
       forceSyncBtn.classList.remove('visible');
+      forceSyncBtnDown.classList.remove('visible');
       return false;
     }
 
@@ -651,16 +667,16 @@ function handleSettings(){
     node.addEventListener('mouseenter', function () {
       fieldtip.textContent = node.dataset.fieldtip;
       fieldtip.style.display = 'inline-block';
-      
+
       const nodeRect = node.getClientRects()[0];
-     
+
       var position = {
         top: node.offsetTop - fieldtip.offsetHeight - 16,
         left: node.offsetLeft - fieldtip.offsetWidth / 2 + 16
-      };    
-      
-      fieldtip.style.top= `${position.top}px`;
-      fieldtip.style.left= `${position.left}px`;
+      };
+
+      fieldtip.style.top = `${position.top}px`;
+      fieldtip.style.left = `${position.left}px`;
       fieldtip.style.opacity = 1;
 
     });
@@ -685,6 +701,14 @@ function handleSettings(){
     syncData(true,token).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');});
 
   });
+  forceSyncBtnDown.addEventListener('click',async function(){
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getAccessToken();
+    forceSyncBtnDown.classList.remove('visible');
+    const loader = addLoader(this);
+    syncData(false,token).then(()=>{loader.remove();forceSyncBtnDown.classList.add('visible');});
+
+  });
   /**
  * sync all data to and from the cloud
  * @param {Boolean} direction true is local to cloud , false is cloud to local
@@ -693,11 +717,11 @@ function handleSettings(){
     const { localToCloud,cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
     console.log('token is',token.access_token);
     if(token != false){
-    if(direction)  {await localToCloud(token.access_token); await cloudToLocal(token.access_token);}
-    else  {await cloudToLocal(token.access_token); await localToCloud(token.access_token);}
-    restoreOptions();
+      if(direction)  {await localToCloud(token.access_token); await cloudToLocal(token.access_token);}
+      else  {await cloudToLocal(token.access_token); await localToCloud(token.access_token);}
+      restoreOptions();
     }
-    
+
   }
 
 }

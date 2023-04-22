@@ -115,6 +115,8 @@ async function searchFile(fileName,accessToken){
     .then(response => response.json()).then(data => {return data.files[0] || false;}).catch(error => console.error(error));
 }
 async function storeFileIn(folderId,fileName,jsonData,accessToken){
+  console.log('file name',fileName);
+  console.log(folderId,fileName,jsonData,accessToken);
   fetch('https://www.googleapis.com/drive/v3/files', {
     method: 'POST',
     headers: {
@@ -178,7 +180,7 @@ async function localStrategiesToCloud(mainFolderId,data,accessToken) {
       // if track folder present then update or create the local strategies
         Object.keys(trackSaves).forEach(async function (nameid) {
           let cloudSave = await searchFile(nameid + '.json',accessToken);
-          if (cloudSave == false) storeFileIn(trackFolder.id, JSON.stringify(trackSaves[nameid]),accessToken);
+          if (cloudSave == false) storeFileIn(trackFolder.id,nameid,JSON.stringify(trackSaves[nameid]),accessToken);
           else updateFile(cloudSave.id, JSON.stringify(trackSaves[nameid]),accessToken);
         });
       }

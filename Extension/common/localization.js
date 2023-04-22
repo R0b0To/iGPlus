@@ -1,5 +1,5 @@
 const language = {
-  eng: {
+  en: {
     optionsText:{
       preferences: 'iGPlus Settings',
       languageText: 'Language',
@@ -41,7 +41,7 @@ const language = {
       sponsor: 'Display sponsor options vertically'
     }
   },
-  ita: {
+  it: {
     optionsText:{
       preferences: 'Impostazioni iGPlus',
       languageText: 'Lingua',
