@@ -1,5 +1,4 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
-import { getAccessToken, localReportsToCloud, localStrategyToCloud, deleteFile } from './auth/gDriveHelper.js';
 
 let scriptRunning = 'none';
 
@@ -59,20 +58,3 @@ async function injectStyles(tabId, styleFiles) {
     files: styleFiles
   });
 }
-
-//handling requests from the content scripts.
-chrome.runtime.onMessage.addListener(async function(request) {
-  const token = await getAccessToken();
-  if (request.type === "saveReportToCloud") {
-    localReportsToCloud(token);
-    return true;
-  }
-  if (request.type === "saveStrategyToCloud") {
-    localStrategyToCloud(request.strategy,token);
-    return true;
-  }
-  if (request.type === "deleteFile") {
-    deleteFile(request.name,token);
-    return true;
-  }
-});

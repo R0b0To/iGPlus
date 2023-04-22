@@ -8,6 +8,7 @@
     "run:ff": "web-ext run --source-dir ./Extension",
     "lint:ff": "web-ext lint --source-dir ./Extension",
     "swapManifest": "./swapManifest.sh",
+    "androidFirefox":"web-ext run -t firefox-android --android-device=localhost:57910 --firefox-apk org.mozilla.fenix --source-dir ./Extension",
     "swapManifest-win":"cd ./Extension && IF EXIST manifest-ff.json (REN manifest.json manifest-c.json & REN manifest-ff.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-ff.json & REN manifest-c.json manifest.json)"
   },
   "repository": {

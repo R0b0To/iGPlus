@@ -30,10 +30,6 @@
   "icons": {
     "128": "images/Icon128.png"
   },
-  "options_ui": {
-    "open_in_tab": true,
-    "page": "options/options.html"
-  },
   "web_accessible_resources": [
     {
       "matches": [

@@ -18,7 +18,8 @@ const scriptDefaults = {
   editS: false,
   sliderS: true,
   history:true,
-  sponsor:true
+  sponsor:true,
+  settings:true
 };
 
 /**
@@ -74,6 +75,11 @@ const tabScripts = {
     key: 'overview',
     scripts: ['lib/highcharts.js', 'race/race.js'],
     styles: ['race/style.css']
+  },
+  '/app/p=settings&tab=general': {
+    key: 'settings',
+    scripts: ['settings/addSettings.js','lib/gsi.js'],
+    styles: ['settings/settings.css']
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',

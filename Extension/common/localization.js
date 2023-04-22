@@ -1,7 +1,7 @@
 const language = {
   eng: {
     optionsText:{
-      preferences: 'Preferences',
+      preferences: 'iGPlus Settings',
       languageText: 'Language',
       RaceReport: 'Race Report Sign',
       StartOvertakes: 'End lap2 Overtakes Sign',
@@ -43,7 +43,7 @@ const language = {
   },
   ita: {
     optionsText:{
-      preferences: 'Preferenze',
+      preferences: 'Impostazioni iGPlus',
       languageText: 'Lingua',
       RaceReport: 'Segno Resoconto gara',
       StartOvertakes: 'Segno Sorpassi fine 2° giro',
