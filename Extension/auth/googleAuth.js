@@ -22,15 +22,12 @@ async function getAccessToken(){
     client_id: CLIENT_ID,
     scope: 'https://www.googleapis.com/auth/drive.file',
     callback : (tokenRes) => {
-      console.log(tokenRes);
       resolve(tokenRes);
-      return tokenRes
-    }
+    },
+    error_callback : (err) =>{resolve(false)}
   }).requestAccessToken();
-    console.log(('heys'))
  }) 
-
- return responce.access_token
+ return responce
 
 }
 

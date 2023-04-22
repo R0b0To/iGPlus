@@ -19,14 +19,14 @@ async function checkAccessToken(token)
  * @param {String} folderName The folder name
  */
 async function searchFolder(folderName,accessToken) {
-  if(DEBUG)console.log('searching',folderName);
-  return fetch(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder'&access_token=${accessToken}`)
+  if(DEBUG)console.log('searching',folderName,'with token',accessToken);
+  return fetch(`https://www.googleapis.com/drive/v3/files?q=name='${folderName}'and+mimeType='application/vnd.google-apps.folder'&access_token=${accessToken}`)
     .then(response => response.json())
     .then(data => {
       if (data.files.length > 0) return data.files[0];
       else return false;
     })
-    .catch(error => console.error(error));
+    .catch((error) => {console.log(error);});
 }
 /**
  * Create new "iGPlus" folder in goodle drive
@@ -58,6 +58,7 @@ async function createFolderGDrive(folderName,parentFolderId,accessToken){
 
 async function getGDriveFileInfo(fileName,accessToken){
   const mainFolderID = await searchFolder('iGPlus',accessToken);
+  if(DEBUG)console.log('mainfolder is',mainFolderID);
   return fetch(`https://www.googleapis.com/drive/v3/files?q='${mainFolderID.id}'+in+parents+and+name+=+'${fileName}'&fields=files(name,id)&access_token=${accessToken}`)
     .then(response => response.json())
     .then(data => {return data.files[0];})
@@ -70,7 +71,7 @@ async function prepareDataForUpload(){
   chrome.storage.local.get(null,function(allData){
     Object.keys(allData).forEach(key=>{
 
-      if(key == 'save') savedStrategies = allData.save;
+      if(key == 'save') savedStrategies.save = allData.save;
       if(key == 'script') configInfo.script = allData.script;
       if(key == 'overSign') configInfo.overSign = allData.overSign;
       if(key == 'raceSign') configInfo.raceSign = allData.raceSign;
@@ -80,7 +81,6 @@ async function prepareDataForUpload(){
       if(key.endsWith('LRID')) raceReports[key] = allData[key];
     });
     //store race reports in race reports folder, strategies in the strategies, and config in main folder
-
   });
   return {configInfo,savedStrategies,raceReports};
 
@@ -142,50 +142,47 @@ async function storeFileIn(folderId,fileName,jsonData,accessToken){
 }
 
 
-async function localReportsToCloud(accessToken){
-  const localData = await prepareDataForUpload();
-  let mainFolder = await searchFolder('iGPlus',accessToken);
-  if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
+async function localReportsToCloud(mainFolderId,data,accessToken){
   let reportsFolder = await searchFolder('reports',accessToken);
-  if(reportsFolder == false) reportsFolder = await createFolderGDrive('reports',mainFolder.id,accessToken);
+  if(reportsFolder == false) reportsFolder = await createFolderGDrive('reports',mainFolderId.id,accessToken);
 
   // search for the reports inside the folder. Then update or create the reports
-  Object.keys(localData.raceReports).forEach(async function(report){
+  Object.keys(data.raceReports).forEach(async function(report){
     const cloudReport = await searchFile(report + '.json',accessToken);
-    const jsonData = JSON.stringify(localData.raceReports[report]);
-    if(DEBUG)console.log('storing/updating',localData.raceReports[report],'in Reports');
+    const jsonData = JSON.stringify(data.raceReports[report]);
+    // if(DEBUG)console.log('storing/updating',localData.raceReports[report],'in Reports');
     if(cloudReport == false)  storeFileIn(reportsFolder.id,report,jsonData,accessToken);
     else updateFile(cloudReport.id,jsonData,accessToken);
   });
 
 }
 
-async function localStrategiesToCloud(accessToken) {
-  const localData = await prepareDataForUpload();
-  let mainFolder = await searchFolder('iGPlus',accessToken);
-  if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
+async function localStrategiesToCloud(mainFolderId,data,accessToken) {
   let strategyFolder = await searchFolder('strategies',accessToken);
-  if (strategyFolder == false) strategyFolder = await createFolderGDrive('strategies', mainFolder.id,accessToken);
+  if (strategyFolder == false) strategyFolder = await createFolderGDrive('strategies', mainFolderId.id,accessToken);
 
+  if(DEBUG)console.log('strategies to be stored-------------',data.savedStrategies.save,data);
   //search for the track folder
-  for (const saveFolder of Object.keys(localData.savedStrategies)) {
-    let trackFolder = await searchFolder(saveFolder,accessToken);
-    const trackSaves = localData.savedStrategies[saveFolder];
-    // if track folder not present create the folder and store all the local strategies in it
-    if (trackFolder == false) {
-      trackFolder = await createFolderGDrive(saveFolder, strategyFolder.id,accessToken);
-      Object.keys(trackSaves).forEach(nameid => {
-        storeFileIn(trackFolder.id, nameid, JSON.stringify(trackSaves[nameid]),accessToken);
-      });
-    } else {
+  if(typeof data.savedStrategies.save != 'undefined')
+    for (const saveFolder of Object.keys(data.savedStrategies.save)) {
+      let trackFolder = await searchFolder(saveFolder,accessToken);
+      const trackSaves = data.savedStrategies.save[saveFolder];
+      // if track folder not present create the folder and store all the local strategies in it
+      if (trackFolder == false) {
+        trackFolder = await createFolderGDrive(saveFolder, strategyFolder.id,accessToken);
+        Object.keys(trackSaves).forEach(nameid => {
+          if(DEBUG)console.log('storing strategy',saveFolder,trackSaves[nameid]);
+          storeFileIn(trackFolder.id, nameid, JSON.stringify(trackSaves[nameid]),accessToken);
+        });
+      } else {
       // if track folder present then update or create the local strategies
-      Object.keys(trackSaves).forEach(async function (nameid) {
-        let cloudSave = await searchFile(nameid + '.json',accessToken);
-        if (cloudSave == false) storeFileIn(trackFolder.id, JSON.stringify(trackSaves[nameid]),accessToken);
-        else updateFile(cloudSave.id, JSON.stringify(trackSaves[nameid]),accessToken);
-      });
+        Object.keys(trackSaves).forEach(async function (nameid) {
+          let cloudSave = await searchFile(nameid + '.json',accessToken);
+          if (cloudSave == false) storeFileIn(trackFolder.id, JSON.stringify(trackSaves[nameid]),accessToken);
+          else updateFile(cloudSave.id, JSON.stringify(trackSaves[nameid]),accessToken);
+        });
+      }
     }
-  }
 
 }
 async function localStrategyToCloud(strategy,accessToken){
@@ -200,20 +197,23 @@ async function localStrategyToCloud(strategy,accessToken){
   storeFileIn(trackFolder.id, strategy.name, JSON.stringify(strategy.data),accessToken);
 }
 
-async function localConfigToCloud(accessToken){
-  const localData = await prepareDataForUpload();
-  let mainFolder = await searchFolder('iGPlus',accessToken);
-  if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
+async function localConfigToCloud(mainFolderId,data,accessToken){
   const cloudConfig = await searchFile('config.json',accessToken);
-  if(cloudConfig == false)  storeFileIn(mainFolder.id,'config',JSON.stringify(localData.configInfo),accessToken);
-  else updateFile(cloudConfig.id,JSON.stringify(localData.configInfo),accessToken);
+  if(cloudConfig == false)  storeFileIn(mainFolderId.id,'config',JSON.stringify(data.configInfo),accessToken);
+  else updateFile(cloudConfig.id,JSON.stringify(data.configInfo),accessToken);
 
 }
 
 async function localToCloud(accessToken){
-  await localConfigToCloud(accessToken);
-  await localReportsToCloud(accessToken);
-  await localStrategiesToCloud(accessToken);
+  const localData = await prepareDataForUpload();
+  if(DEBUG)console.log('local data is ======',localData);
+  let mainFolder = await searchFolder('iGPlus',accessToken);
+  if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
+
+
+  await localConfigToCloud(mainFolder,localData,accessToken);
+  await localReportsToCloud(mainFolder,localData,accessToken);
+  await localStrategiesToCloud(mainFolder,localData,accessToken);
 }
 
 
@@ -265,6 +265,7 @@ async function cloudToLocal(accessToken){
       }
     }
     chrome.storage.local.get('save',function(localStrategiesData){
+      if(DEBUG)console.log('this are the strategies',(trackSave));
       const merged = {...localStrategiesData.save, ...trackSave};
       if(DEBUG)console.log('restoring',merged);
       chrome.storage.local.set({'save':merged});

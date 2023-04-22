@@ -1,5 +1,4 @@
 (function init(a){
-  console.log('try');
   if(!document.getElementById('iGPlus'))
   {
     injectIGPlusOptions();
@@ -32,7 +31,7 @@ function injectIGPlusOptions(){
     const labelCheck = create('label');
     labelCheck.setAttribute('for', inputCheck.id);
     const tick = create('div');
-    tick.classList.add('tick_marck');
+    tick.classList.add('tick_mark');
     const scriptName = create('span');
     scriptName.textContent = name;
     scriptName.setAttribute('for',inputCheck.id);
@@ -174,6 +173,7 @@ function injectIGPlusOptions(){
 
   const gdrive = create('fieldset');
   const forceSync = create('span');
+  forceSync.classList.add('btn');
   forceSync.textContent = 'Force Sync';
   forceSync.style.display = 'none';
   forceSync.id = 'forceSync';
@@ -358,9 +358,7 @@ function handleSettings(){
 
   async function restoreOptions() {
     const {language}  = await import(chrome.runtime.getURL('/common/localization.js'));
-    console.log(language);
     chrome.storage.local.get({language: 'eng'},function (selected){
-      console.log(selected.language)
       const code = selected.language;
 
       //languageSelection.value = code;
@@ -493,7 +491,8 @@ function handleSettings(){
 
       function addButton() {
         const dButton = document.createElement('div');
-        dButton.classList.add('btn','fa','fa-download');
+        dButton.textContent = 'Download'
+        dButton.classList.add('btn','fa-download');
         dButton.id = 'exportBtn';
         return dButton;
       }
@@ -564,10 +563,8 @@ function handleSettings(){
 
 
   async function checkAuth(){
-    console.log('test');
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const ACCESS_TOKEN = await getAccessToken();
-    console.log(ACCESS_TOKEN)
     if(ACCESS_TOKEN == -1 || ACCESS_TOKEN == -2)
     {
       mergeStorage('gdrive',false);
@@ -577,7 +574,7 @@ function handleSettings(){
     }
 
     const loader = addLoader(document.getElementById('forceSync'));
-    syncData(false).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');}); //priority to get first the settings on the cloud
+    await syncData(false,ACCESS_TOKEN).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');}); //priority to get first the settings on the cloud
     return ACCESS_TOKEN;
   }
 
@@ -681,22 +678,26 @@ function handleSettings(){
     return loader;
   }
   forceSyncBtn.addEventListener('click',async function(){
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getAccessToken();
     forceSyncBtn.classList.remove('visible');
     const loader = addLoader(this);
-    syncData(true).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');});
+    syncData(true,token).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');});
 
   });
   /**
  * sync all data to and from the cloud
  * @param {Boolean} direction true is local to cloud , false is cloud to local
  */
-  async function syncData(direction){
+  async function syncData(direction,token){
     const { localToCloud,cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const token = await getAccessToken();
-    if(direction)  {await localToCloud(token); await cloudToLocal(token);}
-    else  {await cloudToLocal(token); await localToCloud(token);}
+    console.log('token is',token.access_token);
+    if(token != false){
+    if(direction)  {await localToCloud(token.access_token); await cloudToLocal(token.access_token);}
+    else  {await cloudToLocal(token.access_token); await localToCloud(token.access_token);}
     restoreOptions();
+    }
+    
   }
 
 }
