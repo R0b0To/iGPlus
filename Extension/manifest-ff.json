@@ -27,7 +27,8 @@
     "*://igpmanager.com/*",
     "*://api.open-meteo.com/*",
     "*://docs.google.com/*",
-    "*://api.openweathermap.org/*"
+    "*://api.openweathermap.org/*",
+    "*://www.googleapis.com/*"
   ],
   "web_accessible_resources": [
     "*.js"
