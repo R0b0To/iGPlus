@@ -1375,9 +1375,13 @@ async function saveStint()
   });
   list = document.getElementById('myDropdown2');
   list.classList.remove('show1');
+
   const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
   if(isSyncEnabled.gdrive){
-    chrome.runtime.sendMessage({type: 'saveStrategyToCloud',strategy:{name:s,track:code,data:saveData}});
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const { localStrategyToCloud } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+    const token = await getAccessToken();
+    localStrategyToCloud({name:s,track:code,data:saveData},token.access_token);
   }
 
 }

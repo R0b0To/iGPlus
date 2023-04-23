@@ -309,14 +309,20 @@ async function race_report() {
 }
 
 async function storeCopyOfActive(){
-  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  if(isSyncEnabled.gdrive){
-    chrome.runtime.sendMessage({type: 'saveReportToCloud'});
-  }
+ 
 
   const report = await chrome.storage.local.get('active_option');
   chrome.storage.local.get('active', function(data) {
-    chrome.storage.local.set({[report.active_option]:data.active});
+    chrome.storage.local.set({[report.active_option]:data.active},async function(){
+ const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+  if(isSyncEnabled.gdrive){
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const { localReportToCloud } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+    const token = await getAccessToken();
+    localReportToCloud(report.active_option,JSON.stringify(data.active),token.access_token);
+  }
+    });
+
   });
 }
 
@@ -414,7 +420,7 @@ async function update_managers(table, index) {
           manager[index].pitTimeLoss.push(pitTime / 1000);
         }
         else
-          manager[index].pitTimeLoss.push(-1);
+          manager[index].pitTimeLoss.push("");
       }
       else {
         manager[index].rank.push(race_table.rows[i].childNodes[4].innerHTML); //track position

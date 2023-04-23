@@ -115,8 +115,6 @@ async function searchFile(fileName,accessToken){
     .then(response => response.json()).then(data => {return data.files[0] || false;}).catch(error => console.error(error));
 }
 async function storeFileIn(folderId,fileName,jsonData,accessToken){
-  console.log('file name',fileName);
-  console.log(folderId,fileName,jsonData,accessToken);
   fetch('https://www.googleapis.com/drive/v3/files', {
     method: 'POST',
     headers: {
@@ -142,7 +140,13 @@ async function storeFileIn(folderId,fileName,jsonData,accessToken){
     });
 
 }
-
+async function localReportToCloud(name,data,accessToken){
+  let mainFolder = await searchFolder('iGPlus',accessToken);
+  if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
+  let reportsFolder = await searchFolder('reports',accessToken);
+  if(reportsFolder == false) reportsFolder = await createFolderGDrive('reports',mainFolder.id,accessToken);
+  storeFileIn(reportsFolder.id,name,data,accessToken);
+}
 
 async function localReportsToCloud(mainFolderId,data,accessToken){
   let reportsFolder = await searchFolder('reports',accessToken);
@@ -295,5 +299,6 @@ export{
   localReportsToCloud,
   checkAccessToken,
   localStrategiesToCloud,
-  localStrategyToCloud
+  localStrategyToCloud,
+  localReportToCloud
 };

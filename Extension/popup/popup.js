@@ -462,9 +462,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     chrome.storage.local.remove(opt, async function() {
       select.remove(select.selectedIndex);
       if(isSyncEnabled.gdrive){
-        const { deleteFile,getAccessToken } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+        const { deleteFile } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
         const token = await getAccessToken();
-        deleteFile(opt + '.json',token);
+        deleteFile(opt + '.json',token.access_token);
       }
       let newOption = 'RaceLRID';
       if(select.length > 0)
