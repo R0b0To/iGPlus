@@ -1,4 +1,5 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
+import { deleteFile,localStrategyToCloud } from './auth/gDriveHelper.js';
 
 let scriptRunning = 'none';
 
@@ -58,3 +59,23 @@ async function injectStyles(tabId, styleFiles) {
     files: styleFiles
   });
 }
+
+//cloud requests will be made in the baackground
+chrome.runtime.onMessage.addListener(
+  async function(request, sendResponse) {
+    console.log(request);
+    if (request.type === 'deleteFile')
+    {
+      console.log('deleting',request.data,'from google drive')
+      deleteFile(request.data+'.json',request.token);
+
+    }
+    if (request.type === 'saveStrategy')
+    {
+      console.log('adding',request.data,'to google drive')
+      localStrategyToCloud({name:request.data.name,track:request.data.track,data:request.data.strategy},request.token);
+
+    }
+      
+  }
+);

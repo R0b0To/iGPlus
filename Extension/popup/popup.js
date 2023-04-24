@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     const storage_list = Object.keys(data);
     const valid_saves = storage_list.filter(name => name.includes('LRID'));
-    
+
     if(valid_saves.length > 0 && data.active == null) {
       chrome.storage.local.set({'active_option':valid_saves[0]});
       chrome.storage.local.set({'active':data[valid_saves[0]]});
@@ -462,10 +462,10 @@ document.addEventListener('DOMContentLoaded', async function() {
     chrome.storage.local.remove(opt, async function() {
       select.remove(select.selectedIndex);
       if(isSyncEnabled.gdrive){
-        const { deleteFile } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
         const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
         const token = await getAccessToken();
-        deleteFile(opt + '.json',token.access_token);
+        if(token != false)
+          chrome.runtime.sendMessage({type:'deleteFile',data:opt,token:token.access_token});
       }
       let newOption = 'RaceLRID';
       if(select.length > 0)
