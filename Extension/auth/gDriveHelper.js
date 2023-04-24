@@ -191,7 +191,16 @@ async function localStrategiesToCloud(mainFolderId,data,accessToken) {
     }
 
 }
+
 async function localStrategyToCloud(strategy,accessToken){
+
+  let cloudSave = await searchFile(strategy.name + '.json',accessToken);
+    if (cloudSave != false){
+      updateFile(cloudSave.id, JSON.stringify(strategy.data),accessToken);
+      console.log('file already stored, updating it');
+      return
+    }
+
   let mainFolder = await searchFolder('iGPlus',accessToken);
   if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
   let strategyFolder = await searchFolder('strategies',accessToken);

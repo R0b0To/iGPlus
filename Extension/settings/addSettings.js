@@ -1,206 +1,15 @@
-(function init(a){
-  if(!document.getElementById('iGPlus'))
-  {
-    injectIGPlusOptions();
+
+(async () => {
+  if (!document.getElementById('iGPlus')) {
+    const { injectIGPlusOptions } = await import(chrome.runtime.getURL('/settings/settingsHTML.js'));
+    await injectIGPlusOptions();
+    handleSettings();
   }
 
 })();
 
-function injectIGPlusOptions(){
-  const generalContainer = document.getElementById('general');
-  if(!generalContainer)
-    return;
 
-  const create = (tag)=>{return document.createElement(tag);};
-  const mainContainer = create('div');
-  function addDescription(description){
-    const descriptionSpan = create('span');
-    descriptionSpan.classList.add('help','gg-info');
-    descriptionSpan.setAttribute('data-fieldtip',description);
-    return descriptionSpan;
-  }
-  function appendWithDescription(a,b){a.append(b);return a;}
-
-  function createScriptCheckbox(id,name){
-    const optionContainer = create('div');
-    optionContainer.classList.add('checkbox-wrapper');
-    optionContainer.id = id;
-    const inputCheck = create('input');
-    inputCheck.type = 'checkbox';
-    inputCheck.id = id + 'check';
-    const labelCheck = create('label');
-    labelCheck.setAttribute('for', inputCheck.id);
-    const tick = create('div');
-   
-    tick.classList.add('tick_mark');
-    const scriptName = create('span');
-    scriptName.textContent = name;
-    scriptName.classList.add('text');
-    scriptName.setAttribute('for',inputCheck.id);
-    labelCheck.append(tick);
-    optionContainer.append(inputCheck,labelCheck,scriptName);
-    return optionContainer;
-
-  }
-
-  const separatorContainer = create('div');
-  const separatorInput = create('input');
-  separatorInput.placeholder = ',';
-  separatorInput.id = 'separator';
-  const separatorTitleText = create('span');
-  separatorTitleText.textContent = 'Custom Separator';
-  separatorContainer.append(separatorTitleText,separatorInput);
-
-  //preferences
-  const preferencesContainer = create('fieldset');
-  const preferenceslegend = create('legend');
-  preferenceslegend.textContent = 'iGPlus preferences';
-  preferenceslegend.id = 'preferences';
-  preferencesContainer.append(preferenceslegend,
-    createScriptCheckbox('raceSign','Race Report Sign'),
-    createScriptCheckbox('overSign','Overtakes Sign'),
-    separatorContainer
-  );
-
-  function appendSubCheks(a,b,c){  a.append(b,c);  return a;  }
-
-
-
-  //scripts
-  const scriptsContainer = create('fieldset');
-  scriptsContainer.id = 'scripts';
-  const scriptsLegend = create('legend');
-  scriptsLegend.textContent = 'Scripts';
-
-  scriptsContainer.append(scriptsLegend,
-    appendWithDescription(createScriptCheckbox('review','Race Review'),
-      addDescription('Home page review button. It opens https://igpmanager.com/app/d=raceReview')),
-
-    appendWithDescription(createScriptCheckbox('league','League Home'),
-      addDescription('In the league page add a full race history button and position finished to each track')),
-
-    appendWithDescription(createScriptCheckbox('research','Research'),
-      addDescription('Add a table with the values from the bars in the research menu')),
-
-    appendWithDescription(createScriptCheckbox('train','Training'),
-      addDescription('Add an extra column in the training page if driver is recovering.')),
-
-    appendWithDescription(createScriptCheckbox('staff','My Staff'),
-      addDescription('Shows strenght of CD in the staff menus')),
-
-    appendWithDescription(createScriptCheckbox('market','Market (strength and weakness icons)'),
-      addDescription('Shows strenght and weakness of CD in the transfer market')),
-
-    appendWithDescription(createScriptCheckbox('marketDriver','Market (Drivers)'),
-      addDescription('Add talent column for drivers in the transfer market')),
-
-    appendSubCheks(createScriptCheckbox('strategy','Race Strategy'), createScriptCheckbox('sliderS','Slider'), createScriptCheckbox('editS','Editable')),
-    appendSubCheks( createScriptCheckbox('setup','Race Setup'), createScriptCheckbox('slider','Slider'), createScriptCheckbox('edit','Editable')),
-
-    appendWithDescription(createScriptCheckbox('overview','Car Overview'),
-      addDescription('Enable review button (design research) during a live race')),
-
-    createScriptCheckbox('hq','HQ Level Labels'),
-
-    appendWithDescription(createScriptCheckbox('refresh','Academy Auto-Refresh'),
-      addDescription('Add youth academy countdown. It will be placed as a notification beside the HQ menu option')),
-
-    appendWithDescription(createScriptCheckbox('reports','Reports'),
-      addDescription('Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names csv')),
-
-    appendWithDescription(createScriptCheckbox('history','Advanced History'),
-      addDescription('Add track charateristics to the history page')),
-
-    appendWithDescription(createScriptCheckbox('sponsor','Vertical Sponsor'),
-      addDescription('Display the sponsor options vertically')),
-
-  );
-
-  const googleSheetContainer = create('fieldset');
-  googleSheetContainer.id = 'googleSheetContainer';
-  const legendGoogleSheetContainer = create('legend');
-  legendGoogleSheetContainer.textContent = 'Google Sheet';
-  legendGoogleSheetContainer.append(addDescription('Import google data to be displayed in the strategy page below the advanced options'));
-  legendGoogleSheetContainer.id = 'Gsheet';
-  //legendGoogleSheetContainer.classList.add('help','fa-solid','fa-circle-info');
-  //legendGoogleSheetContainer.setAttribute('data-fieldtip','Import google data to be displayed in the strategy page below the advanced options');
-
-
-  function createInputField(id,name){
-    const container = create('div');
-    container.classList.add('inputField');
-    const label = create('div');
-    label.classList.add('text');
-    label.textContent = name;
-    const input = create('input');
-    input.id = id;
-    input.type = 'text';
-    label.setAttribute('for',id);
-    input.placeholder = name;
-    container.append(label,input);
-    return container;
-  }
-  const linkContainer = createInputField('link','Link:');
-  const trackIdContainer = createInputField('track','Track ID column header');
-  const sheetNameContainer = createInputField('sname','Sheet Name:');
-
-  const example = create('span');
-  example.textContent = 'optional';
-  const exampleLink = create('a');
-  exampleLink.textContent = '(Example)';
-  exampleLink.target = '_blank';
-  exampleLink.classList.add('avoid','linkcustom');
-  exampleLink.href = 'https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/';
-  sheetNameContainer.append(example,exampleLink);
-
-  googleSheetContainer.append(legendGoogleSheetContainer,linkContainer,trackIdContainer,sheetNameContainer);
-
-  const strategiesContainer = create('fieldset');
-  const strategiesLegend = create('legend');
-  strategiesLegend.textContent = 'Strategies';
-
-  const strategies = create('div');
-  strategies.classList.add('exportContainer');
-  const strategiesLabel = create('label');
-  strategiesLabel.textContent = 'Upload';
-  strategiesLabel.setAttribute('for','myFile');
-  const strategiesInput = create('input');
-  strategiesInput.type = 'file';
-  strategiesInput.id = 'myFile';
-  strategiesLabel.classList.add('upload','btn');
-  const exportContainer = create('span');
-  exportContainer.textContent = 'Export:';
-  const options = create('select');
-  options.id = 'exportSave';
-  exportContainer.id = 'exportLabel';
-  strategies.append(strategiesLabel,strategiesInput,exportContainer,options);
-  strategiesContainer.append(strategiesLegend,strategies);
-
-  const gdrive = create('fieldset');
-  const forceSync = create('span');
-  forceSync.classList.add('btn');
-  forceSync.textContent = 'Upload';
-  forceSync.style.display = 'none';
-  forceSync.id = 'forceSync';
-
- /* const forceSyncDown = create('span');
-  forceSyncDown.classList.add('btn');
-  forceSyncDown.textContent = 'Download';
-  forceSyncDown.style.display = 'none';
-  forceSyncDown.id = 'forceSyncDown';*/
-  gdrive.append(appendWithDescription(createScriptCheckbox('gdrive','Cloud Sync'),forceSync));
-
-  mainContainer.append(preferencesContainer,scriptsContainer,strategiesContainer,googleSheetContainer,gdrive);
-  mainContainer.id = 'iGPlus';
-
-  generalContainer.append(mainContainer);
-
-
-  handleSettings();
-
-}
-
-function handleSettings(){
+function handleSettings() {
 
   const DEBUG = false;
   const raceSign = document.getElementById('raceSign');
@@ -209,8 +18,7 @@ function handleSettings(){
   const sname = document.getElementById('sname');
   const trackName = document.getElementById('track');
   const languageSelection = document.getElementsByName('language')[0];
-  const separator  = document.getElementById('separator');
-
+  const separator = document.getElementById('separator');
   const leagueCheckbox = document.getElementById('league');
   const researchCheckbox = document.getElementById('research');
   const trainingCheckbox = document.getElementById('train');
@@ -224,17 +32,12 @@ function handleSettings(){
   const overviewCheckbox = document.getElementById('overview');
   const advancedHisCheckbox = document.getElementById('history');
   const sponsorCheckbox = document.getElementById('sponsor');
-  
   const gdrive = document.getElementById('gdrive');
   const forceSyncBtn = document.getElementById('forceSync');
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
 
-  // init
-
-
-
   restoreOptions();
-
+  
 
   languageSelection.addEventListener('change', saveOptions);
 
@@ -243,37 +46,33 @@ function handleSettings(){
   document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
 
   function addCheckEvent(checkbox) {
-  //add event listener to checkbox that stores the checkbox status, passing the script name (id)
-    if(DEBUG)console.log('adding click event to',checkbox.closest('div'));
+    //add event listener to checkbox that stores the checkbox status, passing the script name (id)
+    if (DEBUG) console.log('adding click event to', checkbox.closest('div'));
     checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('div').id, checkbox.checked));
   }
 
   async function scriptCheck(scriptName, status) {
-    if(DEBUG)console.log('saving status of:',scriptName,status);
-    if(scriptName == 'overSign' || scriptName == 'raceSign')
-    {
+    if (DEBUG) console.log('saving status of:', scriptName, status);
+    if (scriptName == 'overSign' || scriptName == 'raceSign') {
       chrome.storage.local.set({ [scriptName]: status });
       restoreOptions();
     }
-    else
-    {
-      if(scriptName == 'gdrive') {
-        if(status) {
+    else {
+      if (scriptName == 'gdrive') {
+        if (status) {
           checkAuth();
-        }else 
+        } else
           forceSyncBtn.classList.remove('visible');//forceSyncBtnDown.classList.remove('visible');
 
         chrome.storage.local.set({ [scriptName]: status });
       }
-      mergeStorage(scriptName,status);
+      mergeStorage(scriptName, status);
     }
 
   }
 
-
-
-  separator.addEventListener('beforeinput',function(){this.value = '';});
-  separator.addEventListener('input',function(){
+  separator.addEventListener('beforeinput', function () { this.value = ''; });
+  separator.addEventListener('input', function () {
     chrome.storage.local.set({ separator: this.value });
   });
   /**
@@ -281,7 +80,7 @@ function handleSettings(){
  *
  * @param {HTMLCollection} checkboxList - The 3 checkbox elements .
  */
-  function subCheckboxStatus(checkboxList){
+  function subCheckboxStatus(checkboxList) {
     if (checkboxList[0].checked) {
       checkboxList[1].disabled = false;
       checkboxList[2].disabled = false;
@@ -293,28 +92,27 @@ function handleSettings(){
   function mainCheckboxEvent(divId) {
     const divNode = document.getElementById(divId);
     const checkboxes = divNode.getElementsByTagName('input');
-    checkboxes[0].addEventListener('click',subCheckboxStatus.bind(null,checkboxes));
+    checkboxes[0].addEventListener('click', subCheckboxStatus.bind(null, checkboxes));
   }
 
-  async function mergeStorage(scriptName,scriptValue)
-  {
-    chrome.storage.local.get({ script: '' },(data)=>{
+  async function mergeStorage(scriptName, scriptValue) {
+    chrome.storage.local.get({ script: '' }, (data) => {
       data.script[scriptName] = scriptValue;
       chrome.storage.local.set({ script: data.script });
     });
 
   }
 
-  async function onlyOne(){
+  async function onlyOne() {
 
     const checkboxes = this.parentElement.parentElement.querySelectorAll('input[type="checkbox"]');
     const options = Array.prototype.slice.call(checkboxes, -2); //getting only the 2 options
-    options.forEach(async checkbox =>  {
+    options.forEach(async checkbox => {
       const id = checkbox.parentElement.id;
-      if(id != this.parentElement.id)
+      if (id != this.parentElement.id)
         checkbox.checked = false;
     });
-    chrome.storage.local.get({ script: '' },(data)=>{
+    chrome.storage.local.get({ script: '' }, (data) => {
       data.script[options[0].parentElement.id] = options[0].checked;
       data.script[options[1].parentElement.id] = options[1].checked;
       chrome.storage.local.set({ script: data.script });
@@ -322,13 +120,13 @@ function handleSettings(){
 
 
   }
-  function onlyOneEvent(check){
+  function onlyOneEvent(check) {
     const checkbox = document.getElementById(check).querySelector('input');
-    checkbox.addEventListener('change',onlyOne);
+    checkbox.addEventListener('change', onlyOne);
   }
 
-  ['strategy','setup'].forEach(mainCheckboxEvent);
-  ['edit','slider','editS','sliderS'].forEach(onlyOneEvent);
+  ['strategy', 'setup'].forEach(mainCheckboxEvent);
+  ['edit', 'slider', 'editS', 'sliderS'].forEach(onlyOneEvent);
 
   const exportSave = document.getElementById('exportSave');
   link.addEventListener('change', testLink);
@@ -379,11 +177,17 @@ function handleSettings(){
 
 
   async function restoreOptions() {
-    const {language}  = await import(chrome.runtime.getURL('/common/localization.js'));
-    chrome.storage.local.get({language: 'en'},function (selected){
-      const code = selected.language;
-      function setTextToFieldtip(node,option){ node.querySelector('.help').attributes['data-fieldtip'].value = language[code].scriptDescription[option];}
-      function setTextToCheckbox(node,option){ node.querySelector('.text').textContent = language[code].optionsText[option];}
+    const { fetchManagerData } = await import( chrome.runtime.getURL('common/fetcher.js') );
+
+    const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
+    chrome.storage.local.get({ language: false }, async function (selected) {
+      let code = selected.language;
+      if(selected.language == false){const managerData = await fetchManagerData();
+         (managerData.language == 'en' || managerData.language == 'it') ? code = managerData.language : code = 'en'; }
+
+      
+      function setTextToFieldtip(node, option) { node.querySelector('.help').attributes['data-fieldtip'].value = language[code].scriptDescription[option]; }
+      function setTextToCheckbox(node, option) { node.querySelector('.text').textContent = language[code].optionsText[option]; }
       //languageSelection.value = code;
 
       //document.getElementById('langTitle').childNodes[0].textContent = language[code].optionsText.languageText + ': ';
@@ -393,49 +197,49 @@ function handleSettings(){
       raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport;
       overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes;
 
-      setTextToFieldtip(gsheetCheckbox,'gsheet');
-      setTextToFieldtip(leagueCheckbox,'leagueHome');
-      setTextToFieldtip(researchCheckbox,'research');
-      setTextToFieldtip(trainingCheckbox,'training');
-      setTextToFieldtip(reviewCheckbox,'raceReview');
-      setTextToFieldtip(marketCheckbox,'market');
-      setTextToFieldtip(staffCheckbox,'myStaff');
-      setTextToFieldtip(marketDriverCheckbox,'marketDriver');
-      setTextToFieldtip(refreshCheckbox,'academyTimer');
-      setTextToFieldtip(reportsCheckbox,'reports');
-      setTextToFieldtip(overviewCheckbox,'carOverview');
-      setTextToFieldtip(advancedHisCheckbox,'history');
-      setTextToFieldtip(sponsorCheckbox,'sponsor');
+      setTextToFieldtip(gsheetCheckbox, 'gsheet');
+      setTextToFieldtip(leagueCheckbox, 'leagueHome');
+      setTextToFieldtip(researchCheckbox, 'research');
+      setTextToFieldtip(trainingCheckbox, 'training');
+      setTextToFieldtip(reviewCheckbox, 'raceReview');
+      setTextToFieldtip(marketCheckbox, 'market');
+      setTextToFieldtip(staffCheckbox, 'myStaff');
+      setTextToFieldtip(marketDriverCheckbox, 'marketDriver');
+      setTextToFieldtip(refreshCheckbox, 'academyTimer');
+      setTextToFieldtip(reportsCheckbox, 'reports');
+      setTextToFieldtip(overviewCheckbox, 'carOverview');
+      setTextToFieldtip(advancedHisCheckbox, 'history');
+      setTextToFieldtip(sponsorCheckbox, 'sponsor');
 
-      setTextToCheckbox(reviewCheckbox,'home');
-      setTextToCheckbox(leagueCheckbox,'leagueHome');
-      setTextToCheckbox(researchCheckbox,'research');
-      setTextToCheckbox(trainingCheckbox,'training');
-      setTextToCheckbox(marketCheckbox,'staffMarket');
-      setTextToCheckbox(staffCheckbox,'staff');
-      setTextToCheckbox(marketDriverCheckbox,'driverMarket');
-      setTextToCheckbox(refreshCheckbox,'academyTimer');
-      setTextToCheckbox(reportsCheckbox,'reports');
-      setTextToCheckbox(overviewCheckbox,'carOverview');
-      setTextToCheckbox(advancedHisCheckbox,'advancedHis');
-      setTextToCheckbox(sponsorCheckbox,'verticalSponsor');
-      setTextToCheckbox(document.getElementById('strategy'),'raceStrategy');
-      setTextToCheckbox(document.getElementById('setup'),'raceSetup');
-      setTextToCheckbox(document.getElementById('editS'),'edit');
-      setTextToCheckbox(document.getElementById('edit'),'edit');
+      setTextToCheckbox(reviewCheckbox, 'home');
+      setTextToCheckbox(leagueCheckbox, 'leagueHome');
+      setTextToCheckbox(researchCheckbox, 'research');
+      setTextToCheckbox(trainingCheckbox, 'training');
+      setTextToCheckbox(marketCheckbox, 'staffMarket');
+      setTextToCheckbox(staffCheckbox, 'staff');
+      setTextToCheckbox(marketDriverCheckbox, 'driverMarket');
+      setTextToCheckbox(refreshCheckbox, 'academyTimer');
+      setTextToCheckbox(reportsCheckbox, 'reports');
+      setTextToCheckbox(overviewCheckbox, 'carOverview');
+      setTextToCheckbox(advancedHisCheckbox, 'advancedHis');
+      setTextToCheckbox(sponsorCheckbox, 'verticalSponsor');
+      setTextToCheckbox(document.getElementById('strategy'), 'raceStrategy');
+      setTextToCheckbox(document.getElementById('setup'), 'raceSetup');
+      setTextToCheckbox(document.getElementById('editS'), 'edit');
+      setTextToCheckbox(document.getElementById('edit'), 'edit');
       document.getElementById('exportLabel').textContent = language[code].optionsText.export;
       const field = document.getElementById('googleSheetContainer').querySelectorAll('.text');
       field[0].textContent = language[code].optionsText.link;
       field[1].textContent = language[code].optionsText.track;
       field[2].textContent = language[code].optionsText.sheetName;
 
-      [gsheetCheckbox,leagueCheckbox,researchCheckbox,trainingCheckbox,reviewCheckbox,staffCheckbox,marketCheckbox,marketDriverCheckbox,refreshCheckbox,reportsCheckbox,overviewCheckbox,advancedHisCheckbox,sponsorCheckbox]
+      [gsheetCheckbox, leagueCheckbox, researchCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, overviewCheckbox, advancedHisCheckbox, sponsorCheckbox]
         .forEach(addFieldtipEvent);
 
     }
     );
 
-    chrome.storage.local.get({'separator':','}, function (data) {
+    chrome.storage.local.get({ 'separator': ',' }, function (data) {
       separator.value = data.separator;
     });
     chrome.storage.local.get('raceSign', function (data) {
@@ -461,7 +265,7 @@ function handleSettings(){
     });
     chrome.storage.local.get('gdrive', function (data) {
       if (typeof data.gdrive != 'undefined') {
-        if(DEBUG)console.log('restoring',data.gdrive);
+        if (DEBUG) console.log('restoring', data.gdrive);
         gdrive.querySelector('input').checked = data.gdrive;
         (data.gdrive) ? forceSyncBtn.classList.add('visible') : forceSyncBtn.classList.remove('visible');
         //(data.gdrive) ? forceSyncBtnDown.classList.add('visible') : forceSyncBtnDown.classList.remove('visible');
@@ -473,10 +277,10 @@ function handleSettings(){
 
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
       Object.keys(scriptDefaults).forEach((item) => {
-        if(DEBUG)console.log('restoring checked status of',item,'with',data.script[item]);
+        if (DEBUG) console.log('restoring checked status of', item, 'with', data.script[item]);
         let checkedStatus = data.script[item];
 
-        if(item == 'gdrive' && checkedStatus) checkAuth();
+        if (item == 'gdrive' && checkedStatus) checkAuth();
 
         document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
       });
@@ -494,13 +298,13 @@ function handleSettings(){
         function downloadFile(data, download_name) {
           var blob = new Blob([data], { type: 'application/json;charset=utf-8;' });
           if (navigator.msSaveBlob) {
-          // IE 10+
+            // IE 10+
             navigator.msSaveBlob(blob, 'test');
           } else {
             const link = document.createElement('a');
             if (link.download !== undefined) {
-            // feature detection
-            // chromes that support HTML5 download attribute
+              // feature detection
+              // chromes that support HTML5 download attribute
               var url = URL.createObjectURL(blob);
               link.setAttribute('href', url);
               link.setAttribute('download', download_name);
@@ -530,25 +334,34 @@ function handleSettings(){
       }
 
       //remove old values in case restore is called
-      if(document.getElementById('exportBtn')){
+      if (document.getElementById('exportBtn')) {
+        
+        if(document.getElementById('trackSave'))
+          document.getElementById('trackSave').remove();
+      
+        document.getElementById('deleteBtn').remove();
         document.getElementById('exportBtn').remove();
         document.getElementById('exportSave').replaceChildren();
       }
 
-      function addButton() {
+      function addButton(name,id) {
         const dButton = document.createElement('div');
-        dButton.textContent = 'Download';
-        dButton.classList.add('btn','fa-download');
-        dButton.id = 'exportBtn';
+        dButton.textContent = name;
+        dButton.classList.add('btn', 'fa-download');
+        dButton.id = id;
         return dButton;
       }
+      const download_button = addButton('Download','exportBtn');
+      const delete_button = addButton('Delete','deleteBtn');
 
       if (typeof d.save === 'undefined') {
-      } else {
+
+      }
+      else {
         const defaultOption = document.createElement('option');
         defaultOption.textContent = 'All';
         defaultOption.value = 0;
-        exportSave.parentElement.append(addButton());
+        exportSave.parentElement.append(download_button,delete_button);
         exportSave.append(defaultOption);
         Object.keys(d.save).forEach((item) => {
           if (Object.keys(d.save[item]).length > 0) {
@@ -558,10 +371,48 @@ function handleSettings(){
             exportSave.append(option);
           }
         });
+        delete_button.addEventListener('click', async function(){
+      
+          const track = document.getElementById('exportSave').value;
+          let token = false;
+          const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+          if(isSyncEnabled.gdrive){
+            const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+            token = await getAccessToken();
+          }
+          
+          const strategies = await chrome.storage.local.get('save');
+          if(track == 0)
+          {
+            chrome.storage.local.remove('save');
+            if(isSyncEnabled.gdrive)
+            {
+              for(const [key,value] of Object.entries(strategies.save))
+                Object.keys(value).forEach((k) => {chrome.runtime.sendMessage({type:'deleteFile',data:k,token:token.access_token});});
+            }
 
-        document.querySelector('.fa-download').addEventListener('click', download);
+          }else{
+            console.log('deleting',)
+            const strategy = document.getElementById('trackSave').value;
+            delete strategies.save[track][strategy];
+        
+            if(Object.keys(strategies.save[track]).length == 0)
+              delete strategies.save[track];
+            
+            chrome.storage.local.set({'save':strategies.save});
+
+            if(Object.keys(strategies.save).length == 0)
+              chrome.storage.local.remove('save');
+            if(token != false){
+              chrome.runtime.sendMessage({type:'deleteFile',data:strategy,token:token.access_token});
+            }
+
+          }
+          restoreOptions();
+        });
+        download_button.addEventListener('click', download);
         exportSave.addEventListener('change', function () {
-        //console.log("changing");
+          //console.log("changing");
           try {
             const select = document.createElement('select');
             select.id = 'trackSave';
@@ -586,7 +437,7 @@ function handleSettings(){
               if (Object.keys(d.save[this.value]).length > 0) {
                 exportSave.parentElement.append(select);
 
-                exportSave.parentElement.append(addButton());
+                exportSave.parentElement.append(download_button,delete_button);
               }
             } else {
               const downloadButtons = document.querySelectorAll('.fa-download');
@@ -597,9 +448,9 @@ function handleSettings(){
               if (document.getElementById('trackSave') != null) {
                 document.getElementById('trackSave').remove();
               }
-              exportSave.parentElement.append(addButton());
+              exportSave.parentElement.append(download_button,delete_button);
             }
-          } catch (error) {}
+          } catch (error) { }
 
           document.querySelector('.fa-download').addEventListener('click', download);
         });
@@ -608,12 +459,11 @@ function handleSettings(){
   }
 
 
-  async function checkAuth(){
+  async function checkAuth() {
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const ACCESS_TOKEN = await getAccessToken();
-    if(ACCESS_TOKEN == -1 || ACCESS_TOKEN == -2)
-    {
-      mergeStorage('gdrive',false);
+    if (ACCESS_TOKEN == -1 || ACCESS_TOKEN == -2) {
+      mergeStorage('gdrive', false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
       forceSyncBtn.classList.remove('visible');
       //forceSyncBtnDown.classList.remove('visible');
@@ -621,7 +471,7 @@ function handleSettings(){
     }
 
     const loader = addLoader(document.getElementById('forceSync'));
-    await syncData(false,ACCESS_TOKEN).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');}); //priority to get first the settings on the cloud
+    await syncData(false, ACCESS_TOKEN).then(() => { loader.remove(); forceSyncBtn.classList.add('visible'); }); //priority to get first the settings on the cloud
     return ACCESS_TOKEN;
   }
 
@@ -643,7 +493,7 @@ function handleSettings(){
         var obj = JSON.parse(event.target.result);
         const track = Object.keys(obj)[0];
         const hashID = Object.keys(obj[track])[0];
-        const validTrack = ['be','it','sg','my','jp','us','mx','br','ae','bh','eu','de','es','ru','tr','au','at','hu','gb','ca','az','mc','cn','fr','save'];
+        const validTrack = ['be', 'it', 'sg', 'my', 'jp', 'us', 'mx', 'br', 'ae', 'bh', 'eu', 'de', 'es', 'ru', 'tr', 'au', 'at', 'hu', 'gb', 'ca', 'az', 'mc', 'cn', 'fr', 'save'];
 
         if (validTrack.includes(track)) {
           chrome.storage.local.get('save', function (data) {
@@ -718,7 +568,7 @@ function handleSettings(){
       fieldtip.style.display = 'none';
     });
   }
-  function addLoader(parent){
+  function addLoader(parent) {
     parent.style.display = 'none';
     const loader = document.createElement('span');
     loader.classList.add('loader');
@@ -726,12 +576,12 @@ function handleSettings(){
     return loader;
   }
 
-  forceSyncBtn.addEventListener('click',async function(){
+  forceSyncBtn.addEventListener('click', async function () {
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getAccessToken();
     forceSyncBtn.classList.remove('visible');
     const loader = addLoader(this);
-    syncData(true,token).then(()=>{loader.remove();forceSyncBtn.classList.add('visible');});
+    syncData(true, token).then(() => { loader.remove(); forceSyncBtn.classList.add('visible'); });
 
   });
   /*forceSyncBtnDown.addEventListener('click',async function(){
@@ -746,12 +596,12 @@ function handleSettings(){
  * sync all data to and from the cloud
  * @param {Boolean} direction true is local to cloud , false is cloud to local
  */
-  async function syncData(direction,token){
-    const { localToCloud,cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-    console.log('token is',token.access_token);
-    if(token != false){
-      if(direction)  {await localToCloud(token.access_token); await cloudToLocal(token.access_token);}
-      else  {await cloudToLocal(token.access_token); await localToCloud(token.access_token);}
+  async function syncData(direction, token) {
+    const { localToCloud, cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
+    console.log('token is', token.access_token);
+    if (token != false) {
+      if (direction) { await localToCloud(token.access_token); await cloudToLocal(token.access_token); }
+      else { await cloudToLocal(token.access_token); await localToCloud(token.access_token); }
       restoreOptions();
     }
 

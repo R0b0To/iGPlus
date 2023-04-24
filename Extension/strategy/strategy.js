@@ -841,20 +841,24 @@ function injectCircuitMap(){
     'us': 'd=circuit&id=25&tab=history' //USA
   };
 
-  if(document.getElementById('customMap') == null)
+  if(!document.getElementById('customMap'))
   {
-    const target = document.getElementById('stintDialog');
+    try {
+    const target = document.querySelector('[id=strategy] .eight');
     const circuit = document.createElement('img');
     circuit.id = 'customMap';
     circuit.src = chrome.runtime.getURL('images/circuits/' + getTrackCode() + '.png');
     const trackCode = getTrackCode();
     circuit.src = chrome.runtime.getURL(`images/circuits/${trackCode}.png`);
     circuit.setAttribute('style','width:100%;');
-    target.parentNode.insertBefore(circuit, target.nextSibling);
     const imageLink = document.createElement('a');
     imageLink.href = trackLink[trackCode];
     imageLink.append(circuit);
-    target.parentNode.insertBefore(imageLink, target.nextSibling);
+    target.append(imageLink);
+    } catch (error) {
+      //page changed
+    }
+    
   }
 }
 async function readGSheets()
@@ -1335,16 +1339,16 @@ function addMoreStints()
 async function saveStint()
 {
 
-  code = getTrackCode();
-  driverStrategy = this.closest('form');
-  tyre = driverStrategy.getElementsByClassName('tyre')[0];
-  fuel = driverStrategy.getElementsByClassName('fuel')[0];
-  push = driverStrategy.querySelector('tr[pushEvent]');
-  tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
-  fuelStrategy = fuel.querySelectorAll('td[style*="visibility: visible"]');
-  pushStrategy = push.querySelectorAll('td[style*="visibility: visible"]');
+  const code = getTrackCode();
+  const driverStrategy = this.closest('form');
+  const tyre = driverStrategy.getElementsByClassName('tyre')[0];
+  const fuel = driverStrategy.getElementsByClassName('fuel')[0];
+  const push = driverStrategy.querySelector('tr[pushEvent]');
+  const tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
+  const fuelStrategy = fuel.querySelectorAll('td[style*="visibility: visible"]');
+  const pushStrategy = push.querySelectorAll('td[style*="visibility: visible"]');
 
-  saveData = {};
+  const saveData = {};
   for(var i = 0; i < tyreStrategy.length; i++)
   {
     saveData[i] = {
@@ -1352,8 +1356,8 @@ async function saveStint()
       laps:fuelStrategy[i].textContent,
       push:pushStrategy[i].childNodes[0].selectedIndex};
   }
-  s = hashCode(JSON.stringify(saveData));
-  data = await chrome.storage.local.get('save');
+  const s = hashCode(JSON.stringify(saveData));
+  const data = await chrome.storage.local.get('save');
 
   if(typeof data.save === 'undefined')
   {
@@ -1373,15 +1377,20 @@ async function saveStint()
   document.querySelectorAll('.lbutton').forEach((element) => {
     element.classList.remove('disabled');
   });
-  list = document.getElementById('myDropdown2');
-  list.classList.remove('show1');
+  //const list = document.getElementById('myDropdown2');
+  //list.classList.remove('show1');
 
   const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
   if(isSyncEnabled.gdrive){
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const { localStrategyToCloud } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
     const token = await getAccessToken();
-    localStrategyToCloud({name:s,track:code,data:saveData},token.access_token);
+    if(token != false)
+    {
+      const response = await chrome.runtime.sendMessage({type: "saveStrategy",data:{name:s,track:code,strategy:saveData},token:token.access_token});
+      //localStrategyToCloud({name:s,track:code,data:saveData},token.access_token);
+    }
+    
   }
 
 }
@@ -1396,26 +1405,27 @@ function hashCode(string){
 }
 async function loadStint()
 {
-  document.getElementById('myDropdown2').classList.toggle('show1');
+  //document.getElementById('myDropdown2').classList.toggle('show1');
   //this.closest("div").classList.toggle("show1");
-  code  = getTrackCode();
-  data = await chrome.storage.local.get('save');
-  s = data.save[code][this.parentElement.id];
-  driverStrategy = this.closest('form');
-  pitNum = driverStrategy.querySelectorAll('input[name=\'numPits\']')[0];
-  tyre = driverStrategy.getElementsByClassName('tyre')[0];
-  fuel = driverStrategy.getElementsByClassName('fuel')[0];
-  push = driverStrategy.querySelector('tr[pushEvent]');
-  wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
-  tyreStrategy = tyre.querySelectorAll('td');
-  fuelStrategy = fuel.querySelectorAll('td');
-  pushStrategy = push.querySelectorAll('td');
-  pits = driverStrategy.querySelector('div > div.num.green');
-  enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
-  activeStints = tyre.childElementCount - 1;
+  const code  = getTrackCode();
+  const data = await chrome.storage.local.get('save');
+  const s = data.save[code][this.parentElement.id];
+  const driverStrategy = this.closest('form');
+  const pitNum = driverStrategy.querySelectorAll('input[name=\'numPits\']')[0];
+  const tyre = driverStrategy.getElementsByClassName('tyre')[0];
+  const fuel = driverStrategy.getElementsByClassName('fuel')[0];
+  const push = driverStrategy.querySelector('tr[pushEvent]');
+  const pits = driverStrategy.querySelector('div > div.num.green');
+  const enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
+  const wear = driverStrategy.querySelector('tr[wearEvent]');
+ 
+  const tyreStrategy = tyre.querySelectorAll('td');
+  const fuelStrategy = fuel.querySelectorAll('td');
+  const pushStrategy = push.querySelectorAll('td');
+  const activeStints = tyre.childElementCount - 1;
 
-  stints = Object.keys(s).length;
-  pitText = stints - 1;
+  const stints = Object.keys(s).length;
+  let pitText = stints - 1;
 
 
   pitNum.value = pitText;
@@ -1431,7 +1441,7 @@ async function loadStint()
     }
   }
 
-  extraStintstoAdd = (activeStints - stints);
+  const extraStintstoAdd = (activeStints - stints);
 
 
   if(activeStints < stints)
@@ -1461,13 +1471,14 @@ async function loadStint()
       done = await injectExtraStints(pits.nextElementSibling);
     }
   }
-  tyre = driverStrategy.getElementsByClassName('tyre')[0];
+  
+ // const wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
+
+ /* tyre = driverStrategy.getElementsByClassName('tyre')[0];
   fuel = driverStrategy.getElementsByClassName('fuel')[0];
-  push = driverStrategy.querySelector('tr[pushEvent]');
-  wear = driverStrategy.querySelector('tr[wearEvent]');
-  tyreStrategy = tyre.querySelectorAll('td');
-  fuelStrategy = fuel.querySelectorAll('td');
-  pushStrategy = push.querySelectorAll('td');
+  push = driverStrategy.querySelector('tr[pushEvent]');*/
+
+
 
   for(var i = stints ; i < 5; i++)
   {
@@ -1523,76 +1534,105 @@ async function loadStint()
 
   updateFuel(wear.closest('tbody'));
   dragStint();
-  saveBox = driverStrategy.getElementsByClassName('show1');
+  const saveBox = driverStrategy.getElementsByClassName('dropdown2-content');
   Object.keys(saveBox).forEach(key=>{
-    saveBox[key].classList.toggle('show1');
+    saveBox[key].close();
   });
 }
-async function generateSaveList() {
-
-  code = getTrackCode();
-  chrome.storage.local.get('save',function(data){
-    if (typeof data.save === 'undefined') {
-    //empty
-    }else{
-      if (typeof data.save[code] === 'undefined') {
-        //empty
-      } else {
-        if (Object.keys(data.save[code]).length == 0) {
-          console.log('no save');
-          document.querySelectorAll('.lbutton').forEach((element) => {
-            element.classList.add('disabled');
-          });
-        } else {
-          sList = document.querySelectorAll('#saveList');
-          if (sList != null)
-            sList.forEach((e) => {e.remove();});
 
 
-          document.querySelectorAll('.lbutton').forEach((element) => {
-            element.classList.remove('disabled');
-          });
+function dialogClickHandler(e) {
+  if (e.target.tagName !== 'DIALOG') 
+      return;
 
-          list = document.querySelectorAll('#myDropdown2');
-          list.forEach((e) => {
-            sList = createSaveDataPreview(data.save[code]);
-            e.appendChild(sList);});
-        }
-      }
-    }
-  });
+  const rect = e.target.getBoundingClientRect();
 
+  const clickedInDialog = (
+      rect.top <= e.clientY &&
+      e.clientY <= rect.top + rect.height &&
+      rect.left <= e.clientX &&
+      e.clientX <= rect.left + rect.width
+  );
 
+  if (clickedInDialog === false)
+      e.target.close();
 }
+
 async function addSaveButton()
 {
+ 
   if(document.getElementById('save&load') == null)
   {
+    async function generateSaveList () {
+      return new Promise(function(res){
+      const code = getTrackCode();
+      chrome.storage.local.get('save',function(data){
+        if (typeof data.save === 'undefined') {
+          res('empty');
+        }else{
+          if (typeof data.save[code] === 'undefined') {
+            res('empty');
+          } else {
+            if (Object.keys(data.save[code]).length == 0) {
+              console.log('no save');
+              document.querySelectorAll('.lbutton').forEach((element) => {
+                element.classList.add('disabled');
+              });
+              res('empty');
+            } else {
+              const sList = document.querySelectorAll('#saveList');
+              if (sList != null)
+                sList.forEach((e) => {e.remove();});
+    
+    
+              document.querySelectorAll('.lbutton').forEach((element) => {
+                element.classList.remove('disabled');
+              });
+    
+              const list = document.querySelectorAll('#myDropdown2');
+              list.forEach((e) => {
+                const sList = createSaveDataPreview(data.save[code]);
+                e.appendChild(sList);});
+            }
+            res (true)
+          }
+        }
+      });
+
+
+      })
+      
+    
+      
+    };
     function createSaveLoad()
     {
-      containerDiv = document.createElement('div');
+      const containerDiv = document.createElement('div');
       containerDiv.id = 'save&load';
       containerDiv.classList.add("saveContainer");
-      saveDiv = document.createElement('div');
-      loadDiv = document.createElement('div');
-      loadContainer = document.createElement('div');
+      const saveDiv = document.createElement('div');
+      const loadDiv = document.createElement('div');
+      const loadContainer = document.createElement('dialog');
       loadContainer.className = 'dropdown2-content not-selectable';
       loadContainer.id = 'myDropdown2';
-
+      loadContainer.addEventListener('click',dialogClickHandler);
       saveDiv.className = 'sbutton';
       loadDiv.className = 'sbutton lbutton';
       saveDiv.textContent = 'Save';
       loadDiv.textContent = 'Load';
       containerDiv.append(loadContainer);
       saveDiv.addEventListener('click',saveStint);
-      loadDiv.addEventListener('click',function(){
-        generateSaveList();
-        this.previousElementSibling.previousElementSibling.classList.toggle('show1');
-
+      loadDiv.addEventListener('click',async function(){
+        const saves =  await generateSaveList();
+        if(saves != 'empty'){
+          const dialog = this.parentElement.querySelector('[id=myDropdown2]');
+          dialog.showModal();
+        }
+        
       });
       containerDiv.appendChild(saveDiv);
       containerDiv.appendChild(loadDiv);
-      generateSaveList();
+       generateSaveList();
 
 
 
@@ -1611,7 +1651,7 @@ async function addSaveButton()
     placeHere.appendChild(createSaveLoad());
   }
 
-  getTrackCode();
+  const code = getTrackCode();
   data = await chrome.storage.local.get('save');
 
   lb = document.querySelectorAll('.lbutton');
@@ -1642,9 +1682,28 @@ function createSaveDataPreview(s)
     const strategyContainer = document.createElement('tr');
     strategyContainer.setAttribute('style','background-color: #dfdfdf;');
     strategyContainer.id = k;
+    //const deleteB = document.createElement('th');
     const deleteB = document.createElement('th');
-    deleteB.textContent = 'del';
-    deleteB.setAttribute('style','background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white');
+    deleteB.innerHTML = `<svg style="color:white!important";
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
+      fill="currentColor"
+    />
+    <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+    <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+  </svg>`;
+   //s deleteB.textContent = 'del';
+    
+    //deleteB.setAttribute('style','background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white');
+    deleteB.classList.add('trash')
     deleteB.addEventListener('click',deleteSave);
     strategyContainer.appendChild(deleteB);
     //download = docum ---------------------------------------------
@@ -1690,18 +1749,29 @@ async function deleteSave()
   data = await chrome.storage.local.get('save');
   delete data.save[code][saveToDelete];
   chrome.storage.local.set({'save':data.save});
-  document.getElementById(saveToDelete).remove();
-  document.getElementById('myDropdown2');
+  document.querySelectorAll(`[id="${saveToDelete}"]`).forEach((save) => {
+    save.remove();
+  });
+  
+  
+  const dialog =  document.getElementById('myDropdown2');
   if(document.getElementById('saveList').childElementCount == 0)
   {
+    dialog.close();
     document.querySelectorAll('.lbutton').forEach((element) => {
       element.className += ' disabled';
     });
   }
   const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  if(isSyncEnabled.gdrive){
-    console.log(saveToDelete)
-    chrome.runtime.sendMessage({type: 'deleteFile', name:saveToDelete+'.json'});
+  if(isSyncEnabled.gdrive){//-------------------------------------------------------------here //to do, send to background and delete there
+    
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getAccessToken();
+    if(token != false){
+    chrome.runtime.sendMessage({type: "deleteFile",data:saveToDelete,token:token.access_token});
+    }
+    
+    //deleteFile(saveToDelete+'.json',token.access_token);
   }
 
 }

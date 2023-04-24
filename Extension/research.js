@@ -1,5 +1,5 @@
 async function enhanceResearchTable() {
-  const { language } = await chrome.storage.local.get({ language: 'eng' });
+  const { language } = await chrome.storage.local.get({ language: 'en' });
   const { language: i18n } = await import(chrome.runtime.getURL('/common/localization.js'));
 
   const observer = new MutationObserver(function (mutations) {

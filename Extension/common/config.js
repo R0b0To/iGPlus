@@ -65,7 +65,7 @@ const tabScripts = {
   '/app/p=race&tab=setup': {
     key: 'setup',
     scripts: ['raceSetup/setups.js'],
-    styles: ['style.css', 'raceSetup/style.css']
+    styles: ['strategy/style.css', 'raceSetup/style.css']
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
@@ -92,8 +92,8 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['strategy.js'],
-    styles: ['style.css']
+    scripts: ['strategy/strategy.js'],
+    styles: ['strategy/style.css']
   },
   '/app/p=league&id=': {
     key: 'league',
@@ -101,7 +101,7 @@ const tabScripts = {
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['reports.js', 'purify.js','lib/gsi.js']
+    scripts: ['reports.js', 'lib/purify.js','lib/gsi.js']
   },
   // main Staff page
   '/app/p=staff&tab=staff': {
