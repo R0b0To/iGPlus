@@ -267,7 +267,6 @@ input[type=checkbox][disabled]+label {
 }
 
 .upload {
-  background-color: #b55827;
   margin: 3px;
   grid-column: 5;
   grid-row: 1;
@@ -304,7 +303,6 @@ input[type="file"] {
   text-align: center;
 }
 #deleteBtn{
-  filter: hue-rotate(251deg);
   margin: 3px;
   cursor: pointer;
   grid-column: 3;

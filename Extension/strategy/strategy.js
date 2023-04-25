@@ -1763,12 +1763,15 @@ async function deleteSave()
     });
   }
   const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  if(isSyncEnabled.gdrive){//-------------------------------------------------------------here //to do, send to background and delete there
+  if(isSyncEnabled.gdrive){
     
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getAccessToken();
     if(token != false){
-    chrome.runtime.sendMessage({type: "deleteFile",data:saveToDelete,token:token.access_token});
+      chrome.runtime.sendMessage({
+        type:'deleteFile',
+        data:{type:'strategies',track:code,name:saveToDelete},
+        token:token.access_token});
     }
     
     //deleteFile(saveToDelete+'.json',token.access_token);

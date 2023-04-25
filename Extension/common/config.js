@@ -77,7 +77,6 @@ const tabScripts = {
     styles: ['race/style.css']
   },
   '/app/p=settings&tab=general': {
-    key: 'settings',
     scripts: ['settings/addSettings.js','lib/gsi.js'],
     styles: ['settings/settings.css']
   },
@@ -92,7 +91,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['strategy/strategy.js'],
+    scripts: ['strategy/strategy.js','lib/gsi.js'],
     styles: ['strategy/style.css']
   },
   '/app/p=league&id=': {

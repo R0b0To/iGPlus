@@ -52,7 +52,7 @@ async function isLocalTokenValid(){
     if(remaining < 0)// if expired
       return false
     const expire_in = difference2Parts(remaining);
-    if(expire_in < 10) //if less than 10 minutes
+    if(expire_in.minutesTotal < 3) //if less than 3 minutes
       return false;
     else // still good to use
       return d.gAuth;

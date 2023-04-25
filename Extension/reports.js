@@ -309,18 +309,23 @@ async function race_report() {
 }
 
 async function storeCopyOfActive(){
- 
+
 
   const report = await chrome.storage.local.get('active_option');
   chrome.storage.local.get('active', function(data) {
     chrome.storage.local.set({[report.active_option]:data.active},async function(){
- const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  if(isSyncEnabled.gdrive){
-    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const { localReportToCloud } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-    const token = await getAccessToken();
-    localReportToCloud(report.active_option,JSON.stringify(data.active),token.access_token);
-  }
+      const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+      if(isSyncEnabled.gdrive){
+        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+        const token = await getAccessToken();
+
+        if(token != false){
+          chrome.runtime.sendMessage({
+            type:'saveReport',
+            data:JSON.stringify(data.active),
+            token:token.access_token}); //TO DO, make single saves, instead of saving all reports
+        }
+      }
     });
 
   });
@@ -420,7 +425,7 @@ async function update_managers(table, index) {
           manager[index].pitTimeLoss.push(pitTime / 1000);
         }
         else
-          manager[index].pitTimeLoss.push("");
+          manager[index].pitTimeLoss.push('');
       }
       else {
         manager[index].rank.push(race_table.rows[i].childNodes[4].innerHTML); //track position

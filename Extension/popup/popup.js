@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   function restore_options() {
 
     chrome.storage.local.get({
-      language: 'eng',
+      language: 'en',
     }, function(items) {
       const code = items.language;
       recapButton.textContent = language[code].popupText.raceRecap;
@@ -465,7 +465,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
         const token = await getAccessToken();
         if(token != false)
-          chrome.runtime.sendMessage({type:'deleteFile',data:opt,token:token.access_token});
+          chrome.runtime.sendMessage({
+            type:'deleteFile',
+            data:{type:'reports',name:opt},
+            token:token.access_token});
       }
       let newOption = 'RaceLRID';
       if(select.length > 0)

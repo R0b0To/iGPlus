@@ -2,10 +2,8 @@
 (async () => {
   if (!document.getElementById('iGPlus')) {
     const { injectIGPlusOptions } = await import(chrome.runtime.getURL('/settings/settingsHTML.js'));
-    await injectIGPlusOptions();
-    handleSettings();
+    injectIGPlusOptions().then( res => {if(res) handleSettings();});
   }
-
 })();
 
 
@@ -37,7 +35,7 @@ function handleSettings() {
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
 
   restoreOptions();
-  
+
 
   languageSelection.addEventListener('change', saveOptions);
 
@@ -177,15 +175,16 @@ function handleSettings() {
 
 
   async function restoreOptions() {
+    console.log('reloading options');
     const { fetchManagerData } = await import( chrome.runtime.getURL('common/fetcher.js') );
 
     const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
     chrome.storage.local.get({ language: false }, async function (selected) {
       let code = selected.language;
       if(selected.language == false){const managerData = await fetchManagerData();
-         (managerData.language == 'en' || managerData.language == 'it') ? code = managerData.language : code = 'en'; }
+        (managerData.language == 'en' || managerData.language == 'it') ? code = managerData.language : code = 'en'; }
 
-      
+
       function setTextToFieldtip(node, option) { node.querySelector('.help').attributes['data-fieldtip'].value = language[code].scriptDescription[option]; }
       function setTextToCheckbox(node, option) { node.querySelector('.text').textContent = language[code].optionsText[option]; }
       //languageSelection.value = code;
@@ -335,44 +334,55 @@ function handleSettings() {
 
       //remove old values in case restore is called
       if (document.getElementById('exportBtn')) {
-        
+
         if(document.getElementById('trackSave'))
           document.getElementById('trackSave').remove();
-      
+
         document.getElementById('deleteBtn').remove();
         document.getElementById('exportBtn').remove();
         document.getElementById('exportSave').replaceChildren();
       }
 
-      function addButton(name,id) {
+      function addButton(name,id,className) {
         const dButton = document.createElement('div');
         dButton.textContent = name;
-        dButton.classList.add('btn', 'fa-download');
+        dButton.classList.add(className, 'fa-download');
         dButton.id = id;
         return dButton;
       }
-      const download_button = addButton('Download','exportBtn');
-      const delete_button = addButton('Delete','deleteBtn');
+      const download_button = addButton('Download','exportBtn','btn');
+      const delete_button = addButton('Delete','deleteBtn','btn3');
 
       if (typeof d.save === 'undefined') {
 
       }
       else {
-        const defaultOption = document.createElement('option');
-        defaultOption.textContent = 'All';
-        defaultOption.value = 0;
-        exportSave.parentElement.append(download_button,delete_button);
-        exportSave.append(defaultOption);
-        Object.keys(d.save).forEach((item) => {
-          if (Object.keys(d.save[item]).length > 0) {
+
+
+        let save_to_display = false;
+        for(const [key,value] of Object.entries(d.save))
+        {
+          if(Object.keys(value).length > 0)
+          {
+            save_to_display = true;
             const option = document.createElement('option');
-            option.textContent = item;
-            option.value = item;
+            option.textContent = key;
+            option.value = key;
             exportSave.append(option);
           }
-        });
+        }
+
+        if(save_to_display){
+          const defaultOption = document.createElement('option');
+          defaultOption.textContent = 'All';
+          defaultOption.value = 0;
+          exportSave.parentElement.append(download_button,delete_button);
+          exportSave.prepend(defaultOption);
+          exportSave.selectedIndex = 0;
+        }
+
         delete_button.addEventListener('click', async function(){
-      
+
           const track = document.getElementById('exportSave').value;
           let token = false;
           const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
@@ -380,32 +390,41 @@ function handleSettings() {
             const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
             token = await getAccessToken();
           }
-          
+
           const strategies = await chrome.storage.local.get('save');
           if(track == 0)
           {
             chrome.storage.local.remove('save');
             if(isSyncEnabled.gdrive)
             {
-              for(const [key,value] of Object.entries(strategies.save))
-                Object.keys(value).forEach((k) => {chrome.runtime.sendMessage({type:'deleteFile',data:k,token:token.access_token});});
+              chrome.runtime.sendMessage({
+                type:'deleteFile',
+                data:{type:'strategies',track:track,name:'delete_strategies'},
+                token:token.access_token});
             }
 
           }else{
-            console.log('deleting',)
+            console.log('deleting',);
             const strategy = document.getElementById('trackSave').value;
             delete strategies.save[track][strategy];
-        
+
             if(Object.keys(strategies.save[track]).length == 0)
               delete strategies.save[track];
-            
+
             chrome.storage.local.set({'save':strategies.save});
 
             if(Object.keys(strategies.save).length == 0)
               chrome.storage.local.remove('save');
-            if(token != false){
-              chrome.runtime.sendMessage({type:'deleteFile',data:strategy,token:token.access_token});
+            if(isSyncEnabled.gdrive)
+            {
+              if(token != false){
+                chrome.runtime.sendMessage({
+                  type:'deleteFile',
+                  data:{type:'strategies',track:track,name:strategy},
+                  token:token.access_token});
+              }
             }
+
 
           }
           restoreOptions();
@@ -461,18 +480,33 @@ function handleSettings() {
 
   async function checkAuth() {
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const ACCESS_TOKEN = await getAccessToken();
-    if (ACCESS_TOKEN == -1 || ACCESS_TOKEN == -2) {
+    const token = await getAccessToken();
+    if (token == -1 || token == -2) {
       mergeStorage('gdrive', false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
       forceSyncBtn.classList.remove('visible');
       //forceSyncBtnDown.classList.remove('visible');
       return false;
     }
-
     const loader = addLoader(document.getElementById('forceSync'));
-    await syncData(false, ACCESS_TOKEN).then(() => { loader.remove(); forceSyncBtn.classList.add('visible'); }); //priority to get first the settings on the cloud
-    return ACCESS_TOKEN;
+    if(token != false)
+    {
+      chrome.runtime.sendMessage({type:'syncData',direction:false,token:token.access_token}, (responce) =>{
+        if(responce.done)
+        {
+          try {
+            loader.remove(); forceSyncBtn.classList.add('visible');
+            restoreOptions();
+          } catch (error) {
+            //user left the page
+          }
+
+        }
+      });
+
+    }
+
+    return token.access_token;
   }
 
   function getStrategyString(saveObject) {
@@ -521,15 +555,19 @@ function handleSettings() {
               importSave.className = 'valid upl';
             }
           });
+
         } else {
           console.log('invalid track');
           importSave.className = 'invalid upl';
         }
+        console.log('test 1');
+        setTimeout(restoreOptions,200);
       } catch (error) {
         console.log('invalid');
         importSave.className = 'invalid upl';
       }
     }
+
   });
 
 
@@ -581,30 +619,28 @@ function handleSettings() {
     const token = await getAccessToken();
     forceSyncBtn.classList.remove('visible');
     const loader = addLoader(this);
-    syncData(true, token).then(() => { loader.remove(); forceSyncBtn.classList.add('visible'); });
 
-  });
-  /*forceSyncBtnDown.addEventListener('click',async function(){
-    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const token = await getAccessToken();
-    forceSyncBtnDown.classList.remove('visible');
-    const loader = addLoader(this);
-    syncData(false,token).then(()=>{loader.remove();forceSyncBtnDown.classList.add('visible');});
+    if(token != false)
+    {
+      chrome.runtime.sendMessage({type:'syncData',direction:true,token:token.access_token}, (responce) =>{
+        if(responce.done)
+        {
+          try {
+            loader.remove();
+            forceSyncBtn.classList.add('visible');
+            restoreOptions();
+          } catch (error) {
+            //user left the page
+          }
 
-  });*/
-  /**
- * sync all data to and from the cloud
- * @param {Boolean} direction true is local to cloud , false is cloud to local
- */
-  async function syncData(direction, token) {
-    const { localToCloud, cloudToLocal } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
-    console.log('token is', token.access_token);
-    if (token != false) {
-      if (direction) { await localToCloud(token.access_token); await cloudToLocal(token.access_token); }
-      else { await cloudToLocal(token.access_token); await localToCloud(token.access_token); }
-      restoreOptions();
+        }
+      });
+
     }
 
-  }
+
+  });
+
+
 
 }
