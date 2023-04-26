@@ -60,7 +60,7 @@ function handleSettings() {
         if (status) {
           checkAuth();
         } else
-          forceSyncBtn.classList.remove('visible');//forceSyncBtnDown.classList.remove('visible');
+          forceSyncBtn.classList.remove('visibleSync');//forceSyncBtnDown.classList.remove('visibleSync');
 
         chrome.storage.local.set({ [scriptName]: status });
       }
@@ -175,7 +175,6 @@ function handleSettings() {
 
 
   async function restoreOptions() {
-    console.log('reloading options');
     const { fetchManagerData } = await import( chrome.runtime.getURL('common/fetcher.js') );
 
     const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
@@ -193,8 +192,8 @@ function handleSettings() {
       document.getElementById('preferences').textContent = language[code].optionsText.preferences;
       separator.previousElementSibling.textContent = language[code].optionsText.separator;
 
-      raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport;
-      overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes;
+      raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
 
       setTextToFieldtip(gsheetCheckbox, 'gsheet');
       setTextToFieldtip(leagueCheckbox, 'leagueHome');
@@ -238,17 +237,19 @@ function handleSettings() {
     }
     );
 
+
+
     chrome.storage.local.get({ 'separator': ',' }, function (data) {
       separator.value = data.separator;
     });
     chrome.storage.local.get('raceSign', function (data) {
       raceSign.querySelector('input').checked = data.raceSign;
-      (data.raceSign) ? raceSign.querySelector('span').textContent += ' ( - )' : raceSign.querySelector('span').textContent += ' ( + )';
+      //(data.raceSign) ? raceSign.querySelector('span').textContent += ' ( - )' : raceSign.querySelector('span').textContent += ' ( + )';
     });
 
     chrome.storage.local.get('overSign', function (data) {
       overSign.querySelector('input').checked = data.overSign;
-      (data.overSign) ? overSign.querySelector('span').textContent += ' ( - )' : overSign.querySelector('span').textContent += ' ( + )';
+      //(data.overSign) ? overSign.querySelector('span').textContent += ' ( - )' : overSign.querySelector('span').textContent += ' ( + )';
     });
 
     chrome.storage.local.get('gLink', function (data) {
@@ -262,12 +263,27 @@ function handleSettings() {
     chrome.storage.local.get('gTrack', function (data) {
       if (typeof data.gTrack != 'undefined') trackName.value = data.gTrack;
     });
-    chrome.storage.local.get('gdrive', function (data) {
+    chrome.storage.local.get('gdrive', async function (data) {
       if (typeof data.gdrive != 'undefined') {
         if (DEBUG) console.log('restoring', data.gdrive);
         gdrive.querySelector('input').checked = data.gdrive;
-        (data.gdrive) ? forceSyncBtn.classList.add('visible') : forceSyncBtn.classList.remove('visible');
-        //(data.gdrive) ? forceSyncBtnDown.classList.add('visible') : forceSyncBtnDown.classList.remove('visible');
+        (data.gdrive) ? forceSyncBtn.classList.add('visibleSync') : forceSyncBtn.classList.remove('visibleSync');
+        //(data.gdrive) ? forceSyncBtnDown.classList.add('visibleSync') : forceSyncBtnDown.classList.remove('visibleSync');
+      }
+      console.log('is visiible',forceSyncBtn.classList.contains('visibleSync'));
+      if(forceSyncBtn.classList.contains('visibleSync'))
+      {
+        const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
+        const syncText = document.getElementById('syncDate')
+        if(!syncText){
+          const dateContainer = document.createElement('div');
+          dateContainer.id = 'syncDate';
+          dateContainer.textContent =`Last Sync: ${dateOfLastSync.syncDate}`;
+          gdrive.append(dateContainer);
+        }else{
+          syncText.textContent =`Last Sync: ${dateOfLastSync.syncDate}`;
+        }
+       
       }
     });
 
@@ -382,7 +398,6 @@ function handleSettings() {
         }
 
         delete_button.addEventListener('click', async function(){
-
           const track = document.getElementById('exportSave').value;
           let token = false;
           const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
@@ -481,11 +496,11 @@ function handleSettings() {
   async function checkAuth() {
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getAccessToken();
-    if (token == -1 || token == -2) {
+    if (token == false) {
       mergeStorage('gdrive', false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
-      forceSyncBtn.classList.remove('visible');
-      //forceSyncBtnDown.classList.remove('visible');
+      forceSyncBtn.classList.remove('visibleSync');
+      //forceSyncBtnDown.classList.remove('visibleSync');
       return false;
     }
     const loader = addLoader(document.getElementById('forceSync'));
@@ -495,7 +510,7 @@ function handleSettings() {
         if(responce.done)
         {
           try {
-            loader.remove(); forceSyncBtn.classList.add('visible');
+            loader.remove(); forceSyncBtn.classList.add('visibleSync');
             restoreOptions();
           } catch (error) {
             //user left the page
@@ -560,7 +575,6 @@ function handleSettings() {
           console.log('invalid track');
           importSave.className = 'invalid upl';
         }
-        console.log('test 1');
         setTimeout(restoreOptions,200);
       } catch (error) {
         console.log('invalid');
@@ -617,7 +631,7 @@ function handleSettings() {
   forceSyncBtn.addEventListener('click', async function () {
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getAccessToken();
-    forceSyncBtn.classList.remove('visible');
+    forceSyncBtn.classList.remove('visibleSync');
     const loader = addLoader(this);
 
     if(token != false)
@@ -627,7 +641,7 @@ function handleSettings() {
         {
           try {
             loader.remove();
-            forceSyncBtn.classList.add('visible');
+            forceSyncBtn.classList.add('visibleSync');
             restoreOptions();
           } catch (error) {
             //user left the page
@@ -637,10 +651,17 @@ function handleSettings() {
       });
 
     }
+    else{
+      //alert('user closed popup')
+      loader.remove();
+      forceSyncBtn.classList.add('visibleSync');
+    }
 
 
   });
 
-
+  function syncDate(){
+    const date = new Date();
+  }
 
 }

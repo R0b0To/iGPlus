@@ -1098,10 +1098,8 @@ function removeStints(minusDiv)
   var driver = minusDiv.closest('form');
   totalStintNumber = driver.getElementsByClassName('tyre')[0].querySelectorAll('td[style*="visibility: visible"]').length;
 
-  //console.log("--------"+totalStintNumber);
   if(totalStintNumber <= 5)
   {
-    //console.log("removing style");
     minusDiv.nextElementSibling.nextElementSibling.setAttribute('style','background-color:#6c7880');
     minusDiv.nextElementSibling.nextElementSibling.className = 'plus';
     minusDiv.nextSibling.nextElementSibling.nextElementSibling.style.visibility = 'hidden';
@@ -1383,14 +1381,10 @@ async function saveStint()
   const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
   if(isSyncEnabled.gdrive){
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const { localStrategyToCloud } = await import(chrome.runtime.getURL('/auth/gDriveHelper.js'));
     const token = await getAccessToken();
     if(token != false)
-    {
-      const response = await chrome.runtime.sendMessage({type: "saveStrategy",data:{name:s,track:code,strategy:saveData},token:token.access_token});
-      //localStrategyToCloud({name:s,track:code,data:saveData},token.access_token);
-    }
-    
+      await chrome.runtime.sendMessage({type: "saveStrategy",data:{name:s,track:code,strategy:saveData},token:token.access_token});
+  
   }
 
 }

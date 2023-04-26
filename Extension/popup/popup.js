@@ -1,17 +1,8 @@
 document.addEventListener('DOMContentLoaded', async function() {
   const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
-  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  let separator;
-  const data = await chrome.storage.local.get({separator:','});
-
-  if(typeof data == 'undefined')
-  {
-    //firefox browser.storage works with await
-    const data2 = await browser.storage.local.get({separator:','});
-    separator = data2.separator;
-  }
-  else
-    separator = data.separator;
+  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false}) ?? await browser.storage.local.get({'gdrive':false});
+  const data = await chrome.storage.local.get({separator:','}) ?? await browser.storage.local.get({separator:','}) ?? false;
+  const  separator =  data.separator;
 
   const startOvertakes = document.getElementById('start');
   const deleteButton = document.getElementById('delete');
@@ -56,7 +47,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   async function disableButton(yes)
   {
-
     if(yes){
       recapButton.disabled = true;
       averageButton.disabled = true;
@@ -428,14 +418,10 @@ document.addEventListener('DOMContentLoaded', async function() {
       if(!typeof data.active === 'undefined')
       {
         chrome.storage.local.set({[data.active_option]:data.active}, function() {
-          console.log('saving :' + data.active_option);
         }); //saving selected
 
 
       }
-
-      // = select.options[select.selectedIndex].text+"LRID";
-
 
       const option = document.createElement('option');
       option.textContent = leagueName;
@@ -453,34 +439,41 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   //------------------------------------------------------------------------------delete----------------------------------------------
   deleteButton.addEventListener('click', function(){
-
+    const is_report_to_be_deleted_empty = document.querySelector('.button:disabled') ? true : false;
     toggleText(false);
+    chrome.storage.local.remove('active');
+    chrome.storage.local.remove('active_option');
 
     let opt = 'RaceLRID';
-    if(select.length > 0)  opt = select.selectedOptions[0].textContent + 'LRID';  else  return; //alert('nothing to delete');
+    if(select.length > 0)  opt = select.selectedOptions[0].textContent + 'LRID';
+    else {
+      disableButton(true);
+      return;
+    }  //alert('nothing to delete');
 
     chrome.storage.local.remove(opt, async function() {
       select.remove(select.selectedIndex);
-      if(isSyncEnabled.gdrive){
-        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-        const token = await getAccessToken();
-        if(token != false)
-          chrome.runtime.sendMessage({
-            type:'deleteFile',
-            data:{type:'reports',name:opt},
-            token:token.access_token});
-      }
+      if(!is_report_to_be_deleted_empty)
+        if(isSyncEnabled.gdrive){
+        //can't get request on extension domain. This works only if the token is already stored locally
+          const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+          const token = await getAccessToken() ?? false;
+          if(token != false)
+            chrome.runtime.sendMessage({
+              type:'deleteFile',
+              data:{type:'reports',name:opt},
+              token:token.access_token});
+        }
       let newOption = 'RaceLRID';
       if(select.length > 0)
         newOption = select.selectedOptions[0].textContent + 'LRID';
-      else
-      {
-        chrome.storage.local.remove('active');
+      else{
+        disableButton(true);
         return;
       }
 
-      chrome.storage.local.get(newOption, function(reportData) {
 
+      chrome.storage.local.get(newOption, function(reportData) {
         let is_save_empty = true;
         (reportData[newOption] == 0 || reportData[newOption] == 'undefined') ? is_save_empty = true : is_save_empty = false;
 

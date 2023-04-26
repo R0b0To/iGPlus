@@ -305,7 +305,7 @@ input[type="file"] {
 #deleteBtn{
   margin: 3px;
   cursor: pointer;
-  grid-column: 3;
+  grid-column: 4;
   grid-row: 1;
   text-align: center;
   width: 95px;
@@ -313,13 +313,15 @@ input[type="file"] {
 #exportBtn {
   margin: 3px;
   cursor: pointer;
-  grid-column: 4;
+  grid-column: 3;
   grid-row: 1;
   text-align: center;
   width: 95px;
 }
-
-.visible {
+#syncDate{
+  font-size: x-small;
+}
+.visibleSync {
   margin-left: 3px;
   cursor: pointer;
   display: block !important;

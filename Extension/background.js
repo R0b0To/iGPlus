@@ -12,7 +12,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   }
   //changed to allow execution of only one instance of the same script
   if (tab_status === 'complete' && pathname != scriptRunning) {
-    console.log('path',pathname)
     // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
       const enabledScripts = data.script;
@@ -35,7 +34,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
  * @param {string[]} scriptFiles
  */
 function injectScripts(tabId, scriptFiles) {
-  console.log('exec',scriptFiles)
   chrome.scripting.executeScript(
     {
       target: { tabId },
@@ -64,37 +62,22 @@ async function injectStyles(tabId, styleFiles) {
 
 //cloud requests will be made in the baackground
 chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
-  console.log(request);
+  //console.log('sent request',request);
   (async function () {
-    console.log(request);
     if (request.type === 'deleteFile')
-    {
-      console.log('deleting',request.data,'from google drive')
       await deleteElement(request.data.type+'.json',{name:request.data.name,track:request.data.track},request.token);
-    }
+
     if (request.type === 'saveStrategy')
-    {
-      console.log('adding',request.data,'to google drive')
       await localStrategiesToCloud({name:request.data.name,track:request.data.track,data:request.data.strategy,token:request.token});
-     
-    }
+
     if (request.type === 'syncData')
-    {
-      console.log('doing syncs')
-      //console.log('adding',request.data,'to google drive')
       await fullSync(request.direction,request.token);
-      
-    }
+
     if (request.type === 'saveReport')
-    {
-      console.log('doing saveReport')
-      //console.log('adding',request.data,'to google drive')
       await localReportsToCloud({token:request.token,data:request.data});
-      
-    }
+    
     sendResponse({done:true})
 
- 
   })();
      return true
       

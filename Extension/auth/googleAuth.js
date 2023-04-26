@@ -1,20 +1,7 @@
 //needs gsi library
-
 const CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
 
-function initGSI(){
-  function handleCallbackResponce(res){    console.log('token' + res.credential);}
-  google.accounts.id.initialize({
-    client_id: CLIENT_ID,
-    callback : handleCallbackResponce
-  });
-
-  //google.accounts.id.renderButton(document.getElementById('signIN'),{theme:"outline",size:"large"});
-  google.accounts.id.prompt();
-}
-
 async function getAccessToken(){
-  //initGSI();
   const local_access_token = await isLocalTokenValid();
   if(local_access_token != false)
     return local_access_token;
@@ -25,7 +12,7 @@ async function getAccessToken(){
       prompt:'',
       scope: 'https://www.googleapis.com/auth/drive.file',
       callback : (tokenRes) => {
-        console.log('responce is',tokenRes);
+        //console.log('responce is',tokenRes);
         saveAccessToken(tokenRes);
         resolve(tokenRes);
       },
@@ -33,7 +20,6 @@ async function getAccessToken(){
     }).requestAccessToken();
   });
   return responce;
-
 }
 
 export{
@@ -45,7 +31,7 @@ function saveAccessToken(token){
   chrome.storage.local.set({'gAuth':{access_token:token.access_token,expire_date:expire_date}});
 }
 async function isLocalTokenValid(){
-  const d = await chrome.storage.local.get({'gAuth':false});
+  const d = await chrome.storage.local.get({'gAuth':false}) ?? await browser.storage.local.get({'gAuth':false}) ;
   if(d.gAuth != false)
   {
     const remaining = d.gAuth.expire_date - new Date();
@@ -64,6 +50,5 @@ async function isLocalTokenValid(){
 function difference2Parts(milliseconds) {
   const secs = Math.floor(Math.abs(milliseconds) / 1000);
   const mins = Math.floor(secs / 60);
-  console.log('expire in',mins,'m');
   return {minutesTotal: mins};
 }

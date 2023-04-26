@@ -7,6 +7,20 @@ function addDescription(description) {
   descriptionSpan.setAttribute('data-fieldtip', description);
   return descriptionSpan;
 }
+function createInputField(id, name) {
+  const container = create('div');
+  container.classList.add('inputField');
+  const label = create('div');
+  label.classList.add('text');
+  label.textContent = name;
+  const input = create('input');
+  input.id = id;
+  input.type = 'text';
+  label.setAttribute('for', id);
+  input.placeholder = name;
+  container.append(label, input);
+  return container;
+}
 function createScriptCheckbox(id, name) {
   const optionContainer = create('div');
   optionContainer.classList.add('checkbox-wrapper');
@@ -28,7 +42,6 @@ function createScriptCheckbox(id, name) {
   return optionContainer;
 }
 function injectIGPlusOptions() {
-  console.log('adding settings');
   return new Promise((res) => {
     try {
       const generalContainer = document.getElementById('general');
@@ -114,20 +127,7 @@ function injectIGPlusOptions() {
       //legendGoogleSheetContainer.setAttribute('data-fieldtip','Import google data to be displayed in the strategy page below the advanced options');
 
 
-      function createInputField(id, name) {
-        const container = create('div');
-        container.classList.add('inputField');
-        const label = create('div');
-        label.classList.add('text');
-        label.textContent = name;
-        const input = create('input');
-        input.id = id;
-        input.type = 'text';
-        label.setAttribute('for', id);
-        input.placeholder = name;
-        container.append(label, input);
-        return container;
-      }
+
       const linkContainer = createInputField('link', 'Link:');
       const trackIdContainer = createInputField('track', 'Track ID column header');
       const sheetNameContainer = createInputField('sname', 'Sheet Name:');
@@ -169,23 +169,22 @@ function injectIGPlusOptions() {
       const gdrive = create('fieldset');
       const forceSync = create('span');
       forceSync.classList.add('btn');
-      forceSync.textContent = 'Upload';
+      forceSync.textContent = 'Sync Now';
       forceSync.style.display = 'none';
       forceSync.id = 'forceSync';
 
-      /* const forceSyncDown = create('span');
-    forceSyncDown.classList.add('btn');
-    forceSyncDown.textContent = 'Download';
-    forceSyncDown.style.display = 'none';
-    forceSyncDown.id = 'forceSyncDown';*/
-      gdrive.append(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync'), forceSync));
+      gdrive.append(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync (Google Drive)'), forceSync));
       //#endregion
 
       const mainContainer = create('div');
+      //Here the menu order
       mainContainer.append(preferencesContainer, scriptsContainer, strategiesContainer, googleSheetContainer, gdrive);
       mainContainer.id = 'iGPlus';
-      generalContainer.append(mainContainer);
-      res((true));
+      if (!document.getElementById('iGPlus')) {
+        generalContainer.append(mainContainer);
+        res((true));
+      }else
+        res(false);
     } catch (error) {
       console.log(error);
       res(false);
