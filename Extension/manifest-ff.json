@@ -6,11 +6,6 @@
   "icons": {
     "128": "./images/Icon128.png"
   },
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "iGPlus@mozz.info"
-    }
-  },
   "background": {
     "page": "background.html"
   },
@@ -21,7 +16,6 @@
   },
   "permissions": [
     "tabs",
-    "identity",
     "storage",
     "scripting",
     "*://igpmanager.com/*",

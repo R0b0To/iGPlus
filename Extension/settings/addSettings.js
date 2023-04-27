@@ -45,12 +45,10 @@ function handleSettings() {
 
   function addCheckEvent(checkbox) {
     //add event listener to checkbox that stores the checkbox status, passing the script name (id)
-    if (DEBUG) console.log('adding click event to', checkbox.closest('div'));
     checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('div').id, checkbox.checked));
   }
 
   async function scriptCheck(scriptName, status) {
-    if (DEBUG) console.log('saving status of:', scriptName, status);
     if (scriptName == 'overSign' || scriptName == 'raceSign') {
       chrome.storage.local.set({ [scriptName]: status });
       restoreOptions();
@@ -265,12 +263,10 @@ function handleSettings() {
     });
     chrome.storage.local.get('gdrive', async function (data) {
       if (typeof data.gdrive != 'undefined') {
-        if (DEBUG) console.log('restoring', data.gdrive);
         gdrive.querySelector('input').checked = data.gdrive;
         (data.gdrive) ? forceSyncBtn.classList.add('visibleSync') : forceSyncBtn.classList.remove('visibleSync');
         //(data.gdrive) ? forceSyncBtnDown.classList.add('visibleSync') : forceSyncBtnDown.classList.remove('visibleSync');
       }
-      console.log('is visiible',forceSyncBtn.classList.contains('visibleSync'));
       if(forceSyncBtn.classList.contains('visibleSync'))
       {
         const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
@@ -292,7 +288,6 @@ function handleSettings() {
 
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
       Object.keys(scriptDefaults).forEach((item) => {
-        if (DEBUG) console.log('restoring checked status of', item, 'with', data.script[item]);
         let checkedStatus = data.script[item];
 
         if (item == 'gdrive' && checkedStatus) checkAuth();
@@ -419,7 +414,6 @@ function handleSettings() {
             }
 
           }else{
-            console.log('deleting',);
             const strategy = document.getElementById('trackSave').value;
             delete strategies.save[track][strategy];
 
@@ -572,12 +566,10 @@ function handleSettings() {
           });
 
         } else {
-          console.log('invalid track');
           importSave.className = 'invalid upl';
         }
         setTimeout(restoreOptions,200);
       } catch (error) {
-        console.log('invalid');
         importSave.className = 'invalid upl';
       }
     }

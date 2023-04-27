@@ -7,18 +7,13 @@
   "permissions": [
     "tabs",
     "storage",
-    "scripting",
-    "identity"
+    "scripting"
   ],
   "action": {
     "default_icons": {
       "128": "images/Icon128.png"
     },
     "default_popup": "popup/popup.html"
-  },
-  "oauth2": {
-    "client_id": "771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com",
-    "scopes": ["https://www.googleapis.com/auth/drive.file"]
   },
   "background": {
     "service_worker": "background.js",
