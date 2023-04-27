@@ -1,10 +1,35 @@
 const language = {
-  eng: {
+  en: {
     optionsText:{
-      signOption: 'Invert Report Sign',
+      preferences: 'iGPlus Settings',
       languageText: 'Language',
-      RaceReport: 'Race Report',
-      StartOvertakes: 'End lap2 Overtakes',
+      RaceReport: 'Race Report Sign',
+      StartOvertakes: 'End lap2 Overtakes Sign',
+      separator: 'Custom Separator',
+      home: 'Home Shortcuts',
+      leagueHome: 'League',
+      research:'Cars design',
+      training:'Training',
+      staff:'My Staff',
+      staffMarket:'Staff Transfer Market',
+      driverMarket:'Driver Transfer Market',
+      raceStrategy:'Race Strategy',
+      slider:'Slider',
+      edit:'Editable',
+      raceSetup:'Race Setup',
+      carOverview:'Car Overview',
+      hqLevel:'HQ Level Labels',
+      academyTimer:`Driver's Academy Auto-Refresh`,
+      reports:'Reports',
+      advancedHis:'Advanced History',
+      verticalSponsor:'Vertical Sponsor',
+      strategies:'Strategies',
+      export:'Export',
+      link:'Link:',
+      track:'Track ID column header',
+      sheetName:'Sheet Name',
+      cloudSync:'Cloud Sync'
+
     },
     popupText:{
       saveText: 'Save',
@@ -14,6 +39,8 @@ const language = {
       newRace: 'New Race',
       downloadText: 'Download',
       copyText: 'Copy',
+      raceRecap: 'Race Recap',
+      startOvertakes:'End lap 2 Overtakes'
     },
     fuelText: 'Fuel',
     lapText: 'Lap',
@@ -33,15 +60,41 @@ const language = {
       marketDriver: 'Adds a talent column in the driver transfer market',
       carOverview: 'Enable review button (design research) during a live race',
       academyTimer: 'Add youth academy countdown. It will be placed as a notification beside the HQ menu option',
-      reports: 'Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs'
+      reports: 'Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs',
+      history: 'Add track characteristics to the race history page',
+      sponsor: 'Display sponsor options vertically'
     }
   },
-  ita: {
+  it: {
     optionsText:{
-      signOption: 'Inverti Segno Dei Resoconti',
+      preferences: 'Impostazioni iGPlus',
       languageText: 'Lingua',
-      RaceReport: 'Resoconto gara',
-      StartOvertakes: 'Sorpassi fine 2° giro',
+      RaceReport: 'Segno Resoconto gara',
+      StartOvertakes: 'Segno Sorpassi fine 2° giro',
+      separator: 'Separatore di elenco',
+      home: 'Scorciatoie nella home page',
+      leagueHome: 'Campionato',
+      research:'Sviluppo Auto',
+      training:'Allenamento',
+      staff:'Staff',
+      staffMarket:'Trasferimenti Staff',
+      driverMarket:'Trasferimenti Piloti',
+      raceStrategy:'Strategia Gara',
+      slider:'Slider',
+      edit:'Editabile',
+      raceSetup:'Setup Gara',
+      carOverview:'Recensione Auto',
+      hqLevel:'Livello Strutture Nella Sede Centrale',
+      academyTimer:`Aggiornamento Automatico Dell'Accademia`,
+      reports:'Resoconti',
+      advancedHis:'Caratteristiche Del Circuito Nello Storico Gare',
+      verticalSponsor:'Visualizza Sponsors in Verticale',
+      strategies:'Strategie',
+      export:'Esporta',
+      link:'Link:',
+      track:'Nome colonna dei circuiti',
+      sheetName:'Nome Foglio',
+      cloudSync:'Cloud Sync'
     },
     popupText:{
       saveText: 'Salva',
@@ -51,6 +104,8 @@ const language = {
       newRace: 'Nuova gara',
       downloadText: 'Scarica',
       copyText: 'Copia',
+      raceRecap: 'Resoconto Gara',
+      startOvertakes:'Sorpassi a fine 2° giro'
     },
     fuelText: 'Carburante',
     lapText: 'Giri',
@@ -70,7 +125,9 @@ const language = {
       marketDriver: 'Rivela forza e debolezza del CD nel mercato trasferimenti',
       carOverview: 'Il pulsante di ricerca diventa disponibile anche durante una gara in corso',
       academyTimer: 'Aggiunge il timer dell\'accademia piloti nel menu laterale oltre ad aggiornare il timer in automatico',
-      reports: 'Aggiunge il pulsante per estrarre i dati delle gare di ogni pilota, il CVS della qualifica e gara con i nomi delle squadre'
+      reports: 'Aggiunge il pulsante per estrarre i dati delle gare di ogni pilota, il CVS della qualifica e gara con i nomi delle squadre',
+      history: 'Aggiunge caratteristiche del circuito nella pagina storico gare',
+      sponsor: 'Visualizzare la scelta degli sponsor in senso verticale'
     }
   }
 };

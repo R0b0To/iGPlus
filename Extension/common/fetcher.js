@@ -10,6 +10,8 @@ And some abstraction on the top of fetch mechanism and error handling
 const getBuildingInfoUrl = (id) => `action=fetch&d=facility&id=${id}`;
 const getStaffUrl = (id) => `action=fetch&d=staff&id=${id}`;
 const getDriverUrl = (id) => `action=fetch&d=driver&id=${id}`;
+const getTeamUrl = (id) => `action=fetch&d=profile&team=${id}`;
+const getRaceUrl = (id) => `action=fetch&d=resultDetail&id=${id}`;
 
 async function getData(itemLocator, isThirdParty = false) {
   let url = `${baseUrl}?${itemLocator}&csrfName=&csrfToken=`;
@@ -73,6 +75,20 @@ function fetchStaffInfo(personId) {
 function fetchDriverInfo(personId) {
   return getData(getDriverUrl(personId));
 }
+/**
+ * @param {string} personId
+ * @returns {Promise<Object|null>}
+ */
+function fetchTeamInfo(personId) {
+  return getData(getTeamUrl(personId));
+}
+/**
+ * @param {string} personId
+ * @returns {Promise<Object|null>}
+ */
+function fetchRaceReportInfo(personId) {
+  return getData(getRaceUrl(personId));
+}
 
 /**
  * @returns {Promise<{nextLeagueRaceTime: number}|null>}
@@ -89,12 +105,20 @@ function fetchManagerData() {
   return getData(managerUrl);
 }
 
+function fetchLeagueData(leagueId) {
+  const leagueUrl = `action=fetch&p=league&id=${leagueId}`;
+  return getData(leagueUrl);
+}
+
 export {
   fetchBuildingInfo,
+  fetchLeagueData,
   fetchManagerData,
   fetchNextRace,
   fetchRaceWeather,
   fetchIGPRaceWeather,
   fetchStaffInfo,
-  fetchDriverInfo
+  fetchDriverInfo,
+  fetchTeamInfo,
+  fetchRaceReportInfo
 };

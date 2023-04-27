@@ -24,14 +24,14 @@ function getWear(tyre,laps){
   const tyreWear  = tyreWearFactors[tyre] || 0.5;
   const t = (1.43 * eco.te ** -0.0778) * (0.00364 * track_info().wear + 0.354) * track_info().length * 1.384612 * multiplier * tyreWear;
   //calculate stint wear
-  stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
-  stint2 = (1 - (1 * ((t) + (0.0212 * laps - 0.00926) * track_info().length) / 100));
-  for(j = 1 ; j < laps ; j++)
+  const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
+  let stint2 = (1 - (1 * ((t) + (0.0212 * laps - 0.00926) * track_info().length) / 100));
+  for(let j = 1 ; j < laps ; j++)
   {
     stint2 *= (1 - (1 * ((t) + (0.0212 * j - 0.00926) * track_info().length) / 100));
   }
   stint2 = stint2 * 100;
-  average = ((stint + stint2) / 2).toFixed(2);
+  const average = ((stint + stint2) / 2).toFixed(2);
   return average;
 }
 function track_info(){
@@ -65,15 +65,15 @@ function track_info(){
 
 (async function main(){
 
-  const {language}  = await chrome.storage.local.get({ language: 'eng' });
+  const {language}  = await chrome.storage.local.get({ language: 'en' });
   const {language: i18n}  = await import(chrome.runtime.getURL('/common/localization.js'));
 
   function savePush(tbody){
     // console.log('saving');
-  
+
     const newPL = tbody.querySelectorAll('[class^=PL]');
     const pushes = document.querySelectorAll('[class^=PL]');
-  
+
     let pl = [];
     pl.push(tbody.getElementsByClassName('PL1')[0].value);
     pl.push(tbody.getElementsByClassName('PL2')[0].value);
@@ -81,7 +81,7 @@ function track_info(){
     pl.push(tbody.getElementsByClassName('PL4')[0].value);
     pl.push(tbody.getElementsByClassName('PL5')[0].value);
     const fe = tbody.getElementsByClassName('PLFE')[0].value;
-  
+
     eco.fuel = fuel_calc(parseInt(fe));
 
     //get the push value from all the select elements
@@ -98,7 +98,7 @@ function track_info(){
       feToolTip[i].textContent =  i18n[language].pushDescriptionPart1 + ((fuel_calc(fe) * track_info().length).toFixed(3)) + ' ' + i18n[language].pushDescriptionPart2;
     }
     chrome.storage.local.set({'pushLevels':pl}, function() {
-  
+
     });
     for(var j = 0 ; j < 5 ; j++)
     {
@@ -115,10 +115,10 @@ function track_info(){
   }
   async function injectAdvancedStint(){
     dstrategy = document.getElementsByClassName('fuel');
-  
+
     Object.keys(dstrategy).forEach(async driver =>{
       strategyIDNumber = dstrategy[driver].closest('form').id[1];
-  
+
       //add fuel div if the race is no refuel
       if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length > 2)
       {
@@ -129,25 +129,25 @@ function track_info(){
         if(placement.childElementCount < 2)
           placement.append(elem);
       }
-  
-  
+
+
       Promise.all([createWearRow(dstrategy[driver]),createPushRow(dstrategy[driver])]).then((test) => {
         //after wear and push rows are generated execute this
         update_stint(dstrategy[driver].cells[1]);
-  
-  
+
+
       });
-  
-  
+
+
     });
-  
+
     if(document.body.getAttribute('boxEvent') == null)
     {
       document.body.removeEventListener('click',handleClickOutsidePushBox,false);
       document.body.addEventListener('click',handleClickOutsidePushBox,false);
-  
+
     }
-  
+
     function handleClickOutsidePushBox(event) {
       document.body.setAttribute('boxEvent', true);
       const box = document.getElementsByClassName('not-selectable');
@@ -155,17 +155,17 @@ function track_info(){
       Object.keys(box).forEach(key => {
         //console.log(box[key].closest('th').contains(event.target));
         if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
-  
+
           if( box[key].classList)
             box[key].classList.remove('show');
           box[key].nextElementSibling.classList.remove('show');
-  
+
           savePush(box[key].closest('tbody'));
           //updateFuel(box[key].closest('tbody'));
         }
       });
     }
-  
+
     function createPushRow(strategy)
     {
       return new Promise((resolve, reject) => {
@@ -184,7 +184,7 @@ function track_info(){
             this.nextSibling.classList.toggle('show');
             this.nextSibling.nextSibling.classList.toggle('show');
             //savePush();
-  
+
           });
           pushButtonHeader.append(pushButton);
           var pushDiv = document.createElement('div');
@@ -208,7 +208,7 @@ function track_info(){
           row_name = pushButtonHeader;
           row_name.setAttribute('style', 'color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;');
           pushEle.append(row_name);
-  
+
           for (var i = 1; i < strategy.childElementCount; i++) {
             var stint = document.createElement('td');
             var pushSelect = document.createElement('select');
@@ -227,27 +227,27 @@ function track_info(){
             stint.append(pushSelect);
             stint.style.visibility = strategy.childNodes[i].style.visibility;
             pushEle.append(stint);
-  
+
           }
           if (strategy.parentElement.querySelector('[pushevent=true]') == null) {
             strategy.parentElement.insertBefore(pushEle, strategy.parentElement.childNodes[5]);
-  
+
             resolve(`driver ${strategy.closest('form').id[1]} push is done`);
           }
         });
-  
-  
-  
+
+
+
         function createPushElement(i, value, step) {
           var pushInputDiv = document.createElement('div');
           pushInputDiv.className = 'pushDiv';
-  
+
           var pushInputLabel = document.createElement('div');
           pushInputLabel.textContent = i;
           pushInputLabel.setAttribute('style', 'font-size: 0.8rem; color:white;align-self:center;height:100%;display: flex;width:42px;justify-content: center;align-items: center;');
-  
+
           var pushInputDown = document.createElement('div');
-  
+
           var  textSpan = document.createElement('span');
           textSpan.textContent = '−';
           pushInputDown.append(textSpan);
@@ -255,34 +255,34 @@ function track_info(){
           pushInputDown.addEventListener('click', function () {
             this.parentNode.querySelector('input[type=number]').stepDown();
           });
-  
+
           var pushInput = document.createElement('input');
           pushInput.className = 'PL' + i + ' pushInput';
           pushInput.type = 'number';
           pushInput.step = step; '0.001';
           //pushInput.setAttribute("style", "margin: 9px;");
-  
+
           if (i == 'FE')
             pushInput.value = value;
           else
             pushInput.value = pushToUse[i - 1];
-  
-  
+
+
           var pushInputUp = document.createElement('div');
           pushInputUp.className = 'pushPlusMin';
-  
+
           var  textSpan = document.createElement('span');
           textSpan.textContent = '+';
           pushInputUp.append(textSpan);
           pushInputUp.addEventListener('click', function () {
             this.parentNode.querySelector('input[type=number]').stepUp();
           });
-  
+
           pushInputDiv.append(pushInputLabel);
           pushInputDiv.append(pushInputDown);
           pushInputDiv.append(pushInput);
           pushInputDiv.append(pushInputUp);
-  
+
           return pushInputDiv;
         }
       });
@@ -313,14 +313,15 @@ function track_info(){
         }
       });
     }
-  
+
   }
-  
+
 
   try {
 
     if (document.getElementById('igpXvars') == null) {
 
+      document.body.append();
       //extract league id from page
       league = document.querySelector('#mLeague').href;
       league_id = /(?<=id=).*/gm.exec(league)[0];
@@ -333,24 +334,25 @@ function track_info(){
             rules = data.vars.rules;
             var league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(rules)[0];
             const multipliers = { 100: 1, 75: 1.33, 50: 1.5, 25: 3 };
-            multiplier = multipliers[league_length] || 1; //<-------------------------------multiplier
+            multiplier = multipliers[league_length] || 1; //<-------------------------------multiplier (important, used globally)
             fetch('https://igpmanager.com/index.php?action=fetch&p=cars&csrfName=&csrfToken=')
               .then(response => response.json())
               .then(data => {
                 const fuel_eco = data.vars.fuel_economyBar;
                 const tyre_eco = data.vars.tyre_economyBar;
                 const fuel = fuel_calc(fuel_eco);
-                
-   
-                        
-                eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy
-                
+
+
+                eco = {'fuel':fuel,'fe':fuel_eco,'te':tyre_eco}; //<-------------------------------economy (important, used globally)
+
                 injectAdvancedStint();
                 injectCircuitMap();
                 readGSheets();
                 addMoreStints();
                 addSaveButton();
                 addWeatherInStrategy();
+                if(document.getElementById('eventAdded') == null)
+                  dragStint();
                 chrome.storage.local.get('script',async function(d){
                   if(d.script.sliderS)
                     addFuelSlider();
@@ -444,6 +446,200 @@ function track_info(){
 
 })();
 
+function getColumnElements(elementOfColumn){
+  const index = (elementOfColumn.cellIndex + 1) || (elementOfColumn.closest('td').cellIndex + 1) ;
+  const column = elementOfColumn.closest('tbody').querySelectorAll(`th:nth-child(${index}),td:nth-child(${index}):not(.loadStint)`);
+  return column;
+}
+function dropzoneEnter(e){
+  const column = getColumnElements(e.target);
+  column.forEach(c => c.classList.add('accept'));
+}
+function dropzoneLeave(e){
+  const column = getColumnElements(e.target);
+  column.forEach(c => c.classList.remove('accept'));
+}
+
+function dragStint(){
+
+  if(document.getElementById('eventAdded') == null){
+    const eventa = document.createElement('h1');
+    eventa.id = 'eventAdded';
+    eventa.style.display = 'none';
+    document.getElementsByClassName('fuel')[0].parentElement.parentElement.append(eventa);
+    const plusMinus = document.querySelectorAll('form[id$=strategy] .plus,form[id$=strategy] .minus');
+    plusMinus.forEach(button => {
+      button.addEventListener('click',addEvent,true);
+      button.addEventListener('touchstart',addEvent,true);
+  });
+    
+  }
+addEvent();
+  function addEvent(){
+    //waiting in case new stint is created
+    setTimeout(()=>{
+       const strategies = document.getElementsByClassName('fuel');
+    const driver = [];
+    let visibleStints = [];
+
+    for(strategy of strategies){
+      driver.push(strategy.closest('tbody').firstChild); 
+    }
+    driver.forEach(stintRow =>{
+      stintRow.querySelectorAll('th:not(:first-child)').forEach(th => {
+        th.classList.remove('dragMe');
+        th.removeEventListener('mousedown',dragMousedown,true);
+        th.removeEventListener('touchstart',dragMousedown,true);
+      });
+      visibleStints = visibleStints.concat(getVisibleStints(stintRow));
+    });
+
+    let info = null;
+    visibleStints.forEach(th => {
+      th.addEventListener('mousedown',dragMousedown,true);
+      th.addEventListener('touchstart',dragMousedown,true);
+      th.classList.add('dragMe');
+    });
+    },100)
+   
+
+
+  }
+
+}
+
+function getStintInfo(stintColumn){
+
+  const tyre = stintColumn[1].querySelector('input').value;
+  const fuel = stintColumn[2].querySelector('input').value;
+  const laps = stintColumn[2].querySelector('span').textContent;
+  const push = stintColumn[3].querySelector('select').selectedIndex;
+
+  return {tyre,fuel,push,laps};
+}
+function setStintInfo(stintColumn,tyre,fuel,push,laps){
+  stintColumn[1].querySelector('input').value = tyre;
+  stintColumn[1].className = 'ts-' + tyre;
+  stintColumn[1].setAttribute('data-tyre',tyre);
+  stintColumn[2].querySelector('span').textContent = laps;
+  stintColumn[2].querySelectorAll('input')[0].value = fuel;
+  stintColumn[2].querySelectorAll('input')[1].value = laps;
+  stintColumn[3].querySelector('select').selectedIndex = push;
+
+}
+function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
+  while((c=c.parentNode)&&c!==p); 
+  return !!c; 
+}
+function closeDragElement(e) {
+  let isChild = false;
+  const pointerOnTop = document.elementFromPoint(e.clientX, e.clientY);
+  const strat = document.getElementsByClassName('strategy');
+  
+  for(s of strat){
+    if (childOf(pointerOnTop,s))isChild=true;
+  }
+
+  //try to set new info
+  try {
+    if(isChild){
+      setStintInfo(getColumnElements(pointerOnTop),info.tyre,info.fuel,info.push,info.laps);
+      update_stint((pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex])||(pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.closest('td').cellIndex]));
+    }
+    
+  } catch (error) {
+    
+  }
+
+  /* stop moving when mouse button is released:*/
+  document.querySelectorAll('.dropzone,.dragging,.dropzonebottom').forEach(otherStint => {
+    otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
+    otherStint.removeEventListener('pointerenter',dropzoneEnter,true);
+    otherStint.removeEventListener('pointerleave',dropzoneLeave,true);
+    document.removeEventListener('pointerup',closeDragElement);
+  });
+
+  document.removeEventListener('pointermove',elementDrag,true);
+
+  const preview = document.getElementsByClassName('drag');
+  for(ele of preview) ele.remove();
+
+}
+function elementDrag(e){
+
+  const ele = document.getElementsByClassName('drag');
+  Array.from(ele).forEach(stintPreview=>{
+    stintPreview.style.top = e.clientY + 10 + 'px';
+    stintPreview.style.left = e.clientX - 5 + 'px';
+  });
+  
+
+}
+
+function previewDrag(stintHeader,coord){
+  const preview = document.getElementsByClassName('drag');
+  for(ele of preview) ele.remove();
+  const table = document.createElement('table');
+  const row = document.createElement('tr');
+  row.append(stintHeader.cloneNode(true));
+  const tyreRow = document.createElement('tr');
+  const tyre = stintHeader.closest('tr').nextElementSibling.cells[stintHeader.cellIndex].cloneNode(true);
+  tyreRow.append(tyre);
+  tyreRow.classList.add('tyre');
+  table.append(row,tyreRow);
+  table.classList.add('drag');
+  table.id = 'previewDrag';
+  table.style.top = coord.y + 5 + 'px';
+  table.style.left = coord.x + 5 + 'px';
+  return table;
+}
+
+function dragMousedown(e){
+ e.preventDefault();
+  if(e.target.closest('tbody').querySelector('.tyre').cells[e.target.cellIndex].style.visibility == 'visible'){
+ const coord = {x:e.clientX,y:e.clientY};
+  const preview = previewDrag(e.target,coord);
+
+  document.body.append(preview);
+  document.addEventListener('pointermove',elementDrag,true);
+  info = getStintInfo(getColumnElements(e.target));
+
+  const otherstints = getVisibleStints(e.target.closest('tr'));
+  otherstints.forEach(s => {
+    const stintColumns = getColumnElements(s);
+    if(s == e.target){
+      stintColumns.forEach(e => e.classList.add('dragging'));
+    }else{
+      //other visible elements that will be dropzones
+      stintColumns.forEach(ele => {
+        ele.classList.add('dropzone');
+        if (ele.parentElement.getAttribute('wearevent'))
+          ele.classList.add('dropzonebottom');
+        ele.addEventListener('pointerenter',dropzoneEnter,true);
+        ele.addEventListener('pointerleave',dropzoneLeave,true);
+
+      });
+    }
+    document.addEventListener('pointerup',closeDragElement);
+  });
+
+  }
+ 
+ 
+}
+function getVisibleStints(stintHeader){
+  const visibleS = [];
+  const stints = stintHeader.querySelectorAll('th:not(:first-child)')
+  stints.forEach(stint =>{
+    if (stint.closest('tbody').querySelector('.tyre').cells[stint.cellIndex].style.visibility == 'visible')
+      visibleS.push(stint);
+  });
+  return visibleS;
+}
+
+
+
+
 
 
 var observer = new MutationObserver(function(mutations){ mutations.forEach(mut=>{if(mut.target.parentElement.style.visibility == 'visible' && mut.addedNodes.length > 0)update_stint(mut.target.closest('td'));});});
@@ -474,10 +670,10 @@ function updateFuel(tbod)
   let totalLaps = 0;
   for(var i = 1 ;i < stintNumber ;i++)
   {
-   let push = parseFloat(pushRow.cells[i].childNodes[0].value);
-   let laps = lapsRow.cells[i].textContent;
+    let push = parseFloat(pushRow.cells[i].childNodes[0].value);
+    let laps = lapsRow.cells[i].textContent;
     totalLaps += parseInt(laps);
-   const fuellap = ((ecoFuel + push) * track_info().length);
+    const fuellap = ((ecoFuel + push) * track_info().length);
     totalfuel += parseInt(laps) * fuellap;
   }
   const fuelEle = tbod.closest('form').getElementsByClassName('fuelEst')[0];
@@ -557,24 +753,27 @@ function addFuelSlider()
 
   function createSlider(node){
     nodeText = node.previousElementSibling.childNodes[1];
+    nodeText.classList.remove('green');
     sliderContainer = document.createElement('div');
     sliderContainer.setAttribute('style','position:absolute;width:100%;;display:none');
     slider = document.createElement('input');
-    slider.className = 'sliderX';
+    slider.classList.add('sliderX');
     slider.type = 'range';
     slider.max = 200;
     slider.min = 0;
     slider.value = nodeText.textContent;
+    sliderContainer.style.backgroundColor = '#f2f2f2';
+    sliderContainer.style.zIndex = 2;
     slider.addEventListener('input',function(){
-      const divSetup = this.parentElement.nextElementSibling.nextElementSibling
+      const divSetup = this.parentElement.nextElementSibling.nextElementSibling;
       divSetup.textContent = this.value;
-  
+
       divSetup.classList.add('slider-label');
       const	newValue = Number( (this.value - this.min) * 100 / (this.max - this.min) ),	newPosition = 10 - (newValue * 0.2);
       divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
     });
     slider.addEventListener('change',function(){
-      const divSetup = this.parentElement.nextElementSibling.nextElementSibling
+      const divSetup = this.parentElement.nextElementSibling.nextElementSibling;
       divSetup.classList.remove('slider-label');
       this.parentElement.style.display = 'none';
       this.parentElement.parentElement.nextElementSibling.value = this.value;
@@ -590,23 +789,23 @@ function addFuelSlider()
     nodeText.addEventListener('click', function () {
       const divSetup = this;
       const sliderE = this.parentElement.childNodes[0];
-  
+
       if (sliderE.style.display === 'none')
       {
         sliderE.style.display = 'block';
         divSetup.classList.add('slider-label');
         const	newValue = Number( (sliderE.childNodes[0].value - sliderE.childNodes[0].min) * 100 / (sliderE.childNodes[0].max - sliderE.childNodes[0].min) ),	newPosition = 10 - (newValue * 0.2);
         divSetup.style.left = `calc(${newValue}% + (${newPosition}px))`;
-  
-      } 
+
+      }
       else{
         sliderE.style.display = 'none';
         divSetup.classList.remove('slider-label');
       }
-        
+
 
     });
-    nodeText.setAttribute('style','border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;');
+    nodeText.classList.add('withSlider');
 
     node.previousElementSibling.prepend(sliderContainer);
 
@@ -615,48 +814,52 @@ function addFuelSlider()
 
 function injectCircuitMap(){
 
-  const trackLink ={
-    "au": "d=circuit&id=1&tab=history" ,//Australia
-    "my": "d=circuit&id=2&tab=history" ,//Malaysia
-    "cn": "d=circuit&id=3&tab=history" ,//China
-    "bh": "d=circuit&id=4&tab=history" ,//Bahrain
-    "es": "d=circuit&id=5&tab=history" ,//Spain
-    "mc": "d=circuit&id=6&tab=history" ,//Monaco
-    "tr": "d=circuit&id=7&tab=history" ,//Turkey
-    "de": "d=circuit&id=9&tab=history" ,//Germany
-    "hu": "d=circuit&id=10&tab=history" ,//Hungary
-    "eu": "d=circuit&id=11&tab=history" ,//Europe
-    "be": "d=circuit&id=12&tab=history" ,//Belgium
-    "it": "d=circuit&id=13&tab=history" ,//Italy
-    "sg": "d=circuit&id=14&tab=history" ,//Singapore
-    "jp": "d=circuit&id=15&tab=history" ,//Japan
-    "br": "d=circuit&id=16&tab=history" ,//Brazil
-    "ae": "d=circuit&id=17&tab=history" ,//AbuDhabi
-    "gb": "d=circuit&id=18&tab=history" ,//Great Britain
-    "fr": "d=circuit&id=19&tab=history" ,//France
-    "at": "d=circuit&id=20&tab=history" ,//Austria
-    "ca": "d=circuit&id=21&tab=history" ,//Canada
-    "az": "d=circuit&id=22&tab=history" ,//Azerbaijan
-    "mx": "d=circuit&id=23&tab=history" ,//Mexico
-    "ru": "d=circuit&id=24&tab=history" ,//Russia
-    "us": "d=circuit&id=25&tab=history" //USA    
-}
+  const trackLink = {
+    'au': 'd=circuit&id=1&tab=history' ,//Australia
+    'my': 'd=circuit&id=2&tab=history' ,//Malaysia
+    'cn': 'd=circuit&id=3&tab=history' ,//China
+    'bh': 'd=circuit&id=4&tab=history' ,//Bahrain
+    'es': 'd=circuit&id=5&tab=history' ,//Spain
+    'mc': 'd=circuit&id=6&tab=history' ,//Monaco
+    'tr': 'd=circuit&id=7&tab=history' ,//Turkey
+    'de': 'd=circuit&id=9&tab=history' ,//Germany
+    'hu': 'd=circuit&id=10&tab=history' ,//Hungary
+    'eu': 'd=circuit&id=11&tab=history' ,//Europe
+    'be': 'd=circuit&id=12&tab=history' ,//Belgium
+    'it': 'd=circuit&id=13&tab=history' ,//Italy
+    'sg': 'd=circuit&id=14&tab=history' ,//Singapore
+    'jp': 'd=circuit&id=15&tab=history' ,//Japan
+    'br': 'd=circuit&id=16&tab=history' ,//Brazil
+    'ae': 'd=circuit&id=17&tab=history' ,//AbuDhabi
+    'gb': 'd=circuit&id=18&tab=history' ,//Great Britain
+    'fr': 'd=circuit&id=19&tab=history' ,//France
+    'at': 'd=circuit&id=20&tab=history' ,//Austria
+    'ca': 'd=circuit&id=21&tab=history' ,//Canada
+    'az': 'd=circuit&id=22&tab=history' ,//Azerbaijan
+    'mx': 'd=circuit&id=23&tab=history' ,//Mexico
+    'ru': 'd=circuit&id=24&tab=history' ,//Russia
+    'us': 'd=circuit&id=25&tab=history' //USA
+  };
 
-if(document.getElementById("customMap")==null)
-{
-const target = document.getElementById("stintDialog");
-const circuit = document.createElement("img");
-circuit.id = "customMap";
-circuit.src= chrome.runtime.getURL('images/circuits/'+getTrackCode()+'.png');
-const trackCode = getTrackCode();
-circuit.src= chrome.runtime.getURL(`images/circuits/${trackCode}.png`);
-circuit.setAttribute("style","width:100%;");
-target.parentNode.insertBefore(circuit, target.nextSibling);
-const imageLink = document.createElement('a');
-imageLink.href = trackLink[trackCode];
-imageLink.append(circuit);
-target.parentNode.insertBefore(imageLink, target.nextSibling);
-}
+  if(!document.getElementById('customMap'))
+  {
+    try {
+    const target = document.querySelector('[id=strategy] .eight');
+    const circuit = document.createElement('img');
+    circuit.id = 'customMap';
+    circuit.src = chrome.runtime.getURL('images/circuits/' + getTrackCode() + '.png');
+    const trackCode = getTrackCode();
+    circuit.src = chrome.runtime.getURL(`images/circuits/${trackCode}.png`);
+    circuit.setAttribute('style','width:100%;');
+    const imageLink = document.createElement('a');
+    imageLink.href = trackLink[trackCode];
+    imageLink.append(circuit);
+    target.append(imageLink);
+    } catch (error) {
+      //page changed
+    }
+    
+  }
 }
 async function readGSheets()
 {
@@ -697,8 +900,6 @@ async function readGSheets()
       j.forEach((ele) =>
       {
         try {
-          // console.log(ele);
-
           if(isNaN(ele[t.gTrack]))
             requestedTrack = ele[t.gTrack].toLowerCase();
           else
@@ -761,7 +962,7 @@ async function readGSheets()
 
     if(savedLink.gLink != '')
     {
-      t = await chrome.storage.local.get({'gTrack':'track_info()'});
+      t = await chrome.storage.local.get({'gTrack':'track'});
       sName = await chrome.storage.local.get({'gLinkName':'Sheet1'});
 
       idRegex = /spreadsheets\/d\/(.*)\/edit/;
@@ -897,10 +1098,8 @@ function removeStints(minusDiv)
   var driver = minusDiv.closest('form');
   totalStintNumber = driver.getElementsByClassName('tyre')[0].querySelectorAll('td[style*="visibility: visible"]').length;
 
-  //console.log("--------"+totalStintNumber);
   if(totalStintNumber <= 5)
   {
-    //console.log("removing style");
     minusDiv.nextElementSibling.nextElementSibling.setAttribute('style','background-color:#6c7880');
     minusDiv.nextElementSibling.nextElementSibling.className = 'plus';
     minusDiv.nextSibling.nextElementSibling.nextElementSibling.style.visibility = 'hidden';
@@ -1015,6 +1214,7 @@ function injectExtraStints(plusDiv){
         var clonedWear = wearRow.lastChild.cloneNode(true);
         wearRow.appendChild(clonedWear);
         updateFuel(clonedLap.closest('tbody'));
+
         success = true;
       }
     }else if(pits == 4)
@@ -1137,16 +1337,16 @@ function addMoreStints()
 async function saveStint()
 {
 
-  code = getTrackCode();
-  driverStrategy = this.closest('form');
-  tyre = driverStrategy.getElementsByClassName('tyre')[0];
-  fuel = driverStrategy.getElementsByClassName('fuel')[0];
-  push = driverStrategy.querySelector('tr[pushEvent]');
-  tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
-  fuelStrategy = fuel.querySelectorAll('td[style*="visibility: visible"]');
-  pushStrategy = push.querySelectorAll('td[style*="visibility: visible"]');
+  const code = getTrackCode();
+  const driverStrategy = this.closest('form');
+  const tyre = driverStrategy.getElementsByClassName('tyre')[0];
+  const fuel = driverStrategy.getElementsByClassName('fuel')[0];
+  const push = driverStrategy.querySelector('tr[pushEvent]');
+  const tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
+  const fuelStrategy = fuel.querySelectorAll('td[style*="visibility: visible"]');
+  const pushStrategy = push.querySelectorAll('td[style*="visibility: visible"]');
 
-  saveData = {};
+  const saveData = {};
   for(var i = 0; i < tyreStrategy.length; i++)
   {
     saveData[i] = {
@@ -1154,8 +1354,8 @@ async function saveStint()
       laps:fuelStrategy[i].textContent,
       push:pushStrategy[i].childNodes[0].selectedIndex};
   }
-  s = hashCode(JSON.stringify(saveData));
-  data = await chrome.storage.local.get('save');
+  const s = hashCode(JSON.stringify(saveData));
+  const data = await chrome.storage.local.get('save');
 
   if(typeof data.save === 'undefined')
   {
@@ -1175,9 +1375,17 @@ async function saveStint()
   document.querySelectorAll('.lbutton').forEach((element) => {
     element.classList.remove('disabled');
   });
-  list = document.getElementById('myDropdown2');
-  list.classList.remove('show1');
+  //const list = document.getElementById('myDropdown2');
+  //list.classList.remove('show1');
 
+  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+  if(isSyncEnabled.gdrive){
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getAccessToken();
+    if(token != false)
+      await chrome.runtime.sendMessage({type: "saveStrategy",data:{name:s,track:code,strategy:saveData},token:token.access_token});
+  
+  }
 
 }
 function hashCode(string){
@@ -1191,26 +1399,27 @@ function hashCode(string){
 }
 async function loadStint()
 {
-  document.getElementById('myDropdown2').classList.toggle('show1');
+  //document.getElementById('myDropdown2').classList.toggle('show1');
   //this.closest("div").classList.toggle("show1");
-  code  = getTrackCode();
-  data = await chrome.storage.local.get('save');
-  s = data.save[code][this.parentElement.id];
-  driverStrategy = this.closest('form');
-  pitNum = driverStrategy.querySelectorAll('input[name=\'numPits\']')[0];
-  tyre = driverStrategy.getElementsByClassName('tyre')[0];
-  fuel = driverStrategy.getElementsByClassName('fuel')[0];
-  push = driverStrategy.querySelector('tr[pushEvent]');
-  wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
-  tyreStrategy = tyre.querySelectorAll('td');
-  fuelStrategy = fuel.querySelectorAll('td');
-  pushStrategy = push.querySelectorAll('td');
-  pits = driverStrategy.querySelector('div > div.num.green');
-  enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
-  activeStints = tyre.childElementCount - 1;
+  const code  = getTrackCode();
+  const data = await chrome.storage.local.get('save');
+  const s = data.save[code][this.parentElement.id];
+  const driverStrategy = this.closest('form');
+  const pitNum = driverStrategy.querySelectorAll('input[name=\'numPits\']')[0];
+  const tyre = driverStrategy.getElementsByClassName('tyre')[0];
+  const fuel = driverStrategy.getElementsByClassName('fuel')[0];
+  const push = driverStrategy.querySelector('tr[pushEvent]');
+  const pits = driverStrategy.querySelector('div > div.num.green');
+  const enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
+  const wear = driverStrategy.querySelector('tr[wearEvent]');
+ 
+  const tyreStrategy = tyre.querySelectorAll('td');
+  const fuelStrategy = fuel.querySelectorAll('td');
+  const pushStrategy = push.querySelectorAll('td');
+  const activeStints = tyre.childElementCount - 1;
 
-  stints = Object.keys(s).length;
-  pitText = stints - 1;
+  const stints = Object.keys(s).length;
+  let pitText = stints - 1;
 
 
   pitNum.value = pitText;
@@ -1226,7 +1435,7 @@ async function loadStint()
     }
   }
 
-  extraStintstoAdd = (activeStints - stints);
+  const extraStintstoAdd = (activeStints - stints);
 
 
   if(activeStints < stints)
@@ -1256,13 +1465,14 @@ async function loadStint()
       done = await injectExtraStints(pits.nextElementSibling);
     }
   }
-  tyre = driverStrategy.getElementsByClassName('tyre')[0];
+  
+ // const wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
+
+ /* tyre = driverStrategy.getElementsByClassName('tyre')[0];
   fuel = driverStrategy.getElementsByClassName('fuel')[0];
-  push = driverStrategy.querySelector('tr[pushEvent]');
-  wear = driverStrategy.querySelector('tr[wearEvent]');
-  tyreStrategy = tyre.querySelectorAll('td');
-  fuelStrategy = fuel.querySelectorAll('td');
-  pushStrategy = push.querySelectorAll('td');
+  push = driverStrategy.querySelector('tr[pushEvent]');*/
+
+
 
   for(var i = stints ; i < 5; i++)
   {
@@ -1317,77 +1527,106 @@ async function loadStint()
   }
 
   updateFuel(wear.closest('tbody'));
-  saveBox = driverStrategy.getElementsByClassName('show1');
+  dragStint();
+  const saveBox = driverStrategy.getElementsByClassName('dropdown2-content');
   Object.keys(saveBox).forEach(key=>{
-    saveBox[key].classList.toggle('show1');
+    saveBox[key].close();
   });
 }
-async function generateSaveList() {
-
-  code = getTrackCode();
-  chrome.storage.local.get('save',function(data){
-    if (typeof data.save === 'undefined') {
-    //empty
-    }else{
-      if (typeof data.save[code] === 'undefined') {
-        //empty
-      } else {
-        if (Object.keys(data.save[code]).length == 0) {
-          console.log('no save');
-          document.querySelectorAll('.lbutton').forEach((element) => {
-            element.classList.add('disabled');
-          });
-        } else {
-          sList = document.querySelectorAll('#saveList');
-          if (sList != null)
-            sList.forEach((e) => {e.remove();});
 
 
-          document.querySelectorAll('.lbutton').forEach((element) => {
-            element.classList.remove('disabled');
-          });
+function dialogClickHandler(e) {
+  if (e.target.tagName !== 'DIALOG') 
+      return;
 
-          list = document.querySelectorAll('#myDropdown2');
-          list.forEach((e) => {
-            sList = createSaveDataPreview(data.save[code]);
-            e.appendChild(sList);});
-        }
-      }
-    }
-  });
+  const rect = e.target.getBoundingClientRect();
 
+  const clickedInDialog = (
+      rect.top <= e.clientY &&
+      e.clientY <= rect.top + rect.height &&
+      rect.left <= e.clientX &&
+      e.clientX <= rect.left + rect.width
+  );
 
+  if (clickedInDialog === false)
+      e.target.close();
 }
+
 async function addSaveButton()
 {
+ 
   if(document.getElementById('save&load') == null)
   {
+    async function generateSaveList () {
+      return new Promise(function(res){
+      const code = getTrackCode();
+      chrome.storage.local.get('save',function(data){
+        if (typeof data.save === 'undefined') {
+          res('empty');
+        }else{
+          if (typeof data.save[code] === 'undefined') {
+            res('empty');
+          } else {
+            if (Object.keys(data.save[code]).length == 0) {
+              console.log('no save');
+              document.querySelectorAll('.lbutton').forEach((element) => {
+                element.classList.add('disabled');
+              });
+              res('empty');
+            } else {
+              const sList = document.querySelectorAll('#saveList');
+              if (sList != null)
+                sList.forEach((e) => {e.remove();});
+    
+    
+              document.querySelectorAll('.lbutton').forEach((element) => {
+                element.classList.remove('disabled');
+              });
+    
+              const list = document.querySelectorAll('#myDropdown2');
+              list.forEach((e) => {
+                const sList = createSaveDataPreview(data.save[code]);
+                e.appendChild(sList);});
+            }
+            res (true)
+          }
+        }
+      });
+
+
+      })
+      
+    
+      
+    };
     function createSaveLoad()
     {
-      containerDiv = document.createElement('div');
+      const containerDiv = document.createElement('div');
       containerDiv.id = 'save&load';
-
-      containerDiv.setAttribute('style','position:relative; display: flex;');
-      saveDiv = document.createElement('div');
-      loadDiv = document.createElement('div');
-      loadContainer = document.createElement('div');
+      containerDiv.classList.add("saveContainer");
+      const saveDiv = document.createElement('div');
+      const loadDiv = document.createElement('div');
+      const loadContainer = document.createElement('dialog');
       loadContainer.className = 'dropdown2-content not-selectable';
       loadContainer.id = 'myDropdown2';
-
+      loadContainer.addEventListener('click',dialogClickHandler);
       saveDiv.className = 'sbutton';
       loadDiv.className = 'sbutton lbutton';
       saveDiv.textContent = 'Save';
       loadDiv.textContent = 'Load';
       containerDiv.append(loadContainer);
       saveDiv.addEventListener('click',saveStint);
-      loadDiv.addEventListener('click',function(){
-        generateSaveList();
-        this.previousElementSibling.previousElementSibling.classList.toggle('show1');
-
+      loadDiv.addEventListener('click',async function(){
+        const saves =  await generateSaveList();
+        if(saves != 'empty'){
+          const dialog = this.parentElement.querySelector('[id=myDropdown2]');
+          dialog.showModal();
+        }
+        
       });
       containerDiv.appendChild(saveDiv);
       containerDiv.appendChild(loadDiv);
-      generateSaveList();
+       generateSaveList();
 
 
 
@@ -1406,7 +1645,7 @@ async function addSaveButton()
     placeHere.appendChild(createSaveLoad());
   }
 
-  getTrackCode();
+  const code = getTrackCode();
   data = await chrome.storage.local.get('save');
 
   lb = document.querySelectorAll('.lbutton');
@@ -1437,9 +1676,28 @@ function createSaveDataPreview(s)
     const strategyContainer = document.createElement('tr');
     strategyContainer.setAttribute('style','background-color: #dfdfdf;');
     strategyContainer.id = k;
+    //const deleteB = document.createElement('th');
     const deleteB = document.createElement('th');
-    deleteB.textContent = 'del';
-    deleteB.setAttribute('style','background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white');
+    deleteB.innerHTML = `<svg style="color:white!important";
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fill-rule="evenodd"
+      clip-rule="evenodd"
+      d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
+      fill="currentColor"
+    />
+    <path d="M9 9H11V17H9V9Z" fill="currentColor" />
+    <path d="M13 9H15V17H13V9Z" fill="currentColor" />
+  </svg>`;
+   //s deleteB.textContent = 'del';
+    
+    //deleteB.setAttribute('style','background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white');
+    deleteB.classList.add('trash')
     deleteB.addEventListener('click',deleteSave);
     strategyContainer.appendChild(deleteB);
     //download = docum ---------------------------------------------
@@ -1452,10 +1710,11 @@ function createSaveDataPreview(s)
         const strategyL = document.createElement('td');
         strategyL.addEventListener('click',loadStint);
         strategy.addEventListener('click',loadStint);
-        strategy.setAttribute('style','height:32px; width:32px;margin:1px; background-color: #dfdfdf;');
-        strategyL.setAttribute('style','width:5px; font-size: 1.25rem;color: black;font-family: roboto;margin:1px');
+        strategy.classList.add('loadStint','preview-tyre',a[key].tyre);
+        //strategy.setAttribute('style','height:32px; width:32px;margin:1px; background-color: #dfdfdf;');
+        strategyL.classList.add('loadStint','preview-laps');
         strategyL.textContent = a[key].laps;
-        strategy.className = a[key].tyre;
+      
         strategyContainer.appendChild(strategyL);
         strategyContainer.appendChild(strategy);
       }
@@ -1478,18 +1737,38 @@ function createSaveDataPreview(s)
 }
 async function deleteSave()
 {
+  
   const saveToDelete = this.parentElement.id;
   const code = getTrackCode();
   data = await chrome.storage.local.get('save');
   delete data.save[code][saveToDelete];
   chrome.storage.local.set({'save':data.save});
-  document.getElementById(saveToDelete).remove();
-  document.getElementById('myDropdown2');
+  document.querySelectorAll(`[id="${saveToDelete}"]`).forEach((save) => {
+    save.remove();
+  });
+  
+  
+  const dialog =  document.getElementById('myDropdown2');
   if(document.getElementById('saveList').childElementCount == 0)
   {
+    dialog.close();
     document.querySelectorAll('.lbutton').forEach((element) => {
       element.className += ' disabled';
     });
+  }
+  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
+  if(isSyncEnabled.gdrive){
+    
+    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getAccessToken();
+    if(token != false){
+      chrome.runtime.sendMessage({
+        type:'deleteFile',
+        data:{type:'strategies',track:code,name:saveToDelete},
+        token:token.access_token});
+    }
+    
+    //deleteFile(saveToDelete+'.json',token.access_token);
   }
 
 }
@@ -1498,8 +1777,8 @@ function addWeatherInStrategy(){
   Object.keys(strategy).forEach(car=>{
     const w = (document.getElementsByClassName('pWeather text-right green')[0]).cloneNode(true);
     w.className = '';
-    w.childNodes[0].style.filter ='brightness(0) invert(1)';
-    w.childNodes[1].style.color ='white';
+    w.childNodes[0].style.filter = 'brightness(0) invert(1)';
+    w.childNodes[1].style.color = 'white';
     w.childNodes[2].setAttribute('style','width: 28px;height: 28px;');
     w.setAttribute('style','display: inline;padding-right: 10px;');
     const notice = strategy[car].closest('tbody').querySelector('.notice');

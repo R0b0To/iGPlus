@@ -1,4 +1,5 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
+import { deleteElement, fullSync, localStrategiesToCloud, localReportsToCloud } from './auth/gDriveHandler.js';
 
 let scriptRunning = 'none';
 
@@ -48,9 +49,36 @@ function injectScripts(tabId, scriptFiles) {
  * @param {number} tabId
  * @param {string[]} styleFiles
  */
-function injectStyles(tabId, styleFiles) {
+async function injectStyles(tabId, styleFiles) {
+  await chrome.scripting.removeCSS({
+    target: { tabId },
+    files: styleFiles
+  });
   chrome.scripting.insertCSS({
     target: { tabId },
     files: styleFiles
   });
 }
+
+//cloud requests will be made in the baackground
+chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
+  //console.log('sent request',request);
+  (async function () {
+    if (request.type === 'deleteFile')
+      await deleteElement(request.data.type+'.json',{name:request.data.name,track:request.data.track},request.token);
+
+    if (request.type === 'saveStrategy')
+      await localStrategiesToCloud({name:request.data.name,track:request.data.track,data:request.data.strategy,token:request.token});
+
+    if (request.type === 'syncData')
+      await fullSync(request.direction,request.token);
+
+    if (request.type === 'saveReport')
+      await localReportsToCloud({token:request.token,data:request.data});
+    
+    sendResponse({done:true})
+
+  })();
+     return true
+      
+  });

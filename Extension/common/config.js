@@ -16,7 +16,10 @@ const scriptDefaults = {
   edit: false,
   slider: true,
   editS: false,
-  sliderS: true
+  sliderS: true,
+  history:true,
+  sponsor:true,
+  settings:true
 };
 
 /**
@@ -25,6 +28,11 @@ const scriptDefaults = {
  * @type {{ [pathname: string]: { key?: string, scripts: string[], styles?: string[] } }}
  */
 const tabScripts = {
+  '/app/d=sponsor&location=': {
+    key: 'sponsor',
+    scripts: ['sponsor.js'],
+    styles: ['sponsor.css']
+  },
   '/app/p=training': {
     key: 'train',
     scripts: ['training.js'],
@@ -56,8 +64,8 @@ const tabScripts = {
   },
   '/app/p=race&tab=setup': {
     key: 'setup',
-    scripts: ['setups.js'],
-    styles: ['style.css']
+    scripts: ['raceSetup/setups.js'],
+    styles: ['strategy/style.css', 'raceSetup/style.css']
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
@@ -67,6 +75,10 @@ const tabScripts = {
     key: 'overview',
     scripts: ['lib/highcharts.js', 'race/race.js'],
     styles: ['race/style.css']
+  },
+  '/app/p=settings&tab=general': {
+    scripts: ['settings/addSettings.js','lib/gsi.js'],
+    styles: ['settings/settings.css']
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',
@@ -79,8 +91,8 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['strategy.js'],
-    styles: ['style.css']
+    scripts: ['strategy/strategy.js','lib/gsi.js'],
+    styles: ['strategy/style.css']
   },
   '/app/p=league&id=': {
     key: 'league',
@@ -88,7 +100,7 @@ const tabScripts = {
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['reports.js', 'purify.js']
+    scripts: ['reports.js', 'lib/purify.js','lib/gsi.js']
   },
   // main Staff page
   '/app/p=staff&tab=staff': {
@@ -106,6 +118,11 @@ const tabScripts = {
   },
   '/app/d=resultDetail&id=': {
     scripts: ['raceResult.js']
+  },
+  '/app/d=history': {
+    key: 'history',
+    scripts: ['track_history.js'],
+    styles: ['race/style.css']
   },
   '/app/': {
     key: 'refresh',

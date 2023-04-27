@@ -4,7 +4,7 @@
   margin-left: .1em;
 }
 
-.statBarWithVaue {
+.statBarWithValue {
   display: inline-flex !important;
   align-items: center;
 }
@@ -13,4 +13,33 @@
   position: absolute;
   left: 0;
   right: 0;
+}
+
+#trackStats{
+  width: 50%;
+  position: relative;
+}
+.trackImage{
+  position: relative;
+  width: 50%;
+}
+
+.statsContainer{
+  display: flex;
+  align-items: center;
+}
+
+@media only screen and (min-width: 480px) and (max-width: 767px)
+{
+  .statsContainer{
+    display: block;
+    align-items: center;
+  }
+  .trackImage{
+    float: right;
+    width: 100%;
+  }
+  #trackStats{
+    width: 100%;
+  }
 }

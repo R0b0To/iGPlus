@@ -1,0 +1,49 @@
+
+  .tflip {
+    width: 100%!important;
+  }
+  
+  .tflip tbody {
+    display: flex;
+  }
+  
+  .tflip tr {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    min-width: min-content;
+  }
+  
+  .tflip th {
+    display: flex;
+    height: 26px;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .tflip td {
+    display: flex;
+    height: 50px;
+    justify-content: center;
+    align-items: center;
+  }
+  .tflip .i75 img {
+    height: 100%;
+    width: auto;
+    position: relative;
+  }
+  .tflip div {
+    height: 100%;
+    padding-bottom: 0;
+  }
+  .tflip span {
+    margin-left: 5px;
+  }
+  .tflip td:nth-child(odd) {
+    background-color: #d4d4d4;
+  }
+ 
+  
+
+
+

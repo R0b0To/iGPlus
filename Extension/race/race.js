@@ -43,24 +43,22 @@ function showBarValues() {
   if (document.getElementsByClassName('showStat').length == 0) {
     const parameterBars = document.querySelectorAll('#race > div:nth-child(1) > table > tbody .ratingBar');
     parameterBars.forEach((bar) => {
-      bar.classList.add('statBarWithVaue');
+      bar.classList.add('statBarWithValue');
       bar.appendChild(createValueSpan(bar.childNodes[0].style.width));
     });
   }
 }
-function weatherMerger(data,interval3h){
+function weatherMerger(data, interval3h) {
   try {
-    interval3h.list.forEach(timestamp => {
+    interval3h.list.forEach((timestamp) => {
       const dateObj = new Date(timestamp.dt * 1000);
       const isoFormat = dateObj.toISOString().slice(0, 16);
       const index = data.hourly.time.indexOf(isoFormat);
       data.hourly.temperature_2m[index] = timestamp.main.temp;
       data.hourly.relativehumidity_2m[index] = timestamp.main.humidity;
-      if(timestamp.hasOwnProperty('rain'))
-      {
+      if (timestamp.hasOwnProperty('rain')) {
         data.hourly.precipitation[index] = timestamp.main.rain['3h'];
       }
-
     });
   } catch (error) {
     return data;
@@ -73,14 +71,13 @@ function weatherMerger(data,interval3h){
  * Shows weather data as charts
  */
 async function getWeather() {
-
   const weatherContainer = document.getElementById('container');
-  if(weatherContainer.style.visibility == 'visible')
-    weatherContainer.style.visibility = 'hidden';
-  else
-    weatherContainer.style.visibility = 'visible';
+  if (weatherContainer.style.visibility == 'visible') weatherContainer.style.visibility = 'hidden';
+  else weatherContainer.style.visibility = 'visible';
 
-  const { fetchNextRace, fetchManagerData, fetchRaceWeather, fetchIGPRaceWeather } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const { fetchNextRace, fetchManagerData, fetchRaceWeather, fetchIGPRaceWeather } = await import(
+    chrome.runtime.getURL('common/fetcher.js')
+  );
   const { raceTrackCoords } = await import(chrome.runtime.getURL('race/const.js'));
 
   const { manager } = await fetchManagerData();
@@ -95,7 +92,7 @@ async function getWeather() {
   const data = await fetchRaceWeather(params);
   const data2 = await fetchIGPRaceWeather(params);
 
-  buildWeatherCharts(weatherMerger(data,data2), nextLeagueRaceTime);
+  buildWeatherCharts(weatherMerger(data, data2), nextLeagueRaceTime);
 }
 
 /**
@@ -143,11 +140,11 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
     plotBands = sunrise.map((riseTime, index) => ({
       color: 'rgba(255, 255, 194, .4)',
       from: new Date(`${riseTime}Z`),
-      to: new Date(`${sunset[index]}Z`)
+      to: new Date(`${sunset[index]}Z`),
     }));
   }
 
-  const { latitude, longitude, elevation} = data;
+  const { latitude, longitude, elevation } = data;
   let title = `${latitude.toFixed(2)}°N ${longitude.toFixed(2)}°E`;
 
   if (elevation) {
