@@ -104,6 +104,9 @@ function fetchManagerData() {
   const managerUrl = 'action=fireUp&addon=igp&ajax=1&jsReply=fireUp&uwv=false';
   return getData(managerUrl);
 }
+function fetchCarData(){
+  return getData('action=fetch&p=cars');
+}
 
 function fetchLeagueData(leagueId) {
   const leagueUrl = `action=fetch&p=league&id=${leagueId}`;
@@ -120,5 +123,6 @@ export {
   fetchStaffInfo,
   fetchDriverInfo,
   fetchTeamInfo,
-  fetchRaceReportInfo
+  fetchRaceReportInfo,
+  fetchCarData
 };
