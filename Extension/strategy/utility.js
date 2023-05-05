@@ -56,7 +56,22 @@ function createSlider(node,min,max) {
 
 
 }
+function hashCode(string){
+    var hash = 0;
+    for (var i = 0; i < string.length; i++) {
+      var code = string.charCodeAt(i);
+      hash = ((hash << 5) - hash) + code;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+  }
+  function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
+    while((c = c.parentNode) && c !== p);
+    return !!c;
+  }
 
 export{
-  createSlider
+  createSlider,
+  hashCode,
+  childOf
 };

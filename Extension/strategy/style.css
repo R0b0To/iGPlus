@@ -1,7 +1,7 @@
 .sliderContainer {
   width: 100%;
   position: absolute;
-  background-color: #e3e4e5;
+  background-color: #f2f2f2;
   visibility: hidden;
   z-index: 1;
 }
@@ -85,7 +85,8 @@
   -moz-appearance: textfield;
   appearance: textfield;
   text-align: center;
-  font-family: 'Roboto';
+  font-family: inherit;
+  font-size: 1.5em;
 }
 
 .pushInput[type=number]::-webkit-inner-spin-button,
@@ -195,7 +196,7 @@ top:-14px;
   color: rgb(255, 255, 255);
   padding: 10px;
   border-radius: 12px;
-  font-size: .8em;
+  font-size: .85em;
   font-weight: normal;
   border: none;
   cursor: pointer;
@@ -273,7 +274,7 @@ top:-14px;
   font-weight: normal;
   background-color: #f1f1f1;
   padding: 9px;
-    background: #6c7880;
+    background: #292d33;
   min-width: fit-content;
   width: 10%;
   font-size: .8em;
@@ -383,4 +384,30 @@ td.dropzone{
   color: #ffffff;
   border-radius: 8px;
   cursor: pointer;
+}
+.pushSelect{
+  margin-bottom:0px; 
+  margin: -10px;
+  padding: 7px; 
+  width:55px;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  text-indent: 1px;
+  text-overflow: '';
+  cursor: pointer;
+}
+.pushBox{
+  font-size: 0.8rem;
+  color:white;
+  align-self:center;
+  height:100%;
+  display: flex;
+  width:70px;
+  justify-content: center;
+  align-items: center;
+
+}
+.feLabel{
+filter: invert(1);
+padding: 3px;
 }
