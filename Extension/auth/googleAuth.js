@@ -11,7 +11,6 @@ async function getAccessToken(){
       prompt:'',
       scope: 'https://www.googleapis.com/auth/drive.file',
       callback : (tokenRes) => {
-        //console.log('responce is',tokenRes);
         saveAccessToken(tokenRes);
         resolve(tokenRes);
       },
@@ -21,15 +20,11 @@ async function getAccessToken(){
   return response;
 }
 async function getFirstAccessToken(){
-  const local_access_token = await isLocalTokenValid();
-  if(local_access_token != false)
-    return local_access_token;
   const response = await new Promise((resolve,rej)=>{
     google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       scope: 'https://www.googleapis.com/auth/drive.file',
       callback : (tokenRes) => {
-        //console.log('responce is',tokenRes);
         saveAccessToken(tokenRes);
         resolve(tokenRes);
       },

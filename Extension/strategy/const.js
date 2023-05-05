@@ -1,6 +1,6 @@
 const track_info = {
   'au': { 'length': 5.3017135, 'wear': 40 },//Australia
-  'my': { 'length': 5.5358276, 'wear': 85 },//Malaysia
+  'my': { 'length': 5.5358276, 'wear': 80 },//Malaysia
   'cn': { 'length': 5.4417996, 'wear': 80 },//China
   'bh': { 'length': 4.7273, 'wear': 60 },//Bahrain
   'es': { 'length': 4.4580207, 'wear': 85 },//Spain

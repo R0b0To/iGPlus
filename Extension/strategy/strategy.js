@@ -1,4 +1,3 @@
-
 if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
   (async function main(){
     document.getElementById('strategy').setAttribute('injected',true);
@@ -10,7 +9,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //track information
     const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
     const {track_info, multipliers, trackLink ,trackDictionary} = await import(chrome.runtime.getURL('/strategy/const.js'));
-    const TRACK_INFO = track_info[TRACK_CODE];
+    let TRACK_INFO = track_info[TRACK_CODE];
     //league information
     const league = document.querySelector('#mLeague').href;
     const league_id = /(?<=id=).*/gm.exec(league)[0];
@@ -25,7 +24,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //active scripts
     const active_scripts = await chrome.storage.local.get('script');
     //utility
-    const { icons } = await import(chrome.runtime.getURL('/common/config.js'));
     const {createSlider, hashCode, childOf} = await import(chrome.runtime.getURL('/strategy/utility.js'));
 
     try {
@@ -178,7 +176,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
               //savePush();
 
             });
-            
+
             pushButtonHeader.append(pushButton);
             //TO DO? change to dialog?
             var pushDiv = document.createElement('div');
@@ -230,7 +228,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             }
           });
 
-         
+
 
           function createPushElement(i, value, step) {
             var pushInputDiv = document.createElement('div');
@@ -239,7 +237,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             var pushInputLabel = document.createElement('div');
             pushInputLabel.textContent = pushEquivalent[i];
             pushInputLabel.classList.add('pushBox');
-            
+
             var pushInputDown = document.createElement('div');
 
             var  textSpan = document.createElement('span');
@@ -258,11 +256,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
             if (i == 'FE'){
               pushInput.value = value;
-              const image = document.createElement('img');
-              image.src = icons['igp-fuel'];
-              pushInputLabel.textContent='';
-              image.classList.add('feLabel');
-              pushInputLabel.append(image);
+            pushInputLabel.textContent = '';
+             pushInputLabel.classList.add('feLabel');
             }
             else
               pushInput.value = pushToUse[i - 1];
@@ -318,46 +313,38 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
 
     async function addBetterStintFuel(el){
+      const track_code = document.querySelector('.flag').className.slice(-2) ?? 'au';
+      TRACK_INFO = track_info[track_code];
       const fuel_el = el.querySelector('.num');
-      const fuelPerLap = fuel_calc(document.getElementsByClassName('PLFE')[0].value);
+      const fe_used = Number(document.getElementsByClassName('PLFE')[0].value);
+      const fuelPerLap = fuel_calc(fe_used);
       const driver = document.querySelector('form[id$="strategy"]:not([style*="display:none"]):not([style*="display: none"])');
       const stintID = parseInt(document.getElementsByName('stintId')[0].value);
       const pushToAdd = parseFloat(driver.querySelector('[pushevent]').cells[stintID].childNodes[0].value);
-      //observe the fuel change in the dialog for tyre/fuel selection
+      //observe the fuel change in the dialog for tyre/fuel selection+
       var fuelChangeObserver = new MutationObserver(function (mutations) {
-        console.log('changing fuel');
         mutations.forEach(mut => {
+          const fuel_el = el.querySelector('.num');
+          const fuelPerLap = fuel_calc(document.getElementsByClassName('PLFE')[0].value);
+          const driver = document.querySelector('form[id$="strategy"]:not([style*="display:none"]):not([style*="display: none"])');
+          const stintID = parseInt(document.getElementsByName('stintId')[0].value);
+          const pushToAdd = parseFloat(driver.querySelector('[pushevent]').cells[stintID].childNodes[0].value);
           document.getElementById('realfuel').textContent = (parseFloat(fuel_el.textContent) / ((fuelPerLap + pushToAdd) * TRACK_INFO.length)).toFixed(2);
         });
       });
 
-      //observe dialog opening/closing
-      var dialogBoxObserver = new MutationObserver(function (mutations) {
-        console.log('test');
-        mutations.forEach(mut => {
-          if (mut.type == 'childList' && mut.addedNodes.length == 0) {
-          //console.log('closed');
-            // this.disconnect();
-            // waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el);}});
-          }
-
-        });
-      });
-      //dialogBoxObserver.observe(document.getElementById('dialogs-container'), { childList: true, attributes: true, subtree: true });
       fuelChangeObserver.observe(fuel_el, { characterData: false, attributes: false, childList: true, subtree: false });
       const estimatedlaps = document.getElementById('fuelLapsPrediction');
       if (document.getElementById('realfuel') == null) {
         const real = document.createElement('span');
         real.id = 'realfuel';
         real.setAttribute('style', 'position: relative;top: 2px;vertical-align: text-bottom;width: 2rem;display: inline-table;color: #ffffff;margin-left: 5px;cursor: pointer;background-color: #96bf86;border-radius: 40%;');
-        real.textContent = (parseFloat(fuel_el.textContent) / ((fuelPerLap + pushToAdd) * TRACK_INFO.length)).toFixed(2);
-        //console.log(CAR_ECONOMY.fuel);
+        real.textContent = (Number(fuel_el.textContent) / ((fuelPerLap + pushToAdd) * TRACK_INFO.length)).toFixed(2);
         real.addEventListener('click',function overwrite(){
           document.getElementById('fuelLapsPrediction').textContent = this.textContent;
         });
         estimatedlaps.parentElement.append(real);
       }
-
     }
 
     function waitForAddedNode(params) {
@@ -1301,7 +1288,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       }
 
       var fuelLap = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value)) * TRACK_INFO.length;
-      console.log('fe is',document.getElementsByClassName('PLFE')[0].value);
+      //console.log('fe is',document.getElementsByClassName('PLFE')[0].value);
       for(var i = 0; i < stints; i++)
       {
         try {
@@ -1313,7 +1300,10 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
           fuelStrategy[i].childNodes[0].textContent = s[i].laps;
           fuelStrategy[i].style.visibility = 'visible';
-          fuelStrategy[i].childNodes[1].value = Math.ceil((s[i].laps * fuelLap));
+          const fuelkm = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
+          const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s[i].push].value)) * TRACK_INFO.length)).toFixed(2)
+          //console.log(fuelkm,pushStrategy[i].childNodes[0].options[s[i].push].value,fuelWithPush);
+          fuelStrategy[i].childNodes[1].value = Math.ceil((fuelWithPush * s[i].laps));
           fuelStrategy[i].childNodes[2].value = s[i].laps;
 
           pushStrategy[i].childNodes[0].selectedIndex = s[i].push;

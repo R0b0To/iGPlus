@@ -59,8 +59,6 @@ function handleSettings() {
           checkAuth();
         } else
         {
-          const { revokeConsent } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-          revokeConsent();
           forceSyncBtn.classList.remove('visibleSync');//forceSyncBtnDown.classList.remove('visibleSync');
         }
           
@@ -497,7 +495,7 @@ function handleSettings() {
     const { getFirstAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getFirstAccessToken();
     if (token == false) {
-      mergeStorage('gdrive', false);
+      chrome.storage.local.set({'gdrive':false})
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
       forceSyncBtn.classList.remove('visibleSync');
       //forceSyncBtnDown.classList.remove('visibleSync');
