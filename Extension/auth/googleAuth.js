@@ -5,8 +5,7 @@ async function getAccessToken(){
   const local_access_token = await isLocalTokenValid();
   if(local_access_token != false)
     return local_access_token;
-
-  const responce = await new Promise((resolve,rej)=>{
+  const response = await new Promise((resolve,rej)=>{
     google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       prompt:'',
@@ -19,11 +18,38 @@ async function getAccessToken(){
       error_callback : (err) =>{resolve(false);}
     }).requestAccessToken();
   });
-  return responce;
+  return response;
+}
+async function getFirstAccessToken(){
+  const local_access_token = await isLocalTokenValid();
+  if(local_access_token != false)
+    return local_access_token;
+  const response = await new Promise((resolve,rej)=>{
+    google.accounts.oauth2.initTokenClient({
+      client_id: CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/drive.file',
+      callback : (tokenRes) => {
+        //console.log('responce is',tokenRes);
+        saveAccessToken(tokenRes);
+        resolve(tokenRes);
+      },
+      error_callback : (err) =>{resolve(false);}
+    }).requestAccessToken();
+  });
+  return response;
+}
+
+async function revokeConsent(){
+  const local_access_token = await isLocalTokenValid();
+  google.accounts.oauth2.revoke(local_access_token, done => {  });
+  chrome.storage.local.remove('gAuth') ?? browser.storage.local.remove('gAuth');
+
 }
 
 export{
-  getAccessToken
+  getAccessToken,
+  revokeConsent,
+  getFirstAccessToken
 };
 
 function saveAccessToken(token){
