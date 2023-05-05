@@ -58,7 +58,12 @@ function handleSettings() {
         if (status) {
           checkAuth();
         } else
+        {
+          const { revokeConsent } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+          revokeConsent();
           forceSyncBtn.classList.remove('visibleSync');//forceSyncBtnDown.classList.remove('visibleSync');
+        }
+          
 
         chrome.storage.local.set({ [scriptName]: status });
       }
@@ -190,8 +195,17 @@ function handleSettings() {
       document.getElementById('preferences').textContent = language[code].optionsText.preferences;
       separator.previousElementSibling.textContent = language[code].optionsText.separator;
 
-      raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
-      overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      await chrome.storage.local.get('raceSign', function (data) {
+        raceSign.querySelector('input').checked = data.raceSign;
+        raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      });
+  
+      await chrome.storage.local.get('overSign', function (data) {
+        overSign.querySelector('input').checked = data.overSign;
+        overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      });
+     // raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+     // overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
 
       setTextToFieldtip(gsheetCheckbox, 'gsheet');
       setTextToFieldtip(leagueCheckbox, 'leagueHome');
@@ -240,15 +254,7 @@ function handleSettings() {
     chrome.storage.local.get({ 'separator': ',' }, function (data) {
       separator.value = data.separator;
     });
-    chrome.storage.local.get('raceSign', function (data) {
-      raceSign.querySelector('input').checked = data.raceSign;
-      //(data.raceSign) ? raceSign.querySelector('span').textContent += ' ( - )' : raceSign.querySelector('span').textContent += ' ( + )';
-    });
-
-    chrome.storage.local.get('overSign', function (data) {
-      overSign.querySelector('input').checked = data.overSign;
-      //(data.overSign) ? overSign.querySelector('span').textContent += ' ( - )' : overSign.querySelector('span').textContent += ' ( + )';
-    });
+  
 
     chrome.storage.local.get('gLink', function (data) {
       if (typeof data.gLink != 'undefined') link.value = data.gLink;
@@ -488,8 +494,8 @@ function handleSettings() {
 
 
   async function checkAuth() {
-    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const token = await getAccessToken();
+    const { getFirstAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getFirstAccessToken();
     if (token == false) {
       mergeStorage('gdrive', false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
@@ -651,9 +657,5 @@ function handleSettings() {
 
 
   });
-
-  function syncDate(){
-    const date = new Date();
-  }
 
 }
