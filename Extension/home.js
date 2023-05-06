@@ -28,19 +28,23 @@ function injectLockedShortcuts(raceID){
   const setupURL = 'p=race&tab=setup';
   const strategyURL = 'p=race&tab=strategy';
   const qualiURL = `d=result&id=${raceID}&tab=qualifying`;
+  const carDesignURL = 'd=design';
+  const carResearchURL = 'd=research';
   const shortcutsLocation = document.getElementById('splashPrep');
 
   const setupbtn = createdButton('lockedsetup',setupURL,'Setup');
   const strategybtn = createdButton('lockedstrat',strategyURL,'Strategy');
   const qualibtn = createdButton('lockedquali',qualiURL,'Qualifying');
+  const researchbtn = createdButton('lockedresearch',carResearchURL,'Research');
+  const designbtn = createdButton('lockeddesign',carDesignURL,'Design');
   const container = document.createElement('div');
-  [setupbtn,strategybtn,qualibtn].forEach(btn => {
+  [setupbtn,strategybtn,qualibtn,researchbtn,designbtn].forEach(btn => {
     btn.style.flexGrow = 1;
     btn.style.margin = '2px';}
   );
   container.setAttribute('style','display: flex;justify-content: center;margin-top: 5px;');
 
-  container.append(setupbtn,strategybtn,qualibtn);
+  container.append(researchbtn,designbtn,strategybtn,qualibtn);
 
   if(document.getElementById('lockedsetup') == null)
     shortcutsLocation.append(container);
