@@ -37,7 +37,7 @@ function toCentimeters(height) {
     valueInCentimeters = ((parseInt(feet) * units.ft)) + (parseInt(inches) * units.in);
   }
   else if (height[1] == '.')
-    valueInCentimeters = parseInt(height) * units.cm; // If the height is in meters
+    valueInCentimeters = parseFloat(height) * units.cm; // If the height is in meters
   else
     valueInCentimeters = parseInt(height) ; // If the height is in cm
   return valueInCentimeters;
