@@ -1,6 +1,7 @@
 const baseUrl = 'https://igpmanager.com/index.php';
 const weatherBaseUrl = 'https://api.open-meteo.com/v1/forecast';
 const iGPWeatherBaseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
+const iGPWeatherBaseUrlNow = 'https://api.openweathermap.org/data/2.5/weather';
 
 /*
 The intention is to have a simple centralized point of fetching game data,
@@ -47,10 +48,20 @@ function fetchIGPRaceWeather({ lat, lon, temp }) {
     lat: lat,
     lon: lon,
     ...(temp === '2' ? { units: 'imperial' } : {units: 'metric'}),
-    appid:'245735e6c3dc24c1b42acfbdc53238e0',
+    appid:'c3ea81e926bd10b625bedd1268e5bc44',
     cnt:16 //timestamp number, 3 hours intervals, 16 is 2 days
   });
   return getData(`${iGPWeatherBaseUrl}?${params.toString()}`, true);
+}
+function fetchIGPRaceWeatherNow({ lat, lon, temp }) {
+  const params = new URLSearchParams({
+    lat: lat,
+    lon: lon,
+    ...(temp === '2' ? { units: 'imperial' } : {units: 'metric'}),
+    appid:'c3ea81e926bd10b625bedd1268e5bc44',
+    cnt:16 //timestamp number, 3 hours intervals, 16 is 2 days
+  });
+  return getData(`${iGPWeatherBaseUrlNow}?${params.toString()}`, true);
 }
 
 /**
@@ -124,5 +135,6 @@ export {
   fetchDriverInfo,
   fetchTeamInfo,
   fetchRaceReportInfo,
-  fetchCarData
+  fetchCarData,
+  fetchIGPRaceWeatherNow
 };
