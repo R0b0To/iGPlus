@@ -50,17 +50,19 @@ function showBarValues() {
 }
 function weatherMerger(data, interval3h) {
   try {
-    interval3h.list.forEach((timestamp) => {
+    for (const timestamp of interval3h.list){
       const dateObj = new Date(timestamp.dt * 1000);
       const isoFormat = dateObj.toISOString().slice(0, 16);
       const index = data.hourly.time.indexOf(isoFormat);
       data.hourly.temperature_2m[index] = timestamp.main.temp;
       data.hourly.relativehumidity_2m[index] = timestamp.main.humidity;
       if (timestamp.hasOwnProperty('rain')) {
-        data.hourly.precipitation[index] = timestamp.main.rain['3h'];
+        data.hourly.precipitation[index] = timestamp.rain['3h'];
       }
-    });
+  }
+
   } catch (error) {
+    console.log(error)
     return data;
   }
 
@@ -72,10 +74,13 @@ function weatherMerger(data, interval3h) {
  */
 async function getWeather() {
   const weatherContainer = document.getElementById('container');
-  if (weatherContainer.style.visibility == 'visible') weatherContainer.style.visibility = 'hidden';
+  if (weatherContainer.style.visibility == 'visible'){
+    weatherContainer.style.visibility = 'hidden';
+    return
+  }
   else weatherContainer.style.visibility = 'visible';
 
-  const { fetchNextRace, fetchManagerData, fetchRaceWeather, fetchIGPRaceWeather } = await import(
+  const { fetchNextRace, fetchManagerData, fetchRaceWeather, fetchIGPRaceWeather,fetchIGPRaceWeatherNow } = await import(
     chrome.runtime.getURL('common/fetcher.js')
   );
   const { raceTrackCoords } = await import(chrome.runtime.getURL('race/const.js'));
@@ -89,8 +94,23 @@ async function getWeather() {
     lon: raceTrackCoords[trackID][1],
     temp: manager.format.temperature,
   };
+  const weatherNow = await fetchIGPRaceWeatherNow(params);
   const data = await fetchRaceWeather(params);
   const data2 = await fetchIGPRaceWeather(params);
+
+  const date = new Date(weatherNow.dt *1000);
+  if (date.getMinutes() >= 30) {
+    date.setHours(date.getHours() + 1);
+    date.setMinutes(0);
+    date.setSeconds(0);
+  }else{
+    date.setMinutes(0);
+  date.setSeconds(0);
+  }
+  weatherNow.dt = (date/1000)
+  data2.list.push(weatherNow);
+
+  console.log('iGPlus|',weatherNow.name,weatherNow.main.temp,weatherNow.rain ?? '');
 
   buildWeatherCharts(weatherMerger(data, data2), nextLeagueRaceTime);
 }
@@ -112,6 +132,7 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const pointStart = new Date(`${data.hourly.time[0]}Z`).getTime();
   const secondPointTime = new Date(`${data.hourly.time[1]}Z`).getTime();
   const pointInterval = secondPointTime - pointStart;
+
 
   const series = Object.entries(data.hourly)
     .filter(([category]) => Object.keys(weatherStats).includes(category))
