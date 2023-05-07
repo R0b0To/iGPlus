@@ -78,7 +78,7 @@ const tabScripts = {
   },
   '/app/p=settings&tab=general': {
     scripts: ['settings/addSettings.js','lib/gsi.js'],
-    styles: ['settings/settings.css']
+    styles: ['settings/settings.css','css/strategyPreview.css']
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',
@@ -92,7 +92,7 @@ const tabScripts = {
   '/app/p=race&tab=strategy': {
     key: 'strategy',
     scripts: ['strategy/strategy.js','lib/gsi.js'],
-    styles: ['strategy/style.css']
+    styles: ['strategy/style.css','css/strategyPreview.css']
   },
   '/app/p=league&id=': {
     key: 'league',

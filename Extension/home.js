@@ -46,8 +46,12 @@ function injectLockedShortcuts(raceID){
 
   container.append(researchbtn,designbtn,strategybtn,qualibtn);
 
-  if(document.getElementById('lockedsetup') == null)
+  if(document.getElementById('lockedstrat') == null)
+  {
+    console.log('test');
     shortcutsLocation.append(container);
+  }
+    
 
 }
 

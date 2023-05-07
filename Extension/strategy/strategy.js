@@ -24,7 +24,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //active scripts
     const active_scripts = await chrome.storage.local.get('script');
     //utility
-    const {createSlider, hashCode, childOf} = await import(chrome.runtime.getURL('/strategy/utility.js'));
+    const {createSlider, hashCode, childOf, strategyPreview} = await import(chrome.runtime.getURL('/strategy/utility.js'));
 
     try {
       if (league_info != false) {
@@ -1149,9 +1149,10 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     }
     async function saveStint()
     {
-
+      
       const code = TRACK_CODE;
       const driverStrategy = this.closest('form');
+      const raceLaps = driverStrategy.querySelector('[id*=TotalLaps]');
       const tyre = driverStrategy.getElementsByClassName('tyre')[0];
       const fuel = driverStrategy.getElementsByClassName('fuel')[0];
       const push = driverStrategy.querySelector('tr[pushEvent]');
@@ -1160,9 +1161,16 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const pushStrategy = push.querySelectorAll('td[style*="visibility: visible"]');
 
       const saveData = {};
+      saveData.stints = {};
+      saveData.length = league_length;
+      saveData.track = code;
+      saveData.laps = {
+        total:Number(raceLaps.nextSibling.textContent.split('/')[1]),
+        doing:Number(raceLaps.textContent)
+      }
       for(var i = 0; i < tyreStrategy.length; i++)
       {
-        saveData[i] = {
+        saveData.stints[i] = {
           tyre:tyreStrategy[i].className,
           laps:fuelStrategy[i].textContent,
           push:pushStrategy[i].childNodes[0].selectedIndex};
@@ -1223,7 +1231,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const pushStrategy = push.querySelectorAll('td');
       const activeStints = tyre.childElementCount - 1;
 
-      const stints = Object.keys(s).length;
+      const stints = Object.keys(s.stints).length;
       let pitText = stints - 1;
 
 
@@ -1293,20 +1301,20 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       {
         try {
 
-          tyreStrategy[i].className = s[i].tyre;
-          tyreStrategy[i].childNodes[0].value = s[i].tyre.substring(3);
-          tyreStrategy[i].setAttribute('data-tyre',s[i].tyre.substring(3));
+          tyreStrategy[i].className = s.stints[i].tyre;
+          tyreStrategy[i].childNodes[0].value = s.stints[i].tyre.substring(3);
+          tyreStrategy[i].setAttribute('data-tyre',s.stints[i].tyre.substring(3));
           tyreStrategy[i].style.visibility = 'visible';
 
-          fuelStrategy[i].childNodes[0].textContent = s[i].laps;
+          fuelStrategy[i].childNodes[0].textContent = s.stints[i].laps;
           fuelStrategy[i].style.visibility = 'visible';
           const fuelkm = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
-          const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s[i].push].value)) * TRACK_INFO.length)).toFixed(2)
+          const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s.stints[i].push].value)) * TRACK_INFO.length)).toFixed(2)
           //console.log(fuelkm,pushStrategy[i].childNodes[0].options[s[i].push].value,fuelWithPush);
-          fuelStrategy[i].childNodes[1].value = Math.ceil((fuelWithPush * s[i].laps));
-          fuelStrategy[i].childNodes[2].value = s[i].laps;
+          fuelStrategy[i].childNodes[1].value = Math.ceil((fuelWithPush * s.stints[i].laps));
+          fuelStrategy[i].childNodes[2].value = s.stints[i].laps;
 
-          pushStrategy[i].childNodes[0].selectedIndex = s[i].push;
+          pushStrategy[i].childNodes[0].selectedIndex = s.stints[i].push;
           pushStrategy[i].style.visibility = 'visible';
 
           wear.cells[i + 1].style.visibility = 'visible';
@@ -1389,8 +1397,13 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
                     });
 
                     const list = document.querySelectorAll('#myDropdown2');
-                    list.forEach((e) => {
-                      const sList = createSaveDataPreview(data.save[code]);
+                    list.forEach(async (e) => {
+                      const sList = await strategyPreview(data.save[code],CAR_ECONOMY);
+                      sList.querySelectorAll('.stintsContainer').forEach(strat => {
+                        strat.classList.add('loadStrat');
+                        strat.addEventListener('click',loadStint);
+                      });
+                      sList.querySelectorAll('.trash').forEach(d => {d.addEventListener('click',deleteSave)})
                       e.appendChild(sList);});
                   }
                   res (true);
@@ -1472,70 +1485,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         }
 
       }
-
-    }
-    function createSaveDataPreview(s)
-    {
-      function createStint(a,k)
-      {
-        const strategyContainer = document.createElement('tr');
-        strategyContainer.setAttribute('style','background-color: #dfdfdf;');
-        strategyContainer.id = k;
-        //const deleteB = document.createElement('th');
-        const deleteB = document.createElement('td');
-        deleteB.innerHTML = `<svg style="color:white!important";
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        fill-rule="evenodd"
-        clip-rule="evenodd"
-        d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z"
-        fill="currentColor"
-      />
-      <path d="M9 9H11V17H9V9Z" fill="currentColor" />
-      <path d="M13 9H15V17H13V9Z" fill="currentColor" />
-    </svg>`;
-        //s deleteB.textContent = 'del';
-
-        //deleteB.setAttribute('style','background-color: #d66e67; font-size: 1.25rem;font-family: roboto ; color:white');
-        deleteB.classList.add('trash');
-        deleteB.addEventListener('click',deleteSave);
-        strategyContainer.appendChild(deleteB);
-        //download = docum ---------------------------------------------
-
-
-        for (const key in a) {
-          if(!isNaN(key))
-          {
-            const strategy = document.createElement('td');
-            const strategyL = document.createElement('td');
-            strategyL.addEventListener('click',loadStint);
-            strategy.addEventListener('click',loadStint);
-            strategy.classList.add('loadStint','preview-tyre',a[key].tyre);
-            //strategy.setAttribute('style','height:32px; width:32px;margin:1px; background-color: #dfdfdf;');
-            strategyL.classList.add('loadStint','preview-laps');
-            strategyL.textContent = a[key].laps;
-
-            strategyContainer.appendChild(strategyL);
-            strategyContainer.appendChild(strategy);
-          }
-        }
-        //console.log(strategyContainer);
-        return strategyContainer;
-      }
-      const saveList = document.createElement('tbody');
-      saveList.id = 'saveList';
-
-      for (const key in s) {
-        saveList.appendChild(createStint(s[key],key));
-      }
-
-      saveList.setAttribute('style','height:max-content ;width: max-content;border-collapse: collapse;');
-      return saveList;
 
     }
     async function deleteSave()
