@@ -365,10 +365,10 @@ async function handleSettings() {
         if(!syncText){
           const dateContainer = document.createElement('div');
           dateContainer.id = 'syncDate';
-          dateContainer.textContent = `Last Sync: ${dateOfLastSync.syncDate}`;
+          dateContainer.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
           gdrive.append(dateContainer);
         }else{
-          syncText.textContent = `Last Sync: ${dateOfLastSync.syncDate}`;
+          syncText.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
         }
 
       }

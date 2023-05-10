@@ -379,7 +379,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     }
     function getColumnElements(elementOfColumn){
       const index = (elementOfColumn.cellIndex + 1) || (elementOfColumn.closest('td').cellIndex + 1) ;
-      const column = elementOfColumn.closest('tbody').querySelectorAll(`th:nth-child(${index}),td:nth-child(${index}):not(.loadStint)`);
+      const column = elementOfColumn.closest('tbody').querySelectorAll(`th:nth-child(${index}),td:nth-child(${index}):not(.loadStint):not(.trash)`);
       return column;
     }
     function dropzoneEnter(e){
@@ -438,7 +438,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
     }
     function getStintInfo(stintColumn){
-
       const tyre = stintColumn[1].querySelector('input').value;
       const fuel = stintColumn[2].querySelector('input').value;
       const laps = stintColumn[2].querySelector('span').textContent;

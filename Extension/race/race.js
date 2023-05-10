@@ -57,7 +57,7 @@ function weatherMerger(data, interval3h) {
       data.hourly.temperature_2m[index] = timestamp.main.temp;
       data.hourly.relativehumidity_2m[index] = timestamp.main.humidity;
       if (timestamp.hasOwnProperty('rain')) {
-        data.hourly.precipitation[index] = timestamp.rain['3h'];
+        data.hourly.precipitation[index] = timestamp.rain['3h'] ?? timestamp.rain['1h'] ;
       }
   }
 
@@ -123,7 +123,6 @@ async function getWeather() {
 async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const { weatherCodes, weatherStats } = await import(chrome.runtime.getURL('race/const.js'));
   const { makeChartConfig } = await import(chrome.runtime.getURL('race/chartConfig.js'));
-
   // we care only about closest 2 days
   Object.keys(data.hourly).forEach((ele) => {
     data.hourly[ele] = data.hourly[ele].slice(0, 48);
@@ -153,7 +152,6 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
         },
       };
     });
-
   const { sunrise = [], sunset = [], weathercode = [] } = data.daily || {};
   let plotBands = [];
 

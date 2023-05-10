@@ -173,12 +173,13 @@ function injectIGPlusOptions() {
       forceSync.style.display = 'none';
       forceSync.id = 'forceSync';
 
-      gdrive.append(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync (Google Drive)'), forceSync));
+      preferencesContainer.prepend(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync (Google Drive)'), forceSync));
       //#endregion
 
       const mainContainer = create('div');
       //Here the menu order
-      mainContainer.append(preferencesContainer, scriptsContainer, strategiesContainer, googleSheetContainer, gdrive);
+      //preferencesContainer.append(gdrive)
+      mainContainer.append(preferencesContainer, scriptsContainer, strategiesContainer, googleSheetContainer );
       mainContainer.id = 'iGPlus';
       if (!document.getElementById('iGPlus')) {
         generalContainer.append(mainContainer);

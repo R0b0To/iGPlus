@@ -330,7 +330,15 @@ input[type="file"] {
 .visibleSync {
   margin-left: 3px;
   cursor: pointer;
+  height: 32px!important;
   display: block !important;
+  padding: 5px!important;
+}
+#forceSync {
+  margin-left: 3px;
+  cursor: pointer;
+  height: 32px!important;
+  padding: 5px!important;
 }
 #saveList{
  grid-column: 1 / span 5; 

@@ -38,7 +38,7 @@ function fetchRaceWeather({ lat, lon, temp }) {
     timezone: 'GMT'
   });
 
-  ['temperature_2m', 'relativehumidity_2m', 'precipitation'].forEach((p) => params.append('hourly', p));
+  ['cloudcover','temperature_2m', 'relativehumidity_2m', 'precipitation'].forEach((p) => params.append('hourly', p));
   ['sunrise', 'sunset', 'weathercode'].forEach((p) => params.append('daily', p));
 
   return getData(`${weatherBaseUrl}?${params.toString()}`, true);
