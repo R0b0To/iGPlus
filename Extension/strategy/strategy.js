@@ -55,7 +55,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     const active_scripts = await chrome.storage.local.get('script');
     //utility
     const {createSlider, hashCode, childOf, strategyPreview, simulateClick} = await import(chrome.runtime.getURL('/strategy/utility.js'));
-    const {addStintEventHandler,removeExtraStint,addExtraStint,replacePitNumber} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
+    const {addStintEventHandler,removeExtraStint,addExtraStint,replacePitNumber, updateFuel} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
 
     try {
       if (league_info != false) {
@@ -146,7 +146,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         Promise.all([createWearRow(dstrategy[driver]),createPushRow(dstrategy[driver])]).then((test) => {
         //after wear and push rows are generated execute this
-          update_stint(dstrategy[driver].cells[1]);
+         // update_stint(dstrategy[driver].cells[1]);
 
 
         });
@@ -501,7 +501,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       try {
         if(isChild){
           setStintInfo(getColumnElements(pointerOnTop),info.tyre,info.fuel,info.push,info.laps);
-          update_stint((pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex]) || (pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.closest('td').cellIndex]));
+          //update_stint((pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex]) || (pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.closest('td').cellIndex]));
         }
 
       } catch (error) {
@@ -602,44 +602,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       wearRow.cells[stint].textContent = get_wear(tyre,laps ,TRACK_INFO, CAR_ECONOMY, multiplier);
       updateFuel(tbody);
     }
-    function updateFuel(tbod)
-    {
-    //this function is called either directly or by change event of the push select.
-      if(tbod instanceof Event)
-        tbod = tbod.target.closest('tbody');
-
-      const pushRow = tbod.querySelector('[pushevent]');
-      const tyreRow = tbod.querySelector('.tyre');
-      const lapsRow = tbod.querySelector('.fuel');
-      const stintNumber = tyreRow.querySelectorAll('[style*=\'visibility: visible\']').length;
-      const ecoFuel = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
-      let totalfuel = 0;
-      let totalLaps = 0;
-      for(var i = 1 ;i < stintNumber ;i++)
-      {
-        let push = parseFloat(pushRow.cells[i].childNodes[0].value);
-        let laps = lapsRow.cells[i].textContent;
-        totalLaps += parseInt(laps);
-        const fuellap = ((ecoFuel + push) * TRACK_INFO.length);
-        totalfuel += parseInt(laps) * fuellap;
-      }
-      const fuelEle = tbod.closest('form').getElementsByClassName('fuelEst')[0];
-      const lapsTextNode = tbod.querySelector('.robotoBold');
-      lapsTextNode.textContent = totalLaps;
-      const raceLapsText = Number(lapsTextNode.nextSibling.textContent.split('/')[1]);
-      lapsTextNode.classList.remove('block-orange');
-      if(totalLaps > raceLapsText){
-        lapsTextNode.classList.add('block-orange');
-        lapsTextNode.classList.remove('block-grey');
-      }
-      if(totalLaps == raceLapsText)
-        lapsTextNode.classList.remove('block-red');
-
-
-
-      if(fuelEle != null)
-        fuelEle.textContent = `Fuel:${totalfuel.toFixed(2)}`;
-    }
+  
     function addEdit()
     {
       advancedFuel = document.getElementsByName('advancedFuel');
@@ -1057,7 +1020,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
           pushStrategy[i].childNodes[0].selectedIndex = s.stints[i].push;
 
-          update_stint(fuelStrategy[i]);
+          //update_stint(fuelStrategy[i]);
         } catch (error) {
 
         }

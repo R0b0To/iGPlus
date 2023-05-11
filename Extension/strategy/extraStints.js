@@ -106,7 +106,7 @@ function addExtraStint(driver_pit_div){
     clonedColumn[2].node.querySelector('[name^=fuel]').name = 'fuel' + (pit_number + 1);
     clonedColumn[2].node.querySelector('[name^=laps]').name = 'laps' + (pit_number + 1);
     clonedColumn[3].node.querySelector('select').selectedIndex = lastPit[3].querySelector('select').selectedIndex;
-
+    clonedColumn[3].node.querySelector('select').addEventListener('change',updateFuel);
     for(const node of clonedColumn)
       node.parent.append(node.node);
     driver_pit_div.closest('form').querySelector('[colspan]').colSpan++;
@@ -114,6 +114,48 @@ function addExtraStint(driver_pit_div){
     resolve(true)
   });
 
+}
+async function updateFuel(tbod)
+{
+  const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
+  const { fuel_calc } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
+  const {track_info } = await import(chrome.runtime.getURL('/strategy/const.js'));
+  let TRACK_INFO = track_info[TRACK_CODE];
+//this function is called either directly or by change event of the push select.
+  if(tbod instanceof Event)
+    tbod = tbod.target.closest('tbody');
+
+  const pushRow = tbod.querySelector('[pushevent]');
+  const tyreRow = tbod.querySelector('.tyre');
+  const lapsRow = tbod.querySelector('.fuel');
+  const stintNumber = tyreRow.querySelectorAll('[style*=\'visibility: visible\']').length;
+  const ecoFuel = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
+  let totalfuel = 0;
+  let totalLaps = 0;
+  for(var i = 1 ;i < stintNumber ;i++)
+  {
+    let push = parseFloat(pushRow.cells[i].childNodes[0].value);
+    let laps = lapsRow.cells[i].textContent;
+    totalLaps += parseInt(laps);
+    const fuellap = ((ecoFuel + push) * TRACK_INFO.length);
+    totalfuel += parseInt(laps) * fuellap;
+  }
+  const fuelEle = tbod.closest('form').getElementsByClassName('fuelEst')[0];
+  const lapsTextNode = tbod.querySelector('.robotoBold');
+  lapsTextNode.textContent = totalLaps;
+  const raceLapsText = Number(lapsTextNode.nextSibling.textContent.split('/')[1]);
+  lapsTextNode.classList.remove('block-orange');
+  if(totalLaps > raceLapsText){
+    lapsTextNode.classList.add('block-orange');
+    lapsTextNode.classList.remove('block-grey');
+  }
+  if(totalLaps == raceLapsText)
+    lapsTextNode.classList.remove('block-red');
+
+
+
+  if(fuelEle != null)
+    fuelEle.textContent = `Fuel:${totalfuel.toFixed(2)}`;
 }
 //replace pit stop text. Observer will know about the change.
 function replacePitNumber(div,number)
@@ -175,5 +217,6 @@ export {
   addStintEventHandler,
   removeExtraStint,
   addExtraStint,
-  replacePitNumber
+  replacePitNumber,
+  updateFuel
 };
