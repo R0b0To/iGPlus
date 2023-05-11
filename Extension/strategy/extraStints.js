@@ -3,8 +3,14 @@ function addStintEventHandler(driver_pit_div) {
     current: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent),
     previous: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent)
   };
-  const minus_btn = driver_pit_div.querySelector('.minus');
+const minus_btn = driver_pit_div.querySelector('.minus');
   const plus_btn = driver_pit_div.querySelector('.plus');
+  if(pits.current == 4){
+    plus_btn.setAttribute('extra',0);
+    plus_btn.classList.add('extraStint');
+  }
+
+
   // Create a new MutationObserver instance with a callback function
   const observer = new MutationObserver(mutationsList => {
     //console.log('mutation',mutationsList[0])
@@ -30,9 +36,6 @@ function addStintEventHandler(driver_pit_div) {
       minus_btn.classList.remove('extraStint');
     }
 
-    console.log(pits);
-
-
     // (pits.current > 4) ?  plus_btn.classList.add('disabled') : plus_btn.classList.remove('disabled');
   });
 
@@ -43,7 +46,7 @@ function addStintEventHandler(driver_pit_div) {
   };
 
   function increasePitNumber(e) {
-    console.log('plus event',e);
+
     if (e.autopress || e.type == 'pointerdown') {
       if(pits.current >= 4 && pits.previous >= 3 && pits.current < 6 && plus_btn.getAttribute('extra') == 0)
       {
@@ -55,7 +58,7 @@ function addStintEventHandler(driver_pit_div) {
 
   }
   function decreasePitNumber(e){
-    console.log('minus event',e);
+
     if (e.autopress || e.type == 'pointerdown') {
       if(pits.current > 4 && pits.previous < 7)
       {

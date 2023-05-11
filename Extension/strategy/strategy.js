@@ -2,7 +2,37 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
   (async function main(){
     document.getElementById('strategy').setAttribute('injected',true);
     //console.log('strategy loading');
-    const observer = new MutationObserver(function(mutations){ mutations.forEach(mut=>{if(mut.target.parentElement.style.visibility == 'visible' && mut.addedNodes.length > 0)update_stint(mut.target.closest('td'));});});
+    const observer = new MutationObserver(function (mutations) {
+      //console.log(mutations);
+      if(document.getElementsByClassName('PLFE')[0]?.value ?? false)
+        mutations.forEach(mut => {
+
+          //extra stint added or removed
+          if(mut.type == 'childList' && mut.target.classList.contains('darkgrey'))
+          {
+            const driver_form = mut.target.closest('form');
+            setTotalLapsText(driver_form);
+            updateFuel(driver_form.querySelector('tbody'));
+          }
+
+          //mutation of lap number
+          if(mut.target.tagName == 'SPAN' && mut.addedNodes.length > 0 && mut.target.classList.length == 0)
+          {
+            update_stint(mut.target.closest('td'))
+            setTotalLapsText(mut.target.closest('form'));
+          }
+
+        });
+    });
+
+    function setTotalLapsText(driver_form){
+      const stintsLaps = driver_form.querySelectorAll('td[style="visibility: visible;"]>span');
+      let total = 0;
+      for(const laps of stintsLaps)
+        total += Number(laps.textContent);
+
+      driver_form.querySelector('[id*=TotalLaps]').textContent = total;
+    }
     //language
     const {language}  = await chrome.storage.local.get({ language: 'en' });
     const {language: i18n}  = await import(chrome.runtime.getURL('common/localization.js'));
@@ -101,7 +131,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
       Object.keys(dstrategy).forEach(async driver =>{
         const strategyIDNumber = dstrategy[driver].closest('form').id[1];
-
+        observer.observe(dstrategy[driver].closest('tbody'), { characterData: true, attributes: true, childList: true, subtree: true });
         //add fuel div if the race is no refuel
         if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length > 2)
         {
@@ -257,8 +287,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
             if (i == 'FE'){
               pushInput.value = value;
-            pushInputLabel.textContent = '';
-             pushInputLabel.classList.add('feLabel');
+              pushInputLabel.textContent = '';
+              pushInputLabel.classList.add('feLabel');
             }
             else
               pushInput.value = pushToUse[i - 1];
@@ -299,7 +329,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             var w = get_wear(tyre, laps ,TRACK_INFO , CAR_ECONOMY, multiplier);
             stint.style.visibility = strategy.cells[i].style.visibility;
             //event will fire when laps or tyre is changed
-            observer.observe(strategy.cells[i].childNodes[0], { characterData: false, attributes: false, childList: true, subtree: false });
+
             stint.textContent = w;
             wearEle.append(stint);
           }
@@ -324,6 +354,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const pushToAdd = parseFloat(driver.querySelector('[pushevent]').cells[stintID].childNodes[0].value);
       //observe the fuel change in the dialog for tyre/fuel selection+
       var fuelChangeObserver = new MutationObserver(function (mutations) {
+        //console.log('fuelChangeObserver')
         mutations.forEach(mut => {
           const fuel_el = el.querySelector('.num');
           const fuelPerLap = fuel_calc(document.getElementsByClassName('PLFE')[0].value);
@@ -356,7 +387,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       params.parent.setAttribute('observing',true);
       const dialogObserver = new MutationObserver(function(mutations) {
         const el = params.parent.querySelector('form');
-
         if (el) {
         //is dialog the tyre/fuel selection?
           if(el.querySelector('[id=fuelLapsPrediction]'))
@@ -371,7 +401,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         //this.disconnect();
         }
       });
-      // this observer will stay avtive until hard page reload
+      // this observer will stay active until hard page reload
       dialogObserver.observe(params.parent || document, {
         subtree: !!params.recursive || !params.parent,
         childList: true,
@@ -898,74 +928,19 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         }}
     }
-    function hasExtraStint(pitNumber){
-      var extraStints = 0;
-      if(pitNumber < 4)
-        extraStints = -1;
-      else if(pitNumber == 4)
-        extraStints = 0;
-      else if(pitNumber > 4)
-        extraStints = 1;
-      return extraStints;
-    }
-    function openTyreDialog(){
-      var tyre = this.className;
-      var stintId = this.lastChild.name.match(/\d+/)[0];
-      var fuelL = this.parentElement.parentElement.childNodes[3].childNodes[stintId].childNodes[1].value;
-      var laps = this.parentElement.parentElement.childNodes[3].childNodes[stintId].textContent;
-      this.parentElement.cells[5].click(); //last valid stint
-      var tyreD = document.getElementById('tyreSelect').childNodes[0].childNodes[0];
-      document.getElementsByName('stintId')[0].value = stintId;
-      var dialog = document.getElementById('stintDialog');
-      dialog.childNodes[0].childNodes[0].textContent = 'Pit ' + (stintId - 1); // name of dialog stint
 
-      if(document.getElementById('fuelLapsPrediction').parentElement.parentElement.className == ' hide')
-        document.getElementById('tyreSelect').childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = laps;
-      else
-        document.getElementById('tyreSelect').childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[1].textContent = fuelL;
-
-
-      var event = new MouseEvent('mousedown', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true,
-
-      });
-      var event2 = new MouseEvent('mouseup', {
-        'view': window,
-        'bubbles': true,
-        'cancelable': true,
-
-      });
-      //simulate changing fuel to update values
-      dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event);
-      dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[0].dispatchEvent(event2);
-      dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event);
-      dialog.childNodes[2].childNodes[4].childNodes[0].childNodes[3].childNodes[0].childNodes[1].childNodes[2].dispatchEvent(event2);
-
-      for(var i = 0 ; i < 6 ; i++)
-      {
-        if(tyreD.childNodes[i].id != tyre)
-        {
-          tyreD.childNodes[i].className = 'inactive';
-        }else
-          tyreD.childNodes[i].className = '';
-      }
-
-
-
-    }
     function addMoreStints()
     {
       const strategies = document.getElementsByClassName('fuel');
       Object.keys(strategies).forEach(car=>{
         addStintEventHandler(strategies[car].closest('form').querySelector('.igpNum').parentElement);
+
       });
 
     }
     async function saveStint()
     {
-      
+
       const code = TRACK_CODE;
       const driverStrategy = this.closest('form');
       const raceLaps = driverStrategy.querySelector('[id*=TotalLaps]');
@@ -983,7 +958,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       saveData.laps = {
         total:Number(raceLaps.nextSibling.textContent.split('/')[1]),
         doing:Number(raceLaps.textContent)
-      }
+      };
       for(var i = 0; i < tyreStrategy.length; i++)
       {
         saveData.stints[i] = {
@@ -1033,27 +1008,17 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const data = await chrome.storage.local.get('save');
       const s = data.save[code][this.parentElement.id];
       const driverStrategy = this.closest('form');
-      //console.log(s);
       const pitNum = driverStrategy.querySelector('.num');
       const current_pit_number = pitNum.childNodes[0].textContent;
-      const tyre = driverStrategy.getElementsByClassName('tyre')[0];
-      const fuel = driverStrategy.getElementsByClassName('fuel')[0];
-      const push = driverStrategy.querySelector('tr[pushEvent]');
-      const pits = driverStrategy.querySelector('div > div.num.green');
-      const enabledStints = tyre.querySelectorAll('td[style*="visibility: visible"]').length;
-      const wear = driverStrategy.querySelector('tr[wearEvent]');
 
-      const tyreStrategy = tyre.querySelectorAll('td');
-      const fuelStrategy = fuel.querySelectorAll('td');
-      const pushStrategy = push.querySelectorAll('td');
-      const activeStints = tyre.childElementCount - 1;
 
       //number of stints
       const stints = Object.keys(s.stints).length;
 
-      const difference = (stints-1) - current_pit_number; 
+      const difference = (stints - 1) - current_pit_number;
       //replacePitNumber(pitNum,(stints-1))
 
+      //setting the right number of pits
       if(difference < 0)
         for(let i = 0; i < Math.abs(difference); i++) {
           await simulateClick(driverStrategy.querySelector('.minus'));
@@ -1061,36 +1026,37 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
       if(difference > 0)
         for(let i = 0; i < (difference); i++) {
-            await simulateClick(driverStrategy.querySelector('.plus'));
+          await simulateClick(driverStrategy.querySelector('.plus'));
         }
 
-    
-      
 
-      var fuelLap = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value)) * TRACK_INFO.length;
+
+      //getting the rows
+      const tyre = driverStrategy.getElementsByClassName('tyre')[0];
+      const fuel = driverStrategy.getElementsByClassName('fuel')[0];
+      const push = driverStrategy.querySelector('tr[pushEvent]');
+      const wear = driverStrategy.querySelector('tr[wearEvent]');
+
+      const tyreStrategy = tyre.querySelectorAll('td');
+      const fuelStrategy = fuel.querySelectorAll('td');
+      const pushStrategy = push.querySelectorAll('td');
+      //var fuelLap = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value)) * TRACK_INFO.length;
       //console.log('fe is',document.getElementsByClassName('PLFE')[0].value);
-      for(var i = 0; i < stints; i++)
+      for(let i = 0; i < stints; i++)
       {
         try {
-
           tyreStrategy[i].className = s.stints[i].tyre;
           tyreStrategy[i].childNodes[0].value = s.stints[i].tyre.substring(3);
           tyreStrategy[i].setAttribute('data-tyre',s.stints[i].tyre.substring(3));
-          tyreStrategy[i].style.visibility = 'visible';
 
           fuelStrategy[i].childNodes[0].textContent = s.stints[i].laps;
-          fuelStrategy[i].style.visibility = 'visible';
           const fuelkm = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
-          const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s.stints[i].push].value)) * TRACK_INFO.length)).toFixed(2)
-          //console.log(fuelkm,pushStrategy[i].childNodes[0].options[s[i].push].value,fuelWithPush);
+          const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s.stints[i].push].value)) * TRACK_INFO.length)).toFixed(2);
           fuelStrategy[i].childNodes[1].value = Math.ceil((fuelWithPush * s.stints[i].laps));
           fuelStrategy[i].childNodes[2].value = s.stints[i].laps;
 
           pushStrategy[i].childNodes[0].selectedIndex = s.stints[i].push;
-          pushStrategy[i].style.visibility = 'visible';
 
-          wear.cells[i + 1].style.visibility = 'visible';
-          // console.log(tyreStrategy[i]);
           update_stint(fuelStrategy[i]);
         } catch (error) {
 
@@ -1098,7 +1064,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
       }
 
-    
+
 
       updateFuel(wear.closest('tbody'));
       dragStint();
@@ -1161,7 +1127,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
                         strat.classList.add('loadStrat');
                         strat.addEventListener('click',loadStint);
                       });
-                      sList.querySelectorAll('.trash').forEach(d => {d.addEventListener('click',deleteSave)})
+                      sList.querySelectorAll('.trash').forEach(d => {d.addEventListener('click',deleteSave);});
                       e.appendChild(sList);});
                   }
                   res (true);
