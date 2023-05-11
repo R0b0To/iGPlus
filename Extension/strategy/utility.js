@@ -155,6 +155,54 @@ xmlns="http://www.w3.org/2000/svg"
   deleteB.classList.add('trash');
   return deleteB;
 }
+function simulateClick(node){
+  class CustomEvent extends MouseEvent {
+    constructor(eventName, options) {
+      super(eventName, options);
+      // Add custom properties to the event instance
+      this.autopress = options.autopress || null;
+    }
+  }
+  const touchstart = new CustomEvent('touchstart', {
+    'view': window,
+    'bubbles': true,
+    'cancelable': true,
+    'autopress':true
+  });
+  const touchend = new CustomEvent('touchend', {
+    'view': window,
+    'bubbles': true,
+    'cancelable': true,
+    'autopress':true
+  });
+  const observerConfig = {
+    subtree: true,
+    childList: true
+  };
+
+
+  return new Promise ((res)=>{
+
+    if(node.classList.contains('minus')){
+      const observer = new MutationObserver(mutationsList => {
+        console.log('changed');
+        observer.disconnect();
+        res(true);
+      });
+      observer.observe(node.parentElement.querySelector('.num'), observerConfig);
+    }
+
+    node.dispatchEvent(touchstart);
+    node.dispatchEvent(touchend);
+
+
+    if(node.classList.contains('plus'))
+      res(true);
+
+  });
+
+
+}
 
 export{
   createSlider,
@@ -162,5 +210,6 @@ export{
   childOf,
   strategyPreview,
   createDownloadButton,
-  createDeleteButton
+  createDeleteButton,
+  simulateClick
 };

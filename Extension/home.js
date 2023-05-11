@@ -48,7 +48,6 @@ function injectLockedShortcuts(raceID){
 
   if(document.getElementById('lockedstrat') == null)
   {
-    console.log('test');
     shortcutsLocation.append(container);
   }
     

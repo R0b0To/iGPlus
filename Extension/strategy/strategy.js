@@ -24,7 +24,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //active scripts
     const active_scripts = await chrome.storage.local.get('script');
     //utility
-    const {createSlider, hashCode, childOf, strategyPreview} = await import(chrome.runtime.getURL('/strategy/utility.js'));
+    const {createSlider, hashCode, childOf, strategyPreview, simulateClick} = await import(chrome.runtime.getURL('/strategy/utility.js'));
+    const {addStintEventHandler,removeExtraStint,addExtraStint,replacePitNumber} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
 
     try {
       if (league_info != false) {
@@ -430,7 +431,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             th.addEventListener('touchstart',dragMousedown,true);
             th.classList.add('dragMe');
           });
-        },100);
+        },1);
 
 
 
@@ -897,154 +898,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         }}
     }
-    function removeStints(minusDiv)
-    {
-
-      if(minusDiv.tagName != 'DIV')
-      {
-        var pits = this.nextElementSibling.textContent.match(/\d+/)[0];
-        minusDiv = this;
-      }
-      else
-        pits = minusDiv.nextElementSibling.textContent.match(/\d+/)[0];
-
-      var driver = minusDiv.closest('form');
-      totalStintNumber = driver.getElementsByClassName('tyre')[0].querySelectorAll('td[style*="visibility: visible"]').length;
-
-      if(totalStintNumber <= 5)
-      {
-        minusDiv.nextElementSibling.nextElementSibling.setAttribute('style','background-color:#6c7880');
-        minusDiv.nextElementSibling.nextElementSibling.className = 'plus';
-        minusDiv.nextSibling.nextElementSibling.nextElementSibling.style.visibility = 'hidden';
-      }
-      if(totalStintNumber <= 6)
-      {
-        minusDiv.nextSibling.nextElementSibling.nextElementSibling.style.visibility = 'hidden';
-      }
-
-      var extraStints = parseInt(minusDiv.parentElement.lastChild.childNodes[1].textContent);
-      pitNumber = minusDiv.nextElementSibling.childNodes[0].textContent;
-
-
-
-      extraStints = hasExtraStint(pitNumber);
-
-
-
-      if(totalStintNumber > 5){
-        minusDiv.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan--;
-
-
-        driver = minusDiv.parentElement.parentElement.parentElement;
-        var strategyTable = driver.childNodes[3].childNodes[0];
-        strategyTable.childNodes[0].lastChild.remove();
-        strategyTable.childNodes[1].lastChild.remove();
-        strategyTable.childNodes[3].lastChild.remove();
-        strategyTable.childNodes[5].lastChild.remove();
-        strategyTable.childNodes[6].lastChild.remove();
-
-
-        minusDiv.parentElement.lastChild.childNodes[1].textContent = totalStintNumber - 6;
-
-
-        if((totalStintNumber - 1) == 5)
-        {
-          minusDiv.className = 'minus';
-          minusDiv.setAttribute('style','background-color:#6c7880');
-
-        }
-
-      }
-
-    }
-    function injectExtraStints(plusDiv){
-
-
-      return new Promise((resolve, reject) => {
-
-        success = false;
-
-        if(plusDiv.tagName != 'DIV')
-        {
-          var pits = this.previousElementSibling.textContent.match(/\d+/)[0];
-          plusDiv = this;
-        }
-        else
-          pits = plusDiv.previousElementSibling.textContent.match(/\d+/)[0];
-
-
-        var driver = plusDiv.closest('form');
-        var pitRow = driver.getElementsByClassName('darkgrey')[0];
-        numberOfExtraPits = hasExtraStint(pits);
-
-        if(pits >= 4 && plusDiv.style.backgroundColor == 'firebrick' && pitRow.childElementCount < 8)
-        {
-
-          var minus = plusDiv.nextElementSibling.parentElement.firstChild;
-          minus.className = 'minus disabled';
-          minus.setAttribute('style','background-color: firebrick;opacity: 100!important;');
-          plusDiv.nextElementSibling.setAttribute('style','visibility:visible');
-
-          if(plusDiv.className == 'plus disabled'){
-
-            var strategyTable = driver.childNodes[3].childNodes[0];
-
-            plusDiv.parentNode.parentElement.parentElement.childNodes[3].childNodes[0].lastChild.childNodes[0].colSpan++;
-
-            //clone last pit
-
-            var pitTh = pitRow.lastChild.cloneNode(true);
-            var lastpit = parseInt(pitTh.textContent.match(/\d+/)[0]);
-
-            plusDiv.nextElementSibling.childNodes[1].textContent = pitRow.childElementCount - 5;
-            lastpit++;
-            pitTh.textContent = pitTh.textContent.replace(/[0-9]/g, lastpit);
-            pitRow.appendChild(pitTh);
-
-            //clone last tyre
-            var tyreRow = strategyTable.childNodes[1];
-            var clonedTyre = tyreRow.lastChild.cloneNode(true);
-            clonedTyre.childNodes[0].name = 'tyre' + (parseInt(clonedTyre.childNodes[0].name.match(/\d+/)[0]) + 1);
-            clonedTyre.addEventListener('click',openTyreDialog);
-            tyreRow.appendChild(clonedTyre);
-            //clone last lap
-
-            var lapsRow = strategyTable.childNodes[3];
-            var clonedLap = lapsRow.lastChild.cloneNode(true);
-            //console.log(clonedLap);
-            observer.observe(clonedLap.childNodes[0], { characterData: false, attributes: false, childList: true, subtree: false });
-
-            clonedLap.childNodes[1].name = 'fuel' + (parseInt(clonedLap.childNodes[1].name.match(/\d+/)[0]) + 1);
-            clonedLap.childNodes[2].name = 'laps' + (parseInt(clonedLap.childNodes[2].name.match(/\d+/)[0]) + 1);
-            lapsRow.appendChild(clonedLap);
-            //clone last push
-            var pushRow = strategyTable.childNodes[5];
-            var clonedPush = pushRow.lastChild.cloneNode(true);
-            clonedPush.addEventListener('change',updateFuel);//-------------------------------------------------------------
-            pushRow.appendChild(clonedPush);
-            //clone last wear
-            var wearRow = strategyTable.childNodes[6];
-            var clonedWear = wearRow.lastChild.cloneNode(true);
-            wearRow.appendChild(clonedWear);
-            updateFuel(clonedLap.closest('tbody'));
-
-            success = true;
-          }
-        }else if(pits == 4)
-        {
-          plusDiv.setAttribute('style','background-color: firebrick;opacity: 100!important;');
-        //plusDiv.nextElementSibling.lastChild.textContent = 0;
-        }
-
-        if (success) {
-          resolve(true);
-        } else {
-        //reject(false);
-        }
-
-      });
-
-    }
     function hasExtraStint(pitNumber){
       var extraStints = 0;
       if(pitNumber < 4)
@@ -1104,45 +957,9 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     }
     function addMoreStints()
     {
-      function addExtraStintButton(pitDiv)
-      {
-        if(pitDiv.getAttribute('x') == null){
-          pitDiv.setAttribute('x','enabled');
-          var  addStint = document.createElement('div');
-          addStint.textContent = '+';
-          var stintCounter = document.createElement('div');
-          stintCounter.textContent = -1;
-          addStint.append(stintCounter);
-          //addStint.id="extra "+id;
-          addStint.setAttribute('style','left: 140px;position: relative; visibility:hidden');
-
-
-          carPits = pitDiv;
-
-          var stops = parseInt(carPits.textContent.match(/\d+/)[0]);
-          if(stops > 3)
-          {
-            stintCounter.textContent = 0;
-            carPits.childNodes[0].childNodes[2].setAttribute('style','background-color: firebrick;opacity: 100!important;');
-          }
-
-
-          carPits.childNodes[0].childNodes[2].addEventListener('touchstart',injectExtraStints);
-          carPits.childNodes[0].childNodes[2].addEventListener('click',injectExtraStints);
-
-          carPits.childNodes[0].childNodes[0].addEventListener('click',removeStints);
-          carPits.childNodes[0].childNodes[0].addEventListener('touchstart',removeStints);
-          carPits.childNodes[0].append(addStint);
-        }
-
-
-      }
-
-
-      var strategies = document.getElementsByClassName('fuel');
-
+      const strategies = document.getElementsByClassName('fuel');
       Object.keys(strategies).forEach(car=>{
-        addExtraStintButton(strategies[car].closest('form').querySelector('.igpNum').parentElement);
+        addStintEventHandler(strategies[car].closest('form').querySelector('.igpNum').parentElement);
       });
 
     }
@@ -1211,13 +1028,14 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
     async function loadStint()
     {
-    //document.getElementById('myDropdown2').classList.toggle('show1');
-    //this.closest("div").classList.toggle("show1");
+
       const code  = TRACK_CODE;
       const data = await chrome.storage.local.get('save');
       const s = data.save[code][this.parentElement.id];
       const driverStrategy = this.closest('form');
-      const pitNum = driverStrategy.querySelectorAll('input[name=\'numPits\']')[0];
+      //console.log(s);
+      const pitNum = driverStrategy.querySelector('.num');
+      const current_pit_number = pitNum.childNodes[0].textContent;
       const tyre = driverStrategy.getElementsByClassName('tyre')[0];
       const fuel = driverStrategy.getElementsByClassName('fuel')[0];
       const push = driverStrategy.querySelector('tr[pushEvent]');
@@ -1230,69 +1048,24 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const pushStrategy = push.querySelectorAll('td');
       const activeStints = tyre.childElementCount - 1;
 
+      //number of stints
       const stints = Object.keys(s.stints).length;
-      let pitText = stints - 1;
 
+      const difference = (stints-1) - current_pit_number; 
+      //replacePitNumber(pitNum,(stints-1))
 
-      pitNum.value = pitText;
-
-      if((pitText) > 4)
-        pitText = 4;
-      pits.childNodes[0].textContent = pitText;
-
-      if(activeStints > 5)
-      {
-        for (let i = 0; i < (enabledStints - stints); i++) {
-          removeStints(pits.previousElementSibling);
-        }
-      }
-
-      const extraStintstoAdd = (activeStints - stints);
-
-
-      if(activeStints < stints)
-      {
-        var event = new MouseEvent('mousedown', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true,
-
-        });
-        var event2 = new MouseEvent('mouseup', {
-          'view': window,
-          'bubbles': true,
-          'cancelable': true,
-
-        });
-
-
-
-        for (let i = 0; i < (5 - enabledStints); i++) {
-          pits.nextElementSibling.dispatchEvent(event);
-          pits.nextElementSibling.dispatchEvent(event2);
-          pits.nextElementSibling.setAttribute('style','background-color: firebrick;opacity: 100!important;');
+      if(difference < 0)
+        for(let i = 0; i < Math.abs(difference); i++) {
+          await simulateClick(driverStrategy.querySelector('.minus'));
         }
 
-        for (let i = 0; i < (stints - 5); i++) {
-          done = await injectExtraStints(pits.nextElementSibling);
+      if(difference > 0)
+        for(let i = 0; i < (difference); i++) {
+            await simulateClick(driverStrategy.querySelector('.plus'));
         }
-      }
 
-      // const wear = driverStrategy.querySelectorAll('tr[id*=tyre] >td');
-
-      /* tyre = driverStrategy.getElementsByClassName('tyre')[0];
-    fuel = driverStrategy.getElementsByClassName('fuel')[0];
-    push = driverStrategy.querySelector('tr[pushEvent]');*/
-
-
-
-      for(var i = stints ; i < 5; i++)
-      {
-        tyreStrategy[i].style.visibility = 'hidden';
-        fuelStrategy[i].style.visibility = 'hidden';
-        pushStrategy[i].style.visibility = 'hidden';
-        wear.cells[i + 1].style.visibility = 'hidden';
-      }
+    
+      
 
       var fuelLap = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value)) * TRACK_INFO.length;
       //console.log('fe is',document.getElementsByClassName('PLFE')[0].value);
@@ -1325,21 +1098,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
       }
 
-      if((stints - 1) < 4)
-      {
-        pits.nextElementSibling.setAttribute('style','background-color: #6c7880;opacity: 100!important;');
-        pits.nextElementSibling.className = 'plus';
-      }
-      if((stints - 1) == 1)
-      {
-        pits.previousElementSibling.className = 'minus disabled';
-      }
-      if((stints - 1) == 4)
-      {
-        pits.nextElementSibling.setAttribute('style','background-color: firebrick;opacity: 100!important;');
-        pits.nextElementSibling.className = 'plus disabled';
-        pits.previousElementSibling.className = 'minus';
-      }
+    
 
       updateFuel(wear.closest('tbody'));
       dragStint();

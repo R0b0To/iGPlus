@@ -154,7 +154,7 @@ async function handleSettings() {
         }
 
 
-        chrome.storage.local.set({ [scriptName]: status });
+        await chrome.storage.local.set({ [scriptName]: status });
       }
       mergeStorage(scriptName, status);
     }
