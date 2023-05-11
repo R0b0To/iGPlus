@@ -18,6 +18,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           //mutation of lap number
           if(mut.target.tagName == 'SPAN' && mut.addedNodes.length > 0 && mut.target.classList.length == 0)
           {
+            console.log(mut)
             update_stint(mut.target.closest('td'))
             setTotalLapsText(mut.target.closest('form'));
           }
@@ -146,7 +147,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         Promise.all([createWearRow(dstrategy[driver]),createPushRow(dstrategy[driver])]).then((test) => {
         //after wear and push rows are generated execute this
-         // update_stint(dstrategy[driver].cells[1]);
+          update_stint(dstrategy[driver].cells[1]);
 
 
         });
@@ -480,11 +481,10 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       stintColumn[1].querySelector('input').value = tyre;
       stintColumn[1].className = 'ts-' + tyre;
       stintColumn[1].setAttribute('data-tyre',tyre);
-      stintColumn[2].querySelector('span').textContent = laps;
+      stintColumn[2].querySelector('span').replaceChild(document.createTextNode(laps),stintColumn[2].querySelector('span').childNodes[0]);
       stintColumn[2].querySelectorAll('input')[0].value = fuel;
       stintColumn[2].querySelectorAll('input')[1].value = laps;
       stintColumn[3].querySelector('select').selectedIndex = push;
-
     }
 
     function closeDragElement(e) {
