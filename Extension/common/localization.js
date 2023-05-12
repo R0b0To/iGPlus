@@ -111,7 +111,7 @@ const language = {
     fuelText: 'Carburante',
     lapText: 'Giri',
     pushText: 'Spinta',
-    pitAlert:'Gli stint dopo il quarto pit stop sono solo visivi e non vengono salvati per la gara.',
+    pitAlert:'Gli stint dopo il quarto pit stop sono solo visivi e non saranno salvati per la gara.',
     pushDescriptionPart1: 'Ogni spinta equivale alla quantità di carburante (in litri) da aggiungere al consumo di carburante. Il tuo consumo attuale è: ',
     pushDescriptionPart2: 'L/km (Litri per giro/ lunghezza circuito). La scelta della spinta non verrà salvata per la gara.',
     commentText: 'Commenti',

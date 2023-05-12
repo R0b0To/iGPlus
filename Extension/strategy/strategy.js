@@ -54,9 +54,9 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //active scripts
     const active_scripts = await chrome.storage.local.get('script');
     //utility
-    const {createSlider, hashCode, childOf, strategyPreview, simulateClick} = await import(chrome.runtime.getURL('/strategy/utility.js'));
+    const {createSlider, hashCode, strategyPreview, simulateClick} = await import(chrome.runtime.getURL('/strategy/utility.js'));
     const {addStintEventHandler, updateFuel} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
-
+    const {dragStintHandler} = await import(chrome.runtime.getURL('/strategy/dragStint.js'));
     try {
       if (league_info != false) {
         injectAdvancedStint();
@@ -68,7 +68,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         //eventAdded is a placeholder for knowing if the eventlistener is already present
         if(document.getElementById('eventAdded') == null)
-          dragStint();
+        dragStintHandler();
         if(active_scripts.script.sliderS)
           addFuelSlider();
         if(active_scripts.script.editS)
@@ -408,188 +408,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       });
       return dialogObserver;
     }
-    function getColumnElements(elementOfColumn){
-      const index = (elementOfColumn.cellIndex + 1) || (elementOfColumn.closest('td').cellIndex + 1) ;
-      const column = elementOfColumn.closest('tbody').querySelectorAll(`th:nth-child(${index}),td:nth-child(${index}):not(.loadStint):not(.trash)`);
-      return column;
-    }
-    function dropzoneEnter(e){
-      const column = getColumnElements(e.target);
-      column.forEach(c => c.classList.add('accept'));
-    }
-    function dropzoneLeave(e){
-      const column = getColumnElements(e.target);
-      column.forEach(c => c.classList.remove('accept'));
-    }
-    function dragStint(){
-
-      if(document.getElementById('eventAdded') == null){
-        const eventa = document.createElement('h1');
-        eventa.id = 'eventAdded';
-        eventa.style.display = 'none';
-        document.getElementsByClassName('fuel')[0].parentElement.parentElement.append(eventa);
-        const plusMinus = document.querySelectorAll('form[id$=strategy] .plus,form[id$=strategy] .minus');
-        plusMinus.forEach(button => {
-          button.addEventListener('click',addEvent,true);
-          button.addEventListener('touchstart',addEvent,true);
-        });
-
-      }
-      addEvent();
-      function addEvent(){
-      //waiting in case new stint is created
-        setTimeout(()=>{
-          const strategies = document.getElementsByClassName('fuel');
-          const driver = [];
-          let visibleStints = [];
-
-          for(const strategy of strategies){
-            driver.push(strategy.closest('tbody').firstChild);
-          }
-          driver.forEach(stintRow =>{
-            stintRow.querySelectorAll('th:not(:first-child)').forEach(th => {
-              th.classList.remove('dragMe');
-              th.removeEventListener('mousedown',dragMousedown,true);
-              th.removeEventListener('touchstart',dragMousedown,true);
-            });
-            visibleStints = visibleStints.concat(getVisibleStints(stintRow));
-          });
-
-          let info = null;
-          visibleStints.forEach(th => {
-            th.addEventListener('mousedown',dragMousedown,true);
-            th.addEventListener('touchstart',dragMousedown,true);
-            th.classList.add('dragMe');
-          });
-        },1);
-
-
-
-      }
-
-    }
-    function getStintInfo(stintColumn){
-      const tyre = stintColumn[1].querySelector('input').value;
-      const fuel = stintColumn[2].querySelector('input').value;
-      const laps = stintColumn[2].querySelector('span').textContent;
-      const push = stintColumn[3].querySelector('select').selectedIndex;
-
-      return {tyre,fuel,push,laps};
-    }
-    function setStintInfo(stintColumn,tyre,fuel,push,laps){
-      stintColumn[1].querySelector('input').value = tyre;
-      stintColumn[1].className = 'ts-' + tyre;
-      stintColumn[1].setAttribute('data-tyre',tyre);
-      stintColumn[2].querySelector('span').replaceChild(document.createTextNode(laps),stintColumn[2].querySelector('span').childNodes[0]);
-      stintColumn[2].querySelectorAll('input')[0].value = fuel;
-      stintColumn[2].querySelectorAll('input')[1].value = laps;
-      stintColumn[3].querySelector('select').selectedIndex = push;
-    }
-
-    function closeDragElement(e) {
-      let isChild = false;
-      const pointerOnTop = document.elementFromPoint(e.clientX, e.clientY);
-      const strat = document.getElementsByClassName('strategy');
-
-      for(const s of strat){
-        if (childOf(pointerOnTop,s))
-          isChild = true;
-      }
-
-      //try to set new info
-      try {
-        if(isChild){
-          setStintInfo(getColumnElements(pointerOnTop),info.tyre,info.fuel,info.push,info.laps);
-          //update_stint((pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.cellIndex]) || (pointerOnTop.closest('tbody').querySelector('.fuel').cells[pointerOnTop.closest('td').cellIndex]));
-        }
-
-      } catch (error) {
-
-      }
-
-      /* stop moving when mouse button is released:*/
-      document.querySelectorAll('.dropzone,.dragging,.dropzonebottom').forEach(otherStint => {
-        otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
-        otherStint.removeEventListener('pointerenter',dropzoneEnter,true);
-        otherStint.removeEventListener('pointerleave',dropzoneLeave,true);
-        document.removeEventListener('pointerup',closeDragElement);
-      });
-
-      document.removeEventListener('pointermove',elementDrag,true);
-
-      const preview = document.getElementsByClassName('drag');
-      for(ele of preview) ele.remove();
-
-    }
-    function elementDrag(e){
-
-      const ele = document.getElementsByClassName('drag');
-      Array.from(ele).forEach(stintPreview=>{
-        stintPreview.style.top = e.clientY + 10 + 'px';
-        stintPreview.style.left = e.clientX - 5 + 'px';
-      });
-
-
-    }
-    function previewDrag(stintHeader,coord){
-      const preview = document.getElementsByClassName('drag');
-      for(ele of preview) ele.remove();
-      const table = document.createElement('table');
-      const row = document.createElement('tr');
-      row.append(stintHeader.cloneNode(true));
-      const tyreRow = document.createElement('tr');
-      const tyre = stintHeader.closest('tr').nextElementSibling.cells[stintHeader.cellIndex].cloneNode(true);
-      tyreRow.append(tyre);
-      tyreRow.classList.add('tyre');
-      table.append(row,tyreRow);
-      table.classList.add('drag');
-      table.id = 'previewDrag';
-      table.style.top = coord.y + 5 + 'px';
-      table.style.left = coord.x + 5 + 'px';
-      return table;
-    }
-    function dragMousedown(e){
-      e.preventDefault();
-      if(e.target.closest('tbody').querySelector('.tyre').cells[e.target.cellIndex].style.visibility == 'visible'){
-        const coord = {x:e.clientX,y:e.clientY};
-        const preview = previewDrag(e.target,coord);
-
-        document.body.append(preview);
-        document.addEventListener('pointermove',elementDrag,true);
-        info = getStintInfo(getColumnElements(e.target));
-
-        const otherstints = getVisibleStints(e.target.closest('tr'));
-        otherstints.forEach(s => {
-          const stintColumns = getColumnElements(s);
-          if(s == e.target){
-            stintColumns.forEach(e => e.classList.add('dragging'));
-          }else{
-            //other visible elements that will be dropzones
-            stintColumns.forEach(ele => {
-              ele.classList.add('dropzone');
-              if (ele.parentElement.getAttribute('wearevent'))
-                ele.classList.add('dropzonebottom');
-              ele.addEventListener('pointerenter',dropzoneEnter,true);
-              ele.addEventListener('pointerleave',dropzoneLeave,true);
-
-            });
-          }
-          document.addEventListener('pointerup',closeDragElement);
-        });
-
-      }
-
-
-    }
-    function getVisibleStints(stintHeader){
-      const visibleS = [];
-      const stints = stintHeader.querySelectorAll('th:not(:first-child)');
-      stints.forEach(stint =>{
-        if (stint.closest('tbody').querySelector('.tyre').cells[stint.cellIndex].style.visibility == 'visible')
-          visibleS.push(stint);
-      });
-      return visibleS;
-    }
+   
     function update_stint(s)
     {
       const stint = s.cellIndex;
@@ -1021,11 +840,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         }
 
       }
-
-
-
       updateFuel(wear.closest('tbody'));
-      dragStint();
       const saveBox = driverStrategy.getElementsByClassName('dropdown2-content');
       Object.keys(saveBox).forEach(key=>{
         saveBox[key].close();

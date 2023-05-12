@@ -65,10 +65,7 @@ function hashCode(string){
   }
   return hash;
 }
-function childOf(/*child node*/c, /*parent node*/p){ //returns boolean
-  while((c = c.parentNode) && c !== p);
-  return !!c;
-}
+
 async function strategyPreview(strategies,car_info){
   const container = document.createElement('tbody');
   container.id = 'saveList';
@@ -185,7 +182,6 @@ function simulateClick(node){
 
     if(node.classList.contains('minus')){
       const observer = new MutationObserver(mutationsList => {
-        console.log('changed');
         observer.disconnect();
         res(true);
       });
@@ -207,7 +203,6 @@ function simulateClick(node){
 export{
   createSlider,
   hashCode,
-  childOf,
   strategyPreview,
   createDownloadButton,
   createDeleteButton,

@@ -155,12 +155,12 @@ async function copyColumnData() {
   const columnIndex = this.cellIndex;
   const table = this.closest('tbody');
 
-  let cvs = '';
+  let csv = '';
   for (let item of table.rows) {
-    cvs += `${item.childNodes[columnIndex].childNodes[0].textContent}\n`;
+    csv += `${item.childNodes[columnIndex].childNodes[0]?.textContent ?? ''}\n`;
   }
 
-  await navigator.clipboard.writeText(cvs);
+  await navigator.clipboard.writeText(csv);
   console.log('text copied');
 }
 

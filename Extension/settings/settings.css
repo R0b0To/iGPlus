@@ -42,23 +42,25 @@ align-items: center;
 
 
 #fieldtip {
-  text-align: center;
-  font-size: 0.9em;
   display: flex;
-  border-radius: 8px;
-  position: absolute;
-  padding: 5px 15px;
-  background: #292d33;
-  color: #fff;
-  font-weight: 300;
-  z-index: 100;
-  min-width: 40px;
-  max-width: 200px;
+  max-width: 300px;
   transition: all 200ms linear;
   -webkit-transition: all 200ms linear;
   -moz-transition: all 200ms linear;
   -o-transition: all 200ms linear;
   z-index: 100;
+  left: -64px;
+  top: -110px;
+text-align: center;
+  color: #ccc;
+  background: #292d33;
+  position: absolute;
+  z-index: 201;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: .9em;
+  box-sizing: border-box;
+  min-width: 150px;
 }
 
 #fieldtip:after {
