@@ -1,40 +1,49 @@
-function addStintEventHandler(driver_pit_div) {
+
+async function addStintEventHandler(driver_pit_div) {
+ 
   const pits = {
     current: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent),
     previous: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent)
   };
-const minus_btn = driver_pit_div.querySelector('.minus');
+  const minus_btn = driver_pit_div.querySelector('.minus');
   const plus_btn = driver_pit_div.querySelector('.plus');
+
+  //when page is first loaded
   if(pits.current == 4){
     plus_btn.setAttribute('extra',0);
     plus_btn.classList.add('extraStint');
   }
 
+  const observer = new MutationObserver(async mutationsList => {
+    if(mutationsList[0].target.classList.contains('num')){
+      pits.previous = pits.current;
+      pits.current = Number(mutationsList[0].addedNodes[0].textContent);
+      if(pits.current > 4 || pits.current == 1){
+        minus_btn.classList.add('disabled');
+        minus_btn.classList.add('extraStint');
+        plus_btn.classList.add('extraStint');
+        if(!plus_btn.closest('form').getElementsByClassName('alertExtra')[0])
+        plus_btn.closest('form').prepend(await addAlert());
+      }else{
+        minus_btn.classList.remove('disabled');
+        minus_btn.classList.remove('extraStint');
+      }
 
-  // Create a new MutationObserver instance with a callback function
-  const observer = new MutationObserver(mutationsList => {
-    //console.log('mutation',mutationsList[0])
+      if(pits.current == 4){
+        plus_btn.setAttribute('extra',0);
+        plus_btn.classList.add('extraStint');
+        plus_btn.closest('form').getElementsByClassName('alertExtra')[0]?.remove();
+      }
+      if(pits.current < 4){
+        plus_btn.closest('form').getElementsByClassName('alertExtra')[0]?.remove();
+        plus_btn.setAttribute('extra',-1);
+        plus_btn.classList.remove('extraStint');
+        minus_btn.classList.remove('extraStint');
+      }
 
-    pits.previous = pits.current;
-    pits.current = Number(mutationsList[0].addedNodes[0].textContent);
-    if(pits.current > 4 || pits.current == 1){
-      minus_btn.classList.add('disabled');
-      minus_btn.classList.add('extraStint');
-      plus_btn.classList.add('extraStint');
-    }else{
-      minus_btn.classList.remove('disabled');
-      minus_btn.classList.remove('extraStint');
+
     }
 
-    if(pits.current == 4){
-      plus_btn.setAttribute('extra',0);
-      plus_btn.classList.add('extraStint');
-    }
-    if(pits.current < 4){
-      plus_btn.setAttribute('extra',-1);
-      plus_btn.classList.remove('extraStint');
-      minus_btn.classList.remove('extraStint');
-    }
 
     // (pits.current > 4) ?  plus_btn.classList.add('disabled') : plus_btn.classList.remove('disabled');
   });
@@ -111,7 +120,7 @@ function addExtraStint(driver_pit_div){
       node.parent.append(node.node);
     driver_pit_div.closest('form').querySelector('[colspan]').colSpan++;
 
-    resolve(true)
+    resolve(true);
   });
 
 }
@@ -121,7 +130,7 @@ async function updateFuel(tbod)
   const { fuel_calc } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
   const {track_info } = await import(chrome.runtime.getURL('/strategy/const.js'));
   let TRACK_INFO = track_info[TRACK_CODE];
-//this function is called either directly or by change event of the push select.
+  //this function is called either directly or by change event of the push select.
   if(tbod instanceof Event)
     tbod = tbod.target.closest('tbody');
 
@@ -162,6 +171,17 @@ function replacePitNumber(div,number)
 {
   const driver_form = div.closest('form');
   driver_form.querySelector('.num').replaceChild(document.createTextNode(number),driver_form.querySelector('.num').childNodes[0]);
+}
+async function addAlert(){
+  const {language}  = await chrome.storage.local.get({ language: 'en' });
+  const {language: i18n}  = await import(chrome.runtime.getURL('common/localization.js'));
+  const alertContainer = document.createElement('div');
+  alertContainer.classList.add('alertExtra');
+  const alertText = document.createElement('span');
+  alertContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M19.64 16.36L11.53 2.3A1.85 1.85 0 0 0 10 1.21 1.85 1.85 0 0 0 8.48 2.3L.36 16.36C-.48 17.81.21 19 1.88 19h16.24c1.67 0 2.36-1.19 1.52-2.64zM11 16H9v-2h2zm0-4H9V6h2z"/></svg>';
+  alertText.textContent = i18n[language].pitAlert;
+   alertContainer.append(alertText);
+  return alertContainer;
 }
 
 function openTyreDialog(){

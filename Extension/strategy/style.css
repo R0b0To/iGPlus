@@ -307,12 +307,16 @@ top:-14px;
   visibility: hidden;
   top: -25px;
   left:100%;
-  background-color: #292d33;
-  color: #fff;
   text-align: center;
-  border-radius: 6px;
-  padding: 5px 0;
-  width: 472px;
+  color: #ccc;
+  background: #292d33;
+  position: absolute;
+  z-index: 201;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: .9em;
+  box-sizing: border-box;
+  min-width: 300px;
 
 
   /* Position the tooltip */
@@ -399,4 +403,33 @@ background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAM
 }
 .extraStint.disabled{
   opacity: 1!important;
+}
+.alertExtra{
+  float: right;
+  position: relative;
+  top: 6px;
+  left: -14px;
+  cursor: help;
+}
+.alertExtra >svg{
+  fill: #467bb1;
+}
+.alertExtra >span{
+  display:none;
+  position: absolute;
+  left: -64px;
+    top: -110px;
+  text-align: center;
+    color: #ccc;
+    background: #292d33;
+    position: absolute;
+    z-index: 201;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: .9em;
+    box-sizing: border-box;
+    min-width: 150px;
+}
+.alertExtra:hover >span{
+  display:block;
 }
