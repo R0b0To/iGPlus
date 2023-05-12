@@ -18,7 +18,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           //mutation of lap number
           if(mut.target.tagName == 'SPAN' && mut.addedNodes.length > 0 && mut.target.classList.length == 0)
           {
-            console.log(mut)
             update_stint(mut.target.closest('td'))
             setTotalLapsText(mut.target.closest('form'));
           }
@@ -56,7 +55,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     const active_scripts = await chrome.storage.local.get('script');
     //utility
     const {createSlider, hashCode, childOf, strategyPreview, simulateClick} = await import(chrome.runtime.getURL('/strategy/utility.js'));
-    const {addStintEventHandler,removeExtraStint,addExtraStint,replacePitNumber, updateFuel} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
+    const {addStintEventHandler, updateFuel} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
 
     try {
       if (league_info != false) {
@@ -111,7 +110,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const feToolTip = document.getElementsByClassName('tooltiptext');
       for (let i = 0; i < pFE.length; i++) {
         pFE[i].value = fe;
-        feToolTip[i].textContent =  i18n[language].pushDescriptionPart1 + ((fuel_calc(fe) * TRACK_INFO.length).toFixed(3)) + ' ' + i18n[language].pushDescriptionPart2;
+        feToolTip[i].textContent =  i18n[language].pushDescriptionPart1 + ((fuel_calc(fe)).toFixed(3)) + i18n[language].pushDescriptionPart2;
       }
       chrome.storage.local.set({'pushLevels':pl});
       for(var j = 0 ; j < 5 ; j++)
@@ -1003,24 +1002,20 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const tyreStrategy = tyre.querySelectorAll('td');
       const fuelStrategy = fuel.querySelectorAll('td');
       const pushStrategy = push.querySelectorAll('td');
-      //var fuelLap = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value)) * TRACK_INFO.length;
-      //console.log('fe is',document.getElementsByClassName('PLFE')[0].value);
+
       for(let i = 0; i < stints; i++)
       {
         try {
           tyreStrategy[i].className = s.stints[i].tyre;
           tyreStrategy[i].childNodes[0].value = s.stints[i].tyre.substring(3);
           tyreStrategy[i].setAttribute('data-tyre',s.stints[i].tyre.substring(3));
-
-          fuelStrategy[i].childNodes[0].textContent = s.stints[i].laps;
+          fuelStrategy[i].childNodes[0].replaceChild(document.createTextNode(s.stints[i].laps),fuelStrategy[i].childNodes[0].childNodes[0]);
           const fuelkm = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
           const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s.stints[i].push].value)) * TRACK_INFO.length)).toFixed(2);
           fuelStrategy[i].childNodes[1].value = Math.ceil((fuelWithPush * s.stints[i].laps));
           fuelStrategy[i].childNodes[2].value = s.stints[i].laps;
-
           pushStrategy[i].childNodes[0].selectedIndex = s.stints[i].push;
 
-          //update_stint(fuelStrategy[i]);
         } catch (error) {
 
         }
