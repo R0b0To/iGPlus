@@ -5,11 +5,12 @@ let scriptRunning = 'none';
 
 chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   let tab_status = changeInfo.status;
-  const { pathname } = new URL(tab.url);
+  const { pathname, origin } = new URL(tab.url);
 
   if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     tab_status = 'complete';
   }
+  
   //changed to allow execution of only one instance of the same script
   if (tab_status === 'complete' && pathname != scriptRunning) {
     // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
@@ -20,6 +21,10 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
       const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
 
+      //at any igp page check for sync
+      if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path)}))
+        injectScripts(tabId, tabScripts.gdrive.scripts);
+      
       if (!key || enabledScripts[key]) {
         scriptRunning = pathname;
         styles.length && injectStyles(tabId, styles);
@@ -59,13 +64,23 @@ async function injectStyles(tabId, styleFiles) {
     files: styleFiles
   });
 }
-
+let isDeleting = false;
+async function sendDeleteRequest(request){
+  if(!isDeleting){
+    isDeleting = true;
+    await deleteElement(request.data.type + '.json',{name:request.data.name,track:request.data.track},request.token);
+    isDeleting = false;
+  }
+  else{
+    setTimeout(()=>{sendDeleteRequest(request);},3000);
+  }
+}
 //cloud requests will be made in the baackground
 chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
   //console.log('sent request',request);
   (async function () {
     if (request.type === 'deleteFile')
-      await deleteElement(request.data.type+'.json',{name:request.data.name,track:request.data.track},request.token);
+      sendDeleteRequest(request);
 
     if (request.type === 'saveStrategy')
       await localStrategiesToCloud({name:request.data.name,track:request.data.track,data:request.data.strategy,token:request.token});
@@ -75,10 +90,10 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
 
     if (request.type === 'saveReport')
       await localReportsToCloud({token:request.token,data:request.data});
-    
-    sendResponse({done:true})
+
+    sendResponse({done:true});
 
   })();
-     return true
-      
-  });
+  return true;
+
+});

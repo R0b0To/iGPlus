@@ -127,6 +127,10 @@ const tabScripts = {
   '/app/': {
     key: 'refresh',
     scripts: ['timerAlert.js']
+  },
+  gdrive: {
+    key: 'gdrive',
+    scripts: ['autoSync.js','lib/gsi.js']
   }
 };
 
