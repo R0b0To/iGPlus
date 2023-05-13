@@ -67,8 +67,10 @@ async function injectStyles(tabId, styleFiles) {
 let isDeleting = false;
 async function sendDeleteRequest(request){
   if(!isDeleting){
+    console.log('deleting',request.data.name);
     isDeleting = true;
     await deleteElement(request.data.type + '.json',{name:request.data.name,track:request.data.track},request.token);
+    console.log((request.data.name,'deleted from google drive'));
     isDeleting = false;
   }
   else{

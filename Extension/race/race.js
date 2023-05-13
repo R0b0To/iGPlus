@@ -196,6 +196,6 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
       showBarValues();
     }
   } catch (err) {
-    console.log('page not loaded');
+    //console.log('page not loaded');
   }
 })();

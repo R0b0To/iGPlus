@@ -328,6 +328,7 @@ input[type="file"] {
 }#exportBtn >svg {top: 4px;}
 #syncDate{
   font-size: x-small;
+  margin-left: 5px;
 }
 .visibleSync {
   margin-left: 3px;
@@ -337,7 +338,7 @@ input[type="file"] {
   padding: 5px!important;
 }
 #forceSync {
-  margin-left: 3px;
+  margin-left: 30px;
   cursor: pointer;
   height: 32px!important;
   padding: 5px!important;

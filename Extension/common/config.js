@@ -19,7 +19,8 @@ const scriptDefaults = {
   sliderS: true,
   history:true,
   sponsor:true,
-  settings:true
+  settings:true,
+  gdrive:false
 };
 
 /**

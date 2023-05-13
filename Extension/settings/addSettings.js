@@ -147,14 +147,12 @@ async function handleSettings() {
     else {
       if (scriptName == 'gdrive') {
         if (status) {
-          checkAuth();
+          await checkAuth();
         } else
         {
           forceSyncBtn.classList.remove('visibleSync');//forceSyncBtnDown.classList.remove('visibleSync');
         }
-
-
-        await chrome.storage.local.set({ [scriptName]: status });
+        //await chrome.storage.local.set({ [scriptName]: status });
       }
       mergeStorage(scriptName, status);
     }
@@ -305,6 +303,7 @@ async function handleSettings() {
       setTextToFieldtip(overviewCheckbox, 'carOverview');
       setTextToFieldtip(advancedHisCheckbox, 'history');
       setTextToFieldtip(sponsorCheckbox, 'sponsor');
+      setTextToFieldtip(gdrive, 'gdriveHelp');
 
       setTextToCheckbox(reviewCheckbox, 'home');
       setTextToCheckbox(leagueCheckbox, 'leagueHome');
@@ -328,7 +327,7 @@ async function handleSettings() {
       field[1].textContent = language[code].optionsText.track;
       field[2].textContent = language[code].optionsText.sheetName;
 
-      [gsheetCheckbox, leagueCheckbox, researchCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, overviewCheckbox, advancedHisCheckbox, sponsorCheckbox]
+      [gdrive,gsheetCheckbox, leagueCheckbox, researchCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, overviewCheckbox, advancedHisCheckbox, sponsorCheckbox]
         .forEach(addFieldtipEvent);
 
     }
@@ -352,40 +351,30 @@ async function handleSettings() {
     chrome.storage.local.get('gTrack', function (data) {
       if (typeof data.gTrack != 'undefined') trackName.value = data.gTrack;
     });
-    chrome.storage.local.get('gdrive', async function (data) {
-      if (typeof data.gdrive != 'undefined') {
-        gdrive.querySelector('input').checked = data.gdrive;
-        if(data.gdrive) {
-          forceSyncBtn.classList.add('visibleSync');
-        }else
-        {
-          forceSyncBtn.classList.remove('visibleSync');
-        }
-        //(data.gdrive) ? forceSyncBtnDown.classList.add('visibleSync') : forceSyncBtnDown.classList.remove('visibleSync');
-      }
-      if(forceSyncBtn.classList.contains('visibleSync'))
-      {
-        const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
-        const syncText = document.getElementById('syncDate');
-        if(!syncText){
-          const dateContainer = document.createElement('div');
-          dateContainer.id = 'syncDate';
-          dateContainer.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
-          gdrive.append(dateContainer);
-        }else{
-          syncText.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
-        }
-
-      }
-    });
-
-
 
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
-      Object.keys(scriptDefaults).forEach((item) => {
+      Object.keys(scriptDefaults).forEach(async (item) => {
         let checkedStatus = data.script[item];
 
-        if (item == 'gdrive' && checkedStatus) checkAuth();
+        if (item == 'gdrive' && checkedStatus){       
+          forceSyncBtn.classList.add('visibleSync');
+        }else{
+          forceSyncBtn.classList.remove('visibleSync');
+        }
+        if(forceSyncBtn.classList.contains('visibleSync'))
+        {
+          const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
+          const syncText = document.getElementById('syncDate');
+          if(!syncText){
+            const dateContainer = document.createElement('div');
+            dateContainer.id = 'syncDate';
+            dateContainer.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
+            gdrive.append(dateContainer);
+          }else{
+            syncText.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
+          }
+  
+        } 
 
         document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
       });
@@ -444,17 +433,17 @@ async function handleSettings() {
         delete_button.addEventListener('click', async function(){
           const track = document.getElementById('exportSave').value;
           let token = false;
-          const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-          if(isSyncEnabled.gdrive){
+          const isSyncEnabled = await chrome.storage.local.get({script:false});
+          if(isSyncEnabled.script.gdrive){
             const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
             token = await getAccessToken();
           }
 
-          const strategies = await chrome.storage.local.get('save');
           if(track == 0)
           {
-            chrome.storage.local.remove('save');
-            if(isSyncEnabled.gdrive)
+            chrome.storage.local.remove('save') ??  browser.storage.local.remove('save');
+            console.log('iGPLus| Removing all saves')
+            if(isSyncEnabled.script.gdrive)
             {
               chrome.runtime.sendMessage({
                 type:'deleteFile',
@@ -462,29 +451,8 @@ async function handleSettings() {
                 token:token.access_token});
             }
 
-          }else{
-            const strategy = document.getElementById('trackSave').value;
-            delete strategies.save[track][strategy];
-
-            if(Object.keys(strategies.save[track]).length == 0)
-              delete strategies.save[track];
-
-            chrome.storage.local.set({'save':strategies.save});
-
-            if(Object.keys(strategies.save).length == 0)
-              chrome.storage.local.remove('save');
-            if(isSyncEnabled.gdrive)
-            {
-              if(token != false){
-                chrome.runtime.sendMessage({
-                  type:'deleteFile',
-                  data:{type:'strategies',track:track,name:strategy},
-                  token:token.access_token});
-              }
-            }
-
-
           }
+          document.getElementById('saveList')?.remove();
           restoreOptions();
         });
 
@@ -498,9 +466,9 @@ async function handleSettings() {
   {
     const saveToDelete = this.parentElement.id;
     const code = exportSave.value;
-    data = await chrome.storage.local.get('save');
+    const data = await chrome.storage.local.get('save');
     delete data.save[code][saveToDelete];
-    chrome.storage.local.set({'save':data.save});
+    chrome.storage.local.set({'save':data.save}) ??  browser.storage.local.set({'save':data.save});
     document.querySelectorAll(`[id="${saveToDelete}"]`).forEach((save) => {
       save.remove();
     });
@@ -510,8 +478,8 @@ async function handleSettings() {
     {
 
     }
-    const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-    if(isSyncEnabled.gdrive){
+    const isSyncEnabled = await chrome.storage.local.get({script:false});
+    if(isSyncEnabled.script.gdrive){
 
       const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
       const token = await getAccessToken();
@@ -523,13 +491,14 @@ async function handleSettings() {
       }
 
     }
-restoreOptions();
+    document.getElementById('saveList')?.remove();
+    restoreOptions();
   }
   async function checkAuth() {
     const { getFirstAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getFirstAccessToken();
     if (token == false) {
-      chrome.storage.local.set({'gdrive':false});
+      mergeStorage('gdrive',false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
       forceSyncBtn.classList.remove('visibleSync');
       //forceSyncBtnDown.classList.remove('visibleSync');

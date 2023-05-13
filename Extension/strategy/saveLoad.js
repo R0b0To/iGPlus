@@ -96,8 +96,8 @@ async function deleteSave()
       element.className += ' disabled';
     });
   }
-  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  if(isSyncEnabled.gdrive){
+  const isSyncEnabled = await chrome.storage.local.get({script:false});
+  if(isSyncEnabled.script?.gdrive ?? false){
 
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getAccessToken();
@@ -164,8 +164,8 @@ async function saveStint()
   //const list = document.getElementById('myDropdown2');
   //list.classList.remove('show1');
 
-  const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-  if(isSyncEnabled.gdrive){
+  const isSyncEnabled = await chrome.storage.local.get({script:false});
+  if(isSyncEnabled.script?.gdrive ?? false){
     const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
     const token = await getAccessToken();
     if(token != false)

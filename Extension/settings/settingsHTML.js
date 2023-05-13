@@ -173,7 +173,7 @@ function injectIGPlusOptions() {
       forceSync.style.display = 'none';
       forceSync.id = 'forceSync';
 
-      preferencesContainer.prepend(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync (Google Drive)'), forceSync));
+      preferencesContainer.prepend(appendWithDescription(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync (Google Drive)'),addDescription('test')),forceSync));
       //#endregion
 
       const mainContainer = create('div');
