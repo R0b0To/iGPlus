@@ -408,7 +408,7 @@ background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAM
   float: right;
   position: relative;
   top: 6px;
-  left: -14px;
+  left: -18px;
   cursor: help;
 }
 .alertExtra >svg{

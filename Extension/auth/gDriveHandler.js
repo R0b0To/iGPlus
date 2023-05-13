@@ -27,7 +27,7 @@ async function updateFile(fileId,newJson,accessToken){
   const headers = {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json'};
   fetch(url, { method: 'PATCH', headers: headers, body: newJson })
     .then(response => response.json())
-    .then(data => {})
+    .then(data => {return data})
     .catch(error => console.error(error));
 }
 async function fullSync(direction,access_token){
@@ -195,6 +195,7 @@ async function deleteFile(fileId,accessToken){
 async function deleteElement(type,data,accessToken){
   const fileId = await searchFile(type,accessToken);
   const file = await getGFile(fileId.id,accessToken);
+
   if(type == 'strategies.json'){
     if(data.track == 0){
       deleteFile(fileId,accessToken);
@@ -205,7 +206,8 @@ async function deleteElement(type,data,accessToken){
   }
   if(type == 'reports.json'){
     delete file[data.name];
-    updateFile(fileId.id,JSON.stringify(file),accessToken);
+    await updateFile(fileId.id,JSON.stringify(file),accessToken);
+    return true;
   }
 
 }

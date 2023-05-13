@@ -18,7 +18,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           //mutation of lap number
           if(mut.target.tagName == 'SPAN' && mut.addedNodes.length > 0 && mut.target.classList.length == 0)
           {
-            update_stint(mut.target.closest('td'))
+            update_stint(mut.target.closest('td'));
             setTotalLapsText(mut.target.closest('form'));
           }
 
@@ -54,31 +54,30 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //active scripts
     const active_scripts = await chrome.storage.local.get('script');
     //utility
-    const {createSlider, hashCode, strategyPreview, simulateClick} = await import(chrome.runtime.getURL('/strategy/utility.js'));
+    const {createSlider} = await import(chrome.runtime.getURL('/strategy/utility.js'));
     const {addStintEventHandler, updateFuel} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
     const {dragStintHandler} = await import(chrome.runtime.getURL('/strategy/dragStint.js'));
+    const {addSaveButton} = await import(chrome.runtime.getURL('/strategy/saveLoad.js'));
     try {
       if (league_info != false) {
         injectAdvancedStint();
         injectCircuitMap();
         readGSheets();
         addMoreStints();
-        addSaveButton();
+        addSaveButton({economy:CAR_ECONOMY,track:{code:TRACK_CODE,info:TRACK_INFO},league:league_length});
         addWeatherInStrategy();
 
         //eventAdded is a placeholder for knowing if the eventlistener is already present
         if(document.getElementById('eventAdded') == null)
-        dragStintHandler();
+          dragStintHandler();
         if(active_scripts.script.sliderS)
           addFuelSlider();
         if(active_scripts.script.editS)
           addEdit();
 
-        //add muutation observer to game dialog. detecting when user open the tyre/fuel dialog
+        //add mutation observer to game dialog. detecting when user open the tyre/fuel dialog
         waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el);}});
       }
-
-
 
     } catch (error) {
       console.log(error);
@@ -341,8 +340,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       }
 
     }
-
-
     async function addBetterStintFuel(el){
       const track_code = document.querySelector('.flag').className.slice(-2) ?? 'au';
       TRACK_INFO = track_info[track_code];
@@ -353,7 +350,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const stintID = parseInt(document.getElementsByName('stintId')[0].value);
       const pushToAdd = parseFloat(driver.querySelector('[pushevent]').cells[stintID].childNodes[0].value);
       //observe the fuel change in the dialog for tyre/fuel selection+
-      var fuelChangeObserver = new MutationObserver(function (mutations) {
+      const fuelChangeObserver = new MutationObserver(function (mutations) {
         //console.log('fuelChangeObserver')
         mutations.forEach(mut => {
           const fuel_el = el.querySelector('.num');
@@ -378,7 +375,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         estimatedlaps.parentElement.append(real);
       }
     }
-
+    // add observer for dialog opening. this will handle
     function waitForAddedNode(params) {
 
       if(params.parent.getAttribute('observing') ?? false)
@@ -397,7 +394,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
               console.log(error);
             }
           }
-
         //this.disconnect();
         }
       });
@@ -408,7 +404,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       });
       return dialogObserver;
     }
-   
+
+    //update stint tyre wear the update fuel
     function update_stint(s)
     {
       const stint = s.cellIndex;
@@ -420,10 +417,9 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       wearRow.cells[stint].textContent = get_wear(tyre,laps ,TRACK_INFO, CAR_ECONOMY, multiplier);
       updateFuel(tbody);
     }
-  
     function addEdit()
     {
-      advancedFuel = document.getElementsByName('advancedFuel');
+      const advancedFuel = document.getElementsByName('advancedFuel');
       if(advancedFuel != null)
       {
         advancedFuel.forEach(car => {
@@ -439,7 +435,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
       function createEdit(node){
 
-        text = node.parentElement.querySelectorAll('.num')[0];
+        const  text = node.parentElement.querySelectorAll('.num')[0];
         text.contentEditable = true;
 
         text.setAttribute('style','border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;');
@@ -454,12 +450,12 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         });
         text.addEventListener('input',function(e){
 
-          stored = this.parentElement.nextElementSibling;
+          const stored = this.parentElement.nextElementSibling;
 
           if (!e.data.match(/^[0-9]{0,2}$/)) {
             this.textContent = '';
           }
-          currentValue = parseInt(this.textContent);
+          let currentValue = parseInt(this.textContent);
           if(isNaN(currentValue))
           {
             currentValue = stored.value;
@@ -470,7 +466,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             currentValue = stored.max;
           } if(currentValue == 0)
           {
-            driverStrategyId = this.closest('form').id;
+            const driverStrategyId = this.closest('form').id;
             document.getElementsByName('fuel1')[driverStrategyId[1] - 1].value = 0;
           }
           //this.textContent=(currentValue);
@@ -709,7 +705,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         }}
     }
-
     function addMoreStints()
     {
       const strategies = document.getElementsByClassName('fuel');
@@ -717,308 +712,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         addStintEventHandler(strategies[car].closest('form').querySelector('.igpNum').parentElement);
 
       });
-
-    }
-    async function saveStint()
-    {
-
-      const code = TRACK_CODE;
-      const driverStrategy = this.closest('form');
-      const raceLaps = driverStrategy.querySelector('[id*=TotalLaps]');
-      const tyre = driverStrategy.getElementsByClassName('tyre')[0];
-      const fuel = driverStrategy.getElementsByClassName('fuel')[0];
-      const push = driverStrategy.querySelector('tr[pushEvent]');
-      const tyreStrategy = tyre.querySelectorAll('td[style*="visibility: visible"]');
-      const fuelStrategy = fuel.querySelectorAll('td[style*="visibility: visible"]');
-      const pushStrategy = push.querySelectorAll('td[style*="visibility: visible"]');
-
-      const saveData = {};
-      saveData.stints = {};
-      saveData.length = league_length;
-      saveData.track = code;
-      saveData.laps = {
-        total:Number(raceLaps.nextSibling.textContent.split('/')[1]),
-        doing:Number(raceLaps.textContent)
-      };
-      for(var i = 0; i < tyreStrategy.length; i++)
-      {
-        saveData.stints[i] = {
-          tyre:tyreStrategy[i].className,
-          laps:fuelStrategy[i].textContent,
-          push:pushStrategy[i].childNodes[0].selectedIndex};
-      }
-      const s = hashCode(JSON.stringify(saveData));
-      const data = await chrome.storage.local.get('save');
-
-      if(typeof data.save === 'undefined')
-      {
-        chrome.storage.local.set({'save':{[code]:{[s]:saveData}}});
-      }
-      else
-      {
-        if(typeof data.save[code] === 'undefined')
-        {
-          data.save[code] = {[s]:saveData};
-        }
-        else
-          data.save[code][s] = saveData;
-
-        chrome.storage.local.set({'save':data.save});
-      }
-      document.querySelectorAll('.lbutton').forEach((element) => {
-        element.classList.remove('disabled');
-      });
-      //const list = document.getElementById('myDropdown2');
-      //list.classList.remove('show1');
-
-      const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-      if(isSyncEnabled.gdrive){
-        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-        const token = await getAccessToken();
-        if(token != false)
-          await chrome.runtime.sendMessage({type: 'saveStrategy',data:{name:s,track:code,strategy:saveData},token:token.access_token});
-
-      }
-
-    }
-
-    async function loadStint()
-    {
-
-      const code  = TRACK_CODE;
-      const data = await chrome.storage.local.get('save');
-      const s = data.save[code][this.parentElement.id];
-      const driverStrategy = this.closest('form');
-      const pitNum = driverStrategy.querySelector('.num');
-      const current_pit_number = pitNum.childNodes[0].textContent;
-
-
-      //number of stints
-      const stints = Object.keys(s.stints).length;
-
-      const difference = (stints - 1) - current_pit_number;
-      //replacePitNumber(pitNum,(stints-1))
-
-      //setting the right number of pits
-      if(difference < 0)
-        for(let i = 0; i < Math.abs(difference); i++) {
-          await simulateClick(driverStrategy.querySelector('.minus'));
-        }
-
-      if(difference > 0)
-        for(let i = 0; i < (difference); i++) {
-          await simulateClick(driverStrategy.querySelector('.plus'));
-        }
-
-
-
-      //getting the rows
-      const tyre = driverStrategy.getElementsByClassName('tyre')[0];
-      const fuel = driverStrategy.getElementsByClassName('fuel')[0];
-      const push = driverStrategy.querySelector('tr[pushEvent]');
-      const wear = driverStrategy.querySelector('tr[wearEvent]');
-
-      const tyreStrategy = tyre.querySelectorAll('td');
-      const fuelStrategy = fuel.querySelectorAll('td');
-      const pushStrategy = push.querySelectorAll('td');
-
-      for(let i = 0; i < stints; i++)
-      {
-        try {
-          tyreStrategy[i].className = s.stints[i].tyre;
-          tyreStrategy[i].childNodes[0].value = s.stints[i].tyre.substring(3);
-          tyreStrategy[i].setAttribute('data-tyre',s.stints[i].tyre.substring(3));
-          fuelStrategy[i].childNodes[0].replaceChild(document.createTextNode(s.stints[i].laps),fuelStrategy[i].childNodes[0].childNodes[0]);
-          const fuelkm = fuel_calc(parseInt(document.getElementsByClassName('PLFE')[0].value));
-          const fuelWithPush = (((fuelkm + parseFloat(pushStrategy[i].childNodes[0].options[s.stints[i].push].value)) * TRACK_INFO.length)).toFixed(2);
-          fuelStrategy[i].childNodes[1].value = Math.ceil((fuelWithPush * s.stints[i].laps));
-          fuelStrategy[i].childNodes[2].value = s.stints[i].laps;
-          pushStrategy[i].childNodes[0].selectedIndex = s.stints[i].push;
-
-        } catch (error) {
-
-        }
-
-      }
-      updateFuel(wear.closest('tbody'));
-      const saveBox = driverStrategy.getElementsByClassName('dropdown2-content');
-      Object.keys(saveBox).forEach(key=>{
-        saveBox[key].close();
-      });
-    }
-    function dialogClickHandler(e) {
-      if (e.target.tagName !== 'DIALOG')
-        return;
-
-      const rect = e.target.getBoundingClientRect();
-
-      const clickedInDialog = (
-        rect.top <= e.clientY &&
-        e.clientY <= rect.top + rect.height &&
-        rect.left <= e.clientX &&
-        e.clientX <= rect.left + rect.width
-      );
-
-      if (clickedInDialog === false)
-        e.target.close();
-    }
-    async function addSaveButton()
-    {
-
-      if(document.getElementById('save&load') == null)
-      {
-        async function generateSaveList () {
-          return new Promise(function(res){
-            const code = TRACK_CODE;
-            chrome.storage.local.get('save',function(data){
-              if (typeof data.save === 'undefined') {
-                res('empty');
-              }else{
-                if (typeof data.save[code] === 'undefined') {
-                  res('empty');
-                } else {
-                  if (Object.keys(data.save[code]).length == 0) {
-                    console.log('no save');
-                    document.querySelectorAll('.lbutton').forEach((element) => {
-                      element.classList.add('disabled');
-                    });
-                    res('empty');
-                  } else {
-                    const sList = document.querySelectorAll('#saveList');
-                    if (sList != null)
-                      sList.forEach((e) => {e.remove();});
-
-
-                    document.querySelectorAll('.lbutton').forEach((element) => {
-                      element.classList.remove('disabled');
-                    });
-
-                    const list = document.querySelectorAll('#myDropdown2');
-                    list.forEach(async (e) => {
-                      const sList = await strategyPreview(data.save[code],CAR_ECONOMY);
-                      sList.querySelectorAll('.stintsContainer').forEach(strat => {
-                        strat.classList.add('loadStrat');
-                        strat.addEventListener('click',loadStint);
-                      });
-                      sList.querySelectorAll('.trash').forEach(d => {d.addEventListener('click',deleteSave);});
-                      e.appendChild(sList);});
-                  }
-                  res (true);
-                }
-              }
-            });
-
-
-          });
-
-
-
-        }
-        function createSaveLoad()
-        {
-          const containerDiv = document.createElement('div');
-          containerDiv.id = 'save&load';
-          containerDiv.classList.add('saveContainer');
-          const saveDiv = document.createElement('div');
-          const loadDiv = document.createElement('div');
-          const loadContainer = document.createElement('dialog');
-          loadContainer.className = 'dropdown2-content not-selectable';
-          loadContainer.id = 'myDropdown2';
-          loadContainer.addEventListener('click',dialogClickHandler);
-          saveDiv.className = 'sbutton';
-          loadDiv.className = 'sbutton lbutton';
-          saveDiv.textContent = 'Save';
-          loadDiv.textContent = 'Load';
-          containerDiv.append(loadContainer);
-          saveDiv.addEventListener('click',saveStint);
-          loadDiv.addEventListener('click',async function(){
-            const saves =  await generateSaveList();
-            if(saves != 'empty'){
-              const dialog = this.parentElement.querySelector('[id=myDropdown2]');
-              dialog.showModal();
-            }
-
-          });
-          containerDiv.appendChild(saveDiv);
-          containerDiv.appendChild(loadDiv);
-          generateSaveList();
-
-
-
-          return containerDiv;
-        }
-
-        driverNumber = document.getElementsByClassName('fuel').length;
-        if(driverNumber == 2)
-        {
-          strategy = document.getElementById('d2strategy');
-          placeHere = strategy.querySelectorAll('th')[0];
-          placeHere.appendChild(createSaveLoad());
-        }
-        strategy = document.getElementById('d1strategy');
-        placeHere = strategy.querySelectorAll('th')[0];
-        placeHere.appendChild(createSaveLoad());
-      }
-
-      const code = TRACK_CODE;
-      data = await chrome.storage.local.get('save');
-
-      lb = document.querySelectorAll('.lbutton');
-
-      if(typeof data.save === 'undefined')
-      {
-        lb.forEach((ele) => {
-          ele.classList.add('disabled');
-        });
-
-      }
-      else
-      {
-        if(typeof data.save[code] === 'undefined')
-        {
-          lb.forEach((ele) => {
-            ele.classList.add('disabled');
-          });
-        }
-
-      }
-
-    }
-    async function deleteSave()
-    {
-
-      const saveToDelete = this.parentElement.id;
-      const code = TRACK_CODE;
-      data = await chrome.storage.local.get('save');
-      delete data.save[code][saveToDelete];
-      chrome.storage.local.set({'save':data.save});
-      document.querySelectorAll(`[id="${saveToDelete}"]`).forEach((save) => {
-        save.remove();
-      });
-
-
-      const dialog =  document.getElementById('myDropdown2');
-      if(document.getElementById('saveList').childElementCount == 0)
-      {
-        dialog.close();
-        document.querySelectorAll('.lbutton').forEach((element) => {
-          element.className += ' disabled';
-        });
-      }
-      const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-      if(isSyncEnabled.gdrive){
-
-        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-        const token = await getAccessToken();
-        if(token != false){
-          chrome.runtime.sendMessage({
-            type:'deleteFile',
-            data:{type:'strategies',track:code,name:saveToDelete},
-            token:token.access_token});
-        }
-
-      //deleteFile(saveToDelete+'.json',token.access_token);
-      }
 
     }
     function addWeatherInStrategy(){

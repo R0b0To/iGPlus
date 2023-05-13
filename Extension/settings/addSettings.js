@@ -355,7 +355,12 @@ async function handleSettings() {
     chrome.storage.local.get('gdrive', async function (data) {
       if (typeof data.gdrive != 'undefined') {
         gdrive.querySelector('input').checked = data.gdrive;
-        (data.gdrive) ? forceSyncBtn.classList.add('visibleSync') : forceSyncBtn.classList.remove('visibleSync');
+        if(data.gdrive) {
+          forceSyncBtn.classList.add('visibleSync');
+        }else
+        {
+          forceSyncBtn.classList.remove('visibleSync');
+        }
         //(data.gdrive) ? forceSyncBtnDown.classList.add('visibleSync') : forceSyncBtnDown.classList.remove('visibleSync');
       }
       if(forceSyncBtn.classList.contains('visibleSync'))
