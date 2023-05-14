@@ -10,10 +10,12 @@ async function getHeightAdjustment(driverHeight, tier) {
 }
 
 async function addSetupSuggestionsForDrivers() {
-  const [{ fetchDriverInfo }, { parseAttributes }, { circuits }] = await Promise.all([
+
+  const [{ fetchDriverInfo }, { parseAttributes }, { circuits },{ findCurrentTier }] = await Promise.all([
     import(chrome.runtime.getURL('common/fetcher.js')),
     import(chrome.runtime.getURL('driver/driverHelpers.js')),
     import(chrome.runtime.getURL('raceSetup/const.js')),
+    import(chrome.runtime.getURL('strategy/utility.js'))
   ]);
 
   const { script } = await chrome.storage.local.get('script');
@@ -110,25 +112,7 @@ function getTrackSetup(circuits, tierIndex) {
   };
 }
 
-/**
- * Finds the league tier of the manager.
- * @returns {1|2|3} 1 is for Rookie, 3 is for Elite
- */
-async function findCurrentTier() {
-  const { fetchLeagueData } = await import(chrome.runtime.getURL('common/fetcher.js'));
 
-  const leagueUrl = document.getElementById('mLeague').href;
-  const leagueId = /id=(.*)/.exec(leagueUrl)[1];
-
-  const { vars = {} } = (await fetchLeagueData(leagueId)) || {};
-
-  let tier = 1;
-  for (/* no-op */; tier <= 2; tier += 1) {
-    if (vars[`standings${tier}`]?.includes('myTeam')) break;
-  }
-
-  return tier;
-}
 
 async function addSettingSliders(driverIndex) {
   try {

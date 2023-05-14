@@ -199,6 +199,25 @@ function simulateClick(node){
 
 
 }
+/**
+ * Finds the league tier of the manager.
+ * @returns {1|2|3} 1 is for Rookie, 3 is for Elite
+ */
+async function findCurrentTier() {
+  const { fetchLeagueData } = await import(chrome.runtime.getURL('common/fetcher.js'));
+
+  const leagueUrl = document.getElementById('mLeague').href;
+  const leagueId = /id=(.*)/.exec(leagueUrl)[1];
+
+  const { vars = {} } = (await fetchLeagueData(leagueId)) || {};
+
+  let tier = 1;
+  for (/* no-op */; tier <= 2; tier += 1) {
+    if (vars[`standings${tier}`]?.includes('myTeam')) break;
+  }
+
+  return tier;
+}
 
 export{
   createSlider,
@@ -206,5 +225,6 @@ export{
   strategyPreview,
   createDownloadButton,
   createDeleteButton,
-  simulateClick
+  simulateClick,
+  findCurrentTier
 };
