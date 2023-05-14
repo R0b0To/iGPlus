@@ -22,8 +22,10 @@ async function addStintEventHandler(driver_pit_div) {
         minus_btn.classList.add('disabled');
         minus_btn.classList.add('extraStint');
         plus_btn.classList.add('extraStint');
+        const warning = await addAlert()
         if(!plus_btn.closest('form').getElementsByClassName('alertExtra')[0])
-        plus_btn.closest('form').prepend(await addAlert());
+          plus_btn.closest('form').prepend(warning);
+          
       }else{
         minus_btn.classList.remove('disabled');
         minus_btn.classList.remove('extraStint');

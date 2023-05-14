@@ -120,7 +120,6 @@ function dragMousedown(e){
     /* stop moving when mouse button is released:*/
     document.querySelectorAll('.dropzone,.dragging,.dropzonebottom','.dropzone.accept').forEach(otherStint => {
       otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
-      console.log('removing',otherStint);
       otherStint.removeEventListener('pointerenter',dropzoneEnter,true);
       otherStint.removeEventListener('pointerleave',dropzoneLeave,true);
       document.removeEventListener('pointerup',closeDragElement);
