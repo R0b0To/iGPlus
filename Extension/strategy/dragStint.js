@@ -50,11 +50,10 @@ function dropzoneLeave(e){
 
 
 function elementDrag(e){
-
   const ele = document.getElementsByClassName('drag');
   Array.from(ele).forEach(stintPreview=>{
     stintPreview.style.top = e.pageY + 'px';
-    stintPreview.style.left = e.pageX-30 + 'px';
+    stintPreview.style.left = e.pageX - 30 + 'px';
   });
 
 
@@ -80,7 +79,7 @@ function dragMousedown(e){
   e.preventDefault();
   let info = null;
   if(e.target.closest('tbody').querySelector('.tyre').cells[e.target.cellIndex].style.visibility == 'visible'){
-    const coord = {x:e.pageX-30,y:e.pageY};
+    const coord = {x:e.pageX - 30,y:e.pageY};
     const preview = previewDrag(e.target,coord);
 
     document.body.append(preview);
@@ -109,6 +108,7 @@ function dragMousedown(e){
   }
 
   function closeDragElement(e) {
+
     let isChild = false;
     const pointerOnTop = document.elementFromPoint(e.clientX, e.clientY);
     const strat = document.getElementsByClassName('strategy');
@@ -117,7 +117,15 @@ function dragMousedown(e){
       if (childOf(pointerOnTop,s))
         isChild = true;
     }
-
+    /* stop moving when mouse button is released:*/
+    document.querySelectorAll('.dropzone,.dragging,.dropzonebottom','.dropzone.accept').forEach(otherStint => {
+      otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
+      console.log('removing',otherStint);
+      otherStint.removeEventListener('pointerenter',dropzoneEnter,true);
+      otherStint.removeEventListener('pointerleave',dropzoneLeave,true);
+      document.removeEventListener('pointerup',closeDragElement);
+    });
+    document.removeEventListener('pointermove',elementDrag,true);
     //try to set new info
     try {
       if(isChild){
@@ -128,17 +136,6 @@ function dragMousedown(e){
     } catch (error) {
       //console.log(error);
     }
-
-    /* stop moving when mouse button is released:*/
-    document.querySelectorAll('.dropzone,.dragging,.dropzonebottom').forEach(otherStint => {
-      otherStint.classList.remove('dragging', 'dropzone', 'dropzonebottom','accept');
-      otherStint.removeEventListener('pointerenter',dropzoneEnter,true);
-      otherStint.removeEventListener('pointerleave',dropzoneLeave,true);
-      document.removeEventListener('pointerup',closeDragElement);
-    });
-
-    document.removeEventListener('pointermove',elementDrag,true);
-
     const preview = document.getElementsByClassName('drag');
     for(const ele of preview) ele.remove();
 
