@@ -58,7 +58,7 @@ async function addStintEventHandler(driver_pit_div) {
 
   function increasePitNumber(e) {
 
-    if (e.autopress || e.type == 'pointerdown') {
+    if (e.button == 50 || e.type == 'pointerdown') {
       if(pits.current >= 4 && pits.previous >= 3 && pits.current < 6 && plus_btn.getAttribute('extra') == 0)
       {
         addExtraStint(driver_pit_div);
@@ -70,7 +70,7 @@ async function addStintEventHandler(driver_pit_div) {
   }
   function decreasePitNumber(e){
 
-    if (e.autopress || e.type == 'pointerdown') {
+    if (e.button == 50 || e.type == 'pointerdown') {
       if(pits.current > 4 && pits.previous < 7)
       {
         //waiting the igp event listener to be done otherwise the extra stint get removed then pit number decreased by the game minus button event
