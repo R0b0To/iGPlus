@@ -153,24 +153,19 @@ xmlns="http://www.w3.org/2000/svg"
   return deleteB;
 }
 function simulateClick(node){
-  class CustomEvent extends MouseEvent {
-    constructor(eventName, options) {
-      super(eventName, options);
-      // Add custom properties to the event instance
-      this.autopress = options.autopress || null;
-    }
-  }
-  const touchstart = new CustomEvent('touchstart', {
+
+  //using the button property to discern between user and script touch event. 50 is just a placeholder
+  const touchstart = new MouseEvent('touchstart', {
     'view': window,
     'bubbles': true,
     'cancelable': true,
-    'autopress':true
+    'button':50
   });
-  const touchend = new CustomEvent('touchend', {
+  const touchend = new MouseEvent('touchend', {
     'view': window,
     'bubbles': true,
     'cancelable': true,
-    'autopress':true
+    'button':50
   });
   const observerConfig = {
     subtree: true,
@@ -187,7 +182,6 @@ function simulateClick(node){
       });
       observer.observe(node.parentElement.querySelector('.num'), observerConfig);
     }
-
     node.dispatchEvent(touchstart);
     node.dispatchEvent(touchend);
 
