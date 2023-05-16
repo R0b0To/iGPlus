@@ -13,6 +13,7 @@ const getStaffUrl = (id) => `action=fetch&d=staff&id=${id}`;
 const getDriverUrl = (id) => `action=fetch&d=driver&id=${id}`;
 const getTeamUrl = (id) => `action=fetch&d=profile&team=${id}`;
 const getRaceUrl = (id) => `action=fetch&d=resultDetail&id=${id}`;
+const getRaceResultsUrl = (id) => `action=fetch&d=result&id=${id}`;
 
 async function getData(itemLocator, isThirdParty = false) {
   let url = `${baseUrl}?${itemLocator}&csrfName=&csrfToken=`;
@@ -100,6 +101,13 @@ function fetchTeamInfo(personId) {
 function fetchRaceReportInfo(personId) {
   return getData(getRaceUrl(personId));
 }
+/**
+ * @param {string} raceId
+ * @returns {Promise<Object|null>}
+ */
+function fetchRaceResultInfo(raceId) {
+  return getData(getRaceResultsUrl(raceId));
+}
 
 /**
  * @returns {Promise<{nextLeagueRaceTime: number}|null>}
@@ -136,5 +144,6 @@ export {
   fetchTeamInfo,
   fetchRaceReportInfo,
   fetchCarData,
-  fetchIGPRaceWeatherNow
+  fetchIGPRaceWeatherNow,
+  fetchRaceResultInfo
 };
