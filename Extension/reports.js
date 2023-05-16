@@ -310,30 +310,28 @@ async function race_report() {
 
 async function storeCopyOfActive(){
 
+  const report = await chrome.storage.local.get({'active_option':'Default ReportLRID'});
+  chrome.storage.local.get('active', async function(data) {
 
-  const report = await chrome.storage.local.get({'active_option':'Default Report'});
-  chrome.storage.local.get('active', function(data) {
-
-    //console.log('storing',report,data.active)
+    //console.log('storing',report.active_option,data.active)
     chrome.runtime.sendMessage({
       type:'addRaceReportToDB',
       data:{id:report.active_option,data:data.active}
     });
-      
-    chrome.storage.local.set({[report.active_option]:data.active},async function(){
-      const isSyncEnabled = await chrome.storage.local.get({script:false});
-      if(isSyncEnabled.script?.gdrive ?? false){
-        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-        const token = await getAccessToken();
 
-        if(token != false){
-          chrome.runtime.sendMessage({
-            type:'saveReport',
-            data:JSON.stringify(data.active),
-            token:token.access_token}); //TO DO, make single saves, instead of saving all reports
-        }
+    const isSyncEnabled = await chrome.storage.local.get({script:false});
+    if(isSyncEnabled.script?.gdrive ?? false){
+      const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+      const token = await getAccessToken();
+
+      if(token != false){
+        chrome.runtime.sendMessage({
+          type:'saveReport',
+          data:JSON.stringify(data.active),
+          token:token.access_token}); //TO DO, make single saves, instead of saving all reports
       }
-    });
+    }
+
 
   });
 }

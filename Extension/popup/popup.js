@@ -254,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       disableButton(true);
     else
       disableButton(false);
-    
+
     driver = report.data;
     //get state before the select was changed
     /* chrome.storage.local.get(['active','active_option',opt],function(data){
@@ -412,14 +412,14 @@ document.addEventListener('DOMContentLoaded', async function() {
   //------------------------------------------------------------------------------new race----------------------------------------------
   newButton.addEventListener('click', function(){
 
-    const leagueName = prompt('enter league name');
+    const reportName = prompt('enter league name');
 
-    if(leagueName == null || leagueName == '')
+    if(reportName == null || reportName == '')
     {
       return;
     }
 
-    const leagueNameId = leagueName + 'LRID'; //LRID is to avoid naming conflicts
+    const leagueNameId = reportName + 'LRID'; //LRID is to avoid naming conflicts
 
     toggleText(false);
     //save before creating new data
@@ -432,38 +432,14 @@ document.addEventListener('DOMContentLoaded', async function() {
         console.error(error);
       });
 
-    chrome.storage.local.get('active', function(data) {
-      console.log(data);
-      if(!typeof data.active === 'undefined')
-      {
-        console.log('test1');
-        addData('reports',{id:data.active_option,data:data.active})
-          .then((id) => {
-            console.log('Data added with ID:', id);
-          })
-          .catch((error) => {
-            console.error(error);
-          });
 
-        console.log('test2');
-        chrome.storage.local.set({[data.active_option]:data.active}, function() {
-        }); //saving selected
-        console.log('adding',data.active_option,data.active);
+    const option = document.createElement('option');
+    option.textContent = reportName;
+    option.selected = true;
+    select.appendChild(option);
+    disableButton(true);
+    chrome.storage.local.set({'active_option':leagueNameId,'active':[]});
 
-
-      }
-
-      const option = document.createElement('option');
-      option.textContent = leagueName;
-      option.selected = true;
-      select.appendChild(option);
-
-      chrome.storage.local.set({[leagueNameId]:0, 'active':0, 'active_option':leagueNameId}, function() {
-
-        disableButton(true);
-      });
-
-    });
 
   });
 
