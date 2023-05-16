@@ -129,31 +129,33 @@ try {
 
 async function advancedExtract(){
   const {fetchRaceResultInfo} = await import(chrome.runtime.getURL('common/fetcher.js'));
-  const {addData,getElementById} = await import(chrome.runtime.getURL('common/database.js'));
   const scheduleTable = document.getElementById('scheduleTable');
   const racesCompleted = scheduleTable.querySelectorAll('.pointer:not(.myTeam)>td>a');
   racesCompleted.forEach(async link => {
     const id = new URLSearchParams(link.href).get('id');
-    let result_info = await getElementById(id,'race_result') ?? false;
+    let result_info = await chrome.runtime.sendMessage({
+      type:'getDataFromDB',
+      data:{id:id,store:'race_result'}
+    });
+   // let result_info = await getElementById(id,'race_result') ?? false;
     if(result_info == false){
       const result = await fetchRaceResultInfo(id);
       result_info = parseData(result);
       saveRaceResultsHistory(id,result_info);
     }//else{console.log('data already stored')}
-    link.parentElement.textContent += ` [${result_info.quali_info.pos}]-->[${result_info.race_result_info.pos}]`;
+    link.parentElement.textContent += ` [${result_info.quali_pos}]-->[${result_info.race_finish}]`;
 
 
   });
 
   async function saveRaceResultsHistory(raceId,data)
   {
-    addData('race_result',{ id: raceId, ...data })
-      .then((id) => {
-        console.log('Data added with ID:', id);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+    chrome.runtime.sendMessage({
+      type:'addRaceResultsToDB',
+      data:{id:raceId,...data}
+    });
+      
+   
   }
 
 }
@@ -166,9 +168,10 @@ function parseData(data){
   }
   const quali_result = getHtmlFragment(data.vars.qResult).querySelector('.myTeam');
   const race_result = getHtmlFragment(data.vars.rResult).querySelector('.myTeam');
-  const race_name = getHtmlFragment(data.vars.raceName).querySelector('.flag').classList[1].slice(2);
+  const track = getHtmlFragment(data.vars.raceName).querySelector('.flag').classList[1].slice(2);
 
-  const quali_info = {pos:quali_result.cells[0].textContent,tyre:quali_result.cells[4].className};
-  const race_result_info = {pos:(race_result.rowIndex + 1)};
-  return {race_name,quali_info,race_result_info};
+  const quali_pos = quali_result.cells[0].textContent;
+  const quali_tyre = quali_result.cells[4].className;
+  const race_finish = (race_result.rowIndex + 1);
+  return {track,quali_pos,quali_tyre,race_finish};
 }

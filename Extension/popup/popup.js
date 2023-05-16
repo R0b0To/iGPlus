@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', async function() {
+  const { addData, getAllData, clearData, getElementById,deleteElementById  } = await import(chrome.runtime.getURL('/common/database.js'));
   const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
   const isSyncEnabled = await chrome.storage.local.get({script:false}) ?? await browser.storage.local.get({script:false});
   const data = await chrome.storage.local.get({separator:','}) ?? await browser.storage.local.get({separator:','}) ?? false;
@@ -88,19 +89,36 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
   //-------------------------------------------------------------------------------Popup initialization-------------------------------------------
-  chrome.storage.local.get(null, function(data) {
 
-    const storage_list = Object.keys(data);
-    const valid_saves = storage_list.filter(name => name.includes('LRID'));
+  const valid_saves = await (getAllData('reports'));
+  if(valid_saves.length > 0) {
 
-    if(valid_saves.length > 0 && data.active == null) {
-      chrome.storage.local.set({'active_option':valid_saves[0]});
-      chrome.storage.local.set({'active':data[valid_saves[0]]});
-      data.active_option = valid_saves[0];
-      data.active = data[valid_saves[0]];
+    const option_data = await chrome.storage.local.get({'active_option':valid_saves[0].id}) ?? await browser.storage.local.get({'active_option':valid_saves[0].id});
+
+    let active;
+    //generate selection menu with stored data
+    for(let i = 0; i < valid_saves.length; i++)
+    {
+      const option = document.createElement('option');
+      option.textContent = valid_saves[i].id.replace('LRID','');
+      if(option_data.active_option == valid_saves[i].id)
+      {
+        option.selected = true;
+        active = valid_saves[i].data;
+        await chrome.storage.local.set({'active':active});
+        if(active.length == 0)
+        {
+          disableButton(true);
+        }
+        chrome.storage.local.set({'active_option':option_data.active_option});
+      }
+      driver = active;
+      select.appendChild(option);
     }
+    // await chrome.storage.local.set({'active_option':option_data.active_option});
+  }
 
-
+  /* chrome.storage.local.get(null, function(data) {
 
     if(data.active == null)
     {
@@ -117,24 +135,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         //set
         chrome.storage.local.set({'active_option':'RaceLRID'});
         select.appendChild(option);
-
       }
-
-      //generate selection menu with stored data
-      for(let i = 0; i < valid_saves.length; i++)
-      {
-        const option = document.createElement('option');
-        option.textContent = valid_saves[i].replace('LRID','');
-        if(data.active_option == valid_saves[i])
-        {
-          option.selected = true;
-          chrome.storage.local.set({[data.active_option]:data.active});
-        }
-
-
-        select.appendChild(option);
-      }
-
       if(data.active == 0)
         disableButton(true);
       else
@@ -143,7 +144,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       driver = data.active;
     }
 
-  });
+  });*/
 
   //-------------------------------------------------------------------------------copy button-------------------------------------------
   copyButton.addEventListener('click',function(){
@@ -244,14 +245,23 @@ document.addEventListener('DOMContentLoaded', async function() {
   //------------------------------------------------------------------------------select change----------------------------------------------
   select.addEventListener('change',async function(){
     toggleText(false);
+
     //new option of the select
     const opt = select[select.selectedIndex].text + 'LRID';
+    const report = await getElementById(opt,'reports');
+    chrome.storage.local.set({'active_option':report.id,'active':report.data});
+    if(report.data == 0)
+      disableButton(true);
+    else
+      disableButton(false);
+    
+    driver = report.data;
     //get state before the select was changed
-    chrome.storage.local.get(['active','active_option',opt],function(data){
+    /* chrome.storage.local.get(['active','active_option',opt],function(data){
       //save the active data in the previous option
-      chrome.storage.local.set({[data['active_option']]:data['active']});
+      chrome.storage.local.set({[data['active_option']]:report.id});
       //update the active data with the new selected option and save option state
-      chrome.storage.local.set({'active_option':opt,'active':data[opt]},function(d)
+      chrome.storage.local.set({'active_option':opt,'active':report.data},function(d)
       {
         if(data[opt] == 0)
           disableButton(true);
@@ -262,7 +272,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       });
 
 
-    });
+    });*/
 
 
   });
@@ -413,12 +423,32 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     toggleText(false);
     //save before creating new data
-    chrome.storage.local.get('active', function(data) {
 
+    addData('reports',{id:leagueNameId,data:[]})
+      .then((id) => {
+        console.log('Data added with ID:', id);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+
+    chrome.storage.local.get('active', function(data) {
+      console.log(data);
       if(!typeof data.active === 'undefined')
       {
+        console.log('test1');
+        addData('reports',{id:data.active_option,data:data.active})
+          .then((id) => {
+            console.log('Data added with ID:', id);
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+
+        console.log('test2');
         chrome.storage.local.set({[data.active_option]:data.active}, function() {
         }); //saving selected
+        console.log('adding',data.active_option,data.active);
 
 
       }
@@ -450,6 +480,9 @@ document.addEventListener('DOMContentLoaded', async function() {
       disableButton(true);
       return;
     }  //alert('nothing to delete');
+
+    console.log(opt);
+    deleteElementById(opt,'reports');
 
     chrome.storage.local.remove(opt, async function() {
       select.remove(select.selectedIndex);

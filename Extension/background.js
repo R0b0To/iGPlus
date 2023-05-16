@@ -1,5 +1,6 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
 import { deleteElement, fullSync, localStrategiesToCloud, localReportsToCloud } from './auth/gDriveHandler.js';
+import { addData, getAllData, clearData, getElementById } from './common/database.js';
 
 let scriptRunning = 'none';
 
@@ -10,7 +11,7 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
   if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
     tab_status = 'complete';
   }
-  
+
   //changed to allow execution of only one instance of the same script
   if (tab_status === 'complete' && pathname != scriptRunning) {
     // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
@@ -22,9 +23,9 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
 
       //at any igp page check for sync
-      if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path)}))
+      if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path);}))
         injectScripts(tabId, tabScripts.gdrive.scripts);
-      
+
       if (!key || enabledScripts[key]) {
         scriptRunning = pathname;
         styles.length && injectStyles(tabId, styles);
@@ -77,23 +78,56 @@ async function sendDeleteRequest(request){
     setTimeout(()=>{sendDeleteRequest(request);},3000);
   }
 }
-//cloud requests will be made in the baackground
+//cloud requests will be made in the background
 chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
   //console.log('sent request',request);
   (async function () {
     if (request.type === 'deleteFile')
+    {
       sendDeleteRequest(request);
-
+      sendResponse({done:true});
+    }   
     if (request.type === 'saveStrategy')
+    {
       await localStrategiesToCloud({name:request.data.name,track:request.data.track,data:request.data.strategy,token:request.token});
-
+      sendResponse({done:true});
+    }
     if (request.type === 'syncData')
+    {
       await fullSync(request.direction,request.token);
-
-    if (request.type === 'saveReport')
+      sendResponse({done:true});
+    }
+    if (request.type === 'saveReport'){
       await localReportsToCloud({token:request.token,data:request.data});
-
-    sendResponse({done:true});
+      sendResponse({done:true});
+    }
+      
+    if(request.type === 'addRaceResultsToDB')
+    {
+      addData('race_result',request.data)
+        .then((id) => {
+          console.log('Data added with ID:', id);
+          sendResponse({done:true});
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+    if(request.type === 'addRaceReportToDB')
+    {
+      addData('reports',request.data)
+        .then((id) => {
+          console.log('Data added with ID:', id);
+          sendResponse({done:true});
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+    if(request.type === 'getDataFromDB')
+    {
+      sendResponse(await getElementById(request.data.id,'race_result') ?? false);
+    }
 
   })();
   return true;

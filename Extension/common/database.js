@@ -6,7 +6,7 @@ const STORE_NAMES = ['race_result', 'reports'];
 // Open the IndexedDB database
 function openDatabase() {
   return new Promise((resolve, reject) => {
-    const request = window.indexedDB.open(DB_NAME);
+    const request = indexedDB.open(DB_NAME);
 
     request.onerror = (event) => {
       reject('Error opening database');
@@ -29,14 +29,14 @@ function openDatabase() {
   });
 }
 
-// Add data to the specified object store
+// Add/update data to the specified object store
 function addData(storeName, data) {
   return new Promise((resolve, reject) => {
     openDatabase()
       .then((db) => {
         const transaction = db.transaction(storeName, 'readwrite');
         const objectStore = transaction.objectStore(storeName);
-        const request = objectStore.add(data);
+        const request = objectStore.put(data);
 
         request.onsuccess = (event) => {
           resolve(event.target.result);
@@ -122,4 +122,30 @@ function getElementById(id,storeName) {
   });
 }
 
-export { addData, getAllData, clearData, getElementById };
+// delete an element by its ID
+function deleteElementById(id,storeName) {
+  return new Promise((resolve, reject) => {
+    openDatabase()
+      .then((db) => {
+        const transaction = db.transaction(storeName, 'readwrite');
+        const objectStore = transaction.objectStore(storeName);
+        const deleteRequest  = objectStore.delete(id);
+
+        deleteRequest.onsuccess = (event) => {
+            console.log('Entry deleted successfully.');
+          resolve(true);
+        };
+
+        deleteRequest.onerror = (event) => {
+          reject('Error deleting  element');
+        };
+      })
+      .catch((error) => {
+        reject(error);
+      });
+  });
+}
+
+
+
+export { addData, getAllData, clearData, getElementById,deleteElementById };
