@@ -1,5 +1,5 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
-import { deleteElement, fullSync, localStrategiesToCloud, localReportsToCloud } from './auth/gDriveHandler.js';
+import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud , cloudToLocal } from './auth/gDriveHandler.js';
 import { addData, getAllData, clearData, getElementById } from './common/database.js';
 
 let scriptRunning = 'none';
@@ -86,7 +86,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     {
       sendDeleteRequest(request);
       sendResponse({done:true});
-    }   
+    }
     if (request.type === 'saveStrategy')
     {
       await localStrategiesToCloud({name:request.data.name,track:request.data.track,data:request.data.strategy,token:request.token});
@@ -94,14 +94,35 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     }
     if (request.type === 'syncData')
     {
-      await fullSync(request.direction,request.token);
+      console.log('requesting full sync',request.direction ? 'local -> cloud' : 'cloud -> local');
+      const local_reports = await getAllData('reports');
+      if (request.direction)
+      {
+        await localToCloud(request.token,{reports:local_reports});
+        const res = await cloudToLocal(request.token);
+        console.log(res);
+        storeReports(res.cloudReports)
+      }
+      else
+      {
+        const res = await cloudToLocal(request.token);
+        console.log(res);
+        storeReports(res.cloudReports)
+        await localToCloud(request.token,{reports:local_reports});
+      }
+
+      const  dateOfSync = /(.*)\(/.exec(new Date().toString())[1];
+      chrome.storage.local.set({syncDate:dateOfSync.toString()});
+
+      //await fullSync(request.direction,request.token,{reports:local_reports});
       sendResponse({done:true});
     }
     if (request.type === 'saveReport'){
-      await localReportsToCloud({token:request.token,data:request.data});
+      const local_reports = await getAllData('reports');
+      await localReportsToCloud({token:request.token,data:request.data},local_reports);
       sendResponse({done:true});
     }
-      
+
     if(request.type === 'addRaceResultsToDB')
     {
       addData('race_result',request.data)
@@ -133,3 +154,24 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
   return true;
 
 });
+
+
+function storeReports(cloudReports){
+
+  if((cloudReports))
+  {
+    for(const [key,value] of Object.entries(cloudReports)){
+
+    console.log('send',key,value);
+    addData('reports',value)
+      .then((id) => {
+        console.log('Data added with ID:', id);
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  }
+  }
+  
+
+}

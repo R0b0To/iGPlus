@@ -115,8 +115,10 @@ document.addEventListener('DOMContentLoaded', async function() {
       driver = active;
       select.appendChild(option);
     }
+    (active.length == 0) ? disableButton(true) : disableButton(false);
     // await chrome.storage.local.set({'active_option':option_data.active_option});
-  }
+  }else disableButton(true);
+
 
   /* chrome.storage.local.get(null, function(data) {
 
