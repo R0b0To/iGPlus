@@ -103,7 +103,7 @@ function getTrackSetup(circuits, tierIndex) {
 
   const suspensionSettingBtn = document.querySelector('.rotateThis');
   const setup = circuits[tierIndex][circuitCode];
-
+  setup.wing = (setup.wing <= 0) ? 1 : setup.wing;
   // in setup, there is the index of recommended setting - so we just get
   // current language based text directly from origin button
   return {

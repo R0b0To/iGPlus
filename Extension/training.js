@@ -114,7 +114,7 @@ async function startHealthMonitor() {
       await startHealthMonitor();
       break;
     } catch (err) {
-      console.log(`Retry to start health monitoring #${i + 1}/3`);
+      //console.log(`Retry to start health monitoring #${i + 1}/3`);
     }
   }
 })();

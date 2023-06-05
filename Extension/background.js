@@ -1,6 +1,6 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
 import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud , cloudToLocal } from './auth/gDriveHandler.js';
-import { addData, getAllData, clearData, getElementById } from './common/database.js';
+import { addData, getAllData, getElementById } from './common/database.js';
 
 let scriptRunning = 'none';
 
@@ -101,13 +101,13 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
         await localToCloud(request.token,{reports:local_reports});
         const res = await cloudToLocal(request.token);
         console.log(res);
-        storeReports(res.cloudReports)
+        storeReports(res.cloudReports);
       }
       else
       {
         const res = await cloudToLocal(request.token);
         console.log(res);
-        storeReports(res.cloudReports)
+        storeReports(res.cloudReports);
         await localToCloud(request.token,{reports:local_reports});
       }
 
@@ -162,16 +162,16 @@ function storeReports(cloudReports){
   {
     for(const [key,value] of Object.entries(cloudReports)){
 
-    console.log('send',key,value);
-    addData('reports',value)
-      .then((id) => {
-        console.log('Data added with ID:', id);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
+      console.log('send',key,value);
+      addData('reports',value)
+        .then((id) => {
+          console.log('Data added with ID:', id);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
   }
-  }
-  
+
 
 }
