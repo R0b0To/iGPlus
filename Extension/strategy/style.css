@@ -174,7 +174,19 @@ top:-14px;
 .lbutton:disabled {
   opacity: 0.5;
 }
-
+.reallaps > th{
+  background-color: #467bb1;
+  color: rgb(255, 255, 255);
+  padding-inline: 7px;
+  border-radius: 12px;
+  padding-block: 4px;
+  font-size: .85em;
+  font-weight: normal;
+  border: none;
+  cursor: pointer;
+  display: inline-table;
+  width: fit-content;
+}
 
 .dropbtn1 {
   background-color: #689954;
@@ -231,7 +243,7 @@ top:-14px;
 
 .dropdown1 {
   position: relative;
-  display: inline-block;
+  display: table-cell;
 }
 .dropdown2-content {
   background-color: #e3e4e5;
@@ -290,15 +302,15 @@ top:-14px;
   top: 30px;
 }
 .tooltip1 {
-  top: -63px;
-    left: 17px;
-    background-color:#689954;
+  top: -32px;
+  left: 16px;
+  background-color: #467bb1;
     padding: 9px;
     font-size: 1.2em;
     width: 20px;
     height: 10px;
     align-content: center;
-  position: relative;
+  position: absolute;
   overflow: visible;
 }
 

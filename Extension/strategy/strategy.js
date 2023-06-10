@@ -129,7 +129,9 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const dstrategy = document.getElementsByClassName('fuel');
 
       Object.keys(dstrategy).forEach(async driver =>{
-        const strategyIDNumber = dstrategy[driver].closest('form').id[1];
+        console.log(CAR_ECONOMY.fuel * TRACK_INFO.length)
+        const driverForm = dstrategy[driver].closest('form');
+        const strategyIDNumber = driverForm.id[1];
         observer.observe(dstrategy[driver].closest('tbody'), { characterData: true, attributes: true, childList: true, subtree: true });
         //add fuel div if the race is no refuel
         if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length > 2)
@@ -137,9 +139,24 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           var elem = document.createElement('div');
           elem.setAttribute('style','color:white; font-family:RobotoCondensedBold; font-size:.9em;');
           elem.className = 'fuelEst';
-          const placement = dstrategy[driver].closest('form').querySelector('[id^=\'d\']').parentElement;
+          const placement = driverForm.querySelector('[id^=\'d\']').parentElement;
           if(placement.childElementCount < 2)
             placement.append(elem);
+        }
+        else{
+          const lapsRow = driverForm.getElementsByClassName('fuel')[0];
+          lapsRow.classList.add('reallaps');
+          lapsRow.cells[0].addEventListener('click',function(){
+            lapsRow.querySelectorAll('td').forEach(e => {
+             const [fuel,laps] = e.querySelectorAll('input');
+             const push = lapsRow.nextElementSibling.cells[e.cellIndex];
+             const pushToAdd = push.querySelector('select').value;
+             console.log(CAR_ECONOMY.fuel * TRACK_INFO.length, pushToAdd )
+             laps.value =  Math.floor((parseFloat(fuel.value) / ((CAR_ECONOMY.fuel + parseFloat(pushToAdd)) * TRACK_INFO.length)));
+             e.querySelector('span').textContent = laps.value;
+            });
+          });
+          
         }
 
 
