@@ -32,7 +32,7 @@ async function updateFile(fileId,newJson,accessToken){
 }
 
 async function cloudToLocal(accessToken){
-  const setStorage = async function (name,data){chrome.storage.local.set({[name]:data});};
+  const setStorage = async function (name,data){chrome.storage.local.set({[name]:data}) ?? browser.storage.local.set({[name]:data});};
   const strategy = await searchFile('strategies.json',accessToken);
   const reports = await searchFile('reports.json',accessToken);
   const config = await searchFile('config.json',accessToken);
@@ -40,6 +40,7 @@ async function cloudToLocal(accessToken){
   if(config != false){
     const cloudConfig = await getGFile(config.id,accessToken);
     res.cloudConfig = cloudConfig;
+    cloudConfig.script.gdrive = true;
     // -----Config file ------
     Object.keys(cloudConfig).forEach(option=>{
       setStorage(option,cloudConfig[option]);

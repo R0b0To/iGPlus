@@ -145,6 +145,7 @@ async function handleSettings() {
       restoreOptions();
     }
     else {
+      await mergeStorage(scriptName, status);
       if (scriptName == 'gdrive') {
         if (status) {
           await checkAuth();
@@ -154,7 +155,6 @@ async function handleSettings() {
         }
         //await chrome.storage.local.set({ [scriptName]: status });
       }
-      mergeStorage(scriptName, status);
     }
 
   }
@@ -184,9 +184,9 @@ async function handleSettings() {
   }
 
   async function mergeStorage(scriptName, scriptValue) {
-    chrome.storage.local.get({ script: '' }, (data) => {
+    chrome.storage.local.get({ script: '' }, async (data) => {
       data.script[scriptName] = scriptValue;
-      chrome.storage.local.set({ script: data.script });
+      await chrome.storage.local.set({ script: data.script });
     });
 
   }
@@ -507,12 +507,13 @@ async function handleSettings() {
     const loader = addLoader(document.getElementById('forceSync'));
     if(token != false)
     {
-      chrome.runtime.sendMessage({type:'syncData',direction:false,token:token.access_token}, (responce) =>{
-        if(responce.done)
+      chrome.runtime.sendMessage({type:'syncData',direction:false,token:token.access_token}, async (response) =>{
+        if(response.done)
         {
           try {
             loader.remove(); forceSyncBtn.classList.add('visibleSync');
             restoreOptions();
+
           } catch (error) {
             //user left the page
           }
@@ -628,8 +629,8 @@ async function handleSettings() {
 
     if(token != false)
     {
-      chrome.runtime.sendMessage({type:'syncData',direction:true,token:token.access_token}, (responce) =>{
-        if(responce.done)
+      chrome.runtime.sendMessage({type:'syncData',direction:true,token:token.access_token}, (response) =>{
+        if(response.done)
         {
           try {
             loader.remove();

@@ -110,7 +110,6 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
         storeReports(res.cloudReports);
         await localToCloud(request.token,{reports:local_reports});
       }
-
       const  dateOfSync = /(.*)\(/.exec(new Date().toString())[1];
       chrome.storage.local.set({syncDate:dateOfSync.toString()});
 
@@ -127,7 +126,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     {
       addData('race_result',request.data)
         .then((id) => {
-          console.log('Data added with ID:', id);
+          console.log('Data added:', id,request.data);
           sendResponse({done:true});
         })
         .catch((error) => {
@@ -138,7 +137,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     {
       addData('reports',request.data)
         .then((id) => {
-          console.log('Data added with ID:', id);
+          console.log('Data added:', id,request.data);
           sendResponse({done:true});
         })
         .catch((error) => {
@@ -162,10 +161,10 @@ function storeReports(cloudReports){
   {
     for(const [key,value] of Object.entries(cloudReports)){
 
-      console.log('send',key,value);
+      console.log('restoring',value);
       addData('reports',value)
         .then((id) => {
-          console.log('Data added with ID:', id);
+          console.log('Data added',value);
         })
         .catch((error) => {
           console.error(error);
