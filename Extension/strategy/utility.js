@@ -70,9 +70,8 @@ async function strategyPreview(strategies,car_info){
   const container = document.createElement('tbody');
   container.id = 'saveList';
   container.classList.add('saveListContainerPreview');
-
   for (const id in strategies) {
-    container.appendChild(await createPreview(strategies[id],id,car_info));
+    container.append(await createPreview(strategies[id],id,car_info));
   }
   return container;
 }

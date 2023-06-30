@@ -88,7 +88,7 @@ async function getWeather() {
   const { manager } = await fetchManagerData();
   const { nextLeagueRaceTime } = await fetchNextRace();
   const trackID = document.getElementById('race').childNodes[0].lastChild.childNodes[1].href.match(/\d+/)[0];
-
+  
   const params = {
     lat: raceTrackCoords[trackID][0],
     lon: raceTrackCoords[trackID][1],
