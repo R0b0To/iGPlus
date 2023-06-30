@@ -55,7 +55,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     const active_scripts = await chrome.storage.local.get('script');
     //utility
     const {createSlider} = await import(chrome.runtime.getURL('/strategy/utility.js'));
-    const {addStintEventHandler, updateFuel} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
+    const {addStintEventHandler, updateFuel, update_stint} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
     const {dragStintHandler} = await import(chrome.runtime.getURL('/strategy/dragStint.js'));
     const {addSaveButton} = await import(chrome.runtime.getURL('/strategy/saveLoad.js'));
     try {
@@ -129,7 +129,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       const dstrategy = document.getElementsByClassName('fuel');
 
       Object.keys(dstrategy).forEach(async driver =>{
-        console.log(CAR_ECONOMY.fuel * TRACK_INFO.length)
         const driverForm = dstrategy[driver].closest('form');
         const strategyIDNumber = driverForm.id[1];
         observer.observe(dstrategy[driver].closest('tbody'), { characterData: true, attributes: true, childList: true, subtree: true });
@@ -148,20 +147,20 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           lapsRow.classList.add('reallaps');
           lapsRow.cells[0].addEventListener('click',function(){
             lapsRow.querySelectorAll('td').forEach(e => {
-             const [fuel,laps] = e.querySelectorAll('input');
-             const push = lapsRow.nextElementSibling.cells[e.cellIndex];
-             const pushToAdd = push.querySelector('select').value;
-             console.log(CAR_ECONOMY.fuel * TRACK_INFO.length, pushToAdd )
-             laps.value =  Math.floor((parseFloat(fuel.value) / ((CAR_ECONOMY.fuel + parseFloat(pushToAdd)) * TRACK_INFO.length)));
-             e.querySelector('span').textContent = laps.value;
+              const [fuel,laps] = e.querySelectorAll('input');
+              const push = lapsRow.nextElementSibling.nextElementSibling.cells[e.cellIndex];
+              const pushToAdd = push.querySelector('select').value;
+              laps.value =  Math.floor((parseFloat(fuel.value) / ((CAR_ECONOMY.fuel + parseFloat(pushToAdd)) * TRACK_INFO.length)));
+              e.querySelector('span').textContent = laps.value;
             });
           });
-          
+
         }
 
 
-        Promise.all([createWearRow(dstrategy[driver]),createPushRow(dstrategy[driver])]).then((test) => {
+        Promise.all([createPushRow(dstrategy[driver])]).then(() => {
         //after wear and push rows are generated execute this
+          createWearRow(dstrategy[driver]);
           update_stint(dstrategy[driver].cells[1]);
 
 
@@ -341,7 +340,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           for (var i = 1; i < strategy.childElementCount; i++) {
             var stint = document.createElement('td');
             var tyre = strategy.previousElementSibling.cells[i].className.slice(3); //tyre of stint i
-            var laps = strategy.cells[i].textContent;
+            var laps = strategy.cells[i].textContent;  
+            CAR_ECONOMY.push =  strategy.nextElementSibling.cells[1].childNodes[0].selectedIndex; 
             var w = get_wear(tyre, laps ,TRACK_INFO , CAR_ECONOMY, multiplier);
             stint.style.visibility = strategy.cells[i].style.visibility;
             //event will fire when laps or tyre is changed
@@ -422,18 +422,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       return dialogObserver;
     }
 
-    //update stint tyre wear the update fuel
-    function update_stint(s)
-    {
-      const stint = s.cellIndex;
-      const tbody = s.closest('tbody');
-      const wearRow = tbody.querySelector('[wearevent]');
-      const tyreRow = tbody.querySelector('.tyre');
-      const tyre = tyreRow.cells[stint].className.slice(3);
-      const laps = s.textContent;
-      wearRow.cells[stint].textContent = get_wear(tyre,laps ,TRACK_INFO, CAR_ECONOMY, multiplier);
-      updateFuel(tbody);
-    }
     function addEdit()
     {
       const advancedFuel = document.getElementsByName('advancedFuel');
@@ -602,7 +590,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         {
           t = await chrome.storage.local.get({'gTrack':'track'});
           sName = await chrome.storage.local.get({'gLinkName':'Sheet1'});
-
           idRegex = /spreadsheets\/d\/(.*)\/edit/;
           link = idRegex.exec(savedLink.gLink)[1];
           const sheetId = link;
@@ -622,7 +609,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
               .then(async rep => {
               //Remove additional text and extract only JSON:
                 const jsonData = JSON.parse(rep.substring(47).slice(0, -2));
-                //console.log(jsonData);
                 const colz = [];
                 const tr = document.createElement('tr');
 
@@ -704,7 +690,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         }
 
         async function processRows(json) {
-        //  console.log(json);
 
           json = await getCurrentTrack(json);
 
@@ -722,11 +707,11 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         }}
     }
-    function addMoreStints()
+    async function addMoreStints()
     {
       const strategies = document.getElementsByClassName('fuel');
       Object.keys(strategies).forEach(car=>{
-        addStintEventHandler(strategies[car].closest('form').querySelector('.igpNum').parentElement);
+        addStintEventHandler(strategies[car].closest('form').querySelector('.igpNum').parentElement,{CAR_ECONOMY,TRACK_INFO,multiplier});
 
       });
 

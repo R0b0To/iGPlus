@@ -153,7 +153,7 @@ function getStintInfo(stintColumn){
   const tyre = stintColumn[1].querySelector('input').value;
   const fuel = stintColumn[2].querySelector('input').value;
   const laps = stintColumn[2].querySelector('span').textContent;
-  const push = stintColumn[3].querySelector('select').selectedIndex;
+  const push = stintColumn[4].querySelector('select').selectedIndex;
 
   return {tyre,fuel,push,laps};
 }
@@ -164,7 +164,7 @@ function setStintInfo(stintColumn,tyre,fuel,push,laps){
   stintColumn[2].querySelector('span').replaceChild(document.createTextNode(laps),stintColumn[2].querySelector('span').childNodes[0]);
   stintColumn[2].querySelectorAll('input')[0].value = fuel;
   stintColumn[2].querySelectorAll('input')[1].value = laps;
-  stintColumn[3].querySelector('select').selectedIndex = push;
+  stintColumn[4].querySelector('select').selectedIndex = push;
 }
 
 function getVisibleStints(stintHeader){

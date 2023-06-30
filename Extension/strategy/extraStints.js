@@ -1,6 +1,7 @@
-
-async function addStintEventHandler(driver_pit_div) {
+let raceParams = {}
+async function addStintEventHandler(driver_pit_div,params) {
  
+  raceParams = params;
   const pits = {
     current: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent),
     previous: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent)
@@ -108,7 +109,7 @@ function addExtraStint(driver_pit_div){
     //nodelist
     const lastPit = driver_pit_div.closest('form').querySelectorAll('th:last-child,td:last-child:not(.trash):not([colspan])');
     const clonedColumn = Array.from(lastPit).map(e => {  return {node:e.cloneNode(true),parent:e.parentElement};});
-
+   // console.log(clonedColumn)
     const pit_number = (parseInt(lastPit[0].textContent.match(/\d+/)[0]) + 1);
     replacePitNumber(driver_pit_div,pit_number);
     clonedColumn[0].node.textContent = clonedColumn[0].node.textContent.replace(/\d+/, pit_number);
@@ -116,8 +117,8 @@ function addExtraStint(driver_pit_div){
     clonedColumn[1].node.addEventListener('click',openTyreDialog);
     clonedColumn[2].node.querySelector('[name^=fuel]').name = 'fuel' + (pit_number + 1);
     clonedColumn[2].node.querySelector('[name^=laps]').name = 'laps' + (pit_number + 1);
-    clonedColumn[3].node.querySelector('select').selectedIndex = lastPit[3].querySelector('select').selectedIndex;
-    clonedColumn[3].node.querySelector('select').addEventListener('change',updateFuel);
+    clonedColumn[4].node.querySelector('select').selectedIndex = lastPit[4].querySelector('select').selectedIndex;
+    clonedColumn[4].node.querySelector('select').addEventListener('change',updateFuel);
     for(const node of clonedColumn)
       node.parent.append(node.node);
     driver_pit_div.closest('form').querySelector('[colspan]').colSpan++;
@@ -126,6 +127,29 @@ function addExtraStint(driver_pit_div){
   });
 
 }
+
+    //update stint tyre wear the update fuel
+    async function update_stint(s)
+    {
+      const {get_wear } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
+      const stint = s.cellIndex;
+      const tbody = s.closest('tbody');
+      const wearRow = tbody.querySelector('[wearevent]');
+      const tyreRow = tbody.querySelector('.tyre');
+      const tyre = tyreRow.cells[stint].className.slice(3);
+      const laps = s.textContent;
+      const push = tbody.querySelector('[pushevent]').cells[stint].children[0].selectedIndex;
+      
+
+
+      raceParams.CAR_ECONOMY.push = push;
+
+      
+
+
+      wearRow.cells[stint].textContent = get_wear(tyre,laps ,raceParams.TRACK_INFO, raceParams.CAR_ECONOMY, raceParams.multiplier);
+      updateFuel(tbody);
+    }
 async function updateFuel(tbod)
 {
   const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
@@ -134,7 +158,13 @@ async function updateFuel(tbod)
   let TRACK_INFO = track_info[TRACK_CODE];
   //this function is called either directly or by change event of the push select.
   if(tbod instanceof Event)
+  {
+    const index = tbod.target.parentElement.cellIndex;
     tbod = tbod.target.closest('tbody');
+    raceParams.CAR_ECONOMY.push = tbod.querySelector('[pushevent]').cells[index].children[0].selectedIndex;
+    update_stint(tbod.querySelector('.fuel').cells[index]);
+  }
+    
 
   const pushRow = tbod.querySelector('[pushevent]');
   const tyreRow = tbod.querySelector('.tyre');
@@ -240,5 +270,6 @@ export {
   removeExtraStint,
   addExtraStint,
   replacePitNumber,
-  updateFuel
+  updateFuel,
+  update_stint
 };
