@@ -32,12 +32,17 @@ const weatherStats = {
     title: 'temperature'
   },
   'relativehumidity_2m': {
-    color: Highcharts.getOptions().colors[1],
+    color: '#48352D',
     title: 'humidity'
   },
   'precipitation': {
     type: 'area',
     color: Highcharts.getOptions().colors[0]
+  },
+  'cloudcover': {
+    color: '#00ff4733',
+    type: 'area',
+    title: 'cloudcover'
   }
 };
 

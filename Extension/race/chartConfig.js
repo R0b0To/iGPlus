@@ -28,7 +28,7 @@ function makeChartConfig({ title, nextLeagueRaceTime, plotBands, series }) {
       panKey: 'shift',
       backgroundColor: '#e3e4e5'
     },
-    yAxis: new Array(3).fill({ visible: false }, 0, 3),
+    yAxis: new Array(4).fill({ visible: false }, 0, 4),
     xAxis: {
       type: 'datetime',
       plotLines: [

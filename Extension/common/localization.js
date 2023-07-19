@@ -19,7 +19,7 @@ const language = {
       raceSetup:'Race Setup',
       carOverview:'Car Overview',
       hqLevel:'HQ Level Labels',
-      academyTimer:`Driver's Academy Auto-Refresh`,
+      academyTimer:'Driver\'s Academy Auto-Refresh',
       reports:'Reports',
       advancedHis:'Advanced History',
       verticalSponsor:'Vertical Sponsor',
@@ -45,13 +45,14 @@ const language = {
     fuelText: 'Fuel',
     lapText: 'Lap',
     pushText: 'Push',
-    pushDescriptionPart1: 'Each PL indicates the fuel amount (in liters) that will be added to the fuel consumption. Your fuel consuption is ',
-    pushDescriptionPart2: 'L/km (Fuel per lap/track length). selection does not change the stints push for the race',
+    pitAlert: 'Stints after the fourth pit stop are only visual and will not be saved for the race',
+    pushDescriptionPart1: 'Each push level indicates the fuel amount (in liters) that will be added to the fuel consumption. Your fuel consuption is ',
+    pushDescriptionPart2: 'L/km (Fuel per lap/track length). The push options are only to help set the strategy and will not be used in the race.',
     commentText: 'Any thoughts ',
     researchHelp: 'The highlighted row denotes the recommended research, determined through a weighted system.',
     scriptDescription: {
       gsheet: 'Import google data to be displayed in the strategy page below the advanced options',
-      raceReview: 'Home page review button. It opens https://igpmanager.com/app/d=raceReview',
+      raceReview: 'Home page shortcuts.',
       leagueHome: 'In the league page add a full race history button and position finished to each track',
       research: 'Add a table with the values from the bars in the research menu.',
       training: 'Add an extra column in the training page if driver is recovering.',
@@ -62,7 +63,8 @@ const language = {
       academyTimer: 'Add youth academy countdown. It will be placed as a notification beside the HQ menu option',
       reports: 'Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs',
       history: 'Add track characteristics to the race history page',
-      sponsor: 'Display sponsor options vertically'
+      sponsor: 'Display sponsor options vertically',
+      gdriveHelp: 'Save extension data to Google Drive. Warning: a popup may appear asking for the user\'s consent. Adblocks can interfere'
     }
   },
   it: {
@@ -85,7 +87,7 @@ const language = {
       raceSetup:'Setup Gara',
       carOverview:'Recensione Auto',
       hqLevel:'Livello Strutture Nella Sede Centrale',
-      academyTimer:`Aggiornamento Automatico Dell'Accademia`,
+      academyTimer:'Aggiornamento Automatico Dell\'Accademia',
       reports:'Resoconti',
       advancedHis:'Caratteristiche Del Circuito Nello Storico Gare',
       verticalSponsor:'Visualizza Sponsors in Verticale',
@@ -110,13 +112,14 @@ const language = {
     fuelText: 'Carburante',
     lapText: 'Giri',
     pushText: 'Spinta',
+    pitAlert:'Gli stint dopo il quarto pit stop sono solo visivi e non saranno salvati per la gara.',
     pushDescriptionPart1: 'Ogni spinta equivale alla quantità di carburante (in litri) da aggiungere al consumo di carburante. Il tuo consumo attuale è: ',
     pushDescriptionPart2: 'L/km (Litri per giro/ lunghezza circuito). La scelta della spinta non verrà salvata per la gara.',
     commentText: 'Commenti',
     researchHelp: 'Il campo evidenziato indica la ricerca consigliata basata su un sistema poderato',
     scriptDescription: {
       gsheet: 'Importa dati da google sheets da essere visualizzati al di sotto della strategia avanzata',
-      raceReview: 'Pulsante nella home page, apre https://igpmanager.com/app/d=raceReview',
+      raceReview: 'Pulsanti scorciatoie nella home page,',
       leagueHome: 'Aggiunge nella pagina del campionato un pulsante per la storia completa dei circuiti e la posizione finale delle gare',
       research: 'Aggiuge una tabella con i valori numerici della barra di ricerca. Più altre informazioni utili',
       training: 'Aggiunge una colonna con l\'orario in cui il pilota raggiungerà il 100% di salute.',
@@ -127,7 +130,8 @@ const language = {
       academyTimer: 'Aggiunge il timer dell\'accademia piloti nel menu laterale oltre ad aggiornare il timer in automatico',
       reports: 'Aggiunge il pulsante per estrarre i dati delle gare di ogni pilota, il CVS della qualifica e gara con i nomi delle squadre',
       history: 'Aggiunge caratteristiche del circuito nella pagina storico gare',
-      sponsor: 'Visualizzare la scelta degli sponsor in senso verticale'
+      sponsor: 'Visualizzare la scelta degli sponsor in senso verticale',
+      gdriveHelp: 'Salva i dati dell\'estensione su Google Drive. Attenzione: potrebbe apparire un popup che chiede il consenso dell\'utente. Gli adblock possono interferire'
     }
   }
 };

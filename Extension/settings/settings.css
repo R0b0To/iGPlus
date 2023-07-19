@@ -1,3 +1,4 @@
+
 fieldset {
   margin: 1rem;
   border-radius: 10px;
@@ -41,23 +42,25 @@ align-items: center;
 
 
 #fieldtip {
-  text-align: center;
-  font-size: 0.9em;
   display: flex;
-  border-radius: 8px;
-  position: absolute;
-  padding: 5px 15px;
-  background: #292d33;
-  color: #fff;
-  font-weight: 300;
-  z-index: 100;
-  min-width: 40px;
-  max-width: 200px;
+  max-width: 300px;
   transition: all 200ms linear;
   -webkit-transition: all 200ms linear;
   -moz-transition: all 200ms linear;
   -o-transition: all 200ms linear;
   z-index: 100;
+  left: -64px;
+  top: -110px;
+text-align: center;
+  color: #ccc;
+  background: #292d33;
+  position: absolute;
+  z-index: 201;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: .9em;
+  box-sizing: border-box;
+  min-width: 150px;
 }
 
 #fieldtip:after {
@@ -268,7 +271,7 @@ input[type=checkbox][disabled]+label {
 
 .upload {
   margin: 3px;
-  grid-column: 5;
+  grid-column: 3;
   grid-row: 1;
   text-align: center;
 }
@@ -308,21 +311,52 @@ input[type="file"] {
   grid-column: 4;
   grid-row: 1;
   text-align: center;
-  width: 95px;
+  height: 37px;
+  width: 37px;
+}
+#deleteBtn > svg{
+  top: 4px;
 }
 #exportBtn {
   margin: 3px;
   cursor: pointer;
-  grid-column: 3;
+  grid-column: 5;
   grid-row: 1;
   text-align: center;
-  width: 95px;
-}
+  height: 37px;
+  width: 37px;
+}#exportBtn >svg {top: 4px;}
 #syncDate{
   font-size: x-small;
+  margin-left: 5px;
 }
 .visibleSync {
   margin-left: 3px;
   cursor: pointer;
+  height: 32px!important;
   display: block !important;
+  padding: 5px!important;
+}
+#forceSync {
+  margin-left: 30px;
+  cursor: pointer;
+  height: 32px!important;
+  padding: 5px!important;
+}
+#saveList{
+ grid-column: 1 / span 5; 
+}
+
+.donwload-button {
+  margin-left: 5px;
+  cursor: pointer;
+  border-radius: 8px;
+  background-color: rgb(104, 153, 84);
+} 
+.donwload-button:hover{
+  background-color: #2a531b;
+}
+.donwload-button >svg{
+   padding: 2px;
+   filter: invert(1);
 }

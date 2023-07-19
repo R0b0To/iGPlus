@@ -67,6 +67,7 @@ async function inject_history()
   try {
     if(document.getElementById('extraTable') == null)
     {
+      //advancedExtract()
       const scheduleTable = document.getElementById('scheduleTable');
       scheduleTable.setAttribute('style','width: 90%;width:-webkit-fill-available ;');
       const track_numbers = scheduleTable.rows.length;
@@ -77,30 +78,40 @@ async function inject_history()
       fullHistoryShortcut.textContent = 'Full race history';
       scheduleTable.parentElement.insertBefore(tableToAdd, scheduleTable);
       scheduleTable.parentElement.append(fullHistoryShortcut);
-      const racesCompleted = scheduleTable.querySelectorAll('.pointer:not(.myTeam)');
-      const racesToCheck = racesCompleted.length;
-      const url = `https://igpmanager.com/index.php?action=send&type=history&start=0&numResults=${racesToCheck}&jsReply=scrollLoader&el=history&csrfName=&csrfToken=`;
-      fetch(url)
-        .then(response => response.json())
-        .then(data =>
-        {
-          const arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
-          const arrayID = [...data.src.matchAll(/id=(\d+)/g)];
-          const historyObj = {};
 
-          arrayID.forEach((element, index) => {
-            historyObj[element[1]] = arrayPositions[index][1];
-          });
-          // return historyObj;
-          //console.log(historyObj);
-          racesCompleted.forEach(race => {
-            const raceID = race.querySelector('[href]').href.match(/\d+/)[0];
-            if(historyObj[raceID] != null)
-              race.childNodes[0].childNodes[1].textContent += ` [${historyObj[raceID]}]`;
-          });
+      const myLeague = new URLSearchParams(document.getElementById('mLeague').href).get('id');
+      const league = new URLSearchParams(window.location.href).get('id');
+
+      if(myLeague == league)
+      {
+        advancedExtract();
+        /*const racesCompleted = scheduleTable.querySelectorAll('.pointer:not(.myTeam)');
+        const racesToCheck = racesCompleted.length;
+        const url = `https://igpmanager.com/index.php?action=send&type=history&start=0&numResults=${racesToCheck}&jsReply=scrollLoader&el=history&csrfName=&csrfToken=`;
+
+        fetch(url)
+          .then(response => response.json())
+          .then(data =>
+          {
+            const arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
+            const arrayID = [...data.src.matchAll(/id=(\d+)/g)];
+            const historyObj = {};
+
+            arrayID.forEach((element, index) => {
+              historyObj[element[1]] = arrayPositions[index][1];
+            });
+            // return historyObj;
+            //console.log(historyObj);
+            racesCompleted.forEach(race => {
+              const raceID = race.querySelector('[href]').href.match(/\d+/)[0];
+              if(historyObj[raceID] != null)
+                race.childNodes[0].childNodes[1].textContent += ` [${historyObj[raceID]}]`;
+            });
 
 
-        });
+          });*/
+
+      }
 
 
     }
@@ -116,3 +127,51 @@ try {
 
 }
 
+async function advancedExtract(){
+  const {fetchRaceResultInfo} = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const scheduleTable = document.getElementById('scheduleTable');
+  const racesCompleted = scheduleTable.querySelectorAll('.pointer:not(.myTeam)>td>a');
+  racesCompleted.forEach(async link => {
+    const id = new URLSearchParams(link.href).get('id');
+    let result_info = await chrome.runtime.sendMessage({
+      type:'getDataFromDB',
+      data:{id:id,store:'race_result'}
+    });
+   // let result_info = await getElementById(id,'race_result') ?? false;
+    if(result_info == false){
+      const result = await fetchRaceResultInfo(id);
+      result_info = parseData(result);
+      saveRaceResultsHistory(id,result_info);
+    }//else{console.log('data already stored')}
+    link.parentElement.textContent += ` [${result_info.quali_pos}]-->[${result_info.race_finish}]`;
+
+
+  });
+
+  async function saveRaceResultsHistory(raceId,data)
+  {
+    chrome.runtime.sendMessage({
+      type:'addRaceResultsToDB',
+      data:{id:raceId,...data}
+    });
+      
+   
+  }
+
+}
+
+function parseData(data){
+  function getHtmlFragment(stringNode){
+    const html_fragment = document.createElement('table');
+    html_fragment.innerHTML = stringNode;
+    return html_fragment;
+  }
+  const quali_result = getHtmlFragment(data.vars.qResult).querySelector('.myTeam');
+  const race_result = getHtmlFragment(data.vars.rResult).querySelector('.myTeam');
+  const track = getHtmlFragment(data.vars.raceName).querySelector('.flag').classList[1].slice(2);
+
+  const quali_pos = quali_result.cells[0].textContent;
+  const quali_tyre = quali_result.cells[4].className;
+  const race_finish = (race_result.rowIndex + 1);
+  return {track,quali_pos,quali_tyre,race_finish};
+}

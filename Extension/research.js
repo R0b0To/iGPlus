@@ -1,7 +1,8 @@
 async function enhanceResearchTable() {
   const { language } = await chrome.storage.local.get({ language: 'en' });
   const { language: i18n } = await import(chrome.runtime.getURL('/common/localization.js'));
-
+  const { findCurrentTier} = await import(chrome.runtime.getURL('strategy/utility.js'));
+  const tier = await findCurrentTier();
   const observer = new MutationObserver(function (mutations) {
     weightedResearch();
     calculateTotalResearchGain();
@@ -29,7 +30,7 @@ async function enhanceResearchTable() {
 
     /** @type { NodeListOf<HTMLDivElement> } */
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
-    const researchStatsRows = [...ratingBars].map((bar) => {
+    const researchStatsRows = [...ratingBars].map( (bar) => {
       // this will hide Comparsion column for narrow screens
       gameTable.tHead.rows[0].cells[2].className = 'ratings';
       bar.parentElement.classList.add('ratings');
@@ -37,7 +38,7 @@ async function enhanceResearchTable() {
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
 
-      const scaleFactor = 2; //? is it always 2? I guess it depends on current tier
+      const scaleFactor = ( tier == 3) ? 2 : 1;
       const bestTeamValue = /(\d+)/.exec(bar.querySelector('img').style.left)[0] * scaleFactor;
       const myValue = parseInt(bar.querySelector('div').style.width) * scaleFactor;
 
@@ -155,12 +156,12 @@ async function copyColumnData() {
   const columnIndex = this.cellIndex;
   const table = this.closest('tbody');
 
-  let cvs = '';
+  let csv = '';
   for (let item of table.rows) {
-    cvs += `${item.childNodes[columnIndex].childNodes[0].textContent}\n`;
+    csv += `${item.childNodes[columnIndex].childNodes[0]?.textContent ?? ''}\n`;
   }
 
-  await navigator.clipboard.writeText(cvs);
+  await navigator.clipboard.writeText(csv);
   console.log('text copied');
 }
 

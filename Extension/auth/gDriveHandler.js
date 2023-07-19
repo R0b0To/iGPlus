@@ -27,32 +27,20 @@ async function updateFile(fileId,newJson,accessToken){
   const headers = {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json'};
   fetch(url, { method: 'PATCH', headers: headers, body: newJson })
     .then(response => response.json())
-    .then(data => {})
+    .then(data => {return data;})
     .catch(error => console.error(error));
 }
-async function fullSync(direction,access_token){
-  if (direction)
-  {
-    await localToCloud(access_token);
-    await cloudToLocal(access_token);
-  }
-  else
-  {
-    await cloudToLocal(access_token);
-    await localToCloud(access_token);
-  }
-  const  dateOfSync = /(.*)\(/.exec(new Date().toString())[1];
-  chrome.storage.local.set({syncDate:dateOfSync.toString()});
-  return true;
-}
+
 async function cloudToLocal(accessToken){
-  const setStorage = async function (name,data){chrome.storage.local.set({[name]:data});};
+  const setStorage = async function (name,data){chrome.storage.local.set({[name]:data}) ?? browser.storage.local.set({[name]:data});};
   const strategy = await searchFile('strategies.json',accessToken);
   const reports = await searchFile('reports.json',accessToken);
   const config = await searchFile('config.json',accessToken);
-
+  const res = {};
   if(config != false){
     const cloudConfig = await getGFile(config.id,accessToken);
+    res.cloudConfig = cloudConfig;
+    cloudConfig.script.gdrive = true;
     // -----Config file ------
     Object.keys(cloudConfig).forEach(option=>{
       setStorage(option,cloudConfig[option]);
@@ -60,24 +48,26 @@ async function cloudToLocal(accessToken){
   }
   if(reports != false){
     const cloudReports = await getGFile(reports.id,accessToken);
-    for(const [key,value] of Object.entries(cloudReports)){
-      chrome.storage.local.set({[key]:value});
-    }
+    res.cloudReports = cloudReports;
+
   }
   if(strategy != false){
     const cloudStrategies = await getGFile(strategy.id,accessToken);
+    res.cloudStrategies = cloudStrategies;
     const localFile = await chrome.storage.local.get({save:false}) ?? await browser.storage.local.get({save:false}) ?? false;
     const merged = {...localFile?.save ?? false,...cloudStrategies}; //merge even if local is empty/false
     chrome.storage.local.set({save:merged});
   }
 
+  return res;
+
 }
-async function localToCloud(accessToken){
+async function localToCloud(accessToken,local_data){
   let mainFolder = await searchFolder('iGPlus',accessToken);
   if(mainFolder == false) mainFolder = await createMainFolderGDrive(accessToken);
 
   await localConfigToCloud({mainFolderId:mainFolder,token:accessToken});
-  await localReportsToCloud({mainFolderId:mainFolder,token:accessToken});
+  await localReportsToCloud({mainFolderId:mainFolder,token:accessToken},local_data.reports);
   await localStrategiesToCloud({mainFolderId:mainFolder,token:accessToken});
 }
 async function storeFileIn(folderId,fileName,jsonData,accessToken){
@@ -119,7 +109,7 @@ async function searchFile(fileName,accessToken){
 async function localConfigToCloud(data){
 
   const configInfo = {};
-  const allData = await chrome.storage.local.get(null) ?? await browser.storage.local.get(null) ?? false
+  const allData = await chrome.storage.local.get(null) ?? await browser.storage.local.get(null) ?? false;
   if(allData != false){
     for(const [key,value] of Object.entries((allData)))
     {
@@ -138,32 +128,27 @@ async function localConfigToCloud(data){
   }
 
 }
-async function localReportsToCloud(data){
-  const raceReports = {};
-  const allData = await chrome.storage.local.get(null) ?? await browser.storage.local.get(null) ?? false;
-  if(allData != false){
-    for(const [key,value] of Object.entries((allData)))
-      if(key.endsWith('LRID'))
-        raceReports[key] = value;
+async function localReportsToCloud(data,local_data){
 
-    let mainFolder = data?.mainFolderId ?? false;
-    if(mainFolder == false)
-      mainFolder = await searchFolder('iGPlus',data.token);
+  const raceReports = local_data;
+  let mainFolder = data?.mainFolderId ?? false;
+  if(mainFolder == false)
+    mainFolder = await searchFolder('iGPlus',data.token);
 
-    if(Object.keys(raceReports).length > 0)
-    {
-      const cloudReports = await searchFile('reports.json',data.token);
-      if(cloudReports == false)  storeFileIn(mainFolder.id,'reports',JSON.stringify(raceReports),data.token);
-      else {
-        const cloudFile = await getGFile(cloudReports.id,data.token);
-        const merged = {...cloudFile,...raceReports};
-        updateFile(cloudReports.id,JSON.stringify(merged),data.token);
-      }
+  if(Object.keys(raceReports).length > 0)
+  {
+    const cloudReports = await searchFile('reports.json',data.token);
+    if(cloudReports == false)  storeFileIn(mainFolder.id,'reports',JSON.stringify(raceReports),data.token);
+    else {
+      const cloudFile = await getGFile(cloudReports.id,data.token);
+      const merged = {...cloudFile,...raceReports};
+      updateFile(cloudReports.id,JSON.stringify(merged),data.token);
     }
   }
-
-
 }
+
+
+
 async function localStrategiesToCloud(data){
   let mainFolder = data?.mainFolderId ?? false;
   if(mainFolder == false)
@@ -195,6 +180,7 @@ async function deleteFile(fileId,accessToken){
 async function deleteElement(type,data,accessToken){
   const fileId = await searchFile(type,accessToken);
   const file = await getGFile(fileId.id,accessToken);
+
   if(type == 'strategies.json'){
     if(data.track == 0){
       deleteFile(fileId,accessToken);
@@ -204,15 +190,20 @@ async function deleteElement(type,data,accessToken){
     }
   }
   if(type == 'reports.json'){
-    delete file[data.name];
-    updateFile(fileId.id,JSON.stringify(file),accessToken);
+    console.log(file)
+    const keyToDelete = Object.keys(file).find(key => file[key].id === data.name);
+    delete file[keyToDelete];
+    await updateFile(fileId.id,JSON.stringify(file),accessToken);
+    return true;
   }
 
 }
 
 export{
-  fullSync,
+
   deleteElement,
   localStrategiesToCloud,
-  localReportsToCloud
+  localReportsToCloud,
+  localToCloud,
+  cloudToLocal
 };

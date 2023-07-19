@@ -92,7 +92,7 @@ async function startHealthMonitor() {
       const iconUrl = chrome.runtime.getURL('images/calendar-check-regular.svg');
       const image = document.createElement('img');
       image.src = iconUrl;
-
+      image.style.width = "1.6em";
       const header = document.createElement('th');
       header.id = 'dateHeader';
 
@@ -114,7 +114,7 @@ async function startHealthMonitor() {
       await startHealthMonitor();
       break;
     } catch (err) {
-      console.log(`Retry to start health monitoring #${i + 1}/3`);
+      //console.log(`Retry to start health monitoring #${i + 1}/3`);
     }
   }
 })();

@@ -1,14 +1,55 @@
-
 (async () => {
   if (!document.getElementById('iGPlus')) {
     const { injectIGPlusOptions } = await import(chrome.runtime.getURL('/settings/settingsHTML.js'));
+
     injectIGPlusOptions().then( res => {if(res) handleSettings();});
   }
 })();
+async function download() {
+  const d = await chrome.storage.local.get('save');
+  function downloadFile(data, download_name) {
+    var blob = new Blob([data], { type: 'application/json;charset=utf-8;' });
+    if (navigator.msSaveBlob) {
+      // IE 10+
+      navigator.msSaveBlob(blob, 'test');
+    } else {
+      const link = document.createElement('a');
+      if (link.download !== undefined) {
+        // feature detection
+        // chromes that support HTML5 download attribute
+        var url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', download_name);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  }
 
+  const selectedStrategyTrack = document.getElementById('exportSave').value;
+  let filename = 'save';
+  let saved = d;
 
-function handleSettings() {
+  if (selectedStrategyTrack == 0) {
+    saved = d;
+    filename = 'save';
+  } else {
+    const saveID = this.parentElement.id;
+    const track = selectedStrategyTrack;
+    saved = { [track]: { [saveID]: d.save[track][saveID] } };
+    filename = `${track}_${saveID}`;
+  }
+  const saveJSON = JSON.stringify(saved);
+  downloadFile(saveJSON, filename);
+}
 
+async function handleSettings() {
+  const { fetchManagerData } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
+  const { scriptDefaults } = await import(chrome.runtime.getURL('/common/config.js'));
+  const {strategyPreview, createDownloadButton,createDeleteButton} = await import(chrome.runtime.getURL('/strategy/utility.js'));
   const DEBUG = false;
   const raceSign = document.getElementById('raceSign');
   const overSign = document.getElementById('overSign');
@@ -32,8 +73,58 @@ function handleSettings() {
   const sponsorCheckbox = document.getElementById('sponsor');
   const gdrive = document.getElementById('gdrive');
   const forceSyncBtn = document.getElementById('forceSync');
+  const exportSave = document.getElementById('exportSave');
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
 
+  async function displayPreview(){
+    const d = await chrome.storage.local.get('save');
+    if(exportSave.value != 0)
+    {
+      document.getElementById('deleteBtn').style.display = 'none';
+      document.getElementById('exportBtn').style.display = 'none';
+    }else
+    {
+      document.getElementById('deleteBtn').style.display = 'block';
+      document.getElementById('exportBtn').style.display = 'block';
+    }
+    try {
+      if (this.value != 0) {
+        Object.keys(d.save[this.value]).forEach((item) => {
+          const downloadButtons = document.querySelectorAll('.fa-download');
+          downloadButtons.forEach((button) => {
+            button.remove();
+          });
+
+        });
+        if (document.getElementById('saveList') != null) {
+          document.getElementById('saveList').remove();
+        }
+        if (Object.keys(d.save[this.value]).length > 0) {
+          const sList = await strategyPreview(d.save[this.value],{te:30});
+          sList.querySelectorAll('tr').forEach(e=>{
+            //add download button
+            const down_btn = createDownloadButton();
+            down_btn.addEventListener('click',download);
+            e.append(down_btn);
+          });
+          sList.querySelectorAll('.trash').forEach(e => {e.addEventListener('click',deleteSave);});
+          exportSave.parentElement.append(sList);
+        }
+      } else {
+        //selecting all strategies
+        const downloadButtons = document.querySelectorAll('.fa-download');
+        downloadButtons.forEach((button) => {
+          button.remove();
+        });
+
+        if (document.getElementById('saveList') != null) {
+          document.getElementById('saveList').remove();
+        }
+        
+      }
+    } catch (error) {console.log(error); }
+  }
+  exportSave.addEventListener('change',displayPreview);
   restoreOptions();
 
 
@@ -54,15 +145,16 @@ function handleSettings() {
       restoreOptions();
     }
     else {
+      await mergeStorage(scriptName, status);
       if (scriptName == 'gdrive') {
         if (status) {
-          checkAuth();
+          await checkAuth();
         } else
+        {
           forceSyncBtn.classList.remove('visibleSync');//forceSyncBtnDown.classList.remove('visibleSync');
-
-        chrome.storage.local.set({ [scriptName]: status });
+        }
+        //await chrome.storage.local.set({ [scriptName]: status });
       }
-      mergeStorage(scriptName, status);
     }
 
   }
@@ -92,9 +184,9 @@ function handleSettings() {
   }
 
   async function mergeStorage(scriptName, scriptValue) {
-    chrome.storage.local.get({ script: '' }, (data) => {
+    chrome.storage.local.get({ script: '' }, async (data) => {
       data.script[scriptName] = scriptValue;
-      chrome.storage.local.set({ script: data.script });
+      await chrome.storage.local.set({ script: data.script });
     });
 
   }
@@ -124,7 +216,9 @@ function handleSettings() {
   ['strategy', 'setup'].forEach(mainCheckboxEvent);
   ['edit', 'slider', 'editS', 'sliderS'].forEach(onlyOneEvent);
 
-  const exportSave = document.getElementById('exportSave');
+
+  //exportSave.removeEventListener('change')
+
   link.addEventListener('change', testLink);
   sname.addEventListener('change', sName);
 
@@ -159,23 +253,19 @@ function handleSettings() {
 
   function saveOptions() {
     let lang = languageSelection.value;
-    //if(lang == 'en ') lang = 'eng'; if(lang == 'it') lang = 'ita'; if(lang != 'en' && lang != 'it') lang = 'eng';
     switch (lang) {
     case 'it': lang = 'it';
       break;
     default: lang = 'en';
       break;
     }
-    //console.log('setting language to',lang);
     chrome.storage.local.set({ language: lang });
     restoreOptions();
   }
 
 
   async function restoreOptions() {
-    const { fetchManagerData } = await import( chrome.runtime.getURL('common/fetcher.js') );
 
-    const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
     chrome.storage.local.get({ language: false }, async function (selected) {
       let code = selected.language;
       if(selected.language == false){const managerData = await fetchManagerData();
@@ -190,8 +280,15 @@ function handleSettings() {
       document.getElementById('preferences').textContent = language[code].optionsText.preferences;
       separator.previousElementSibling.textContent = language[code].optionsText.separator;
 
-      raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
-      overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      await chrome.storage.local.get('raceSign', function (data) {
+        raceSign.querySelector('input').checked = data.raceSign;
+        raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      });
+
+      await chrome.storage.local.get('overSign', function (data) {
+        overSign.querySelector('input').checked = data.overSign;
+        overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
+      });
 
       setTextToFieldtip(gsheetCheckbox, 'gsheet');
       setTextToFieldtip(leagueCheckbox, 'leagueHome');
@@ -206,6 +303,7 @@ function handleSettings() {
       setTextToFieldtip(overviewCheckbox, 'carOverview');
       setTextToFieldtip(advancedHisCheckbox, 'history');
       setTextToFieldtip(sponsorCheckbox, 'sponsor');
+      setTextToFieldtip(gdrive, 'gdriveHelp');
 
       setTextToCheckbox(reviewCheckbox, 'home');
       setTextToCheckbox(leagueCheckbox, 'leagueHome');
@@ -229,7 +327,7 @@ function handleSettings() {
       field[1].textContent = language[code].optionsText.track;
       field[2].textContent = language[code].optionsText.sheetName;
 
-      [gsheetCheckbox, leagueCheckbox, researchCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, overviewCheckbox, advancedHisCheckbox, sponsorCheckbox]
+      [gdrive,gsheetCheckbox, leagueCheckbox, researchCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, overviewCheckbox, advancedHisCheckbox, sponsorCheckbox]
         .forEach(addFieldtipEvent);
 
     }
@@ -240,15 +338,7 @@ function handleSettings() {
     chrome.storage.local.get({ 'separator': ',' }, function (data) {
       separator.value = data.separator;
     });
-    chrome.storage.local.get('raceSign', function (data) {
-      raceSign.querySelector('input').checked = data.raceSign;
-      //(data.raceSign) ? raceSign.querySelector('span').textContent += ' ( - )' : raceSign.querySelector('span').textContent += ' ( + )';
-    });
 
-    chrome.storage.local.get('overSign', function (data) {
-      overSign.querySelector('input').checked = data.overSign;
-      //(data.overSign) ? overSign.querySelector('span').textContent += ' ( - )' : overSign.querySelector('span').textContent += ' ( + )';
-    });
 
     chrome.storage.local.get('gLink', function (data) {
       if (typeof data.gLink != 'undefined') link.value = data.gLink;
@@ -261,36 +351,30 @@ function handleSettings() {
     chrome.storage.local.get('gTrack', function (data) {
       if (typeof data.gTrack != 'undefined') trackName.value = data.gTrack;
     });
-    chrome.storage.local.get('gdrive', async function (data) {
-      if (typeof data.gdrive != 'undefined') {
-        gdrive.querySelector('input').checked = data.gdrive;
-        (data.gdrive) ? forceSyncBtn.classList.add('visibleSync') : forceSyncBtn.classList.remove('visibleSync');
-        //(data.gdrive) ? forceSyncBtnDown.classList.add('visibleSync') : forceSyncBtnDown.classList.remove('visibleSync');
-      }
-      if(forceSyncBtn.classList.contains('visibleSync'))
-      {
-        const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
-        const syncText = document.getElementById('syncDate')
-        if(!syncText){
-          const dateContainer = document.createElement('div');
-          dateContainer.id = 'syncDate';
-          dateContainer.textContent =`Last Sync: ${dateOfLastSync.syncDate}`;
-          gdrive.append(dateContainer);
-        }else{
-          syncText.textContent =`Last Sync: ${dateOfLastSync.syncDate}`;
-        }
-       
-      }
-    });
-
-    const { scriptDefaults } = await import(chrome.runtime.getURL('/common/config.js'));
-
 
     chrome.storage.local.get({ script: scriptDefaults }, function (data) {
-      Object.keys(scriptDefaults).forEach((item) => {
+      Object.keys(scriptDefaults).forEach(async (item) => {
         let checkedStatus = data.script[item];
 
-        if (item == 'gdrive' && checkedStatus) checkAuth();
+        if (item == 'gdrive' && checkedStatus){       
+          forceSyncBtn.classList.add('visibleSync');
+        }else{
+          forceSyncBtn.classList.remove('visibleSync');
+        }
+        if(forceSyncBtn.classList.contains('visibleSync'))
+        {
+          const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
+          const syncText = document.getElementById('syncDate');
+          if(!syncText){
+            const dateContainer = document.createElement('div');
+            dateContainer.id = 'syncDate';
+            dateContainer.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
+            gdrive.append(dateContainer);
+          }else{
+            syncText.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
+          }
+  
+        } 
 
         document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
       });
@@ -304,71 +388,25 @@ function handleSettings() {
     });
 
     chrome.storage.local.get('save', function (d) {
-      function download() {
-        function downloadFile(data, download_name) {
-          var blob = new Blob([data], { type: 'application/json;charset=utf-8;' });
-          if (navigator.msSaveBlob) {
-            // IE 10+
-            navigator.msSaveBlob(blob, 'test');
-          } else {
-            const link = document.createElement('a');
-            if (link.download !== undefined) {
-              // feature detection
-              // chromes that support HTML5 download attribute
-              var url = URL.createObjectURL(blob);
-              link.setAttribute('href', url);
-              link.setAttribute('download', download_name);
-              link.style.visibility = 'hidden';
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-            }
-          }
-        }
 
-        const all = document.getElementById('exportSave').value;
-        let filename = 'save';
-        let saved = d;
-
-        if (all == 0) {
-          saved = d;
-          filename = 'save';
-        } else {
-          const saveID = document.getElementById('trackSave').value;
-          const track = document.getElementById('exportSave').value;
-          saved = { [track]: { [saveID]: d.save[track][saveID] } };
-          filename = `${track}_${saveID}`;
-        }
-        const saveJSON = JSON.stringify(saved);
-        downloadFile(saveJSON, filename);
-      }
-
+  
       //remove old values in case restore is called
       if (document.getElementById('exportBtn')) {
 
-        if(document.getElementById('trackSave'))
-          document.getElementById('trackSave').remove();
-
         document.getElementById('deleteBtn').remove();
         document.getElementById('exportBtn').remove();
+
         document.getElementById('exportSave').replaceChildren();
       }
 
-      function addButton(name,id,className) {
-        const dButton = document.createElement('div');
-        dButton.textContent = name;
-        dButton.classList.add(className, 'fa-download');
-        dButton.id = id;
-        return dButton;
-      }
-      const download_button = addButton('Download','exportBtn','btn');
-      const delete_button = addButton('Delete','deleteBtn','btn3');
-
+      const download_button = createDownloadButton();
+      const delete_button = createDeleteButton();
+      download_button.id = 'exportBtn';
+      delete_button.id = 'deleteBtn';
       if (typeof d.save === 'undefined') {
 
       }
       else {
-
 
         let save_to_display = false;
         for(const [key,value] of Object.entries(d.save))
@@ -395,17 +433,17 @@ function handleSettings() {
         delete_button.addEventListener('click', async function(){
           const track = document.getElementById('exportSave').value;
           let token = false;
-          const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-          if(isSyncEnabled.gdrive){
+          const isSyncEnabled = await chrome.storage.local.get({script:false});
+          if(isSyncEnabled.script.gdrive){
             const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
             token = await getAccessToken();
           }
 
-          const strategies = await chrome.storage.local.get('save');
           if(track == 0)
           {
-            chrome.storage.local.remove('save');
-            if(isSyncEnabled.gdrive)
+            chrome.storage.local.remove('save') ??  browser.storage.local.remove('save');
+            console.log('iGPLus| Removing all saves')
+            if(isSyncEnabled.script.gdrive)
             {
               chrome.runtime.sendMessage({
                 type:'deleteFile',
@@ -413,85 +451,54 @@ function handleSettings() {
                 token:token.access_token});
             }
 
-          }else{
-            const strategy = document.getElementById('trackSave').value;
-            delete strategies.save[track][strategy];
-
-            if(Object.keys(strategies.save[track]).length == 0)
-              delete strategies.save[track];
-
-            chrome.storage.local.set({'save':strategies.save});
-
-            if(Object.keys(strategies.save).length == 0)
-              chrome.storage.local.remove('save');
-            if(isSyncEnabled.gdrive)
-            {
-              if(token != false){
-                chrome.runtime.sendMessage({
-                  type:'deleteFile',
-                  data:{type:'strategies',track:track,name:strategy},
-                  token:token.access_token});
-              }
-            }
-
-
           }
+          document.getElementById('saveList')?.remove();
           restoreOptions();
         });
+
         download_button.addEventListener('click', download);
-        exportSave.addEventListener('change', function () {
-          //console.log("changing");
-          try {
-            const select = document.createElement('select');
-            select.id = 'trackSave';
 
-            if (this.value != 0) {
-              Object.keys(d.save[this.value]).forEach((item) => {
-                const option = document.createElement('option');
-                // console.log(d.save[this.value][item]);
-
-                const downloadButtons = document.querySelectorAll('.fa-download');
-                downloadButtons.forEach((button) => {
-                  button.remove();
-                });
-
-                option.textContent = getStrategyString(d.save[this.value][item]);
-                option.value = item;
-                select.append(option);
-              });
-              if (document.getElementById('trackSave') != null) {
-                document.getElementById('trackSave').remove();
-              }
-              if (Object.keys(d.save[this.value]).length > 0) {
-                exportSave.parentElement.append(select);
-
-                exportSave.parentElement.append(download_button,delete_button);
-              }
-            } else {
-              const downloadButtons = document.querySelectorAll('.fa-download');
-              downloadButtons.forEach((button) => {
-                button.remove();
-              });
-
-              if (document.getElementById('trackSave') != null) {
-                document.getElementById('trackSave').remove();
-              }
-              exportSave.parentElement.append(download_button,delete_button);
-            }
-          } catch (error) { }
-
-          document.querySelector('.fa-download').addEventListener('click', download);
-        });
       }
     });
   }
 
+  async function deleteSave()
+  {
+    const saveToDelete = this.parentElement.id;
+    const code = exportSave.value;
+    const data = await chrome.storage.local.get('save');
+    delete data.save[code][saveToDelete];
+    chrome.storage.local.set({'save':data.save}) ??  browser.storage.local.set({'save':data.save});
+    document.querySelectorAll(`[id="${saveToDelete}"]`).forEach((save) => {
+      save.remove();
+    });
 
+
+    if(document.getElementById('saveList').childElementCount == 0)
+    {
+
+    }
+    const isSyncEnabled = await chrome.storage.local.get({script:false});
+    if(isSyncEnabled.script.gdrive){
+
+      const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+      const token = await getAccessToken();
+      if(token != false){
+        chrome.runtime.sendMessage({
+          type:'deleteFile',
+          data:{type:'strategies',track:code,name:saveToDelete},
+          token:token.access_token});
+      }
+
+    }
+    document.getElementById('saveList')?.remove();
+    restoreOptions();
+  }
   async function checkAuth() {
-    const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-    const token = await getAccessToken();
+    const { getFirstAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+    const token = await getFirstAccessToken();
     if (token == false) {
-      mergeStorage('gdrive', false);
+      mergeStorage('gdrive',false);
       document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
       forceSyncBtn.classList.remove('visibleSync');
       //forceSyncBtnDown.classList.remove('visibleSync');
@@ -500,12 +507,13 @@ function handleSettings() {
     const loader = addLoader(document.getElementById('forceSync'));
     if(token != false)
     {
-      chrome.runtime.sendMessage({type:'syncData',direction:false,token:token.access_token}, (responce) =>{
-        if(responce.done)
+      chrome.runtime.sendMessage({type:'syncData',direction:false,token:token.access_token}, async (response) =>{
+        if(response.done)
         {
           try {
             loader.remove(); forceSyncBtn.classList.add('visibleSync');
             restoreOptions();
+
           } catch (error) {
             //user left the page
           }
@@ -518,16 +526,9 @@ function handleSettings() {
     return token.access_token;
   }
 
-  function getStrategyString(saveObject) {
-    let string = '';
-    Object.keys(saveObject).forEach((stint) => {
-      string += `${saveObject[stint].laps}${saveObject[stint].tyre.slice(3)} `;
-    });
-    return string;
-  }
-
   const importSave = document.getElementById('myFile');
   importSave.addEventListener('change', async function () {
+    document.getElementById('exportSave').replaceChildren();
     var reader = new FileReader();
     reader.onload = onReaderLoad;
     reader.readAsText(this.files[0]);
@@ -628,8 +629,8 @@ function handleSettings() {
 
     if(token != false)
     {
-      chrome.runtime.sendMessage({type:'syncData',direction:true,token:token.access_token}, (responce) =>{
-        if(responce.done)
+      chrome.runtime.sendMessage({type:'syncData',direction:true,token:token.access_token}, (response) =>{
+        if(response.done)
         {
           try {
             loader.remove();
@@ -651,9 +652,5 @@ function handleSettings() {
 
 
   });
-
-  function syncDate(){
-    const date = new Date();
-  }
 
 }

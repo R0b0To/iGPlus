@@ -33,14 +33,19 @@
       // const staffId = reserveStaff.rows[i].childNodes[0].childNodes[0].href.match(/\d+/)[0];
       // staffUrl = 'https://igpmanager.com/index.php?action=fetch&d=staff&id=' + staffId + '&csrfName=&csrfToken=';
 
-      const personParams = new URLSearchParams(reserveStaff.rows[i].childNodes[0].childNodes[0].pathname.replace('/app/', '?'));
-      const personId = personParams.get('id');
-
-      const data = await fetchStaffInfo(personId);
-      const { strength, weakness } = parseSkills(data);
+      //const personParams = new URLSearchParams(reserveStaff.rows[i].childNodes[0].childNodes[0].pathname.replace('/app/', '?'));
+      //const personId = personParams.get('id');
+      
+      const fragmentToParse = document.createElement('table');
+      fragmentToParse.innerHTML = reserveStaff.rows[i].cells[2].dataset.append;
+      const skills = fragmentToParse.querySelectorAll('icon');
+      const strength = skills[0].textContent;
+      const weakness = skills[1].textContent;
+      //const data = await fetchStaffInfo(personId);
+      //const { strength, weakness } = parseSkills(data);
 
       if (reserveStaff.rows[i].childNodes[0].childElementCount == 3 && strength) {
-        reserveStaff.rows[i].childNodes[0].appendChild(createSkillLabel(strength, 'strength'));
+        reserveStaff.rows[i].childNodes[0].append(createSkillLabel(strength, 'strength'),createSkillLabel(weakness, 'weakness'));
 
         // TODO see if required with wrapper? Need to add weakness?
         // const wrapper = document.createElement('div');

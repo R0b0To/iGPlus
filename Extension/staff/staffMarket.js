@@ -17,6 +17,7 @@
     // adding strength for designer
     if (staffDiv.childElementCount === 0) {
       const wrapper = document.createElement('div');
+      wrapper.style.display = "inline-flex";
       wrapper.classList.add('skillWrapper');
       wrapper.append(createSkillLabel(strength, 'strength'), createSkillLabel(weakness, 'weakness'));
       staffDiv.append(wrapper);

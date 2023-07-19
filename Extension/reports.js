@@ -207,13 +207,13 @@ function get_quali()
 {
   manager = [];
   // get quali results
-  for (i = 1; i <= quali_results.childElementCount; i++) {
-    driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
-    driver_id = driver_quali[0].href.replace(/\D/g, '');
-    driver_name = quali_results.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
-    team_name = quali_results.childNodes[i].childNodes[1].childNodes[6].innerText;
-    race_id = window.location.href.replace(/\D/g, '');
-    manager_template = {
+  for (let i = 1; i <= quali_results.childElementCount; i++) {
+    const driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
+    const driver_id = driver_quali[0].href.replace(/\D/g, '');
+    const  driver_name = quali_results.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
+    const team_name = quali_results.childNodes[i].childNodes[1].childNodes[6].innerText;
+    const race_id = window.location.href.replace(/\D/g, '');
+    const manager_template = {
       'id': driver_id,
       'name': driver_name,
       'team': team_name,
@@ -250,7 +250,7 @@ function button_function() {
   get_quali();
 
   //get race results
-  for (i = 1; i <= race_results.childElementCount; i++) {
+  for (let i = 1; i <= race_results.childElementCount; i++) {
 
     //driver id and name
     driver_race_result = race_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
@@ -295,7 +295,7 @@ function button_function() {
 async function race_report() {
   const { fetchRaceReportInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
   console.log('requesting ' + manager.length + ' reports');
-  for (number = 0; number < manager.length; number++) {
+  for (let number = 0; number < manager.length; number++) {
     if (manager[number].report_id != '') {
       const result = await fetchRaceReportInfo(manager[number].report_id);
       const table = decode_result(result);
@@ -303,30 +303,35 @@ async function race_report() {
     }
   }
   formatTable();
-  storeCopyOfActive();
+  await storeCopyOfActive();
   document.getElementById('progress').remove();
   all_export();
 }
 
 async function storeCopyOfActive(){
 
+  const report = await chrome.storage.local.get({'active_option':'Default ReportLRID'});
+  chrome.storage.local.get('active', async function(data) {
 
-  const report = await chrome.storage.local.get('active_option');
-  chrome.storage.local.get('active', function(data) {
-    chrome.storage.local.set({[report.active_option]:data.active},async function(){
-      const isSyncEnabled = await chrome.storage.local.get({'gdrive':false});
-      if(isSyncEnabled.gdrive){
-        const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
-        const token = await getAccessToken();
-
-        if(token != false){
-          chrome.runtime.sendMessage({
-            type:'saveReport',
-            data:JSON.stringify(data.active),
-            token:token.access_token}); //TO DO, make single saves, instead of saving all reports
-        }
-      }
+    //console.log('storing',report.active_option,data.active)
+    chrome.runtime.sendMessage({
+      type:'addRaceReportToDB',
+      data:{id:report.active_option,data:data.active}
     });
+
+    const isSyncEnabled = await chrome.storage.local.get({script:false});
+    if(isSyncEnabled.script?.gdrive ?? false){
+      const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+      const token = await getAccessToken();
+
+      if(token != false){
+        chrome.runtime.sendMessage({
+          type:'saveReport',
+          data:JSON.stringify(data.active),
+          token:token.access_token}); //TO DO, make single saves, instead of saving all reports
+      }
+    }
+
 
   });
 }
@@ -368,11 +373,11 @@ async function update_managers(table, index) {
   }
   try {
 
-    race_table = table;
-    laps_done = race_table.tBodies[0].rows.length; // getting last lap
-    startTyre = race_table.rows[1].cells[1].childNodes[0].textContent;
+    const race_table = table;
+    const laps_done = race_table.tBodies[0].rows.length; // getting last lap
+    const startTyre = race_table.rows[1].cells[1].childNodes[0].textContent;
     manager[index].pit_stop = startTyre;
-    last_pit_lap = 0;
+    let last_pit_lap = 0;
 
     /*pushLapData(
       table.rows[0].cells[3].textContent,//average
@@ -456,7 +461,7 @@ async function update_managers(table, index) {
     bar.style.width = progress_status + '%';
 
 
-    //save manager
+    //save managers
     chrome.storage.local.set({ 'active': manager }, function () {
       console.log('saved ' + manager[index].name);
     });

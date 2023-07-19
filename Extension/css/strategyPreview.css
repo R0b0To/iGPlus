@@ -1,0 +1,106 @@
+.trash{
+    background-color: #d66e67;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+  .trash:hover{
+    background-color: #994d48;
+  }
+.trash > svg{
+    padding: 2px;
+top: 0px;
+}
+  
+.stintsContainer{
+    transition: all 0.1s;
+    display: flex;
+    width: 100%;
+    width: 370px;
+    padding: 10px;
+    
+    align-items: center;
+    }
+    .stintsContainer.loadStrat:hover{
+     cursor: pointer;   
+     scale: 1.05;
+     transition: all 0.3s;
+    }
+
+    .saveRow{
+        width: 370px!important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .loadStint.preview-laps{
+      position: relative;
+      font-size: 1.25rem;
+      margin-right: -0.3px;
+      color: #222222;
+      font-family: "Roboto";
+      height:8px;
+      z-index: 1;
+      margin-left: -0.4px;
+    }
+    .loadStint.preview-tyre{
+      display: flex;
+      font-size: 10pt;
+      align-items: center;
+      justify-content: center;
+      height:12px;
+      min-width: 12px;
+      width:12px; 
+      color: white;
+      border-radius: 50%;
+      background: #222222;
+      padding: 4px;
+     
+    }
+    .wearText{
+      font-size: 0.4em;
+      position: absolute;
+      font-weight: bold;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50% , -50%);
+      
+    }
+    .loadStint.preview-tyre.plus-ts-SS{
+      border: 8px solid #d66e67;
+    }
+    .loadStint.preview-tyre.plus-ts-M{
+      border: 8px solid #c9c9c9;
+    }
+    .loadStint.preview-tyre.plus-ts-S{
+      border: 8px solid #d9c777;
+    }
+    .loadStint.preview-tyre.plus-ts-H{
+      border: 8px solid #e77b00;
+    }
+    .loadStint.preview-tyre.plus-ts-I{
+      border: 8px solid #82a674;
+    }
+    .loadStint.preview-tyre.plus-ts-W{
+      border: 8px solid #4786b3;
+    }
+    
+    .loadStint.preview-laps.plus-ts-SS{
+      background:  #d66e67;
+    }
+    .loadStint.preview-laps.plus-ts-M{
+      background:  #c9c9c9;
+    }
+    .loadStint.preview-laps.plus-ts-S{
+      background:  #d9c777;
+    }
+    .loadStint.preview-laps.plus-ts-H{
+      background:  #e77b00;
+    }
+    .loadStint.preview-laps.plus-ts-I{
+      background:  #82a674;
+    }
+    .loadStint.preview-laps.plus-ts-W{
+      background:  #4786b3;
+    }
+    
