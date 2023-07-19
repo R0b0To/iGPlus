@@ -69,7 +69,7 @@ function loadTrack()
     13:{code:'it', overtake:90,bumpiness:50,fuel:90,tyre:35},
     14:{code:'sg', overtake:40,bumpiness:70,fuel:50,tyre:45},
     15:{code:'jp', overtake:60,bumpiness:50,fuel:45,tyre:70},
-    16:{code:'br', overtake:50,bumpiness:35,fuel:56,tyre:60},
+    16:{code:'br', overtake:50,bumpiness:35,fuel:55,tyre:60},
     17:{code:'ae', overtake:80,bumpiness:56,fuel:40,tyre:50},
     18:{code:'gb', overtake:60,bumpiness:40,fuel:80,tyre:65},
     19:{code:'fr', overtake:50,bumpiness:70,fuel:70,tyre:80},

@@ -1,6 +1,6 @@
-let raceParams = {}
+let raceParams = {};
 async function addStintEventHandler(driver_pit_div,params) {
- 
+
   raceParams = params;
   const pits = {
     current: Number(driver_pit_div.querySelector('.num').childNodes[0].textContent),
@@ -23,10 +23,10 @@ async function addStintEventHandler(driver_pit_div,params) {
         minus_btn.classList.add('disabled');
         minus_btn.classList.add('extraStint');
         plus_btn.classList.add('extraStint');
-        const warning = await addAlert()
+        const warning = await addAlert();
         if(!plus_btn.closest('form').getElementsByClassName('alertExtra')[0])
           plus_btn.closest('form').prepend(warning);
-          
+
       }else{
         minus_btn.classList.remove('disabled');
         minus_btn.classList.remove('extraStint');
@@ -109,7 +109,7 @@ function addExtraStint(driver_pit_div){
     //nodelist
     const lastPit = driver_pit_div.closest('form').querySelectorAll('th:last-child,td:last-child:not(.trash):not([colspan])');
     const clonedColumn = Array.from(lastPit).map(e => {  return {node:e.cloneNode(true),parent:e.parentElement};});
-   // console.log(clonedColumn)
+    // console.log(clonedColumn)
     const pit_number = (parseInt(lastPit[0].textContent.match(/\d+/)[0]) + 1);
     replacePitNumber(driver_pit_div,pit_number);
     clonedColumn[0].node.textContent = clonedColumn[0].node.textContent.replace(/\d+/, pit_number);
@@ -128,28 +128,28 @@ function addExtraStint(driver_pit_div){
 
 }
 
-    //update stint tyre wear the update fuel
-    async function update_stint(s)
-    {
-      const {get_wear } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
-      const stint = s.cellIndex;
-      const tbody = s.closest('tbody');
-      const wearRow = tbody.querySelector('[wearevent]');
-      const tyreRow = tbody.querySelector('.tyre');
-      const tyre = tyreRow.cells[stint].className.slice(3);
-      const laps = s.textContent;
-      const push = tbody.querySelector('[pushevent]').cells[stint].children[0].selectedIndex;
-      
+//update stint tyre wear the update fuel
+async function update_stint(s)
+{
+  const {get_wear } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
+  const stint = s.cellIndex;
+  const tbody = s.closest('tbody');
+  const wearRow = tbody.querySelector('[wearevent]');
+  const tyreRow = tbody.querySelector('.tyre');
+  const tyre = tyreRow.cells[stint].className.slice(3);
+  const laps = s.textContent;
+  const push = tbody.querySelector('[pushevent]').cells[stint].children[0].selectedIndex;
 
 
-      raceParams.CAR_ECONOMY.push = push;
 
-      
+  raceParams.CAR_ECONOMY.push = push;
 
 
-      wearRow.cells[stint].textContent = get_wear(tyre,laps ,raceParams.TRACK_INFO, raceParams.CAR_ECONOMY, raceParams.multiplier);
-      updateFuel(tbody);
-    }
+
+
+  wearRow.cells[stint].textContent = get_wear(tyre,laps ,raceParams.TRACK_INFO, raceParams.CAR_ECONOMY, raceParams.multiplier);
+  updateFuel(tbody);
+}
 async function updateFuel(tbod)
 {
   const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
@@ -164,7 +164,7 @@ async function updateFuel(tbod)
     raceParams.CAR_ECONOMY.push = tbod.querySelector('[pushevent]').cells[index].children[0].selectedIndex;
     update_stint(tbod.querySelector('.fuel').cells[index]);
   }
-    
+
 
   const pushRow = tbod.querySelector('[pushevent]');
   const tyreRow = tbod.querySelector('.tyre');
@@ -212,7 +212,7 @@ async function addAlert(){
   const alertText = document.createElement('span');
   alertContainer.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><path d="M19.64 16.36L11.53 2.3A1.85 1.85 0 0 0 10 1.21 1.85 1.85 0 0 0 8.48 2.3L.36 16.36C-.48 17.81.21 19 1.88 19h16.24c1.67 0 2.36-1.19 1.52-2.64zM11 16H9v-2h2zm0-4H9V6h2z"/></svg>';
   alertText.textContent = i18n[language].pitAlert;
-   alertContainer.append(alertText);
+  alertContainer.append(alertText);
   return alertContainer;
 }
 

@@ -79,9 +79,7 @@ function get_wear(tyre,laps,track_info,car_economy,multiplier){
 function calculateWear(n, wear, push,diff) {
   let lapWear = ((1 - wear / 100 + push / 100) ** n) * 100;
   if(n > 3 && diff <= -2){
-    console.log('old push',lapWear)
     lapWear = ((1 - wear/100 + push/100 -0.013)** n)*100;
-    console.log('new push',lapWear)
   }
   /*if(lapWear<60)
         lapWear = ((1 - wear/100 + push/100 -0.002)** n)*100;

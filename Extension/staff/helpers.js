@@ -1,4 +1,5 @@
-const { icons } = await import(chrome.runtime.getURL('/common/config.js'));
+
+const { iconsSVG } = await import(chrome.runtime.getURL('/common/config.js'));
 
 /**
    * Adds Strength and Weakness labels to those who has them
@@ -26,10 +27,14 @@ function createSkillLabel(skill, type) {
   const skillSpan = document.createElement('span');
   skillSpan.classList.add(type === 'strength' ? 'bgLightGreen' : 'bgLightRed', 'skillIcon');
 
-  const image = document.createElement('img');
-  image.src = icons[skill];
+  const image = document.createElement('svg');
+  image.innerHTML = iconsSVG[skill];
+  image.childNodes[0].style.width = "18px";
+  image.childNodes[0].style.display=" inline-flex";
 
-  skillSpan.appendChild(image);
+ // image.src = icons[skill];
+
+  skillSpan.appendChild(image.childNodes[0]);
   return skillSpan;
 }
 
