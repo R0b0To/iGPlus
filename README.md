@@ -1,4 +1,4 @@
-# iGPlus
+# iGPlus [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/K3K2ND3Y8)
 Extension for igpmanager game. Chrome and Firefox compatibility
 
 ## What it Does
