@@ -216,7 +216,7 @@ function get_quali()
     const race_id = window.location.href.replace(/\D/g, '');
     const manager_template = {
       race_info:{rules:{fuel:(race_info[0].children[0].className == 'grey') ? false : true,
-        tyre:(race_info[0].children[0].className == 'grey') ? false : true},date:race_info[1].textContent},
+        tyre:(race_info[0].children[1].className == 'grey') ? false : true},date:race_info[1].textContent},
       'id': driver_id,
       'name': driver_name,
       'team': team_name,
