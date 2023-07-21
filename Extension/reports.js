@@ -206,6 +206,7 @@ function progress() {
 function get_quali()
 {
   manager = [];
+  const  race_info = document.getElementsByClassName('notice') ?? "error";
   // get quali results
   for (let i = 1; i <= quali_results.childElementCount; i++) {
     const driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
@@ -214,6 +215,8 @@ function get_quali()
     const team_name = quali_results.childNodes[i].childNodes[1].childNodes[6].innerText;
     const race_id = window.location.href.replace(/\D/g, '');
     const manager_template = {
+      race_info:{rules:{fuel:(race_info[0].children[0].className == 'grey') ? false : true,
+        tyre:(race_info[0].children[0].className == 'grey') ? false : true},date:race_info[1].textContent},
       'id': driver_id,
       'name': driver_name,
       'team': team_name,
@@ -385,7 +388,7 @@ async function update_managers(table, index) {
       table.rows[0].cells[0].textContent,//lap
       table.rows[0].cells[4].textContent,//lap/
       table.rows[0].cells[1].textContent);//time*/
-    pushLapData('','',table.rows[1].cells[0].textContent,manager[index].quali,'');
+    pushLapData('','',table.rows[1].cells[0].textContent,manager[index].quali,table.rows[1].cells[1].textContent);
 
 
     pitTimes = [];
@@ -673,7 +676,7 @@ function formatTable(){
 
 function csvRaceResults(race)
 {
-  const csv = '';
+  let csv = '';
   race.forEach(driver=>{
     for(var i = 0 ; i < driver.driver_result.lap.length; i++)
     {
