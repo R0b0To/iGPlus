@@ -66,6 +66,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         addMoreStints();
         addSaveButton({economy:CAR_ECONOMY,track:{code:TRACK_CODE,info:TRACK_INFO},league:league_length});
         addWeatherInStrategy();
+        addSelectCheckbox();
 
         //eventAdded is a placeholder for knowing if the eventlistener is already present
         if(document.getElementById('eventAdded') == null)
@@ -246,7 +247,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             const row_name = pushButtonHeader;
             row_name.setAttribute('style', 'color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;');
             pushEle.append(row_name);
-
+            
             for (let i = 1; i < strategy.childElementCount; i++) {
               var stint = document.createElement('td');
               var pushSelect = document.createElement('select');
@@ -488,6 +489,49 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
           if(car.previousElementSibling.childElementCount < 4)
             createSlider(car,0,200);
+
+        });
+      }
+
+    }
+    function syncSelects() {
+      const car = this.closest("form").id[1] 
+      const checkbox = this.parentElement.querySelector('.syncCheckbox');
+      const main_select = this.parentElement.querySelector('[name=pushLevel]');
+      const select_elements = document.getElementById(`d${car}strategy`).querySelectorAll(".pushSelect");
+      if (checkbox.checked) {    
+        select_elements.forEach(select=> {
+          select.classList.add("select_overwrite")
+          select.selectedIndex = main_select.selectedIndex;
+          select.disabled = true;
+          update_stint(select.closest("tbody").rows[2].cells[select.parentElement.cellIndex])
+        })
+
+        
+      }
+      else{
+        select_elements.forEach(select=> {
+          select.classList.remove("select_overwrite")
+          select.disabled = false;
+        })
+      }
+    }
+    function addSelectCheckbox()
+    {
+      targetElement = document.getElementsByName('pushLevel');
+      if(targetElement != null)
+      {
+        
+        targetElement.forEach(car => {
+
+          if(car)
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.classList.add("syncCheckbox");
+            checkbox.textContent = "Synchronize Selects";
+            checkbox.addEventListener("change", syncSelects);
+            car.parentNode.insertBefore(checkbox, car.nextSibling);
+            car.addEventListener("change",syncSelects)
 
         });
       }

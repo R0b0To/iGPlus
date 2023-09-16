@@ -211,12 +211,17 @@ function get_quali()
   for (let i = 1; i <= quali_results.childElementCount; i++) {
     const driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
     const driver_id = driver_quali[0].href.replace(/\D/g, '');
-    const  driver_name = quali_results.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
+    const driver_name = quali_results.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
     const team_name = quali_results.childNodes[i].childNodes[1].childNodes[6].innerText;
     const race_id = window.location.href.replace(/\D/g, '');
     const manager_template = {
-      race_info:{rules:{fuel:(race_info[0].children[0].className == 'grey') ? false : true,
-        tyre:(race_info[0].children[1].className == 'grey') ? false : true},date:race_info[1].textContent},
+      race_info:
+      {
+        rules:{fuel:(race_info[0].children[0].className == 'grey') ? false : true,
+        tyre:(race_info[0].children[1].className == 'grey') ? false : true},
+        date:race_info[1].textContent,
+        track:document.querySelector('.flag').classList[1].substring(2)
+      },
       'id': driver_id,
       'name': driver_name,
       'team': team_name,

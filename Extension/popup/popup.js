@@ -397,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     chrome.storage.local.get('active', function(data) {
       const race = data.active;
 
-      let csvtext = (driver[0]?.race_info) ? `${driver[0].race_info.date}\nFuel${separator}${driver[0].race_info.rules.fuel}${separator}Tyre${separator}${driver[0].race_info.rules.tyre}\n` : "";
+      let csvtext = (driver[0]?.race_info) ? `Track${separator}${driver[0].race_info.track}\nFuel${separator}${driver[0].race_info.rules.fuel}${separator}Tyre${separator}${driver[0].race_info.rules.tyre}\n${driver[0].race_info.date}\n` : "";
       race.forEach(driver=>{
         for(var i = 0 ; i < driver.driver_result.lap.length; i++)
         {

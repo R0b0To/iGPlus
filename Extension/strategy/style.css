@@ -445,3 +445,11 @@ background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAM
 .alertExtra:hover >span{
   display:block;
 }
+.syncCheckbox{
+  display: inline-flex!important;
+  position:relative;
+
+}
+.select_overwrite{
+  opacity:.5;
+}
