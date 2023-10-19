@@ -1,4 +1,5 @@
 let raceParams = {};
+const maxpits = 7;
 async function addStintEventHandler(driver_pit_div,params) {
 
   raceParams = params;
@@ -60,7 +61,7 @@ async function addStintEventHandler(driver_pit_div,params) {
   function increasePitNumber(e) {
 
     if (e.button == 50 || e.type == 'pointerdown') {
-      if(pits.current >= 4 && pits.previous >= 3 && pits.current < 6 && plus_btn.getAttribute('extra') == 0)
+      if(pits.current >= 4 && pits.previous >= 3 && pits.current < maxpits && plus_btn.getAttribute('extra') == 0)
       {
         addExtraStint(driver_pit_div);
       }
@@ -72,7 +73,7 @@ async function addStintEventHandler(driver_pit_div,params) {
   function decreasePitNumber(e){
 
     if (e.button == 50 || e.type == 'pointerdown') {
-      if(pits.current > 4 && pits.previous < 7)
+      if(pits.current > 4 && pits.previous < maxpits+1)
       {
         //waiting the igp event listener to be done otherwise the extra stint get removed then pit number decreased by the game minus button event
         setTimeout(()=>{removeExtraStint(driver_pit_div);},1);
@@ -253,7 +254,7 @@ function openTyreDialog(){
   plus.dispatchEvent(event);
   plus.dispatchEvent(event2);
 
-  for(var i = 0 ; i < 6 ; i++)
+  for(var i = 0 ; i < maxpits ; i++)
   {
     if(tyreD.childNodes[i].id != tyre)
     {

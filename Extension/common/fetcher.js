@@ -34,7 +34,7 @@ function fetchRaceWeather({ lat, lon, temp }) {
   const params = new URLSearchParams({
     latitude: lat,
     longitude: lon,
-    models: 'gfs_seamless',
+    models: 'best_match',
     ...(temp === '2' ? { temperature_unit: 'fahrenheit' } : {}),
     timezone: 'GMT'
   });
