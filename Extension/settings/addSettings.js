@@ -375,8 +375,12 @@ async function handleSettings() {
           }
   
         } 
-
-        document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
+        try {
+           document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
+        } catch (error) {
+          
+        }
+       
       });
 
       chrome.storage.local.set({ script: data.script });
