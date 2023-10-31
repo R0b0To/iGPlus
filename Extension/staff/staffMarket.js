@@ -1,4 +1,4 @@
-(async () => {
+async function displayCD(){
   const { createSkillLabel} = await import(chrome.runtime.getURL('/staff/helpers.js'));
   Promise.all([getCDStaffDiv()]);
   const tableStaffObserver = new MutationObserver(function (_mutations) {getCDStaffDiv();});
@@ -39,6 +39,18 @@
           break; //stop looking for correct CD language
         }
       }
+    }
+  }
+};
+
+(async () => {
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+      await displayCD();
+      break;
+    } catch (err) {
+      console.warn(`Retry to enhance research table #${i + 1}/3`);
     }
   }
 })();
