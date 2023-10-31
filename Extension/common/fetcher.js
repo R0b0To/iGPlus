@@ -34,7 +34,7 @@ function fetchRaceWeather({ lat, lon, temp }) {
   const params = new URLSearchParams({
     latitude: lat,
     longitude: lon,
-    models: 'gfs_seamless',
+    models: 'best_match',
     ...(temp === '2' ? { temperature_unit: 'fahrenheit' } : {}),
     timezone: 'GMT'
   });
@@ -131,6 +131,11 @@ function fetchLeagueData(leagueId) {
   const leagueUrl = `action=fetch&p=league&id=${leagueId}`;
   return getData(leagueUrl);
 }
+function fetchSettings() {
+  const settingsURL = `action=fetch&p=settings`;
+  return getData(settingsURL);
+}
+
 
 export {
   fetchBuildingInfo,
@@ -145,5 +150,6 @@ export {
   fetchRaceReportInfo,
   fetchCarData,
   fetchIGPRaceWeatherNow,
-  fetchRaceResultInfo
+  fetchRaceResultInfo,
+  fetchSettings
 };

@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const copyButton = document.getElementById('copy');
   const pitLossButton = document.getElementById('averagePit');
   const csv = document.getElementById('CSV');
+  let saveName = "report";
 
 
   let driver = 0;
@@ -174,6 +175,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
     }
+    saveName = "pit_times";
     setText(cvsS);
 
 
@@ -220,7 +222,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
       }
     }
-    downloadFile(text.textContent,'report');
+    downloadFile(text.textContent,saveName);
 
   });
 
@@ -236,6 +238,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       let string_result = '';
       driver.forEach(ele => {string_result += ele.name + separator + getOvertakes(ele) * ((isChecked) ? -1 : 1) + '\n';});
       //display result
+      saveName = "race_start_overtakes";
       setText(string_result);
     });
 
@@ -330,6 +333,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
       }
 
+      saveName = "race_result";
       //reporttext.textContent=race_timings;
       setText(race_timings);
       // downloadFile(race_timings,"race_recap");
@@ -358,6 +362,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       string_format += '\n';
 
     }
+    saveName = "pit_history";
     setText(string_format);
 
   });
@@ -379,6 +384,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
       });
 
+      saveName = "laps_in_position";
       setText(string);
       // downloadFile(string,"lap_trend");
     });
@@ -391,7 +397,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     chrome.storage.local.get('active', function(data) {
       const race = data.active;
 
-      let csvtext = '';
+      let csvtext = (driver[0]?.race_info) ? `Track${separator}${driver[0].race_info.track}\nFuel${separator}${driver[0].race_info.rules.fuel}${separator}Tyre${separator}${driver[0].race_info.rules.tyre}\n${driver[0].race_info.date}\n` : "";
       race.forEach(driver=>{
         for(var i = 0 ; i < driver.driver_result.lap.length; i++)
         {
@@ -400,6 +406,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
       });
 
+      saveName = "full_report";
       setText(csvtext);
 
 

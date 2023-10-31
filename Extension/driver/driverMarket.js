@@ -1,4 +1,4 @@
-(async () => {
+async function displayDriver() {
   const { createSpecialSkillLabel } = await import(chrome.runtime.getURL('/driver/driverHelpers.js'));
   Promise.all([addTalent()]);
   const tableStaffObserver = new MutationObserver(function (_mutations) {addTalent();});
@@ -39,7 +39,7 @@
     }
   }
 
-})();
+};
 
 
 //TODO move to separate module? this function is also used in the strategy.js with a small variation
@@ -85,3 +85,16 @@ function sortTable() {
     }
   }
 }
+
+
+(async () => {
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+      await displayDriver();
+      break;
+    } catch (err) {
+      console.warn(`Retry ${i + 1}/3`);
+    }
+  }
+})();

@@ -20,7 +20,8 @@ const scriptDefaults = {
   history:true,
   sponsor:true,
   settings:true,
-  gdrive:false
+  gdrive:false,
+  transferLanguage:true
 };
 
 /**
@@ -70,7 +71,7 @@ const tabScripts = {
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
-    scripts: ['driver/driverMarket.js']
+    scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
   },
   '/app/p=race': {
     key: 'overview',
@@ -83,7 +84,7 @@ const tabScripts = {
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',
-    scripts: ['staff/staffMarket.js'],
+    scripts: ['staff/staffMarket.js','transfer.js','lib/purify.js'],
     styles: ['css/staff.css']
   },
   '/app/p=headquarters': {

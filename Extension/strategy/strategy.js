@@ -58,14 +58,16 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     const {addStintEventHandler, updateFuel, update_stint} = await import(chrome.runtime.getURL('/strategy/extraStints.js'));
     const {dragStintHandler} = await import(chrome.runtime.getURL('/strategy/dragStint.js'));
     const {addSaveButton} = await import(chrome.runtime.getURL('/strategy/saveLoad.js'));
+    let readAttempts = 3;
     try {
       if (league_info != false) {
         injectAdvancedStint();
-        injectCircuitMap();
+        injectCircuitMap();       
         readGSheets();
         addMoreStints();
         addSaveButton({economy:CAR_ECONOMY,track:{code:TRACK_CODE,info:TRACK_INFO},league:league_length});
         addWeatherInStrategy();
+        addSelectCheckbox();
 
         //eventAdded is a placeholder for knowing if the eventlistener is already present
         if(document.getElementById('eventAdded') == null)
@@ -246,7 +248,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             const row_name = pushButtonHeader;
             row_name.setAttribute('style', 'color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;');
             pushEle.append(row_name);
-
+            
             for (let i = 1; i < strategy.childElementCount; i++) {
               var stint = document.createElement('td');
               var pushSelect = document.createElement('select');
@@ -493,6 +495,49 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
       }
 
     }
+    function syncSelects() {
+      const car = this.closest("form").id[1] 
+      const checkbox = this.parentElement.querySelector('.syncCheckbox');
+      const main_select = this.parentElement.querySelector('[name=pushLevel]');
+      const select_elements = document.getElementById(`d${car}strategy`).querySelectorAll(".pushSelect");
+      if (checkbox.checked) {    
+        select_elements.forEach(select=> {
+          select.classList.add("select_overwrite")
+          select.selectedIndex = main_select.selectedIndex;
+          select.disabled = true;
+          update_stint(select.closest("tbody").rows[2].cells[select.parentElement.cellIndex])
+        })
+
+        
+      }
+      else{
+        select_elements.forEach(select=> {
+          select.classList.remove("select_overwrite")
+          select.disabled = false;
+        })
+      }
+    }
+    function addSelectCheckbox()
+    {
+      targetElement = document.getElementsByName('pushLevel');
+      if(targetElement != null)
+      {
+        
+        targetElement.forEach(car => {
+
+          if(car)
+            var checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.classList.add("syncCheckbox");
+            checkbox.textContent = "Synchronize Selects";
+            checkbox.addEventListener("change", syncSelects);
+            car.parentNode.insertBefore(checkbox, car.nextSibling);
+            car.addEventListener("change",syncSelects)
+
+        });
+      }
+
+    }
     function injectCircuitMap(){
 
 
@@ -519,13 +564,13 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     {
       if(document.getElementById('importedTable') == null)
       {
-        async function getCurrentTrack(j){
+        async function getCurrentTrack(trackj){
 
-          jTrack = [];
-
-          j.forEach((ele) =>
+          const jTrack = [];
+         try {
+          trackj.forEach((ele) =>
           {
-            try {
+           
               if(isNaN(ele[t.gTrack]))
                 requestedTrack = ele[t.gTrack].toLowerCase();
               else
@@ -534,11 +579,11 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
               if(trackDictionary[TRACK_CODE].includes(requestedTrack))
                 jTrack.push(ele);
 
-            } catch (error) {
-              console.log(error);
-            }
-          });
-
+            
+          });} catch (error) {
+            return -1;
+          }
+          
           return jTrack;
         }
         function sortTable() {
@@ -604,6 +649,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           output.id = 'importedTable';
           init();
           async function init() {
+            //e.preventDefault()
+            await new Promise((res) => setTimeout(res, 500)); // sleep a bit, while page loads
             await fetch(url)
               .then(res => res.text())
               .then(async rep => {
@@ -651,48 +698,53 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
                   });
                   data.push(row);
                 });
-
-                await processRows(data);
+                const result = await processRows(data)
+                if (result == -1)
+                  return
+                else
+                {
+                  if(document.getElementById('importedTable') == null)
+                  {
+                    function removeColumn(table, columnName) {
+                    // Find the index of the column to remove
+                      let colIndex = -1;
+                      for (let i = 0; i < table.rows[0].cells.length; i++) {
+                        if (table.rows[0].cells[i].textContent === columnName) {
+                          colIndex = i;
+                          break;
+                        }
+                      }
+      
+                      // If the column was found
+                      if (colIndex !== -1) {
+                      // Remove the cells from all rows
+                        for (let i = 0; i < table.rows.length; i++) {
+                          table.rows[i].deleteCell(colIndex);
+                        }
+                      }
+                    }
+      
+      
+                    document.querySelectorAll('.eight.columns.mOpt.aStrat')[0].append(output);
+                    removeColumn(output,t.gTrack);
+                  }
+                }
               });
 
-            if(document.getElementById('importedTable') == null)
-            {
-              function removeColumn(table, columnName) {
-              // Find the index of the column to remove
-                let colIndex = -1;
-                for (let i = 0; i < table.rows[0].cells.length; i++) {
-                  if (table.rows[0].cells[i].textContent === columnName) {
-                    colIndex = i;
-                    break;
-                  }
-                }
-
-                // If the column was found
-                if (colIndex !== -1) {
-                // Remove the cells from all rows
-                  for (let i = 0; i < table.rows.length; i++) {
-                    table.rows[i].deleteCell(colIndex);
-                  }
-                }
-              }
-
-
-              document.querySelectorAll('.eight.columns.mOpt.aStrat')[0].append(output);
-              removeColumn(output,t.gTrack);
-            }
-
-
           }
-
-
-
 
         }
 
         async function processRows(json) {
 
-          json = await getCurrentTrack(json);
-
+              json = await getCurrentTrack(json);
+              if(json == -1 && readAttempts > 0)
+              {
+                readAttempts--;
+                await new Promise((res) => setTimeout(res, 2000)); // sleep a bit, while page loads
+                readGSheets();
+                return -1;
+              }
           json.forEach((row) => {
             const tr = document.createElement('tr');
             const keys = Object.keys(row);
