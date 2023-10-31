@@ -94,7 +94,7 @@ function sortTable() {
       await displayDriver();
       break;
     } catch (err) {
-      console.warn(`Retry to enhance research table #${i + 1}/3`);
+      console.warn(`Retry ${i + 1}/3`);
     }
   }
 })();

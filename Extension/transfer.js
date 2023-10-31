@@ -1,26 +1,27 @@
 async function changeLanguage(){
 if(document.getElementById("quick_lang_change")== null && document.getElementById('driver-table')!=null){
-const { fetchSettings } = await import(chrome.runtime.getURL('./common/fetcher.js'));
 
-select_placement = document.querySelector('[class=notice]');
+const { fetchSettings } = await import(chrome.runtime.getURL('./common/fetcher.js'));
+const select_placement = document.querySelector('[class=notice]');
 const select_container = document.createElement("div");
 select_container.id="quick_lang_change";
 select_container.style.display = "contents";
 const settings = await fetchSettings();
-console.log(settings)
-console.log(select_container)
 select_container.innerHTML = settings.vars.langPicker;
 select_placement.append(select_container)
-select = select_container.childNodes[0];
+var select = select_container.childNodes[0];
 select.addEventListener("change",()=>{
-    sendChangeReq(settings.vars)
+    sendChangeReq()
 }); 
 }
 
 
-function sendChangeReq(player){
+    async function sendChangeReq(){
+    const { fetchSettings } = await import(chrome.runtime.getURL('./common/fetcher.js'));
     const url = 'https://igpmanager.com/index.php?action=send&addon=igp&type=settings&jsReply=formSubmit&ajax=1';
-
+    const settings = await fetchSettings();
+    const player = settings.vars;
+    //fecthing again to avoid data corruption when changing accounts
     const htmlfragment = document.createElement('div');
     htmlfragment.innerHTML =  DOMPurify.sanitize(player.timezones);
     const tz =htmlfragment.childNodes[0].value
@@ -72,14 +73,13 @@ function sendChangeReq(player){
 }}
 
 (async () => {
-    for (let i = 0; i < 3; i += 1) {
+    for (let i = 0; i < 6; i += 1) {
       try {
-        await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+        await new Promise((res) => setTimeout(res, 1000)); // sleep a bit, while page loads
         await changeLanguage();
         break;
       } catch (err) {
-        console.log(err)
-        console.warn(`Retry to enhance research table #${i + 1}/3`);
+        console.warn(`Retry#${i + 1}/6`);
       }
     }
   })();
