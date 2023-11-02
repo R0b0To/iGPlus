@@ -736,7 +736,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         }
 
         async function processRows(json) {
-
               json = await getCurrentTrack(json);
               if(json == -1 && readAttempts > 0)
               {
