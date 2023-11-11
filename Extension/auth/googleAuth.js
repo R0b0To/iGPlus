@@ -1,6 +1,6 @@
 //needs gsi library
 const CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
-
+const scopes = 'https://www.googleapis.com/auth/drive.file'; //'\ https://www.googleapis.com/auth/spreadsheets';
 async function getAccessToken(){
   const local_access_token = await isLocalTokenValid();
   if(local_access_token != false)
@@ -9,7 +9,7 @@ async function getAccessToken(){
     google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
       prompt:'',
-      scope: 'https://www.googleapis.com/auth/drive.file',
+      scope: scopes,
       callback : (tokenRes) => {
         saveAccessToken(tokenRes);
         resolve(tokenRes);
@@ -23,7 +23,7 @@ async function getFirstAccessToken(){
   const response = await new Promise((resolve,rej)=>{
     google.accounts.oauth2.initTokenClient({
       client_id: CLIENT_ID,
-      scope: 'https://www.googleapis.com/auth/drive.file',
+      scope: scopes,
       callback : (tokenRes) => {
         saveAccessToken(tokenRes);
         resolve(tokenRes);

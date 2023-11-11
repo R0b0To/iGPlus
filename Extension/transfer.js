@@ -1,6 +1,5 @@
 async function changeLanguage(){
 if(document.getElementById("quick_lang_change")== null && document.getElementById('driver-table')!=null){
-
 const { fetchSettings } = await import(chrome.runtime.getURL('./common/fetcher.js'));
 const select_placement = document.querySelector('[class=notice]');
 const select_container = document.createElement("div");
@@ -8,14 +7,15 @@ select_container.id="quick_lang_change";
 select_container.style.display = "contents";
 const settings = await fetchSettings();
 select_container.innerHTML = settings.vars.langPicker;
+if(document.getElementById("quick_lang_change") == null)
+{
 select_placement.append(select_container)
 var select = select_container.childNodes[0];
 select.addEventListener("change",()=>{
     sendChangeReq()
-}); 
+});  
 }
-
-
+}
     async function sendChangeReq(){
     const { fetchSettings } = await import(chrome.runtime.getURL('./common/fetcher.js'));
     const url = 'https://igpmanager.com/index.php?action=send&addon=igp&type=settings&jsReply=formSubmit&ajax=1';
@@ -64,7 +64,6 @@ select.addEventListener("change",()=>{
         })
         .then(data => {
           location.reload();
-          console.log(data);
         })
         .catch(error => {
           // Handle any errors that occurred during the request
