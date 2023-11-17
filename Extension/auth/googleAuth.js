@@ -1,6 +1,6 @@
 //needs gsi library
 const CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
-const scopes = 'https://www.googleapis.com/auth/drive.file'; //'\ https://www.googleapis.com/auth/spreadsheets';
+const scopes = 'https://www.googleapis.com/auth/drive.file\ https://www.googleapis.com/auth/spreadsheets \ https://www.googleapis.com/auth/drive.readonly';
 async function getAccessToken(){
   const local_access_token = await isLocalTokenValid();
   if(local_access_token != false)
@@ -41,12 +41,6 @@ async function revokeConsent(){
 
 }
 
-export{
-  getAccessToken,
-  revokeConsent,
-  getFirstAccessToken
-};
-
 function saveAccessToken(token){
   const expire_date = new Date().setHours(new Date().getHours() + 1);
   chrome.storage.local.set({'gAuth':{access_token:token.access_token,expire_date:expire_date}});
@@ -73,3 +67,9 @@ function difference2Parts(milliseconds) {
   const mins = Math.floor(secs / 60);
   return {minutesTotal: mins};
 }
+
+export{
+  getAccessToken,
+  revokeConsent,
+  getFirstAccessToken
+};

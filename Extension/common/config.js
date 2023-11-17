@@ -102,7 +102,8 @@ const tabScripts = {
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['reports.js', 'lib/purify.js','lib/gsi.js']
+    scripts: ['reports.js', 'lib/purify.js','lib/gsi.js'],
+    styles: ['reports.css']
   },
   // main Staff page
   '/app/p=staff&tab=staff': {

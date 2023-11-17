@@ -25,16 +25,22 @@ function inject_button() {
 
 
   button = document.createElement('button');
+  button2 = document.createElement('button');
   button.setAttribute('class', 'btn3');
   button.setAttribute('style', 'position:relative; left:10px;');
+  button2.setAttribute('class', 'btn3');
+  button2.setAttribute('style', 'position:relative; left:10px;');
   button.innerText = 'Extract';
+  button2.innerText = 'Export';
   button.id = 'extract_button';
+  button2.id = 'export_button';
   button.addEventListener('click', button_function);
   button.addEventListener('touchstart', button_function);
+  button2.addEventListener('click', import_to_sheets);
   title_location = document.getElementsByClassName('dialog-head'); //location of the button
 
   if (title_location[0].childElementCount == 1) {
-    title_location[0].appendChild(button);
+    title_location[0].append(button,button2);
   }
 
   p = document.querySelector('#dialogs-container > div > div > div.mOpt');
@@ -110,9 +116,80 @@ async function podium_copy()
   });
 
 }
+async function import_to_sheets(){
 
+  pickFiles();
 
-function race_export()
+async function pickFiles(){
+  if(!document.getElementById('sheetDialog'))
+  createSheetDialog();
+  const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+  const token = await getAccessToken();
+  if(token != false){
+    const { get_sheets } = await import(chrome.runtime.getURL('/auth/gDriveHandler.js'));
+    get_sheets(token.access_token).then(sheets => {
+      console.log(sheets)
+      const sheetListContainer = document.getElementById('sheetList');
+      const selectSheetBtn = document.getElementById('selectSheetBtn');
+      // Clear existing content
+      sheetListContainer.innerHTML = '';
+    
+      sheets.forEach(sheet => {
+          const sheetItem = document.createElement('div');
+          sheetItem.className = 'sheetStyle';
+          sheetItem.innerHTML = `
+              <input type="radio" name="sheetRadio" id="${sheet.id}">
+              <label for="${sheet.id}">${sheet.name}</label>
+          `;
+          sheetItem.addEventListener('click', () => {
+              selectSheetBtn.removeAttribute('disabled');
+          });
+          sheetListContainer.appendChild(sheetItem);
+      });
+    
+      // Show the modal
+      document.getElementById('sheetDialog').showModal();
+    });
+  }
+  function createSheetDialog() {
+    const dialog = document.createElement('dialog');
+    dialog.id = 'sheetDialog';
+    dialog.innerHTML = `
+        <div>
+            <span id="close_dialog" style="cursor: pointer; float: right;">&times;</span>
+            <h2>Select a Sheet</h2>
+            <div id="sheetList"></div>
+            <button id="selectSheetBtn" disabled>Select</button>
+        </div>
+    `;
+    document.body.appendChild(dialog);
+    selectSheetBtn.addEventListener('click',handleSheetSelection);
+    close_dialog.addEventListener('click',closeSheetDialog);
+}
+function closeSheetDialog() {
+  const dialog = document.getElementById('sheetDialog');
+  dialog.close();
+}
+  async function handleSheetSelection() {
+  const selectedSheetId = document.querySelector('input[name="sheetRadio"]:checked').id;
+  //alert(`Selected Sheet ID: ${selectedSheetId}`);
+  const {access_gSheet } = await import(chrome.runtime.getURL('/auth/gSheetsHandler.js'));
+  const race_id = window.location.href.replace(/\D/g, '');
+  const data_to_export = [[race_id,"Qualifying"]];
+  const quali_to_export = quali_export(false).split('\n').map(row => row.split(','));
+  const race_to_export = race_export(false).split('\n').map(row => row.split(','));
+  const combinedValues = data_to_export.concat(quali_to_export,[[race_id,"Race"]],race_to_export);
+  
+  console.log(combinedValues);
+  access_gSheet(selectedSheetId,token.access_token,combinedValues)
+  closeSheetDialog();
+}
+
+}
+
+}
+
+function race_export(download)
 {
   let csv = '';
   const r = document.querySelector('#race').childNodes[1];
@@ -140,12 +217,14 @@ function race_export()
     csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + finish + ',' + best_lap + ',' + top_speed + ',' + pits + ',' + points;
   }
   const race_id = window.location.href.replace(/\D/g, '');
+  if(download)
   downloadFile(csv,race_id + '_Race');
+  else
+  return csv
 
 }
-function quali_export()
+function quali_export(download)
 {
-
   let csv = '';
   const q = document.querySelector('#qualifying').childNodes[0];
 
@@ -167,7 +246,10 @@ function quali_export()
     csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + lap + ',' + gap + ',' + tyre;
   }
   const race_id = window.location.href.replace(/\D/g, '');
+  if(download)
   downloadFile(csv,race_id + '_Qualifying');
+  else
+  return csv
 
 }
 function all_export()
