@@ -2,7 +2,7 @@
     border-radius: 12px;
 }
 .sheetStyle input[type="radio"]:checked+label {
-    background-color: #1fe03f; /* Highlight color */
+    background-color: #1fe03f;
 }
 .sheetStyle input[type="radio"]+label {
     display: flex;
@@ -11,7 +11,26 @@
     border-radius: 8px;
     padding-left: 3px;
 }
+.sheetStyle:hover {
+    background-color: #a8a8a8; 
+  }
 #sheetDialog{
     border-radius: 9px;
     border: none;
+}
+#sheet_icon{
+    vertical-align: middle;
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+}
+#sheet_icon:hover {
+    opacity: 0.8; 
+  }
+#close_dialog{
+    user-select: none;
+    top: -20px;
+    font-size: 38px;
+    float: right;
+    position: relative;
 }

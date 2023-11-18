@@ -23,17 +23,21 @@ function downloadFile(data,download_name){
 }
 function inject_button() {
 
-
+  const iconUrl = chrome.runtime.getURL('images/Sheet.svg');
+  const image = document.createElement('img');
+  image.src = iconUrl;
+  image.style.width = "1.6em";
   button = document.createElement('button');
   button2 = document.createElement('button');
+  button2.append(image)
   button.setAttribute('class', 'btn3');
-  button.setAttribute('style', 'position:relative; left:10px;');
-  button2.setAttribute('class', 'btn3');
+  button2.id = "sheet_icon";
+  button.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
   button2.setAttribute('style', 'position:relative; left:10px;');
   button.innerText = 'Extract';
-  button2.innerText = 'Export';
+  
   button.id = 'extract_button';
-  button2.id = 'export_button';
+  button2.id = 'sheet_icon';
   button.addEventListener('click', button_function);
   button.addEventListener('touchstart', button_function);
   button2.addEventListener('click', import_to_sheets);
@@ -42,7 +46,7 @@ function inject_button() {
   if (title_location[0].childElementCount == 1) {
     title_location[0].append(button,button2);
   }
-
+ 
   p = document.querySelector('#dialogs-container > div > div > div.mOpt');
   export_button = p.childNodes[5];
   quali_button = export_button.cloneNode(true);
@@ -159,7 +163,7 @@ async function pickFiles(){
             <span id="close_dialog" style="cursor: pointer; float: right;">&times;</span>
             <h2>Select a Sheet</h2>
             <div id="sheetList"></div>
-            <button id="selectSheetBtn" disabled>Select</button>
+            <button id="selectSheetBtn" disabled>Export results to the selected Sheet</button>
         </div>
     `;
     document.body.appendChild(dialog);
@@ -175,13 +179,14 @@ function closeSheetDialog() {
   //alert(`Selected Sheet ID: ${selectedSheetId}`);
   const {access_gSheet } = await import(chrome.runtime.getURL('/auth/gSheetsHandler.js'));
   const race_id = window.location.href.replace(/\D/g, '');
-  const data_to_export = [[race_id,"Qualifying"]];
+  //const data_to_export = [[race_id,"Qualifying"]];
   const quali_to_export = quali_export(false).split('\n').map(row => row.split(','));
   const race_to_export = race_export(false).split('\n').map(row => row.split(','));
-  const combinedValues = data_to_export.concat(quali_to_export,[[race_id,"Race"]],race_to_export);
-  
+  const combinedValues = [[race_id,"Qualifying"]].concat(quali_to_export,[[race_id,"Race"]],race_to_export);
+  const race_date = document.getElementsByClassName('notice')[1].textContent ?? "error";
+  const track_code = document.querySelector('.flag').classList[1].substring(2);
   console.log(combinedValues);
-  access_gSheet(selectedSheetId,token.access_token,combinedValues)
+  access_gSheet(selectedSheetId,token.access_token,combinedValues,{race_date:race_date,track_code:track_code})
   closeSheetDialog();
 }
 
