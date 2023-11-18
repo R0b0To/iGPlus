@@ -180,9 +180,9 @@ function closeSheetDialog() {
   const {access_gSheet } = await import(chrome.runtime.getURL('/auth/gSheetsHandler.js'));
   const race_id = window.location.href.replace(/\D/g, '');
   //const data_to_export = [[race_id,"Qualifying"]];
-  const quali_to_export = quali_export(false).split('\n').map(row => row.split(','));
-  const race_to_export = race_export(false).split('\n').map(row => row.split(','));
-  const combinedValues = [[race_id,"Qualifying"]].concat(quali_to_export,[[race_id,"Race"]],race_to_export);
+  const quali_to_export = quali_export(false).split('\n').map(row =>[race_id,"Q",... row.split(',')]);
+  const race_to_export = race_export(false).split('\n').map(row =>[race_id,"R",... row.split(',')]);
+  const combinedValues = quali_to_export.concat(race_to_export);
   const race_date = document.getElementsByClassName('notice')[1].textContent ?? "error";
   const track_code = document.querySelector('.flag').classList[1].substring(2);
   console.log(combinedValues);
