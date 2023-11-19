@@ -132,7 +132,6 @@ async function pickFiles(){
   if(token != false){
     const { get_sheets } = await import(chrome.runtime.getURL('/auth/gDriveHandler.js'));
     get_sheets(token.access_token).then(sheets => {
-      console.log(sheets)
       const sheetListContainer = document.getElementById('sheetList');
       const selectSheetBtn = document.getElementById('selectSheetBtn');
       // Clear existing content
@@ -146,6 +145,11 @@ async function pickFiles(){
               <label for="${sheet.id}">${sheet.name}</label>
           `;
           sheetItem.addEventListener('click', () => {
+            sheetItem.append(selectSheetBtn);
+            selectSheetBtn.style.display= "flex";
+            const div_sheets = document.getElementsByClassName('sheetStyle');
+            for (const element of div_sheets) element.classList.remove('selected_radio');
+            sheetItem.classList.add('selected_radio');
               selectSheetBtn.removeAttribute('disabled');
           });
           sheetListContainer.appendChild(sheetItem);
@@ -158,23 +162,34 @@ async function pickFiles(){
   function createSheetDialog() {
     const dialog = document.createElement('dialog');
     dialog.id = 'sheetDialog';
-    dialog.innerHTML = `
-        <div>
-            <span id="close_dialog" style="cursor: pointer; float: right;">&times;</span>
-            <h2>Select a Sheet</h2>
-            <div id="sheetList"></div>
-            <button id="selectSheetBtn" disabled>Export results to the selected Sheet</button>
-        </div>
-    `;
+
+
+    const mainDiv = document.createElement("div");
+    const close_dialog = document.createElement("span");
+    close_dialog.textContent = "×";
+    close_dialog.id = "close_dialog";
+    const heading = document.createElement("h2");
+    heading.textContent = "Select a Sheet";
+    const sheetListDiv = document.createElement("div");
+    sheetListDiv.id = "sheetList";
+    const selectSheetBtn = document.createElement("button");
+    selectSheetBtn.id = "selectSheetBtn";
+    selectSheetBtn.style.display = "none";
+    selectSheetBtn.textContent = "Export the results to this sheet";
+    dialog.append(close_dialog,heading,sheetListDiv,selectSheetBtn);
     document.body.appendChild(dialog);
     selectSheetBtn.addEventListener('click',handleSheetSelection);
     close_dialog.addEventListener('click',closeSheetDialog);
 }
 function closeSheetDialog() {
   const dialog = document.getElementById('sheetDialog');
+  const selectSheetBtn = document.getElementById('selectSheetBtn');
+  selectSheetBtn.style.display= "none";
+  dialog.append(selectSheetBtn);
   dialog.close();
 }
   async function handleSheetSelection() {
+    console.log("testing");
   const selectedSheetId = document.querySelector('input[name="sheetRadio"]:checked').id;
   //alert(`Selected Sheet ID: ${selectedSheetId}`);
   const {access_gSheet } = await import(chrome.runtime.getURL('/auth/gSheetsHandler.js'));
@@ -185,7 +200,6 @@ function closeSheetDialog() {
   const combinedValues = quali_to_export.concat(race_to_export);
   const race_date = document.getElementsByClassName('notice')[1].textContent ?? "error";
   const track_code = document.querySelector('.flag').classList[1].substring(2);
-  console.log(combinedValues);
   access_gSheet(selectedSheetId,token.access_token,combinedValues,{race_date:race_date,track_code:track_code})
   closeSheetDialog();
 }

@@ -1,8 +1,6 @@
 function import_to_sheet(id,access_token,values,id_list,sheetId){
     const spreadsheetId = id;
-    const accessToken = access_token; // Replace with your access token.
-    console.log(id_list)
-    // The range where you want to append the data (e.g., Sheet1!A1).
+    const accessToken = access_token; 
     const range = 'imported_data!A31';
     
 
@@ -13,7 +11,6 @@ fetch(apiUrl, {
     body: JSON.stringify({values: values,}),})
     .then(response => response.json())
     .then(data => {
-      console.log('Append response:', data);
     })
     .catch(error => {
       console.error('Error appending data:', error);
@@ -24,11 +21,11 @@ fetch(apiUrl, {
           {
             updateCells: {
               range: {
-                sheetId: sheetId, // The sheet ID, usually 0 for the first sheet
+                sheetId: sheetId, 
                 startRowIndex: 0,
                 startColumnIndex: 0,
-                endRowIndex: 30, // Adjust based on your range
-                endColumnIndex: 3, // Assuming one column range
+                endRowIndex: 30, 
+                endColumnIndex: 3, 
               },
               rows: id_list.map((id, index) => {
                 return {
@@ -52,7 +49,7 @@ fetch(apiUrl, {
       })
         .then(response => response.json())
         .then(data => {
-            console.log('Data updated successfully:', data);
+            console.log('Data updated successfully:');
         })
         .catch(error => {
           console.error('Error appending data:', error);
@@ -72,8 +69,7 @@ function access_gSheet(id,access_token,values,race_info){
       },
     })
       .then(response => {
-        if (response.status === 200) {
-            console.log(response)
+        if (response.status === 200) {          
             return response.json();
           }else {
             throw new Error(`HTTP error! Status: ${response.status}`);
@@ -85,7 +81,6 @@ function access_gSheet(id,access_token,values,race_info){
             if (sheet) {
                 // Extract the sheetId
                 sheetId = sheet.properties.sheetId;
-                console.log(`Sheet ID for ": ${sheetId}`);
               // If the sheet exists, proceed to fetch its values.
               return fetch(API_ENDPOINT, {
                 method: 'GET',
@@ -95,7 +90,7 @@ function access_gSheet(id,access_token,values,race_info){
               });
             } else {
 
-              console.log('Sheet does not exist. You might want to create a new sheet.');
+              //console.log('Sheet does not exist. You might want to create a new sheet.');
 
               sheetId = await addSheet(id,access_token);
               //add new sheet then call funcion again
@@ -106,7 +101,6 @@ function access_gSheet(id,access_token,values,race_info){
               
             }
           }).then(response => {
-            console.log("testing",response)
             if (response?.status === 200) {
               return response.json();
             }else
@@ -119,7 +113,6 @@ function access_gSheet(id,access_token,values,race_info){
 
             const id_list = data.values ?? [];
             const race_id = values[0][0];
-            console.log(data);
             let isValuePresent = false;
             if(id_list.length > 0){
                isValuePresent = data.values.some(function(subArray) {return subArray.includes(race_id);});
@@ -130,7 +123,7 @@ function access_gSheet(id,access_token,values,race_info){
                 id_list.push([race_id,race_info.track_code,race_info.race_date]);
                  import_to_sheet(id,access_token,values,id_list,sheetId)
             }else{
-                console.log("already in sheets")
+                //console.log("Race report already stored")
             }
             
           })
