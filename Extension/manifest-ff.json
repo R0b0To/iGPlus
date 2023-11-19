@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "iGPlus",
   "description": "Enhance your iGPmanager experience",
-  "version": "1.5.6",
+  "version": "1.5.7",
   "icons": {
     "128": "./images/Icon128.png"
   },
@@ -22,7 +22,8 @@
     "*://api.open-meteo.com/*",
     "*://docs.google.com/*",
     "*://api.openweathermap.org/*",
-    "*://www.googleapis.com/*"
+    "*://www.googleapis.com/*",
+    "*://sheets.googleapis.com/*"
   ],
   "web_accessible_resources": [
     "*.js"

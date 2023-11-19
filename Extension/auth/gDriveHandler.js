@@ -198,9 +198,16 @@ async function deleteElement(type,data,accessToken){
   }
 
 }
-
+function get_sheets(accessToken){
+  const apiUrl = 'https://www.googleapis.com/drive/v3/files?q=(mimeType="application/vnd.google-apps.spreadsheet")&fields=files(name,id)';
+  return fetch(apiUrl, { method: 'GET', headers: {'Authorization': 'Bearer ' + accessToken}})
+    .then(response => response.json())
+    .then(data => {
+      return data.files || [];})
+    .catch(error => console.error(error));
+}
 export{
-
+  get_sheets,
   deleteElement,
   localStrategiesToCloud,
   localReportsToCloud,
