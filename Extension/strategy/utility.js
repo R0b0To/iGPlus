@@ -86,7 +86,7 @@ async function createPreview(strategy,id,car_info){
     rowContainer.classList.add('saveRow');
     const stintsContainer = document.createElement('td');
     stintsContainer.classList.add('stintsContainer');
-    const percentageTotalLaps = (((strategy.laps.doing / strategy.laps.total) * 100));
+    const percentageTotalLaps = ((strategy?.laps?.doing ?? 1) / (strategy?.laps?.total ?? 1)) * 100;
     stintsContainer.style.width = `${percentageTotalLaps}%`;
 
     let zindex = 99;
@@ -116,7 +116,7 @@ async function createPreview(strategy,id,car_info){
     //console.log(strategyContainer);
     return rowContainer;
   } catch (error) {
-    alert('The format of saves has been changed in this version, delete all saves to continue using this feature');
+    console.log('The format of saves has been changed in this version, delete all saves to continue using this feature',error);
   }
 
 }
