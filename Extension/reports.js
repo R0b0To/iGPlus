@@ -189,7 +189,6 @@ function closeSheetDialog() {
   dialog.close();
 }
   async function handleSheetSelection() {
-    console.log("testing");
   const selectedSheetId = document.querySelector('input[name="sheetRadio"]:checked').id;
   //alert(`Selected Sheet ID: ${selectedSheetId}`);
   const {access_gSheet } = await import(chrome.runtime.getURL('/auth/gSheetsHandler.js'));
@@ -227,7 +226,8 @@ function race_export(download)
     const  rank = i;
     const driver_name = race_table.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
     const team_name = race_table.childNodes[i].childNodes[1].childNodes[6].childNodes[0].textContent;
-    const finish = race_table.childNodes[i].childNodes[2].textContent;
+    const original_finish = race_table.childNodes[i].childNodes[2].textContent;
+    const finish = (!download && original_finish.charAt(0) === '+') ? "'" + original_finish : original_finish;
     const best_lap = race_table.childNodes[i].childNodes[3].textContent;
     const top_speed = race_table.childNodes[i].childNodes[4].textContent;
     const pits = race_table.childNodes[i].childNodes[5].textContent;
@@ -260,7 +260,8 @@ function quali_export(download)
     const driver_name = quali_table.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
     const team_name = quali_table.childNodes[i].childNodes[1].childNodes[6].innerText;
     const lap = quali_table.childNodes[i].childNodes[2].textContent;
-    const gap = quali_table.childNodes[i].childNodes[3].textContent;
+    const original_gap = quali_table.childNodes[i].childNodes[3].textContent;
+    const gap = (!download && original_gap.charAt(0) === '+') ? "'" + original_gap : original_gap;
     const tyre = quali_table.childNodes[i].childNodes[4].className.replace('ts-','');
     csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + lap + ',' + gap + ',' + tyre;
   }

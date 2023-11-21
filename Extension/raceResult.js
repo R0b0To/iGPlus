@@ -36,7 +36,7 @@ function pit(){
     
     const sum = pitTimes.reduce((a, b) => a + b, 0);
     const avg = (sum / pitTimes.length) || 0;
-    console.log('average is: ' + avg); //TODO display in the page?
+    //console.log('average is: ' + avg); //TODO display in the page?
   }
 }
 
