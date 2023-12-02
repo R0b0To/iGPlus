@@ -60,20 +60,20 @@ function get_wear(tyre,laps,track_info,car_economy,multiplier){
   const t = (1.43 * te ** -0.0778) * (0.00364 * track_wear + 0.354) * track_length * 1.384612 * multiplier * tyreWear;
 
   //calculate stint wear
-  /*const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
+  const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
   let stint2 = (1 - (1 * ((t) + (0.0212 * laps - 0.00926) * track_length) / 100));
   for(let j = 1 ; j < laps ; j++)
   {
     stint2 *= (1 - (1 * ((t) + (0.0212 * j - 0.00926) * track_length) / 100));
   }
-  stint2 = stint2 * 100;*/
-  //const average = ((stint + stint2) / 2).toFixed(2);
+  stint2 = stint2 * 100;
+  
   const stint3 = calculateWear(laps,t,pushDecay,diff);
 
-  //console.log('laps:',laps,stint3);
-
+  //console.log('laps:',laps,stint3, stint);
+  const average = ((stint + stint3 + stint) / 3).toFixed(2);
   // return average;
-  return stint3;
+  return average;
 }
 
 function calculateWear(n, wear, push,diff) {
@@ -84,7 +84,7 @@ function calculateWear(n, wear, push,diff) {
   /*if(lapWear<60)
         lapWear = ((1 - wear/100 + push/100 -0.002)** n)*100;
   console.log(lapWear)*/
-  return lapWear.toFixed(2);
+  return lapWear;
 }
 
 
