@@ -4,7 +4,7 @@ function import_to_sheet(id,access_token,values,id_list,sheetId){
     const range = 'imported_data!A31';
     
 
-const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=RAW`;
+const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
 fetch(apiUrl, {
     method: 'POST',
     headers: {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json',},
@@ -15,7 +15,7 @@ fetch(apiUrl, {
     .catch(error => {
       console.error('Error appending data:', error);
     });
-
+    
     const batchUpdateRequest = {
         requests: [
           {
@@ -28,20 +28,20 @@ fetch(apiUrl, {
                 endColumnIndex: 3, 
               },
               rows: id_list.map((id, index) => {
-                return {
-                  values: id.map(value => ({
-                    userEnteredValue: {
-                      stringValue: value,
-                    },
-                  })),
+                return {  
+                  values: [
+                    {userEnteredValue: {numberValue: id[0]}},//race id
+                    {userEnteredValue: {stringValue: id[1]}},//race track 
+                    {userEnteredValue: {stringValue: id[2]}} //race timestamp
+                  ]                
                 };
+
               }),
               fields: 'userEnteredValue',
             },
           },
         ],
       };
-
     fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
         method: 'POST',
         headers: {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json',},
@@ -123,7 +123,7 @@ function access_gSheet(id,access_token,values,race_info){
                 id_list.push([race_id,race_info.track_code,race_info.race_date]);
                  import_to_sheet(id,access_token,values,id_list,sheetId)
             }else{
-                //console.log("Race report already stored")
+                console.log("Race report already stored")
             }
             
           })

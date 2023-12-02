@@ -66,11 +66,12 @@ function hashCode(string){
   return hash;
 }
 
-async function strategyPreview(strategies,car_info){
+async function strategyPreview(strategies,car_info,totalLaps){
   const container = document.createElement('tbody');
   container.id = 'saveList';
   container.classList.add('saveListContainerPreview');
   for (const id in strategies) {
+    if(strategies[id].laps.total == parseInt(totalLaps) || typeof(totalLaps) =='undefined')
     container.append(await createPreview(strategies[id],id,car_info));
   }
   return container;
@@ -86,7 +87,7 @@ async function createPreview(strategy,id,car_info){
     rowContainer.classList.add('saveRow');
     const stintsContainer = document.createElement('td');
     stintsContainer.classList.add('stintsContainer');
-    const percentageTotalLaps = (((strategy.laps.doing / strategy.laps.total) * 100));
+    const percentageTotalLaps = ((strategy?.laps?.doing ?? 1) / (strategy?.laps?.total ?? 1)) * 100;
     stintsContainer.style.width = `${percentageTotalLaps}%`;
 
     let zindex = 99;
@@ -116,7 +117,7 @@ async function createPreview(strategy,id,car_info){
     //console.log(strategyContainer);
     return rowContainer;
   } catch (error) {
-    alert('The format of saves has been changed in this version, delete all saves to continue using this feature');
+    console.log('The format of saves has been changed in this version, delete all saves to continue using this feature',error);
   }
 
 }
