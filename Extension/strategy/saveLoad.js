@@ -184,7 +184,6 @@ async function loadStint()
   const driverStrategy = this.closest('form');
   const pitNum = driverStrategy.querySelector('.num');
   const current_pit_number = pitNum.childNodes[0].textContent;
-
   //number of stints
   const stints = Object.keys(s.stints).length;
 
@@ -266,26 +265,40 @@ async function generateSaveList () {
             });
             res('empty');
           } else {
-            const sList = document.querySelectorAll('#saveList');
-            if (sList != null)
-              sList.forEach((e) => {e.remove();});
 
+            //getting total laps. this make possible to get only the strategies that match
+            const totalLaps =document.querySelector('[id*=TotalLaps]').nextSibling.textContent.split('/')[1];
 
+            const sLists = document.querySelectorAll('#saveList');
+            if (sLists != null)
+            sLists.forEach((e) => {e.remove();});
             document.querySelectorAll('.lbutton').forEach((element) => {
               element.classList.remove('disabled');
             });
 
             const list = document.querySelectorAll('#myDropdown2');
             list.forEach(async (e) => {
-              const sList = await strategyPreview(data.save[code],CONFIG.economy);
-              sList.querySelectorAll('.stintsContainer').forEach(strat => {
+              const sList = await strategyPreview(data.save[code],CONFIG.economy,totalLaps);
+              if(sList.childElementCount == 0)
+              {
+                document.querySelectorAll('.lbutton').forEach((element) => {
+                  element.classList.add('disabled');
+                });
+                res('empty');
+              }
+              else{
+                sList.querySelectorAll('.stintsContainer').forEach(strat => {
                 strat.classList.add('loadStrat');
                 strat.addEventListener('click',loadStint);
               });
               sList.querySelectorAll('.trash').forEach(d => {d.addEventListener('click',deleteSave);});
-              e.appendChild(sList);});
+              e.appendChild(sList);
+              res (true);
+              }
+                
+              });
           }
-          res (true);
+        
         }
       }
     });

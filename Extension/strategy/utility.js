@@ -66,11 +66,12 @@ function hashCode(string){
   return hash;
 }
 
-async function strategyPreview(strategies,car_info){
+async function strategyPreview(strategies,car_info,totalLaps){
   const container = document.createElement('tbody');
   container.id = 'saveList';
   container.classList.add('saveListContainerPreview');
   for (const id in strategies) {
+    if(strategies[id].laps.total == parseInt(totalLaps) || typeof(totalLaps) =='undefined')
     container.append(await createPreview(strategies[id],id,car_info));
   }
   return container;
