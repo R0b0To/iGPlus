@@ -26,7 +26,7 @@
 
   async function addReserveStaffSkills() {
     /** @type HTMLTBodyElement */
-    const reserveStaff = staffDiv.childNodes[3].querySelector('tbody');
+    const reserveStaff = staffDiv.lastChild.querySelector('tbody');
 
     for (let i = 0; i < reserveStaff.rows.length; i += 1) {
       // TODO test with someone in reserve
