@@ -337,6 +337,7 @@ function get_quali()
       'lap_time': [],
       'pit_stop': '',
       'pitTimeLoss':[],
+      'pitStopTimes':[],
       'driver_result':{
         'lap':[],
         'time':[],
@@ -518,6 +519,9 @@ async function update_managers(table, index) {
 
 
       if (isNaN(race_table.rows[i].childNodes[0].textContent)) {
+
+        const pitstop = parseFloat(race_table.rows[i].childNodes[1].textContent.split('/')[0]);
+        manager[index].pitStopTimes.push(pitstop);
         pit_lap = race_table.rows[i - 1].childNodes[0].textContent;
 
         pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent;
