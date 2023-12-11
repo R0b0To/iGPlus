@@ -34,13 +34,15 @@ const language = {
     popupText:{
       saveText: 'Save',
       PitReport: 'Pit Report',
+      pitStopTimeLoss:'Time lost in the pits',
       heatMap: 'Lap Heatmap',
       delete: 'Delete',
       newRace: 'New Race',
       downloadText: 'Download',
       copyText: 'Copy',
       raceRecap: 'Race Recap',
-      startOvertakes:'End lap 2 Overtakes'
+      startOvertakes:'End lap 2 Overtakes',
+      fullRaceReport:'All reports and race info.'
     },
     fuelText: 'Fuel',
     lapText: 'Lap',
@@ -101,13 +103,15 @@ const language = {
     popupText:{
       saveText: 'Salva',
       PitReport: 'Storia Pit',
+      pitStopTimeLoss:'Tempo perso nei box',
       heatMap: 'Giri per Posizione',
       delete: 'Elimina',
       newRace: 'Nuova gara',
       downloadText: 'Scarica',
       copyText: 'Copia',
       raceRecap: 'Resoconto Gara',
-      startOvertakes:'Sorpassi a fine 2° giro'
+      startOvertakes:'Sorpassi a fine 2° giro',
+      fullRaceReport:'Tutti i resoconti'
     },
     fuelText: 'Carburante',
     lapText: 'Giri',

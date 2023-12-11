@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const copyButton = document.getElementById('copy');
   const pitLossButton = document.getElementById('averagePit');
   const csv = document.getElementById('CSV');
+  const pitstops = document.getElementById('PitStops');
   let saveName = "report";
 
 
@@ -36,11 +37,12 @@ document.addEventListener('DOMContentLoaded', async function() {
       startOvertakes.textContent = language[code].popupText.startOvertakes;
       deleteButton.textContent = language[code].popupText.delete;
       newButton.textContent = language[code].popupText.newRace;
-
+      pitLossButton.textContent = language[code].popupText.pitStopTimeLoss;
       averageButton.textContent = language[code].popupText.heatMap;
       pitButton.textContent = language[code].popupText.PitReport;
       downloadButton.textContent = language[code].popupText.downloadText;
       copyButton.textContent = language[code].popupText.copyText;
+      csv.textContent = language[code].popupText.fullRaceReport;
 
     });
   }
@@ -56,6 +58,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       startOvertakes.disabled = true;
       pitLossButton.disabled = true;
       csv.disabled = true;
+      pitstops.disabled = true;
     }
     else{
       recapButton.disabled = false;
@@ -64,6 +67,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       startOvertakes.disabled = false;
       pitLossButton.disabled = false;
       csv.disabled = false;
+      pitstops.disabled = false;
     }
   }
 
@@ -121,33 +125,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   }else disableButton(true);
 
 
-  /* chrome.storage.local.get(null, function(data) {
-
-    if(data.active == null)
-    {
-      disableButton(true);
-    }else{
-
-      //generate a "default" save for the data that was found but not named
-      if(valid_saves.length == 0)
-      {
-
-        chrome.storage.local.set({'RaceLRID':data.active});
-        const option = document.createElement('option');
-        option.textContent = 'Race';
-        //set
-        chrome.storage.local.set({'active_option':'RaceLRID'});
-        select.appendChild(option);
-      }
-      if(data.active == 0)
-        disableButton(true);
-      else
-        disableButton(false);
-
-      driver = data.active;
-    }
-
-  });*/
 
   //-------------------------------------------------------------------------------copy button-------------------------------------------
   copyButton.addEventListener('click',function(){
@@ -161,9 +138,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
   //-------------------------------------------------------------------------------pit time loss button-------------------------------------------
   pitLossButton.addEventListener('click',function(){
-
-
-
 
     var manager = driver;
     manager.sort((a, b) => { return a.race_finish - b.race_finish; });
@@ -200,6 +174,45 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
   });
+
+    //-------------------------------------------------------------------------------pit stops button-------------------------------------------
+    pitstops.addEventListener('click',function(){
+
+      var manager = driver;
+      manager.sort((a, b) => { return a.race_finish - b.race_finish; });
+  
+      let cvsS = '';
+      for (let i = 0; i < manager.length; i++) {
+  
+        cvsS += (manager[i].name + separator + arrayToCSV(manager[i].pitStopTimes)) + '\n';
+  
+  
+      }
+      saveName = "stationary_pit_times";
+      setText(cvsS);
+  
+  
+      function arrayToCSV(arr) {
+        // check if the array is empty
+        if (arr.length === 0) {
+          return '';
+        }
+  
+        // initialize a variable to store the CSV string
+        let csv = '';
+  
+        // loop through the array and add each element to the CSV string, separated by a comma
+        for (let i = 0; i < arr.length - 1; i++) {
+          csv += arr[i] + separator;
+        }
+  
+        // return the CSV string
+        return csv;
+      }
+  
+  
+  
+    });
 
   //-------------------------------------------------------------------------------download button-------------------------------------------
   downloadButton.addEventListener('click',function(){

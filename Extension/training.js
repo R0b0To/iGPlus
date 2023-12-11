@@ -16,7 +16,7 @@ async function startHealthMonitor() {
   if (nextRaceData && !noticeDiv[0].querySelectorAll('span').length) {
     const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
     const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
-    const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : `in ${raceDate.getDate()-(new Date).getDate()} days`;
+    const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : `in ${((raceDate.getTime()-(new Date).getTime())/ (1000 * 60 * 60 * 24)).toFixed(1)} days`;
 
     const healthNotice = document.createElement('span');
     healthNotice.innerText = `${noticeDiv[0].textContent}.`;
