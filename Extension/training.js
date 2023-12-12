@@ -6,32 +6,34 @@ async function startHealthMonitor() {
   const padValue = (val) => `${val}`.padStart(2, '0');
 
   // If drivers are not found error is invoked stopping executing the task any further
-  const trainTable = document.getElementById('trainTable');
-  const drivers = trainTable.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
-
+  const trainTable = document.getElementById('dTrainTable');
+  const pitCrewTable = document.getElementById('pcTrainTable');
+  const staff = document.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
   const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
-  const noticeDiv = document.querySelector('div.notice');
-
-  if (nextRaceData && !noticeDiv.querySelectorAll('span').length) {
+  const noticeDiv = document.querySelectorAll('div.darkgrey.shrinkText');
+  
+  if (nextRaceData && !noticeDiv[0].querySelectorAll('span').length) {
     const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
     const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
-    const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : 'tomorrow';
+    const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : `in ${((raceDate.getTime()-(new Date).getTime())/ (1000 * 60 * 60 * 24)).toFixed(1)} days`;
 
     const healthNotice = document.createElement('span');
-    healthNotice.innerText = `${noticeDiv.textContent}.`;
+    healthNotice.innerText = `${noticeDiv[0].textContent}.`;
 
     const nextRaceNotice = document.createElement('span');
-    nextRaceNotice.innerText = `Next race: ${raceDay} at ${raceTme}`;
+    nextRaceNotice.innerText = `\n Next race: ${raceDay} at ${raceTme}`;
 
-    noticeDiv.replaceChildren(healthNotice, nextRaceNotice);
+    noticeDiv[0].replaceChildren(healthNotice, nextRaceNotice);
+    noticeDiv[1].replaceChildren(healthNotice.cloneNode(true), nextRaceNotice.cloneNode(true));
   }
 
   // reset custom health colors before updating current health states
-  drivers.forEach((d) => {
+  staff.forEach((d) => {
     d.parentElement.classList.remove('healthWarn', 'healthAlert');
     d.parentElement.classList.add('green');
   });
+
 
   const healthObserver = new MutationObserver(function (_mutations) {
     checkTimeToFullHealth();
@@ -41,7 +43,7 @@ async function startHealthMonitor() {
    * This observer will observe mutations on the width of the health indicator
    */
   function monitorDriversHealth() {
-    drivers.forEach((driver) => {
+    staff.forEach((driver) => {
       healthObserver.observe(driver, { attributes: true, attributeFilter: ['style'] });
     });
   }
@@ -50,7 +52,7 @@ async function startHealthMonitor() {
    * Health regenerates 5% each time new hour starts (first minute of the next hour)
    */
   function checkTimeToFullHealth() {
-    drivers.forEach((driver) => {
+    staff.forEach((driver) => {
       const health = parseInt(driver.style.width);
 
       const hoursToFull = Math.ceil((100 - health) / 5);
@@ -65,14 +67,12 @@ async function startHealthMonitor() {
           driver.parentElement.classList.add(alertClass);
         }
       }
-
       const dateString = `~${padValue(fullDate.getHours())}:01`;
       const healthText = health < 100 ? dateString : '';
 
       const healthBarCell = driver.closest('td');
       let estimatedHealTimeCell;
-
-      if (driver.closest('tr').cells.length < 7) {
+      if (driver.closest('tr').querySelectorAll('[id=dateTd]').length == 0) {
         // works when you refresh the page
         estimatedHealTimeCell = document.createElement('td');
         estimatedHealTimeCell.id = 'dateTd';
@@ -88,7 +88,7 @@ async function startHealthMonitor() {
   }
 
   function addHeader() {
-    if (document.getElementById('dateHeader') == null) {
+    if (document.querySelectorAll("[id=dateHeader]").length == 0) {
       const iconUrl = chrome.runtime.getURL('images/calendar-check-regular.svg');
       const image = document.createElement('img');
       image.src = iconUrl;
@@ -98,6 +98,7 @@ async function startHealthMonitor() {
 
       header.append(image);
       trainTable.tHead.rows[0].insertBefore(header, trainTable.tHead.rows[0].cells[4]);
+      pitCrewTable.tHead.rows[0].insertBefore(header.cloneNode(true), pitCrewTable.tHead.rows[0].cells[3]);
     }
   }
 

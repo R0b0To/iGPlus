@@ -3,13 +3,13 @@
 }
 
 #raceReview {
-  display: inline-block;
-  width: inherit;
+  display: inline-flex;
+  width: 48%;
   float: right;
 }
 
 .home-prev-race {
-  width: inherit;
+  width: 50%!important;
 }
 
 @media only screen and (max-width: 442px) {
