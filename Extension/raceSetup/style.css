@@ -8,7 +8,9 @@
   font-size: 20px;
   padding: 0 0.4em 0 0;
 }
-
+.igpNum{
+  position: relative;
+}
 .withSlider {
   border-radius: 50%;
   background-color: #96bf86;
@@ -16,14 +18,18 @@
   width: 2rem;
   height: 2rem;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sliderContainer {
-  width: 100%;
   position: absolute;
-  background-color: #e3e4e5;
+  background-color: transparent;
   visibility: hidden;
   z-index: 1;
+  width: calc(100% - 64px);
+  left: 32px;
 }
 .sliderContainer .track{
   position: absolute;
@@ -40,8 +46,10 @@
 .sliderX {
   position: relative;
   z-index: 1;
+  top:-3px;
   height: 1px;
   margin:0;
+  border: 0;
   width: 100%;
   -webkit-appearance: none;
   padding: 0;
@@ -74,7 +82,7 @@
 .slider-label{
   position: absolute;
   justify-content: center;
-	top: -180%;
+	top: -225%;
   background-color: #e3e4e5!important;
   color: black !important;
   width: 50px;

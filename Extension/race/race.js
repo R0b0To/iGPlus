@@ -12,8 +12,8 @@ function addCustomWeatherLink() {
   const weatherContainer = document.createElement('div');
   weatherContainer.id = 'container';
 
-  weatherBtn.parentElement.appendChild(weatherAlt);
-  weatherBtn.parentElement.appendChild(weatherContainer);
+  weatherBtn.parentElement.append(weatherAlt);
+  weatherBtn.parentElement.parentElement.append(weatherContainer);
 }
 
 /**
@@ -87,8 +87,7 @@ async function getWeather() {
 
   const { manager } = await fetchManagerData();
   const { nextLeagueRaceTime } = await fetchNextRace();
-  const trackID = document.getElementById('race').childNodes[0].lastChild.childNodes[1].href.match(/\d+/)[0];
-  
+  const trackID = new URLSearchParams(document.querySelector('a[href*="circuit&id="]').href).get('id');
   const params = {
     lat: raceTrackCoords[trackID][0],
     lon: raceTrackCoords[trackID][1],

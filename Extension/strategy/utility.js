@@ -27,7 +27,8 @@ function createSlider(node,min,max) {
   slider.addEventListener('change', function () {
     settingValueDiv.classList.remove('slider-label');
     sliderContainer.classList.remove('visible');
-    slider.parentElement.parentElement.append(settingValueDiv);
+    const parent = slider.closest(".igpNum");
+    parent.insertBefore(settingValueDiv,parent.lastChild)
     slider.parentElement.parentElement.nextElementSibling.value = slider.value;
     if(slider.value == 0)
     {
@@ -45,7 +46,8 @@ function createSlider(node,min,max) {
     } else {
       sliderContainer.classList.remove('visible');
       settingValueDiv.classList.remove('slider-label');
-      slider.parentElement.parentElement.append(settingValueDiv);
+      const parent = slider.closest(".igpNum");
+      parent.insertBefore(settingValueDiv,parent.lastChild)
     }
   });
 
@@ -114,7 +116,6 @@ async function createPreview(strategy,id,car_info){
       }
     }
     rowContainer.append(stintsContainer,createDeleteButton());
-    //console.log(strategyContainer);
     return rowContainer;
   } catch (error) {
     console.log('The format of saves has been changed in this version, delete all saves to continue using this feature',error);
