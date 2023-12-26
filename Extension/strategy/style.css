@@ -14,7 +14,9 @@
 	top: 0;
 	bottom: 0;
 }
-
+.igpNum{
+ position: relative;
+}
 .visible {
   visibility: visible;
 }
