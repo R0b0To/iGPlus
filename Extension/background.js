@@ -28,6 +28,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
       if (!key || enabledScripts[key]) {
         scriptRunning = pathname;
+        //to do, condition if darkmode is enabled
+        styles.push("css/darkmode.css");    
         styles.length && injectStyles(tabId, styles);
         scripts.length && injectScripts(tabId, scripts);
       }

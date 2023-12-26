@@ -1,0 +1,247 @@
+:root {
+    --text-color: #cfcfcf;
+    --dark-color: #1d1d1d;
+    --dark-color2: #2e2e2e;
+    --dark-color3: #575757;
+    --dark-green:#2f5720;
+  }
+
+#page-content{
+    background: #0f0f0f;
+}
+#header{
+    background: var(--dark-color);
+}
+h1,h2{
+    color: var(--text-color);
+}
+.tabs{
+    background: var(--dark-color)!important;
+    border-top: none;
+}
+.tabs a{
+    background: var(--dark-color3)!important;
+    color: var(--text-color);
+    border-top: none;
+}
+.tabs a:visited{
+    background: var(--dark-color)!important;
+    color: var(--text-color);
+}
+.tabs a.active {
+    background: var(--dark-color)!important;;
+    color: var(--text-color);
+    border-top: none!important;
+}
+.tabs a.active:hover {
+    background: var(--dark-color2)!important;;
+    color: var(--text-color);
+    border-top: none!important;
+}
+.countdown{
+    color: var(--text-color);
+}
+.news{
+    background: var(--dark-color);
+    color:var(--text-color);
+}
+a{
+    color: var(--text-color);
+}
+.newsLike {
+    color: var(--text-color);
+}
+#menu{
+    background: var(--dark-color);
+    color: var(--text-color);
+}
+.btn2{
+    background:var(--dark-color);
+    color: var(--text-color);
+    border-top: none!important;
+}
+.btn2:visited{
+    background: var(--dark-color);
+    color: var(--text-color);
+    border-top: none!important;
+}
+.btn2:hover{
+    background: var(--dark-color2); 
+    border-top: none!important;
+}
+.btn{
+    background: var(--dark-color);
+    color: var(--text-color);
+    border-top: none!important;
+}
+.btn:visited{
+    background: var(--dark-color);
+    color: var(--text-color);
+    border-top: none!important;
+}
+.btn:hover{
+    background: var(--dark-color2);
+    border-top: none!important;
+    color: var(--text-color)!important;;
+}
+.fReq{
+    background: var(--dark-color2);
+    color: var(--text-color)!important;;
+}
+.fReq:hover{
+    background: var(--dark-color3)!important;
+    color: var(--text-color)!important;;
+}
+div.hover:hover{
+    background: var(--dark-color3)!important;
+    color: var(--text-color)!important;;
+}
+.fRep{
+    background: var(--dark-color)!important;;
+    color: var(--text-color)!important;;
+}
+.grey{
+    color: #dfdfdf !important;
+}
+body{
+    color:  var(--text-color)!important;
+}
+.bgLightGreen{
+   background:  #2b3e23 !important;
+}
+.bgLightRed
+{
+  background: #391717 !important;
+}
+.dialog{
+    background: var(--dark-color)!important;;
+}
+.dialog-head{
+    border-bottom: 1px solid #2f2f2f;
+}
+.bgWhite
+{
+  background: var(--dark-color)!important;;
+}
+table.acp th{
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border-right: 1px solid #131313;
+}
+.researchSuggestion{
+    background: #213D46!important;
+}
+.bgGrey{
+    background: var(--dark-color2)!important;
+}
+
+.researchFooter{
+    background: var(--dark-color2)!important;
+}
+.researchImg{
+    filter: invert(90%);
+}
+.helpLabel{
+    background: var(--dark-green)!important; 
+}
+.block-green
+{
+  background: #7ca66c87 !important;
+}
+.block-red
+{
+  background: #bf73739c !important;
+}
+.block-grey
+{
+  background: #6c6c6c !important;
+}
+.darknotice{
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border: 2px solid var(--dark-color2);
+}
+.notice{
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border: 2px solid var(--dark-color2); 
+}
+.ratingBar div
+{
+  background: #4f5f6c!important;
+}
+.mini-subhead, table.acp th
+{
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border: 2px solid var(--dark-color2); 
+}
+.staff-profile
+{
+  border-bottom: 1px solid var(--dark-color2)!important;
+}
+#dateHeader > img{
+    filter: invert(.90);
+}
+div.darkgrey:nth-child(2){
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border-top: 1px solid var(--dark-color2)!important;
+}
+div.text-center:nth-child(1){
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border-top: 1px solid var(--dark-color2)!important;
+}
+table.acp
+{
+  border-spacing: 1px;
+  border-collapse: inherit;
+}
+.hoverWrap .hover:hover, div.hover:hover, table.hover tbody tr:hover, td.hover:hover, th.hover:hover
+{
+    background: var(--dark-color3)!important;
+}
+select{
+    background: var(--dark-color3)!important;
+    color:  var(--text-color)!important;
+    border: 1px solid  var(--dark-color3)!important;
+}
+.statWrap div{
+    background: var(--dark-color2)!important;
+}
+.singleReward .rewardContent {
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+    border: none;
+}
+.rewardContent .topRow {
+    background: var(--dark-color)!important;
+    color:  var(--text-color)!important;
+    border: none;
+}
+.green
+{
+  color: #5dbd3a !important;
+
+}
+table.aRows tr:nth-child(2n)
+{
+  background: #404040;
+}
+td.key3
+{
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+}
+table.acp tr.myTeam
+{
+  background: #2e532278;
+}
+.dropdown-content {
+    background: var(--dark-color2)!important;
+    color:  var(--text-color)!important;
+}
+.statBarWithValue{
+    background: var(--dark-color2)!important; 
+}
