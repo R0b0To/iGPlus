@@ -130,13 +130,13 @@
 
 .researchFooter {
   position: relative;
-  background: #e3e4e5 !important;
+  background: transparent;
   z-index: 2;
 }
 
 .researchFooter > th {
   border-right: 0 !important;
-  background: #e3e4e5 !important;
+  background: transparent;
 }
 
 .researchFooter > #totalGain {
@@ -146,4 +146,7 @@
 
 .researchSuggestion {
   background: #ADD8E6;
+}
+.researchFooter > th:nth-child(2){
+  background: transparent;
 }
