@@ -21,7 +21,8 @@ const scriptDefaults = {
   sponsor:true,
   settings:true,
   gdrive:false,
-  transferLanguage:true
+  transferLanguage:true,
+  darkmode:false
 };
 
 /**

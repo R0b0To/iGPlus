@@ -74,6 +74,7 @@ async function handleSettings() {
   const gdrive = document.getElementById('gdrive');
   const forceSyncBtn = document.getElementById('forceSync');
   const exportSave = document.getElementById('exportSave');
+  const darkmode = document.getElementById('darkmode');
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
 
   async function displayPreview(){
@@ -140,7 +141,7 @@ async function handleSettings() {
   }
 
   async function scriptCheck(scriptName, status) {
-    if (scriptName == 'overSign' || scriptName == 'raceSign') {
+    if (scriptName == 'overSign' || scriptName == 'raceSign')  {
       chrome.storage.local.set({ [scriptName]: status });
       restoreOptions();
     }

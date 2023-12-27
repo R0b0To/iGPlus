@@ -61,6 +61,7 @@ function injectIGPlusOptions() {
       preferenceslegend.textContent = 'iGPlus preferences';
       preferenceslegend.id = 'preferences';
       preferencesContainer.append(preferenceslegend,
+        createScriptCheckbox('darkmode', 'Darkmode'),
         createScriptCheckbox('raceSign', 'Race Report Sign'),
         createScriptCheckbox('overSign', 'Overtakes Sign'),
         separatorContainer
