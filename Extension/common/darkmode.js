@@ -1,7 +1,6 @@
 function injectStyles(rule) {
 var darkmode = document.createElement("div");
 darkmode.id = "igplus_darkmode";
-
 darkmode.innerHTML = '<style>' + rule + '</style>';
    document.body.append(darkmode);   
 }
@@ -11,7 +10,6 @@ if(!document.getElementById('igplus_darkmode'))
   fetch(file)
     .then(response => response.text())
     .then(cssContent => {
-      // Do something with the CSS content
       injectStyles(cssContent)
     })
     .catch(error => {
