@@ -444,8 +444,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         const  text = node.parentElement.querySelectorAll('.num')[0];
         text.contentEditable = true;
-
-        text.setAttribute('style','border-radius: 50%;background-color: #96bf86;color: #ffffff!important;width: 2rem;height: 2rem;cursor: pointer;');
+        text.classList.add("withSlider");
+        text.classList.remove("green");
         text.addEventListener('click',function(){
           if(this.textContent != ''){
             this.parentElement.nextElementSibling.value = this.textContent;

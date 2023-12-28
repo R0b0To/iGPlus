@@ -14,7 +14,9 @@
 	top: 0;
 	bottom: 0;
 }
-
+.igpNum{
+ position: relative;
+}
 .visible {
   visibility: visible;
 }
@@ -81,6 +83,9 @@
   width: 2rem;
   height: 2rem;
   cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .pushInput[type="number"] {

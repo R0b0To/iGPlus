@@ -25,7 +25,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       //at any igp page check for sync
       if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path);}))
         injectScripts(tabId, tabScripts.gdrive.scripts);
-
+      //inject darkmode style at any page
+      if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){
+          injectScripts(tabId,["common/darkmode.js"])
+      }
+      else if (origin == 'https://igpmanager.com' && !enabledScripts.darkmode){
+        injectScripts(tabId,["common/darkmode_off.js"])
+      }
       if (!key || enabledScripts[key]) {
         scriptRunning = pathname;
         styles.length && injectStyles(tabId, styles);
