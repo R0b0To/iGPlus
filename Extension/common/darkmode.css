@@ -2,6 +2,7 @@
     --text-color: #ffffffe0;
     --link-color: #a9ff9ca8;
     --dark-green:#537546;
+    --green-text:#cdffbad1;
     --dark-red:#623f3f;;
     --dark-btn:#353535;
     --dark-btn-hover:#323232;
@@ -37,14 +38,74 @@
   .dialog-head,.staff-profile,.statWrap,td.key-pos,div.sceditor-toolbar,.module-title{
     border-bottom: 1px solid var(--dark-btn-hover);
   }
-  #splashRace,#splashPrep,.pic-name{
-    background: rgba(0, 0, 0, 0.75);
+  .btn:hover,input[type=submit]:hover,
+  #trainingPitcrew > div:nth-child(4) > div,
+  #trainingDrivers > div:nth-child(4) > div > div,
+  .dropdown-content,
+  #historyTable > tr:nth-child(even),
+  .selectBox-options li a:hover,.sbutton:hover,
+  .btn2:hover,
+  #balance:hover,
+  #tokens:hover,
+  #back:hover,
+  #forward:hover,
+  .mini-subhead:hover{
+    background: var(--dark-btn-hover)!important;
+    color: var(--text-color)!important;
+    border-top: none!important;
+  }
+  .pic-name{
+    background: var(--dark-background);
+  }
+  .red{
+    color:#ff7f7f !important
+  }
+  #splashRace,#splashPrep{
+    background: #00000075;;
   }
   a, a:active, a:visited {
     border-bottom: none ;
   }
-  .hoverWrap,#staff > table > tbody > tr:nth-child(even),#drivers > table > tbody >  tr:nth-child(even) ,#fHistoryTable > tr:nth-child(even),.hover:hover, div.hover:hover, table.hover tbody tr:hover, td.hover:hover,#practice > table > tbody > tr:nth-child(even), th.hover:hover,#csvRace > tbody > tr:nth-child(even),#qualifying > table > tbody > tr:nth-child(even) {
-    background: var(--dark-btn-hover)!important;
+  .hoverWrap,#staff > table > tbody > tr:nth-child(even),#drivers > table > tbody >  tr:nth-child(even) ,#fHistoryTable > tr:nth-child(even),#practice > table > tbody > tr:nth-child(even), th.hover:hover,#csvRace > tbody > tr:nth-child(even),#qualifying > table > tbody > tr:nth-child(even) {
+    background: var(--dark-btn-hover);
+}
+#csvRaceResult > tbody > tr:hover{
+  background: var(--dark-btn)!important;
+}
+/* practice,quali,race results table hover */
+#csvRace > tbody > tr >td:nth-child(2):hover,#csvRace > tbody > tr >td:nth-child(3):hover,#qualifying >table> tbody > tr >td:nth-child(2):hover,#practice >table> tbody > tr >td:nth-child(2):hover{
+  background: var(--dark-color)!important;
+}
+.dialog > .acp > tbody > tr{
+  background: var(--dark-btn-press)!important;
+}
+.dialog > .acp > tbody > tr:nth-child(2n):not(.myTeam),
+#stats > table > tbody > tr:nth-child(2n)
+{
+  background: var(--dark-btn-hover)!important;
+}
+#leagueInfo > a 
+{
+  background: var(--dark-btn)!important;
+}
+/* transfer market hover elements */
+#driver-table > thead > tr:first-child > th:hover, #driver-table > tbody > tr:hover,
+#staff-table > thead > tr:first-child > th:hover, #staff-table > tbody > tr:hover,
+#stats > table >tbody > tr:hover,
+#historyTable > tr:hover,
+.dialog > .acp > tbody > tr > td:nth-child(2):hover,
+#drivers > .staff-profile:hover,
+#staff> div > .staff-profile:hover,
+#hofTable > tr:hover,
+#scheduleTable > tbody > tr:hover
+{
+  background: var(--dark-color)!important;
+}
+#race > div{
+  background: var(--dark-background)!important;
+}
+#setupSuggestionHeader > tr > td{
+  border-right: 1px solid var(--dark-color3);
 }
   .btn,input[type=submit] ,.mailWrap,#editTrack > form > div:nth-child(1) > div.text-center.gradientBgGrey.pad,.selectBox-dropdown,.selectBox-dropdown-menu,.fReq,div.c-wrap,.five > div:nth-child(1),.changelogFilter,.clog-wrap,#article,div.sceditor-toolbar,.blog-wrap,.post-head,.sbutton,.btn2,.btn2:visited,.statWrap div,.btn:visited,td.key3,.mini-subhead,.news,#balance,#tokens,#back, #forward,.ratingBar,#myDropdown{
     color: var(--text-color);
@@ -54,11 +115,7 @@
   #selectStrength > a:hover{
     background: var(--dark-btn)!important;color: var(--text-color);
   }
-  .btn:hover,input[type=submit]:hover ,#trainingPitcrew > div:nth-child(4) > div,#trainingDrivers > div:nth-child(4) > div > div,.dropdown-content,#historyTable > tr:nth-child(even),.selectBox-options li a:hover,.sbutton:hover,.btn2:hover,#balance:hover,#tokens:hover,#back:hover, #forward:hover,.mini-subhead:hover{
-    background: var(--dark-btn-hover)!important;
-    color: var(--text-color)!important;
-    border-top: none!important;
-  }
+ 
   a,a:visited{
     color: var(--link-color);
   }
@@ -80,7 +137,7 @@ input,textarea#commentContent{
     color: var(--text-color);
 }
 .green {
-  color: #aeef96!important;
+  color: var(--green-text)!important;
 }
 body,h1,h2,.forumUpperTools > a,div.num.green > span,.news .newsFooter div{
     color: var(--text-color)!important;
@@ -90,12 +147,12 @@ table.acp th{
     color: var(--text-color)!important;
     border-right: 1px solid var(--dark-btn-hover);
 }
-.parent table.aRows tr:nth-child(2n),.tflip td:nth-child(2n+1),.parent table.acp tr:nth-child(2n),#threads > tbody > tr:nth-child(2n)
+.parent table.aRows tr:nth-child(2n),.tflip td:nth-child(2n+1),.parent table.acp tr:nth-child(2n),#threads > tbody > tr:nth-child(2n),.tflip td:nth-child(odd),#brandUpgrade
 {
-  background: var(--dark-btn-press);
+  background: var(--dark-btn-press)!important;
 }
-table.hover tbody tr:hover{
-    background: var(--dark-btn-hover)!important;
+.myTeam{
+  background: var(--dark-green)!important;
 }
 table.rowBorders tbody tr,.com-wrap{
     border-bottom: 1px solid var(--dark-btn-hover)!important;
@@ -114,8 +171,11 @@ table.rowBorders tbody tr,.com-wrap{
     border-right: 1px solid var(--dark-btn-hover);
 }
 
-.minus, .plus,.igpNum,.bgWhite,.bgGrey,.researchFooter,.researchFooter > th {
+.minus, .plus,.igpNum,.bgWhite,.researchFooter,.researchFooter > th {
     background: var(--dark-btn)!important; 
+}
+.bgGrey{
+  background: #d9d9d9 !important
 }
 .withSlider,#realfuel{
     background-color: var(--dark-green)!important;  
@@ -176,7 +236,7 @@ div.greyWrap,.dropdown2-content{
     filter: invert(1)!important;
 }
 .suggestedSetup {
-  color: #aeef96!important;
+  color: var(--green-text)!important;
 }
 .bgLightGreen,.block-green,table.acp tr.myTeam
 {
