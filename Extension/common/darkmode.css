@@ -69,7 +69,8 @@
   .hoverWrap,#staff > table > tbody > tr:nth-child(even),#drivers > table > tbody >  tr:nth-child(even) ,#fHistoryTable > tr:nth-child(even),#practice > table > tbody > tr:nth-child(even), th.hover:hover,#csvRace > tbody > tr:nth-child(even),#qualifying > table > tbody > tr:nth-child(even) {
     background: var(--dark-btn-hover);
 }
-#csvRaceResult > tbody > tr:hover{
+#csvRaceResult > tbody > tr:hover,
+#researchForm > .bgGrey{
   background: var(--dark-btn)!important;
 }
 /* practice,quali,race results table hover */
@@ -93,11 +94,17 @@
 #staff-table > thead > tr:first-child > th:hover, #staff-table > tbody > tr:hover,
 #stats > table >tbody > tr:hover,
 #historyTable > tr:hover,
-.dialog > .acp > tbody > tr > td:nth-child(2):hover,
+.dialog > .acp > tbody > tr:not([id^="yd"]) > td:nth-child(2):hover,
 #drivers > .staff-profile:hover,
 #staff> div > .staff-profile:hover,
 #hofTable > tr:hover,
-#scheduleTable > tbody > tr:hover
+#scheduleTable > tbody > tr:hover,
+#page-content > .staff-profile:hover,
+#elite > table > tbody > tr:hover,
+#pro > table > tbody > tr:hover,
+#rookie > table > tbody > tr:hover,
+#teams > div> table > tbody > tr:hover,
+#drivers > table > tbody > tr:hover
 {
   background: var(--dark-color)!important;
 }
@@ -113,7 +120,8 @@
     border: none!important;
   }
   #selectStrength > a:hover{
-    background: var(--dark-btn)!important;color: var(--text-color);
+    background: var(--dark-btn)!important;
+    color: var(--text-color);
   }
  
   a,a:visited{
@@ -125,7 +133,14 @@
   color: var(--text-color);
   border-top: none
 }
-.tabs a,#page-content > div.sixteen.columns > div.notice.darknotice,#repair > div.sixteen.columns > div.notice.darknotice.shrinkText, .tabs a:visited,.rewardContent .topRow,div.bb-quote,.changelogFilter > div,.clog-wrap .post-category {
+.tabs a,
+#page-content > div.sixteen.columns > div.notice.darknotice,
+#repair > div.sixteen.columns > div.notice.darknotice.shrinkText,
+.tabs a:visited,
+.rewardContent .topRow,div.bb-quote,
+.changelogFilter > div,
+.clog-wrap .post-category
+ {
     background: var(--dark-color3)!important;
     color: var(--text-color);
     border-top: none ;
