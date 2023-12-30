@@ -2,13 +2,17 @@
   overflow: hidden;
   float: left;
   width: auto;
-  margin-right: 1px !important;
+  
 }
 
 .hoverCopyTd {
+  z-index: 3;
   padding: 10px;
   position: relative;
   cursor: pointer;
+}
+.hoverCopyTd:hover{
+  z-index: 2!important;
 }
 .hoverCopyTd:hover::after {
   background-color: #00a2ff80;
@@ -87,6 +91,24 @@
 .statColTh {
   min-width: 32px;
   height: 2em;
+  
+}
+#statsTable > thead > th{
+  z-index: 3;
+  border-radius: 0!important;
+  position: relative;
+  border-spacing: 0;
+  border: none;
+}
+#statsTable > tbody{
+ border-spacing: 0; 
+ border: transparent;
+}
+#statsTable > thead{
+  border: transparent;
+}
+#carResearch > thead > tr> th:first-child{
+  border-radius: 0!important;
 }
 
 .researchImg {
@@ -106,13 +128,12 @@
   padding-left: 2px;
 }
 
-.positiveEffect {
-  color: green;
-}
 .positiveEffect::before {
   content: '+';
 }
-
+.positiveEffect {
+  color: green;
+}
 .negativeEffect {
   color: red;
 }
@@ -130,7 +151,7 @@
 
 .researchFooter {
   position: relative;
-  background: transparent;
+  background: #e3e4e5;
   z-index: 2;
 }
 
