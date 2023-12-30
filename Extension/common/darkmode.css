@@ -28,9 +28,6 @@
   .pc-main-div {
     background: var(--dark-background)!important;
   }
-  #race > div.eight.columns.text-center > img,#customMap,#trackMap{
-    filter: invert(0.97);
-  }
   input[type=checkbox]+label>span{
     filter: brightness(50%);
   }
@@ -59,7 +56,9 @@
   #tokens:hover,
   #back:hover,
   #forward:hover,
-  .mini-subhead:hover{
+  .mini-subhead:hover,
+  #includeList div:hover,
+  #excludeList div:hover{
     background: var(--dark-btn-hover)!important;
     color: var(--text-color)!important;
     border-top: none!important;
@@ -90,7 +89,9 @@
 #qualifying >table> tbody > tr >td:nth-child(2):hover,
 #practice >table> tbody > tr >td:nth-child(2):hover,
 #friendsDynamic > div:hover,
-#friends > div:hover{
+#friends > div:hover,
+#includeList div,
+#excludeList div{
   background: var(--dark-color)!important;
 }
 .dialog > .acp > tbody > tr{
@@ -260,7 +261,8 @@ body > p:nth-child(1),.selectBox-options li a{
 div.greyWrap,.dropdown2-content{
     background: var(--dark-background2)!important;
 }
-.pushBox,h1 a,h1 a:visited{
+.pushBox,h1 a,h1 a:visited,
+#excludeList div{
     color: var(--text-color);
 }
 .feLabel,.researchImg,div.bb-quote-author{
