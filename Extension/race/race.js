@@ -20,11 +20,12 @@ function addCustomWeatherLink() {
  * Replaces plain default map to the more detailed one
  */
 function swapMap() {
-  const countryFlagImg = document.querySelector('#race > div:nth-child(1) > h1 > img');
-  const mapCode = [...countryFlagImg.classList.values()].find((val) => val !== 'flag').split('-')[1];
+  const countryFlagImg = document.querySelector('#race .flag');
+  const mapCode = countryFlagImg.classList[1].split('-')[1];
 
-  const circuitImg = document.querySelector('#race > div.eight.columns.text-center > img');
-  circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
+  const circuitImg = document.querySelector('#race img:not(.flag)');
+  document.getElementById('igplus_darkmode') ? circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}_dark.png`) : circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`)
+  //circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
   circuitImg.style.width = '90%';
   circuitImg.style.margin = 'auto';
 }
@@ -41,7 +42,7 @@ function showBarValues() {
   }
 
   if (document.getElementsByClassName('showStat').length == 0) {
-    const parameterBars = document.querySelectorAll('#race > div:nth-child(1) > table > tbody .ratingBar');
+    const parameterBars = document.querySelectorAll('#race .ratingBar');
     parameterBars.forEach((bar) => {
       bar.classList.add('statBarWithValue');
       bar.appendChild(createValueSpan(bar.childNodes[0].style.width));
