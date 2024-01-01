@@ -111,7 +111,6 @@ async function getWeather() {
   data2.list.push(weatherNow);
 
   console.log('iGPlus|',weatherNow.name,weatherNow.main.temp,weatherNow.rain ?? '');
-
   buildWeatherCharts(weatherMerger(data, data2), nextLeagueRaceTime);
 }
 
@@ -131,7 +130,7 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const pointStart = new Date(`${data.hourly.time[0]}Z`).getTime();
   const secondPointTime = new Date(`${data.hourly.time[1]}Z`).getTime();
   const pointInterval = secondPointTime - pointStart;
-
+  const darkmode = document.getElementById('igplus_darkmode') ? true : false;
 
   const series = Object.entries(data.hourly)
     .filter(([category]) => Object.keys(weatherStats).includes(category))
@@ -142,7 +141,7 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
       return {
         name: chartConfig.title || category,
         data: values,
-        color: chartConfig.color,
+        color: darkmode? chartConfig.darkcolor :chartConfig.color,
         type: chartConfig.type || '',
         yAxis: index,
         pointStart,
@@ -155,13 +154,13 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const { sunrise = [], sunset = [], weathercode = [] } = data.daily || {};
   let plotBands = [];
 
-  if (sunrise.length && sunset.length) {
+  /*if (sunrise.length && sunset.length) {
     plotBands = sunrise.map((riseTime, index) => ({
       color: 'rgba(255, 255, 194, .4)',
       from: new Date(`${riseTime}Z`),
       to: new Date(`${sunset[index]}Z`),
     }));
-  }
+  }*/
 
   const { latitude, longitude, elevation } = data;
   let title = `${latitude.toFixed(2)}°N ${longitude.toFixed(2)}°E`;
@@ -174,16 +173,13 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   if (weathercode.length) {
     title += ` | ${weatherCodes[Math.max(...weathercode)]} `;
   }
-
-  const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series });
-
+  
+  const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series, darkmode});
   if (document.getElementById('container')) {
-    Highcharts.chart('container', chartConfig);
+    Highcharts.chart('container', chartConfig)
+
   }
 
-  if (document.getElementById('containerStockcharts')) {
-    Highcharts.stockChart('containerStockcharts', chartConfig);
-  }
 }
 
 // TODO move to separate retry module?

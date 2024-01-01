@@ -29,18 +29,22 @@ const raceTrackCoords = {
 const weatherStats = {
   'temperature_2m': {
     color: Highcharts.getOptions().colors[3],
+    darkcolor:Highcharts.getOptions().colors[3],
     title: 'temperature'
   },
   'relativehumidity_2m': {
     color: '#48352D',
+    darkcolor:"#ffffffe0",
     title: 'humidity'
   },
   'precipitation': {
     type: 'area',
-    color: Highcharts.getOptions().colors[0]
+    color: Highcharts.getOptions().colors[0],
+    darkcolor:Highcharts.getOptions().colors[0]
   },
   'cloudcover': {
-    color: '#00ff4733',
+    color: '#F7FEFF',
+    darkcolor:"#F7FEFF",
     type: 'area',
     title: 'cloudcover'
   }
