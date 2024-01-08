@@ -95,7 +95,6 @@ async function getWeather() {
     temp: manager.format.temperature,
   };
   const weatherNow = await fetchIGPRaceWeatherNow(params);
-  const data = await fetchRaceWeather(params);
   const data2 = await fetchIGPRaceWeather(params);
 
   console.log(weatherNow)
@@ -125,7 +124,8 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const secondPointTime = new Date(data.list[1].dt*1000).getTime();
   const pointInterval = secondPointTime - pointStart;
   function getForecastData(data) {
-    const forecastData = data.list.map(entry => ({
+    const forecastData = data.list.map(entry => (
+      {
       date: entry.dt,
       temperature: entry.main.temp,
       precipitation: entry.rain ? entry.rain['3h'] || 0 : 0 // Extract precipitation data, default to 0 if not available
@@ -136,7 +136,7 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   }
   const forecastData =getForecastData(data);
   console.log(forecastData)
-
+  console.log(weatherStats)
   const series = Object.entries(forecastData[0]).filter(([key, value]) => key !== 'date').map(([key, value]) => ({
     name: key,
     yAxis: key === 'precipitation' ? 1 : 0,
@@ -165,8 +165,8 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
  /* if (weathercode.length) {
     title += ` | ${weatherCodes[Math.max(...weathercode)]} `;
   }*/
-
-  const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series });
+const darkmode = false;
+  const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series,darkmode });
 
   if (document.getElementById('container')) {
     Highcharts.chart('container', chartConfig);
