@@ -83,7 +83,7 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
   const rideHeightSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(2)');
   const heightSuggestion = document.createElement('td');
   heightSuggestion.classList.add('suggestedSetup');
-  heightSuggestion.append(document.createTextNode(ride + heightAdjustment));
+  heightSuggestion.append(document.createTextNode((ride + heightAdjustment)==0? 1 :ride + heightAdjustment));
   rideHeightSetting.append(heightSuggestion);
 
   // wing element
