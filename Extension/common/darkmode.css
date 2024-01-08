@@ -14,7 +14,9 @@
     --dark-color2: #212121;
     --dark-color3: #575757;
   }
-  
+  .myTeam{
+    background: var(--dark-green)!important;
+  }
   #header,
   #mManager,
   #myProfile,
@@ -28,16 +30,16 @@
   .pc-main-div {
     background: var(--dark-background)!important;
   }
-  input[type=checkbox]+label>span{
+  input[type=checkbox]+label>span, input[type=radio]+label>span{
     filter: brightness(50%);
   }
   #carResearch > thead > tr > th:nth-child(2) > label > span{
     filter: brightness(100%);
   }
-  input[type=checkbox]:checked+label>span{
+  input[type=checkbox]:checked+label>span,  input[type=radio]:checked+label>span{
     filter: brightness(100%);
   }
-  .notice,#friends .fRep,#csvRaceResult > tbody > tr:nth-child(even){
+  .notice,#friends .fRep{
     background: var(--dark-background)!important;
     color: var(--text-color)!important;
     border: none;
@@ -58,7 +60,8 @@
   #forward:hover,
   .mini-subhead:hover,
   #includeList div:hover,
-  #excludeList div:hover{
+  #excludeList div:hover,
+  td.hover:hover{
     background: var(--dark-btn-hover)!important;
     color: var(--text-color)!important;
     border-top: none!important;
@@ -95,9 +98,9 @@
   background: var(--dark-color)!important;
 }
 .dialog > .acp > tbody > tr{
-  background: var(--dark-btn-press)!important;
+  background: var(--dark-color);
 }
-.dialog > .acp > tbody > tr:nth-child(2n):not(.myTeam),
+
 #stats > table > tbody > tr:nth-child(2n)
 {
   background: var(--dark-btn-hover)!important;
@@ -111,7 +114,7 @@
 #staff-table > thead > tr:first-child > th:hover, #staff-table > tbody > tr:hover,
 #stats > table >tbody > tr:hover,
 #historyTable > tr:hover,
-.dialog > .acp > tbody > tr:not([id^="yd"]) > td:nth-child(2):hover,
+#csvRace tbody > tr:not([id^="yd"]) > td:nth-child(2):hover,
 #drivers > .staff-profile:hover,
 #staff> div > .staff-profile:hover,
 #hofTable > tr:hover,
@@ -121,7 +124,12 @@
 #pro > table > tbody > tr:hover,
 #rookie > table > tbody > tr:hover,
 #teams > div> table > tbody > tr:hover,
-#drivers > table > tbody > tr:hover
+#drivers > table > tbody > tr:hover,
+#extraTable > tr> td:hover,
+.myteam:hover,
+table.hover tbody tr:hover,
+#overview > div> table> tbody> tr> td.hover:hover,
+[id^="pc"].choiceDiv
 {
   background: var(--dark-color)!important;
 }
@@ -131,7 +139,21 @@
 #setupSuggestionHeader > tr > td{
   border-right: 1px solid var(--dark-color3)!important;
 }
-  .btn,input[type=submit] ,.mailWrap,#editTrack > form > div:nth-child(1) > div.text-center.gradientBgGrey.pad,.selectBox-dropdown,.selectBox-dropdown-menu,.fReq,div.c-wrap,.five > div:nth-child(1),.changelogFilter,.clog-wrap,#article,div.sceditor-toolbar,.blog-wrap,.post-head,.sbutton,.btn2,.btn2:visited,.statWrap div,.btn:visited,td.key3,.mini-subhead,.news,#balance,#tokens,#back, #forward,.ratingBar,#myDropdown{
+  .btn,input[type=submit],
+  .mailWrap,#editTrack > form > div:nth-child(1) > div.text-center.gradientBgGrey.pad,
+  .selectBox-dropdown,
+  .selectBox-dropdown-menu,.fReq,div.c-wrap,
+  .five > div:nth-child(1),
+  .changelogFilter,
+  .clog-wrap,
+  #article,
+  div.sceditor-toolbar,
+  .blog-wrap,
+  .post-head,
+  .sbutton,
+  .btn2,
+  .btn2:visited,.statWrap div,.btn:visited,td.key3,.mini-subhead,.news,#balance,#tokens,#back, #forward,.ratingBar,
+  #myDropdown{
     color: var(--text-color);
     background: var(--dark-btn)!important;
     border: none!important;
@@ -156,14 +178,16 @@
 .tabs a:visited,
 .rewardContent .topRow,div.bb-quote,
 .changelogFilter > div,
-.clog-wrap .post-category
+.clog-wrap .post-category,
+.bid
  {
     background: var(--dark-color3)!important;
     color: var(--text-color);
     border-top: none ;
-    border-bottom: none ;
+    border-bottom: none!important;
 }
-input,textarea#commentContent{
+input,textarea#commentContent,
+#notes > div{
     background: var(--dark-text-area)!important;
     border: none!important;
     color: var(--text-color);
@@ -183,9 +207,7 @@ table.acp th{
 {
   background: var(--dark-btn-press)!important;
 }
-.myTeam{
-  background: var(--dark-green)!important;
-}
+
 table.rowBorders tbody tr,.com-wrap{
     border-bottom: 1px solid var(--dark-btn-hover)!important;
 }
@@ -265,13 +287,13 @@ div.greyWrap,.dropdown2-content{
 #excludeList div{
     color: var(--text-color);
 }
-.feLabel,.researchImg,div.bb-quote-author{
+.feLabel,.researchImg,div.bb-quote-author,#pcRadarChart{
     filter: invert(1)!important;
 }
 .suggestedSetup {
   color: var(--green-text)!important;
 }
-.bgLightGreen,.block-green,table.acp tr.myTeam
+.bgLightGreen,.block-green
 {
     background: var(--dark-green)!important;
 }
@@ -311,4 +333,11 @@ a:hover{
 {
   background-color: #00a2ff30!important;
 }
+.postByMod {
+  background-color: var(--dark-green)!important;
+}
+.postByMod > .post-head{
+  background: #0d170b !important;
+}
+
 
