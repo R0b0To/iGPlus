@@ -187,6 +187,7 @@ table.hover tbody tr:hover,
     border-bottom: none!important;
 }
 input,textarea#commentContent,
+.replyComment,
 #notes > div{
     background: var(--dark-text-area)!important;
     border: none!important;
@@ -203,7 +204,7 @@ table.acp th{
     color: var(--text-color)!important;
     border-right: 1px solid var(--dark-btn-hover);
 }
-.parent table.aRows tr:nth-child(2n),.tflip td:nth-child(2n+1),.parent table.acp tr:nth-child(2n),#threads > tbody > tr:nth-child(2n),.tflip td:nth-child(odd),#brandUpgrade
+.parent table.aRows tr:nth-child(2n),.tflip td:nth-child(2n+1),.parent table.acp tr:nth-child(2n),#threads > tbody > tr:nth-child(2n),.tflip td:nth-child(odd),#brandUpgrade,#spectateTable > tr:nth-child(2n)
 {
   background: var(--dark-btn-press)!important;
 }
