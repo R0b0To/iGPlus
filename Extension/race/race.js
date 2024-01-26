@@ -49,26 +49,7 @@ function showBarValues() {
     });
   }
 }
-function weatherMerger(data, interval3h) {
-  try {
-    for (const timestamp of interval3h.list){
-      const dateObj = new Date(timestamp.dt * 1000);
-      const isoFormat = dateObj.toISOString().slice(0, 16);
-      const index = data.hourly.time.indexOf(isoFormat);
-      data.hourly.temperature_2m[index] = timestamp.main.temp;
-      data.hourly.relativehumidity_2m[index] = timestamp.main.humidity;
-      if (timestamp.hasOwnProperty('rain')) {
-        data.hourly.precipitation[index] = timestamp.rain['3h'] ?? timestamp.rain['1h'] ;
-      }
-  }
 
-  } catch (error) {
-    console.log(error)
-    return data;
-  }
-
-  return data;
-}
 /**
  * Fetches detailed weather data from __api.open-meteo.com__.
  * Shows weather data as charts
@@ -81,7 +62,7 @@ async function getWeather() {
   }
   else weatherContainer.style.visibility = 'visible';
 
-  const { fetchNextRace, fetchManagerData, fetchRaceWeather, fetchIGPRaceWeather,fetchIGPRaceWeatherNow } = await import(
+  const { fetchNextRace, fetchManagerData, fetchIGPRaceWeather,fetchIGPRaceWeatherNow } = await import(
     chrome.runtime.getURL('common/fetcher.js')
   );
   const { raceTrackCoords } = await import(chrome.runtime.getURL('race/const.js'));
@@ -95,23 +76,9 @@ async function getWeather() {
     temp: manager.format.temperature,
   };
   const weatherNow = await fetchIGPRaceWeatherNow(params);
-  const data = await fetchRaceWeather(params);
-  const data2 = await fetchIGPRaceWeather(params);
-
-  const date = new Date(weatherNow.dt *1000);
-  if (date.getMinutes() >= 30) {
-    date.setHours(date.getHours() + 1);
-    date.setMinutes(0);
-    date.setSeconds(0);
-  }else{
-    date.setMinutes(0);
-  date.setSeconds(0);
-  }
-  weatherNow.dt = (date/1000)
-  data2.list.push(weatherNow);
-
-  console.log('iGPlus|',weatherNow.name,weatherNow.main.temp,weatherNow.rain ?? '');
-  buildWeatherCharts(weatherMerger(data, data2), nextLeagueRaceTime);
+  const forecast = await fetchIGPRaceWeather(params);
+  forecast.list.unshift(weatherNow);
+  buildWeatherCharts(forecast, nextLeagueRaceTime);
 }
 
 /**
@@ -120,66 +87,48 @@ async function getWeather() {
  * @param {number} nextLeagueRaceTime in epoch seconds
  */
 async function buildWeatherCharts(data, nextLeagueRaceTime) {
-  const { weatherCodes, weatherStats } = await import(chrome.runtime.getURL('race/const.js'));
+  const { weatherStats } = await import(chrome.runtime.getURL('race/const.js'));
   const { makeChartConfig } = await import(chrome.runtime.getURL('race/chartConfig.js'));
-  // we care only about closest 2 days
-  Object.keys(data.hourly).forEach((ele) => {
-    data.hourly[ele] = data.hourly[ele].slice(0, 48);
-  });
 
-  const pointStart = new Date(`${data.hourly.time[0]}Z`).getTime();
-  const secondPointTime = new Date(`${data.hourly.time[1]}Z`).getTime();
+  const pointStart = new Date(data.list[0].dt*1000).getTime();
+  const secondPointTime = new Date(data.list[1].dt*1000).getTime();
   const pointInterval = secondPointTime - pointStart;
+  function getForecastData(data) {
+    const forecastData = data.list.map(entry => (
+      {
+      date: entry.dt,
+      temperature: entry.main.temp,
+      precipitation: entry.rain ? entry.rain['3h'] || 0 : 0, // Extract precipitation data, default to 0 if not available
+      // humidity: entry.main.humidity
+      // You can extract more information as needed
+    }));
+
+    return forecastData;
+  }
+  const forecastData =getForecastData(data);
   const darkmode = document.getElementById('igplus_darkmode') ? true : false;
-
-  const series = Object.entries(data.hourly)
-    .filter(([category]) => Object.keys(weatherStats).includes(category))
-    .map(([category, values], index) => {
-      const unit = data.hourly_units[category];
-      const chartConfig = weatherStats[category];
-
-      return {
-        name: chartConfig.title || category,
-        data: values,
-        color: darkmode? chartConfig.darkcolor :chartConfig.color,
-        type: chartConfig.type || '',
-        yAxis: index,
-        pointStart,
-        pointInterval,
-        tooltip: {
-          valueSuffix: ` ${unit}`,
-        },
-      };
-    });
-  const { sunrise = [], sunset = [], weathercode = [] } = data.daily || {};
+  const series = Object.entries(forecastData[0]).filter(([key, value]) => key !== 'date')
+  .map(([key, value]) => {
+    return{
+    name: key,
+    yAxis: key === 'precipitation' ? 1 : 0,
+    data: forecastData.map(entry => entry[key]),
+    color: darkmode? weatherStats[key].darkcolor :weatherStats[key].color,
+    type: weatherStats[key].type,
+    pointStart,
+    pointInterval,
+    tooltip: {
+      valueSuffix: ` ${weatherStats[key].unit}`,
+    },}
+  });
   let plotBands = [];
 
-  /*if (sunrise.length && sunset.length) {
-    plotBands = sunrise.map((riseTime, index) => ({
-      color: 'rgba(255, 255, 194, .4)',
-      from: new Date(`${riseTime}Z`),
-      to: new Date(`${sunset[index]}Z`),
-    }));
-  }*/
-
-  const { latitude, longitude, elevation } = data;
-  let title = `${latitude.toFixed(2)}°N ${longitude.toFixed(2)}°E`;
-
-  if (elevation) {
-    title += `, ${elevation.toFixed(0)}m above sea level`;
-  }
-
-  // considering the most severe condition code for this day
-  if (weathercode.length) {
-    title += ` | ${weatherCodes[Math.max(...weathercode)]} `;
-  }
-  
+  const { city } = data;
+  let title = `${data.list[0].main.temp}° ${data.list[0].weather[0].main} - ${city.name} ${city.coord.lat.toFixed(2)}°N ${city.coord.lon.toFixed(2)}°E`;
   const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series, darkmode});
   if (document.getElementById('container')) {
-    Highcharts.chart('container', chartConfig)
-
+    Highcharts.chart('container', chartConfig);
   }
-
 }
 
 // TODO move to separate retry module?
