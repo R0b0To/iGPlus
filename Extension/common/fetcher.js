@@ -1,5 +1,4 @@
 const baseUrl = 'https://igpmanager.com/index.php';
-const weatherBaseUrl = 'https://api.open-meteo.com/v1/forecast';
 const iGPWeatherBaseUrl = 'https://api.openweathermap.org/data/2.5/forecast';
 const iGPWeatherBaseUrlNow = 'https://api.openweathermap.org/data/2.5/weather';
 
@@ -30,20 +29,6 @@ async function getData(itemLocator, isThirdParty = false) {
   }
 }
 
-function fetchRaceWeather({ lat, lon, temp }) {
-  const params = new URLSearchParams({
-    latitude: lat,
-    longitude: lon,
-    models: 'best_match',
-    ...(temp === '2' ? { temperature_unit: 'fahrenheit' } : {}),
-    timezone: 'GMT'
-  });
-
-  ['cloudcover','temperature_2m', 'relativehumidity_2m', 'precipitation'].forEach((p) => params.append('hourly', p));
-  ['sunrise', 'sunset', 'weathercode'].forEach((p) => params.append('daily', p));
-
-  return getData(`${weatherBaseUrl}?${params.toString()}`, true);
-}
 function fetchIGPRaceWeather({ lat, lon, temp }) {
   const params = new URLSearchParams({
     lat: lat,
@@ -142,7 +127,6 @@ export {
   fetchLeagueData,
   fetchManagerData,
   fetchNextRace,
-  fetchRaceWeather,
   fetchIGPRaceWeather,
   fetchStaffInfo,
   fetchDriverInfo,
