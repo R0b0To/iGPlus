@@ -14,6 +14,10 @@
     --dark-color2: #212121;
     --dark-color3: #575757;
   }
+  table.acp tr:nth-child(2n)
+{
+  background: 0 0;
+}
   .myTeam{
     background: var(--dark-green)!important;
   }
@@ -153,7 +157,7 @@ table.hover tbody tr:hover,
   .sbutton,
   .btn2,
   .btn2:visited,.statWrap div,.btn:visited,td.key3,.mini-subhead,.news,#balance,#tokens,#back, #forward,.ratingBar,
-  #myDropdown{
+  #myDropdown,.inactivityNotice{
     color: var(--text-color);
     background: var(--dark-btn)!important;
     border: none!important;
@@ -196,7 +200,7 @@ input,textarea#commentContent,
 .green {
   color: var(--green-text)!important;
 }
-body,h1,h2,.forumUpperTools > a,div.num.green > span,.news .newsFooter div{
+body,h1,h2,.forumUpperTools > a,div.num.green > span,.news .newsFooter div, h2 a{
     color: var(--text-color)!important;
 }
 table.acp th{
@@ -278,7 +282,7 @@ select,.darknotice,.sceditor-container, textarea,.post-wrap,.sceditor-container 
     color: var(--text-color)!important;
     border: none;
 }
-body > p:nth-child(1),.selectBox-options li a{
+body > p:nth-child(1),.selectBox-options li a, span.forum-desc{
     color: var(--text-color)!important;
 }
 div.greyWrap,.dropdown2-content{
@@ -301,6 +305,9 @@ div.greyWrap,.dropdown2-content{
 .bgLightRed,.block-red
 {
   background: var(--dark-red)!important;
+}
+.balance-negative{
+  color: #ff4d4d!important;
 }
 .researchSuggestion{
     background: #1A394A !important;
