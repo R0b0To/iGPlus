@@ -774,6 +774,24 @@ function formatTable(){
 
     default:tyre = 'ts-M';
       break;
+      case 'Pneus pluie':
+        tyre = 'ts-W';
+        break;
+      case 'Pneus intermédiaires humides':
+        tyre = 'ts-I';
+        break;
+      case 'Pneus durs':
+        tyre = 'ts-H';
+        break;
+      case 'Pneus moyens':
+        tyre = 'ts-M';
+        break;
+      case 'Pneus tendres':
+        tyre = 'ts-S';
+        break;
+      case 'Pneus super tendres':
+        tyre = 'ts-SS';
+        break;
     }
 
     var  tyreEle = document.createElement('td');
