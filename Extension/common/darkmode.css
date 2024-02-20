@@ -203,7 +203,7 @@ input,textarea#commentContent,
 body,h1,h2,.forumUpperTools > a,div.num.green > span,.news .newsFooter div, h2 a{
     color: var(--text-color)!important;
 }
-table.acp th{
+table.acp th,.sheetStyle{
     background: var(--dark-btn)!important;
     color: var(--text-color)!important;
     border-right: 1px solid var(--dark-btn-hover);
@@ -266,6 +266,11 @@ table.rowBorders tbody tr,.com-wrap{
   background: var(--dark-btn) url(https://static.igpmanager.com/igp/design/image/tyre-i.png) no-repeat center;
     background-size: auto;
   background-size: auto 75%;
+}
+#sheetDialog{
+
+  background-color: var(--dark-background2)!important;
+
 }
 #ts-W, .ts-W
 {
