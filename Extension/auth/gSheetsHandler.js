@@ -118,8 +118,8 @@ function access_gSheet(id,access_token,values,race_info){
                isValuePresent = data.values.some(function(subArray) {return subArray.includes(race_id);});
             }
               
-            //import the race if it's not present in the sheet and there are less than 31 races saved
-            if(!isValuePresent && id_list.length < 31){
+            //import the race if it's not present in the sheet and there are less than 150 races saved
+            if(!isValuePresent && id_list.length < 151){
                 id_list.push([race_id,race_info.track_code,race_info.race_date]);
                  import_to_sheet(id,access_token,values,id_list,sheetId)
             }else{
