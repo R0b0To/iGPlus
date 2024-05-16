@@ -137,7 +137,76 @@ const language = {
       sponsor: 'Visualizzare la scelta degli sponsor in senso verticale',
       gdriveHelp: 'Salva i dati dell\'estensione su Google Drive. Attenzione: potrebbe apparire un popup che chiede il consenso dell\'utente. Gli adblock possono interferire'
     }
-  }
+  },
+  es: {
+     optionsText: {
+        preferences: 'Configuraciones de iGPlus',
+        languageText: 'Idioma',
+        RaceReport: 'Informe de Carrera',
+        StartOvertakes: 'Señal de Adelantamientos al Final de la Vuelta 2',
+        separator: 'Separador Personalizado',
+        home: 'Atajos de Inicio',
+        leagueHome: 'Liga',
+        research: 'Diseño de Coches',
+        training: 'Entrenamiento',
+        staff: 'Mi Personal',
+        staffMarket: 'Mercado de Transferencia de Personal',
+        driverMarket: 'Mercado de Transferencia de Pilotos',
+        raceStrategy: 'Estrategia de Carrera',
+        slider: 'Deslizador',
+        edit: 'Editable',
+        raceSetup: 'Configuración de Carrera',
+        carOverview: 'Resumen del Coche',
+        hqLevel: 'Etiquetas de Nivel de HQ',
+        academyTimer: 'Auto-actualización de la Academia de Pilotos',
+        reports: 'Informes',
+        advancedHis: 'Historial Avanzado',
+        verticalSponsor: 'Patrocinador Vertical',
+        strategies: 'Estrategias',
+        export: 'Exportar',
+        link: 'Enlace:',
+        track: 'Encabezado de la Columna de ID de la Pista',
+        sheetName: 'Nombre de la Hoja',
+        cloudSync: 'Sincronización en la Nube'
+      },
+      popupText: {
+        saveText: 'Guardar',
+        PitReport: 'Informe de Pits',
+        pitStopTimeLoss: 'Tiempo Perdido en los Pits',
+        heatMap: 'Mapa de Calor de Vuelta',
+        delete: 'Eliminar',
+        newRace: 'Nueva Carrera',
+        downloadText: 'Descargar',
+        copyText: 'Copiar',
+        raceRecap: 'Resumen de la Carrera',
+        startOvertakes: 'Adelantamientos al Final de la Vuelta 2',
+        fullRaceReport: 'Todos los informes e información de la carrera.'
+      },
+      fuelText: 'Combustible',
+      lapText: 'Vuelta',
+      pushText: 'Empujar',
+      pitAlert: 'Las paradas en boxes después de la cuarta parada son solo visuales y no se guardarán para la carrera',
+      pushDescriptionPart1: 'Cada nivel de empuje indica la cantidad de combustible (en litros) que se agregará al consumo de combustible. Su consumo de combustible es ',
+      pushDescriptionPart2: 'L/km (Combustible por vuelta/longitud de la pista). Las opciones de empuje son solo para ayudar a establecer la estrategia y no se utilizarán en la carrera.',
+      commentText: 'Cualquier pensamiento ',
+      researchHelp: 'La fila resaltada denota la investigación recomendada, determinada a través de un sistema ponderado.',
+      scriptDescription: {
+        gsheet: 'Importar datos de Google para mostrarlos en la página de estrategia debajo de las opciones avanzadas',
+        raceReview: 'Atajos de la página de inicio.',
+        leagueHome: 'En la página de la liga, agregar un botón de historial completo de carrera y la posición finalizada en cada pista',
+        research: 'Agregar una tabla con los valores de las barras en el menú de investigación.',
+        training: 'Agregar una columna extra en la página de entrenamiento si el piloto se está recuperando.',
+        myStaff: 'Muestra la fortaleza del CD en los menús de personal',
+        market: 'Muestra las fortalezas y debilidades del CD en el mercado de transferencias',
+        marketDriver: 'Agrega una columna de talento en el mercado de transferencias de pilotos',
+        carOverview: 'Habilitar botón de revisión (investigación de diseño) durante una carrera en vivo',
+        academyTimer: 'Agregar cuenta regresiva de la academia juvenil. Se colocará como una notificación junto a la opción del menú de HQ',
+        reports: 'Agregar opción para extraer todos los informes vuelta por vuelta de los pilotos. Informes de clasificación y carrera con nombres de equipo cvs',
+        history: 'Agregar características de la pista a la página de historial de carreras',
+        sponsor: 'Mostrar opciones de patrocinadores verticalmente',
+        gdriveHelp: 'Guardar datos de la extensión en Google Drive. Advertencia: puede aparecer una ventana emergente pidiendo el consentimiento del usuario. Los bloqueadores de anuncios pueden interferir'
+      }
+    }
 };
 
 export {
