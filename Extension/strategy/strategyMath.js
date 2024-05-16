@@ -57,7 +57,7 @@ function get_wear(tyre,laps,track_info,car_economy,multiplier){
   const track_length = track_info.length;
   const te = car_economy.te;
 
-  const t = (1.43 * te ** -0.0778) * (0.00364 * track_wear + 0.354) * track_length * 1.384612 * multiplier * tyreWear;
+  const t = (1.27 * te ** -0.0696) * (0.00527 * track_wear + 0.556) * track_length * multiplier * tyreWear;
 
   //calculate stint wear
   const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
