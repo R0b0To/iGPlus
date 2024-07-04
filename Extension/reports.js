@@ -1,5 +1,6 @@
 manager = [];
 progress_status = 0;
+data_extracted = false;
 
 inject_button();
 
@@ -195,10 +196,24 @@ function closeSheetDialog() {
   const race_id = window.location.href.replace(/\D/g, '');
   //const data_to_export = [[race_id,"Qualifying"]];
   const quali_to_export = quali_export(false).split('\n').map(row =>[race_id,"Q",... row.split(',')]);
-  const race_to_export = race_export(false).split('\n').map(row =>[race_id,"R",... row.split(',')]);
-  const combinedValues = quali_to_export.concat(race_to_export);
+  const race_to_export_pre = race_export(false).split('\n').map(row =>[race_id,"R",... row.split(',')]);
+  var race_to_export = race_to_export_pre;
   const race_date = document.getElementsByClassName('notice')[1].textContent ?? "error";
   const track_code = document.querySelector('.flag').classList[1].substring(2);
+
+  if(document.getElementById('alldrivers')){
+    manager.sort((a, b) => { return a.race_finish - b.race_finish; });
+    console.log(manager)
+    race_to_export_pre[0].push("Strategy","Pit Stops Time","Time Lost","Rank")
+     race_to_export = race_to_export_pre.slice(1).map((innerArray, index) => {
+      innerArray.push(manager[index].pit_stop, manager[index].pitStopTimes.join(','),manager[index].pitTimeLoss.join(','),  manager[index].rank.join(','));
+      return innerArray;
+    });
+    race_to_export.unshift(race_to_export_pre[0]);
+    
+  }
+  const combinedValues = quali_to_export.concat(race_to_export);
+  
   access_gSheet(selectedSheetId,token.access_token,combinedValues,{race_date:race_date,track_code:track_code})
   closeSheetDialog();
 }
@@ -291,6 +306,7 @@ function all_export()
 
   });
 
+  data_extracted = true;
 
 }
 function progress() {
