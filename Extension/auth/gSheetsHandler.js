@@ -1,7 +1,7 @@
 function import_to_sheet(id,access_token,values,id_list,sheetId){
     const spreadsheetId = id;
     const accessToken = access_token; 
-    const range = 'imported_data!A31';
+    const range = 'imported_data!A151';
     
 
 const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
@@ -24,7 +24,7 @@ fetch(apiUrl, {
                 sheetId: sheetId, 
                 startRowIndex: 0,
                 startColumnIndex: 0,
-                endRowIndex: 30, 
+                endRowIndex: 150, 
                 endColumnIndex: 3, 
               },
               rows: id_list.map((id, index) => {
@@ -49,7 +49,7 @@ fetch(apiUrl, {
       })
         .then(response => response.json())
         .then(data => {
-            console.log('Data updated successfully:');
+            alert('Race exported successfully:');
         })
         .catch(error => {
           console.error('Error appending data:', error);
@@ -57,7 +57,7 @@ fetch(apiUrl, {
 }
 
 function access_gSheet(id,access_token,values,race_info){
-    const RANGE = 'imported_data!A1:D30';
+    const RANGE = 'imported_data!A1:D150';
     const API_ENDPOINT = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${RANGE}`;
     const API_SPREADSHEET_ENDPOINT  = `https://sheets.googleapis.com/v4/spreadsheets/${id}`;
     let sheetId = 0;
@@ -118,12 +118,12 @@ function access_gSheet(id,access_token,values,race_info){
                isValuePresent = data.values.some(function(subArray) {return subArray.includes(race_id);});
             }
               
-            //import the race if it's not present in the sheet and there are less than 31 races saved
-            if(!isValuePresent && id_list.length < 31){
+            //import the race if it's not present in the sheet and there are less than 150 races saved
+            if(!isValuePresent && id_list.length < 151){
                 id_list.push([race_id,race_info.track_code,race_info.race_date]);
                  import_to_sheet(id,access_token,values,id_list,sheetId)
             }else{
-                console.log("Race report already stored")
+                alert("Race report already stored")
             }
             
           })

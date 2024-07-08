@@ -22,7 +22,8 @@ const scriptDefaults = {
   settings:true,
   gdrive:false,
   transferLanguage:true,
-  darkmode:false
+  darkmode:false,
+  engine:true
 };
 
 /**
@@ -126,6 +127,11 @@ const tabScripts = {
   '/app/d=history': {
     key: 'history',
     scripts: ['track_history.js'],
+    styles: ['race/style.css']
+  },
+  '/app/d=brand&id=': {
+    key: 'engine',
+    scripts: ['engine.js'],
     styles: ['race/style.css']
   },
   '/app/': {

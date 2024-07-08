@@ -8,9 +8,15 @@
  * @param {number} params.nextLeagueRaceTime timestamp of next race, epoch seconds
  * @param {Object[]} params.plotBands daylight data
  * @param {Object[]} params.series chart lines data
+ * @param {Boolean} params.darkmode true dark mode is on
  * @returns {Object}
  */
-function makeChartConfig({ title, nextLeagueRaceTime, plotBands, series }) {
+function makeChartConfig({ title, nextLeagueRaceTime, plotBands, series, darkmode }) {
+
+  const colorMap = {
+    false: {backgroundColor:"#e3e4e5",textColor:"black"},
+    true : {backgroundColor:"#202020",textColor:"#ffffffe0"},
+  }
   const setup = {
     accessibility: {
       enabled: false
@@ -26,11 +32,16 @@ function makeChartConfig({ title, nextLeagueRaceTime, plotBands, series }) {
       zoomType: 'x',
       panning: true,
       panKey: 'shift',
-      backgroundColor: '#e3e4e5'
+      backgroundColor: colorMap[darkmode].backgroundColor
     },
     yAxis: new Array(4).fill({ visible: false }, 0, 4),
     xAxis: {
       type: 'datetime',
+      labels:{
+        style: {
+          color: colorMap[darkmode].textColor
+      }
+      },
       plotLines: [
         {
           value: new Date(),
@@ -57,6 +68,9 @@ function makeChartConfig({ title, nextLeagueRaceTime, plotBands, series }) {
       plotBands
     },
     legend: {
+      itemStyle: {
+        color: colorMap[darkmode].textColor
+    },
       layout: 'vertical',
       align: 'right',
       verticalAlign: 'middle'

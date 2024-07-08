@@ -39,9 +39,11 @@
     cursor: pointer;
 }
 #selectSheetBtn{
+    height: 35px;
     user-select: none;
     border-bottom-left-radius: 8px;
     border-bottom-right-radius: 8px;
+    align-items: center;
     border: none;
     padding-left: 3px;
     display: flex;

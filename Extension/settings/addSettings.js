@@ -257,6 +257,8 @@ async function handleSettings() {
     switch (lang) {
     case 'it': lang = 'it';
       break;
+    case 'es': lang = 'es';
+      break;
     default: lang = 'en';
       break;
     }

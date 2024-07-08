@@ -547,8 +547,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           const target = document.querySelector('[id=strategy] .eight');
           const circuit = document.createElement('img');
           circuit.id = 'customMap';
-          circuit.src = chrome.runtime.getURL('images/circuits/' + TRACK_CODE + '.png');
-          circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`);
+          document.getElementById('igplus_darkmode') ? circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`) : circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`)
           circuit.setAttribute('style','width:100%;');
           const imageLink = document.createElement('a');
           imageLink.href = trackLink[TRACK_CODE];
