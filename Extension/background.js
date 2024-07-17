@@ -21,14 +21,19 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
       const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
       const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
-
+      
       //at any igp page check for sync
       if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path);}))
         injectScripts(tabId, tabScripts.gdrive.scripts);
+      
       //inject darkmode style at any page
-      if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){
+      if(origin == 'https://igpmanager.com' && ['/forum-index','/forum-thread'].some(path=>{return pathname.startsWith(path);}) && enabledScripts.darkmode){
+        console.log('testing forum');
+        injectScripts(tabId,["common/darkmode_forum.js"])
+      }else if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){   
           injectScripts(tabId,["common/darkmode.js"])
       }
+      
       else if (origin == 'https://igpmanager.com' && !enabledScripts.darkmode){
         injectScripts(tabId,["common/darkmode_off.js"])
       }
