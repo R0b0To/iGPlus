@@ -93,6 +93,9 @@ const tabScripts = {
     key: 'hq',
     scripts: ['headquarters.js']
   },
+  '/app/d=shortlist&tab=drivers': {
+    scripts: ['shortlist.js']
+  },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
     scripts: ['strategy/strategy.js','lib/gsi.js'],
@@ -100,7 +103,8 @@ const tabScripts = {
   },
   '/app/p=league&id=': {
     key: 'league',
-    scripts: ['league.js']
+    scripts: ['league.js'],
+    styles: ['css/league.css']
   },
   '/app/d=result&id=': {
     key: 'reports',

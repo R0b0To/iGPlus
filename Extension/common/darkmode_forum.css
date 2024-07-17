@@ -1,0 +1,90 @@
+:root {
+    --text-color: #ffffffe0;
+    --link-color: #a9ff9ca8;
+    --dark-green:#537546;
+    --green-text:#cdffbad1;
+    --dark-red:#623f3f;;
+    --dark-btn:#353535;
+    --dark-btn-hover:#323232;
+    --dark-btn-press:#272727;
+    --dark-text-area:#2C2C2C;
+    --dark-background:#202020;
+    --dark-background2:#1F1F1F;
+    --dark-color: #121212;
+    --dark-color2: #212121;
+    --dark-color3: #575757;
+  }
+  .parent table.aRows tr:nth-child(2n),.tflip td:nth-child(2n+1),.parent table.acp tr:nth-child(2n),#threads > tbody > tr:nth-child(2n),.tflip td:nth-child(odd)
+{
+  background: var(--dark-btn-press)!important;
+}
+table.acp th,.sheetStyle{
+    background: var(--dark-btn)!important;
+    color: var(--text-color)!important;
+    border-right: 1px solid var(--dark-btn-hover);
+}
+.green {
+    color: var(--green-text)!important;
+  }
+  body,h1,h2,.forumUpperTools > a,div.num.green > span,.news .newsFooter div, h2 a{
+      color: var(--text-color)!important;
+  }
+
+  #header,
+  #page-content,
+  #footer{
+    background: #202020!important;
+  }
+  .inactivityNotice, .userBanNotice{
+    background: #693c0eeb;
+    border: none;
+  }
+  a{
+    color: var(--link-color);
+  }
+  a:visited{
+    color: var(--link-color);
+  }
+  a:hover{
+    color: rgb(31, 184, 69);
+  }
+  .post-head{
+    background:#00000091!important;
+    color: var(--text-color)!important;
+  }
+  .post-wrap {
+    background: #2b2b2b !important;
+    border-radius: 8px 8px 0px 0px;
+  }
+  div.c-wrap {
+    background: #00000073;
+    border: none;
+}
+table.acp tr:nth-child(even){
+    background: #0a0a0a; 
+}
+.forum-desc{
+color:#cfcfcf!important;
+}
+.postByAdmin .post-head {
+    background: #1e5117!important;
+}
+.postByAdmin {
+    background: #111c0f !important; 
+}
+div.sceditor-toolbar {
+    background: #6f6f6f !important;;
+}
+.sceditor-container iframe, .sceditor-container textarea {
+    background: #6f6f6f !important;;
+}
+
+.sceditor-container, input
+{
+    color: var(--text-color)!important;
+    background: #6f6f6f !important;
+    border: 1px solid #434343;
+}
+.normalPost .post-head {
+  background:#3a5e33 !important;
+}

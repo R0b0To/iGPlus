@@ -85,32 +85,7 @@ async function inject_history()
       if(myLeague == league)
       {
         advancedExtract();
-        /*const racesCompleted = scheduleTable.querySelectorAll('.pointer:not(.myTeam)');
-        const racesToCheck = racesCompleted.length;
-        const url = `https://igpmanager.com/index.php?action=send&type=history&start=0&numResults=${racesToCheck}&jsReply=scrollLoader&el=history&csrfName=&csrfToken=`;
-
-        fetch(url)
-          .then(response => response.json())
-          .then(data =>
-          {
-            const arrayPositions = [...data.src.matchAll(/medium">(\d+)/g)];
-            const arrayID = [...data.src.matchAll(/id=(\d+)/g)];
-            const historyObj = {};
-
-            arrayID.forEach((element, index) => {
-              historyObj[element[1]] = arrayPositions[index][1];
-            });
-            // return historyObj;
-            //console.log(historyObj);
-            racesCompleted.forEach(race => {
-              const raceID = race.querySelector('[href]').href.match(/\d+/)[0];
-              if(historyObj[raceID] != null)
-                race.childNodes[0].childNodes[1].textContent += ` [${historyObj[raceID]}]`;
-            });
-
-
-          });*/
-
+        standingsChanges();
       }
 
 
@@ -169,9 +144,161 @@ function parseData(data){
   const quali_result = getHtmlFragment(data.vars.qResult).querySelector('.myTeam');
   const race_result = getHtmlFragment(data.vars.rResult).querySelector('.myTeam');
   const track = getHtmlFragment(data.vars.raceName).querySelector('.flag').classList[1].slice(2);
-
+  const last_race_points = {};
+  const rows = getHtmlFragment(data.vars.rResult).querySelectorAll('tr')
+  rows.forEach(row => {
+    last_race_points[row.querySelector('.teamName').textContent] = parseInt(row.lastChild.textContent);
+  });
+ 
   const quali_pos = quali_result.cells[0].textContent;
   const quali_tyre = quali_result.cells[4].className;
   const race_finish = (race_result.rowIndex + 1);
-  return {track,quali_pos,quali_tyre,race_finish};
+  return {track,quali_pos,quali_tyre,race_finish,last_race_points};
+}
+function parseRaceResults(data){
+  function getHtmlFragment(stringNode){
+    const html_fragment = document.createElement('table');
+    html_fragment.innerHTML = stringNode;
+    return html_fragment.tBodies[0];
+  }
+  const last_race_points = {};
+  const rows = getHtmlFragment(data.vars.rResult).querySelectorAll('tr')
+  rows.forEach(row => {
+    last_race_points[row.querySelector('.teamName').textContent] = parseInt(row.lastChild.textContent);
+  });
+  return last_race_points;
+}
+
+
+async function standingsChanges(){
+  
+  const races_completed = document.getElementById("scheduleTable").querySelectorAll("tr.pointer");
+  let tier = 'elite'; //default 0 elite
+  //wait atleast until the second race is completed.
+  if(races_completed.length>2){
+  const [rookie,pro,elite] = document.querySelectorAll('table.col2');
+
+  const tier_map = {elite:{table:elite,val:0},pro:{table:pro,val:-1},rookie:{table:rookie,val:-2}}
+  //check if not elite
+  if(elite.querySelector('tr.myTeam')==null)
+    if(pro.querySelector('tr.myTeam')!=null)
+      tier = 'pro';
+    else if(rookie.querySelector('tr.myTeam')!=null)
+      tier = 'rookie';
+ 
+    
+  //the link will be the same tier as the manager
+  const last_race_link = races_completed[races_completed.length-2].querySelector('a');
+  //doing only the manager's tier for now
+  const standings_changes = await getRankChangesOfTier(tier_map[tier],last_race_link);
+  
+  //adding table
+  const changes = document.createElement('th'); //add text or leave it empty
+  changes.classList.add('changes_th');
+  const points_th = tier_map[tier].table.tHead.rows[0].cells[2];
+  points_th.previousSibling.classList.add('manager_th');
+  tier_map[tier].table.tHead.rows[0].insertBefore(changes,points_th);
+  
+  const rows = tier_map[tier].table.tBodies[0].querySelectorAll('tr');
+
+  for(i=0; i <Object.entries(standings_changes).length; i++ ){
+    const tEle = document.createElement('td');
+    tEle.id = 'changeRow';
+    
+    //add css arrows based on gain
+    const change_col = rows[i].insertCell(2);
+    change_col.classList.add('arrow_container');
+    const value = Object.entries(standings_changes)[i][1];
+
+    const arrow_span = document.createElement('span')
+    const value_span = document.createElement('span')
+    value_span.textContent = Math.abs(value);
+    value_span.classList.add('value_change');
+    change_col.append(value_span);
+    if(value<0)
+      arrow_span.classList.add('arrow_up')
+    else if(value>0)
+      arrow_span.classList.add('arrow_down')
+    else
+      arrow_span.classList.add('arrow')
+    change_col.prepend(arrow_span)
+  }
+
+}
+  
+}
+
+async function getRankChangesOfTier(tier,last_race_link){
+const {fetchRaceResultInfo} = await import(chrome.runtime.getURL('common/fetcher.js'));
+ const tier_standings = getTeamStandings(tier.table);
+ 
+ const id_race = new URLSearchParams(last_race_link.href).get('id')
+ //should save the race result in the db for future requests?
+ let result= await chrome.runtime.sendMessage({
+  type:'getDataFromDB',
+  data:{id:id_race,store:'race_result'}
+});
+ let points_last_race = 0;
+//this check should in theory always be skipped after the first load because races are saved in the database before this function is called
+  if(result==false){
+   result = await fetchRaceResultInfo(id_race); 
+   points_last_race = parseRaceResults(result);
+  }else
+  points_last_race = (result.last_race_points);
+ const standings_before_last_race = subtractObjects(tier_standings,points_last_race)
+ return order(standings_before_last_race,tier_standings)
+
+}
+
+function order(before,after)
+{
+  array_current_stand = Object.entries(after);
+  ranking_after = {};
+  ranking_before = {};
+  for(i=0; i<array_current_stand.length; i++)
+  { 
+    ranking_after[array_current_stand[i][0]] = i;
+  }
+
+  const sortedTeams = Object.entries(before)
+  .sort((a, b) => b[1] - a[1]) // Sort by descending value
+  .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
+  
+  array_last_stand = Object.entries(sortedTeams);
+  for(i=0; i<array_last_stand.length; i++)
+    { 
+      ranking_before[array_last_stand[i][0]] = i;
+    }
+
+    changes = subtractObjects(ranking_after,ranking_before)
+    return changes;
+
+}
+
+
+function subtractObjects(obj1, obj2) {
+  const result = {};
+
+  for (const key in obj1) {
+    if (obj2.hasOwnProperty(key)) {
+      result[key] = obj1[key] - obj2[key];
+    } else {
+      result[key] = obj1[key]; // Or handle missing keys as needed
+    }
+  }
+
+  return result;
+}
+
+function getTeamStandings(tier_table){
+
+  const scores = tier_table.querySelectorAll('td.medium:not(.key-pos)')
+  const teams = tier_table.querySelectorAll('span.grey')
+  const current_standings = {}
+
+  for(i=0; i<teams.length; i++)
+    {
+      current_standings[teams[i].textContent] = parseInt(scores[i].textContent)
+    }
+  return current_standings
 }

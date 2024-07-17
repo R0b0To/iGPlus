@@ -21,14 +21,18 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
 
       const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
       const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
-
+      
       //at any igp page check for sync
       if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path);}))
         injectScripts(tabId, tabScripts.gdrive.scripts);
+      
       //inject darkmode style at any page
-      if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){
+      if(origin == 'https://igpmanager.com' && ['/forum-index','/forum-thread'].some(path=>{return pathname.startsWith(path);}) && enabledScripts.darkmode){
+        injectScripts(tabId,["common/darkmode_forum.js"])
+      }else if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){   
           injectScripts(tabId,["common/darkmode.js"])
       }
+      
       else if (origin == 'https://igpmanager.com' && !enabledScripts.darkmode){
         injectScripts(tabId,["common/darkmode_off.js"])
       }
@@ -139,6 +143,17 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
           console.error(error);
         });
     }
+    if(request.type === 'addShortlistDriverToDB')
+      {
+        addData('shortlist_driver',request.data)
+          .then((id) => {
+            console.log('Data added:', id,request.data);
+            sendResponse({done:true});
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
     if(request.type === 'addRaceReportToDB')
     {
       addData('reports',request.data)
@@ -152,7 +167,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     }
     if(request.type === 'getDataFromDB')
     {
-      sendResponse(await getElementById(request.data.id,'race_result') ?? false);
+      sendResponse(await getElementById(request.data.id,request.data.store) ?? false);
     }
 
   })();
