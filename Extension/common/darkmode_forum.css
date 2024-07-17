@@ -85,3 +85,6 @@ div.sceditor-toolbar {
     background: #6f6f6f !important;
     border: 1px solid #434343;
 }
+.normalPost .post-head {
+  background:#3a5e33 !important;
+}
