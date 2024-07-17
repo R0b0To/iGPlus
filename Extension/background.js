@@ -28,7 +28,6 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       
       //inject darkmode style at any page
       if(origin == 'https://igpmanager.com' && ['/forum-index','/forum-thread'].some(path=>{return pathname.startsWith(path);}) && enabledScripts.darkmode){
-        console.log('testing forum');
         injectScripts(tabId,["common/darkmode_forum.js"])
       }else if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){   
           injectScripts(tabId,["common/darkmode.js"])
