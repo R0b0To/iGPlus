@@ -1,7 +1,7 @@
 // indexDB.js
 
 const DB_NAME = 'iGPlusDB';
-const STORE_NAMES = ['race_result', 'reports'];
+const STORE_NAMES = ['race_result', 'reports','shortlist_driver'];
 
 // Open the IndexedDB database
 function openDatabase() {

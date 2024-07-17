@@ -1,0 +1,51 @@
+.arrow_up::before,
+.arrow_down::before
+{
+    content: '';
+    border-style: solid;
+}
+
+.arrow,
+.arrow_up,
+.arrow_down{
+    display: flex;
+   
+}
+
+
+.arrow_up::before {
+    border-width: 0 10px 10px 10px;
+    border-color: transparent transparent green transparent;
+}
+
+.arrow_down::before {
+    border-width: 10px 10px 0 10px;
+    border-color: red transparent transparent transparent;
+}
+
+.arrow {
+    background: rgb(161, 161, 161); 
+    width: 20px;
+    height: 6px;
+    font-size: 10px; 
+    line-height: 5px; 
+}
+.arrow_container{
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    display: flex;
+    align-items: center;
+    padding: 18px 0!important;
+    border-right: solid rgba(112, 112, 112, 0.247) 1px;
+    
+}
+.changes_th{
+    width: 8%;
+}
+.value_change{
+    width: 16px;
+    text-align: center;
+}
+.manager_th{
+    border: none!important;
+}

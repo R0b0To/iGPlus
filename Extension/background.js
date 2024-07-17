@@ -139,6 +139,17 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
           console.error(error);
         });
     }
+    if(request.type === 'addShortlistDriverToDB')
+      {
+        addData('shortlist_driver',request.data)
+          .then((id) => {
+            console.log('Data added:', id,request.data);
+            sendResponse({done:true});
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
     if(request.type === 'addRaceReportToDB')
     {
       addData('reports',request.data)
@@ -152,7 +163,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     }
     if(request.type === 'getDataFromDB')
     {
-      sendResponse(await getElementById(request.data.id,'race_result') ?? false);
+      sendResponse(await getElementById(request.data.id,request.data.store) ?? false);
     }
 
   })();
