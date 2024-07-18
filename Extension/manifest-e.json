@@ -1,0 +1,41 @@
+{
+  "manifest_version": 3,
+  "name": "iGPlus",
+  "version": "1.5.28",
+  "description": "Enhance your iGPmanager experience",
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting"
+  ],
+  "action": {
+    "default_icons": {
+      "128": "images/Icon128.png"
+    },
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "host_permissions": [
+    "*://igpmanager.com/*"
+  ],
+  "icons": {
+    "128": "images/Icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "*://igpmanager.com/*"
+      ],
+      "resources": [
+        "*.png",
+        "*.PNG",
+        "*.svg",
+        "*.css",
+        "*.js"
+      ]
+    }
+  ]
+}
