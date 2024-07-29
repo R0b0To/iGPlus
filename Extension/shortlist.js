@@ -16,20 +16,17 @@ async function addTalent(){
       talent.id = 'sl_talent';
     }
 
-    if(document.getElementById('talentRow') == null)
-    {
       const driver_links = table.querySelectorAll('a')
+      
       driver_links.forEach(async link => {
         const tEle = document.createElement('td');
         tEle.id = 'talentRow';  
         const id = new URLSearchParams(link.href).get('id');
-
         //save id 
         let result_info = await chrome.runtime.sendMessage({
             type:'getDataFromDB',
             data:{id:id,store:'shortlist_driver'}
           });
-
         if(result_info == false){
             const result = await fetchDriverInfo(id);
             result_info = parseAttributes(result);
@@ -43,7 +40,6 @@ async function addTalent(){
         talent_col.textContent = result_info.sTalent;
 
       });
-    }
   }
 
   function sortTable() {
@@ -93,7 +89,7 @@ async function addTalent(){
     try {
       await new Promise((res) => setTimeout(res, 100)); // sleep a bit, while page loads
       if (document.getElementById('sl_talent') == null) {
-        addTalent()
+        addTalent();
       }
     } catch (err) {
       console.log('page not loaded');

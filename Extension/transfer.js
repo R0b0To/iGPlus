@@ -1,4 +1,6 @@
-async function changeLanguage(){
+//deprecated. game now only has 1 global transfer market (delete this?)
+
+/*async function changeLanguage(){
 if(document.getElementById("quick_lang_change")== null && document.getElementById('driver-table')!=null){
 const { fetchSettings } = await import(chrome.runtime.getURL('./common/fetcher.js'));
 const select_placement = document.querySelector('[class=notice]');
@@ -75,10 +77,10 @@ select.addEventListener("change",()=>{
     for (let i = 0; i < 6; i += 1) {
       try {
         await new Promise((res) => setTimeout(res, 1000)); // sleep a bit, while page loads
-        await changeLanguage();
+        //await changeLanguage();
         break;
       } catch (err) {
         console.warn(`Retry#${i + 1}/6`);
       }
     }
-  })();
+  })();*/

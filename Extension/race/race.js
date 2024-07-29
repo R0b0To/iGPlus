@@ -1,5 +1,7 @@
 function addCustomWeatherLink() {
-  const weatherBtn = document.getElementById('race').childNodes[0].lastChild.childNodes[1];
+  const weatherBtn = document.getElementById('race').querySelector('a');
+  
+  console.log(weatherBtn)
   weatherBtn.parentElement.className = 'three-btn';
 
   const weatherAlt = weatherBtn.cloneNode(true);
