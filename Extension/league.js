@@ -119,6 +119,7 @@ async function advancedExtract(){
       result_info = parseData(result);
       saveRaceResultsHistory(id,result_info);
     }//else{console.log('data already stored')}
+    if(result_info.quali_pos!='none')// only if the player has raced
     link.parentElement.textContent += ` [${result_info.quali_pos}]-->[${result_info.race_finish}]`;
 
 
@@ -142,8 +143,9 @@ function parseData(data){
     html_fragment.innerHTML = stringNode;
     return html_fragment;
   }
-  const quali_result = getHtmlFragment(data.vars.qResult).querySelector('.myTeam');
-  const race_result = getHtmlFragment(data.vars.rResult).querySelector('.myTeam');
+
+  const quali_result = getHtmlFragment(data.vars.qResult).querySelector('.myTeam')?? "not present";
+  const race_result = getHtmlFragment(data.vars.rResult).querySelector('.myTeam')?? "not present";
   const track = getHtmlFragment(data.vars.raceName).querySelector('.flag').classList[1].slice(2);
   const last_race_points = {};
   const rows = getHtmlFragment(data.vars.rResult).querySelectorAll('tr')
@@ -151,6 +153,10 @@ function parseData(data){
     last_race_points[row.querySelector('.teamName').textContent] = parseInt(row.lastChild.textContent);
   });
  
+  if(quali_result=="not present"){
+
+    return {track,quali_pos:"none",quali_tyre:'none',race_finish:'none',last_race_points};
+  }
   const quali_pos = quali_result.cells[0].textContent;
   const quali_tyre = quali_result.cells[4].className;
   const race_finish = (race_result.rowIndex + 1);

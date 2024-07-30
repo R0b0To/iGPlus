@@ -213,6 +213,7 @@ async function loadStint()
   for(let i = 0; i < stints; i++)
   {
     try {
+      tyreStrategy[i].lastChild.textContent = s.stints[i].tyre.substring(3);
       tyreStrategy[i].className = s.stints[i].tyre;
       tyreStrategy[i].childNodes[0].value = s.stints[i].tyre.substring(3);
       tyreStrategy[i].setAttribute('data-tyre',s.stints[i].tyre.substring(3));
