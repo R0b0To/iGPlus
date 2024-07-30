@@ -9,7 +9,8 @@
     "lint:ff": "web-ext lint --source-dir ./Extension",
     "swapManifest": "./swapManifest.sh",
     "androidFirefox":"web-ext run -t firefox-android --android-device=localhost:53249 --firefox-apk org.mozilla.fenix --source-dir ./Extension",
-    "swapManifest-win":"cd ./Extension && IF EXIST manifest-ff.json (REN manifest.json manifest-c.json & REN manifest-ff.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-ff.json & REN manifest-c.json manifest.json)"
+    "chromeFirefoxSwapManifest-win":"cd ./Extension && IF EXIST manifest-ff.json (REN manifest.json manifest-c.json & REN manifest-ff.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-ff.json & REN manifest-c.json manifest.json)",
+    "chromeEdgeSwapManifest-win":"cd ./Extension && IF EXIST manifest-e.json (REN manifest.json manifest-c.json & REN manifest-e.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-e.json & REN manifest-c.json manifest.json)"
   },
   "repository": {
     "type": "git",

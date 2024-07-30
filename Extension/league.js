@@ -85,6 +85,7 @@ async function inject_history()
       if(myLeague == league)
       {
         advancedExtract();
+        if(document.getElementsByClassName("changes_th")[0]==null)
         standingsChanges();
       }
 

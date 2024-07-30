@@ -270,7 +270,10 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
             }
             if (strategy.parentElement.querySelector('[pushevent=true]') == null) {
-              strategy.parentElement.insertBefore(pushEle, strategy.parentElement.childNodes[5]);
+              
+              //console.log(strategy.parentElement)
+              
+              strategy.parentElement.insertBefore(pushEle, strategy.parentElement.lastChild);
 
               resolve(`driver ${strategy.closest('form').id[1]} push is done`);
             }
@@ -352,7 +355,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             wearEle.append(stint);
           }
           if (strategy.parentElement.querySelector('[wearevent=true]') == null) {
-            strategy.parentElement.insertBefore(wearEle, strategy.parentElement.childNodes[5]);
+            strategy.parentElement.insertBefore(wearEle, strategy.parentElement.querySelector('[pushevent]'));
             resolve(`driver ${strategy.closest('form').id[1]} wear is done`);
           }
         });
