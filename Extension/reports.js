@@ -42,14 +42,16 @@ function inject_button() {
   button.addEventListener('click', button_function);
   button.addEventListener('touchstart', button_function);
   button2.addEventListener('click', import_to_sheets);
-  title_location = document.getElementsByClassName('dialog-head'); //location of the button
+  const title_location = document.getElementsByClassName('dialog-head'); //location of the button
 
+  console.log(title_location)//avoid error
   if (title_location[0].childElementCount == 1) {
     title_location[0].append(button,button2);
   }
  
-  p = document.querySelector('#dialogs-container > div > div > div.mOpt');
-  export_button = p.childNodes[5];
+  //p = document.querySelector('#dialogs-container > div > div > div');
+  export_button = document.querySelector('.csvExport');
+  p = export_button.parentElement;
   quali_button = export_button.cloneNode(true);
   race_button = export_button.cloneNode(true);
   podium = export_button.cloneNode(true);
@@ -59,9 +61,11 @@ function inject_button() {
   podium.addEventListener('click', podium_copy);
   quali_button.addEventListener('click', quali_export);
   race_button.addEventListener('click', race_export);
+  
   if (p.childElementCount == 5) {
-    p.insertBefore(podium,p.childNodes[6]);
-    p.insertBefore(quali_button,p.childNodes[6]);
+    p.prepend(podium);
+    p.prepend(quali_button);
+    p.prepend(export_button)
 
   }
 
@@ -84,7 +88,7 @@ async function podium_copy()
     const managerName = managerdata.vars.manager.match(/\/>(.*)$/)[1].substring(1);
     return managerName;
   }
-  const raceTable = document.querySelector('#race').childNodes[1].childNodes[1];
+  const raceTable = document.querySelector('#race table').tBodies[0];
   const trackName = document.querySelector('#dialogs-container > div > div > div.dialog-head > h1').textContent.substring(1);
 
   //driver1 = r.rows[0].childNodes[1].childNodes[4].textContent.substring(1);
@@ -225,28 +229,28 @@ function closeSheetDialog() {
 function race_export(download)
 {
   let csv = '';
-  const r = document.querySelector('#race').childNodes[1];
-  csv += r.childNodes[0].childNodes[0].childNodes[0].textContent;//pos
-  csv += ',' + r.childNodes[0].childNodes[0].childNodes[1].textContent;//driver
+  const r = document.getElementById('csvRace');//document.querySelector('#race').childNodes[0];
+  
+  csv += r.tHead.rows[0].cells[0].textContent;//pos
+  csv += ',' + r.tHead.rows[0].cells[1].textContent;//driver
   csv += ',Team';
-  csv += ',' + r.childNodes[0].childNodes[0].childNodes[2].textContent;//finish
-  csv += ',' + r.childNodes[0].childNodes[0].childNodes[3].textContent;//bestlap
-  csv += ',' + r.childNodes[0].childNodes[0].childNodes[4].textContent;//top
-  csv += ',' + r.childNodes[0].childNodes[0].childNodes[5].textContent;//pit
-  csv += ',' + r.childNodes[0].childNodes[0].childNodes[6].textContent;//pnt
+  csv += ',' + r.tHead.rows[0].cells[2].textContent;//finish
+  csv += ',' + r.tHead.rows[0].cells[3].textContent;//bestlap
+  csv += ',' + r.tHead.rows[0].cells[4].textContent;//top
+  csv += ',' + r.tHead.rows[0].cells[5].textContent;//pit
+  csv += ',' + r.tHead.rows[0].cells[6].textContent;//pnt
 
-  const race_table = r.childNodes[1];
-
-  for (let i = 1; i <= race_table.childElementCount; i++) {
-    const  rank = i;
-    const driver_name = race_table.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
-    const team_name = race_table.childNodes[i].childNodes[1].childNodes[6].childNodes[0].textContent;
-    const original_finish = race_table.childNodes[i].childNodes[2].textContent;
+   race_table = r.tBodies[0];
+  for (let i = 0; i < race_table.childElementCount; i++) {
+    const  rank = i+1;
+    const driver_name = race_table.rows[i].cells[1].childNodes[4].textContent.trim();
+    const team_name = race_table.rows[i].cells[1].querySelector('.teamName').textContent.trim();
+    const original_finish = race_table.rows[i].cells[2].textContent;
     const finish = (!download && original_finish.charAt(0) === '+') ? "'" + original_finish : original_finish;
-    const best_lap = race_table.childNodes[i].childNodes[3].textContent;
-    const top_speed = race_table.childNodes[i].childNodes[4].textContent;
-    const pits = race_table.childNodes[i].childNodes[5].textContent;
-    const points = race_table.childNodes[i].childNodes[6].textContent;
+    const best_lap = race_table.rows[i].cells[3].textContent;
+    const top_speed = race_table.rows[i].cells[4].textContent;
+    const pits = race_table.rows[i].cells[5].textContent;
+    const points = race_table.rows[i].cells[6].textContent;
 
     csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + finish + ',' + best_lap + ',' + top_speed + ',' + pits + ',' + points;
   }
@@ -260,24 +264,24 @@ function race_export(download)
 function quali_export(download)
 {
   let csv = '';
-  const q = document.querySelector('#qualifying').childNodes[0];
+  const q = document.querySelector('#qualifying table');
 
-  csv += q.childNodes[0].childNodes[0].childNodes[0].textContent;
-  csv += ',' + q.childNodes[0].childNodes[0].childNodes[1].textContent;
+  csv += q.tHead.rows[0].cells[0].textContent;
+  csv += ',' + q.tHead.rows[0].cells[1].textContent;
   csv += ',Team';
-  csv += ',' + q.childNodes[0].childNodes[0].childNodes[2].textContent;
-  csv += ',' + q.childNodes[0].childNodes[0].childNodes[3].textContent;
-  csv += ',' + q.childNodes[0].childNodes[0].childNodes[4].textContent;
+  csv += ',' + q.tHead.rows[0].cells[2].textContent;
+  csv += ',' + q.tHead.rows[0].cells[3].textContent;
+  csv += ',' + q.tHead.rows[0].cells[4].textContent;
 
-  const quali_table = q.childNodes[1];
-  for (let i = 1; i <= quali_table.childElementCount; i++) {
-    const rank = i;
-    const driver_name = quali_table.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
-    const team_name = quali_table.childNodes[i].childNodes[1].childNodes[6].innerText;
-    const lap = quali_table.childNodes[i].childNodes[2].textContent;
-    const original_gap = quali_table.childNodes[i].childNodes[3].textContent;
+  const quali_table = q.tBodies[0];
+  for (let i = 0; i < quali_table.childElementCount; i++) {
+    const rank = i+1;
+    const driver_name = quali_table.rows[i].cells[1].childNodes[4].textContent.trim();
+    const team_name = quali_table.rows[i].cells[1].querySelector('.teamName').textContent.trim();
+    const lap = quali_table.rows[i].cells[2].textContent;
+    const original_gap = quali_table.rows[i].cells[3].textContent;
     const gap = (!download && original_gap.charAt(0) === '+') ? "'" + original_gap : original_gap;
-    const tyre = quali_table.childNodes[i].childNodes[4].className.replace('ts-','');
+    const tyre = quali_table.rows[i].cells[4].textContent;//quali_table.rows[0].cells[4].className.replace('ts-','');
     csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + lap + ',' + gap + ',' + tyre;
   }
   const race_id = window.location.href.replace(/\D/g, '');
@@ -289,13 +293,14 @@ function quali_export(download)
 }
 function all_export()
 {
-  const p = document.querySelector('#dialogs-container > div > div > div.mOpt');
-  const export_button = p.childNodes[5];
+  const p = document.querySelector('.csvExport').parentElement;
+  const export_button = document.querySelector('.csvExport');
   const all_button = export_button.cloneNode(true);
   all_button.id = 'alldrivers';
   all_button.textContent = 'All Drivers CSV';
   if (p.childElementCount == 7) {
-    p.insertBefore(all_button,p.childNodes[7]);
+    p.prepend(all_button);
+    p.prepend(export_button);
   }
   all_button.addEventListener('click', function(){
 
@@ -326,7 +331,7 @@ function get_quali()
   manager = [];
   const  race_info = document.getElementsByClassName('notice') ?? "error";
   // get quali results
-  for (let i = 1; i <= quali_results.childElementCount; i++) {
+  for (let i = 0; i < quali_results.childElementCount; i++) {
     const driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
     const driver_id = driver_quali[0].href.replace(/\D/g, '');
     const driver_name = quali_results.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
@@ -343,7 +348,7 @@ function get_quali()
       'id': driver_id,
       'name': driver_name,
       'team': team_name,
-      'quali': i,
+      'quali': i+1,
       'race': 'NotFound',
       'race_finish': '',
       'race_id': race_id,
@@ -371,13 +376,13 @@ function button_function() {
   b_parent = this.parentElement;
   this.remove();
   b_parent.appendChild(progress());
-  race_results = document.querySelector('#race').childNodes[1].childNodes[1];
-  quali_results = document.querySelector('#qualifying').childNodes[0].childNodes[1];
+  race_results = document.querySelector('#race table').tBodies[0];
+  quali_results = document.querySelector('#qualifying table').tBodies[0];
 
   get_quali();
 
   //get race results
-  for (let i = 1; i <= race_results.childElementCount; i++) {
+  for (let i = 0; i < race_results.childElementCount; i++) {
 
     //driver id and name
     driver_race_result = race_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
@@ -406,6 +411,7 @@ function button_function() {
       if (manager[j].id == driver_id) {
         looking_for_id = false;
         manager[j].race = driver_race_report;
+        //console.log(driver_race_report,driver_race_report.replace(/\D/g, ''))
         manager[j].report_id = driver_race_report.replace(/\D/g, '');
         manager[j].race_finish = finish_position;
       }
@@ -421,7 +427,6 @@ function button_function() {
 //send requests for each driver report
 async function race_report() {
   const { fetchRaceReportInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
-  console.log('requesting ' + manager.length + ' reports');
   for (let number = 0; number < manager.length; number++) {
     if (manager[number].report_id != '') {
       const result = await fetchRaceReportInfo(manager[number].report_id);
@@ -429,8 +434,9 @@ async function race_report() {
       update_managers(table, number);
     }
   }
-  formatTable();
+  
   await storeCopyOfActive();
+  formatTable();
   document.getElementById('progress').remove();
   all_export();
 }
@@ -593,7 +599,7 @@ async function update_managers(table, index) {
 
     //save managers
     chrome.storage.local.set({ 'active': manager }, function () {
-      console.log('saved ' + manager[index].name);
+      //console.log('saved ' + manager[index].name);
     });
 
 
@@ -630,21 +636,21 @@ function formatTable(){
       }
     }
 
-    //console.log(total/valid);
-    document.querySelector('#race > div:nth-child(1)').append(document.createTextNode('Average pit time loss: ' + (total / valid).toFixed(2)));
+    console.log(manager);
+    //document.querySelector('#race table').tBodies[0].rows[0].append(document.createTextNode('Average pit time loss: ' + (total / valid).toFixed(2)));
 
 
-    var table = document.getElementById('race').childNodes[1];
+    var table = document.querySelector('#race table').tBodies[0];
 
     var history = document.createElement('div');
     history.id = 'histTyre';
 
 
-    for(var i = 1 ; i < table.rows.length ; i++){
+    for(var i = 0 ; i < table.rows.length ; i++){
 
       history = document.createElement('div');
       history.id = 'histTyre';
-      stops = manager[i - 1].pit_stop.split(',');
+      stops = manager[i].pit_stop.split(',');
       stops.forEach(item =>{
         var ele;
         if(isNaN(item))
