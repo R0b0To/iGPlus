@@ -44,10 +44,11 @@ function inject_button() {
   button2.addEventListener('click', import_to_sheets);
   const title_location = document.getElementsByClassName('dialog-head'); //location of the button
 
-  console.log(title_location)//avoid error
-  if (title_location[0].childElementCount == 1) {
+  try {
+     if (title_location[0].childElementCount == 1) {
     title_location[0].append(button,button2);
-  }
+  
+ 
  
   //p = document.querySelector('#dialogs-container > div > div > div');
   export_button = document.querySelector('.csvExport');
@@ -70,7 +71,10 @@ function inject_button() {
   }
 
   export_button.parentNode.replaceChild(race_button, export_button);
-
+}
+} catch (error) {
+  
+}
 }
 
 async function podium_copy()
@@ -207,7 +211,6 @@ function closeSheetDialog() {
 
   if(document.getElementById('alldrivers')){
     manager.sort((a, b) => { return a.race_finish - b.race_finish; });
-    console.log(manager)
     race_to_export_pre[0].push("Strategy","Pit Stops Time","Time Lost","Rank")
      race_to_export = race_to_export_pre.slice(1).map((innerArray, index) => {
       innerArray.push(manager[index].pit_stop, manager[index].pitStopTimes.join(','),manager[index].pitTimeLoss.join(','),  manager[index].rank.join(','));
@@ -636,7 +639,6 @@ function formatTable(){
       }
     }
 
-    console.log(manager);
     //document.querySelector('#race table').tBodies[0].rows[0].append(document.createTextNode('Average pit time loss: ' + (total / valid).toFixed(2)));
 
 
