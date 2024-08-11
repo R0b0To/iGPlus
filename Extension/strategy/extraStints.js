@@ -219,12 +219,13 @@ async function addAlert(){
 
 function openTyreDialog(){
   const tyre = this.className;
-  const stintId = this.lastChild.name.match(/\d+/)[0];
-  const fuelL = this.parentElement.parentElement.childNodes[3].childNodes[stintId].childNodes[1].value;
-  const laps = this.parentElement.parentElement.childNodes[3].childNodes[stintId].textContent;
+  const stintId = this.querySelector('[name^=tyre]').name.match(/\d+/)[0];
+  const fuelL = this.closest('tbody').querySelector(`[name=fuel${stintId}]`).value;
+  const laps = this.closest('tbody').querySelector(`[name=laps${stintId}]`).value;
+  //console.log(tyre,stintId,fuelL,laps)
   this.parentElement.cells[5].click(); //last valid stint
   const tyreD = document.getElementById('tyreSelect').childNodes[0].childNodes[0];
-  document.getElementsByName('stintId')[0].value = stintId;
+  document.getElementsByName('stintId')[0].value = stintId; //taking over dialog
   const dialog = document.getElementById('stintDialog');
   dialog.childNodes[0].childNodes[0].textContent = 'Pit ' + (stintId - 1); // name of dialog stint
 
@@ -254,7 +255,8 @@ function openTyreDialog(){
   plus.dispatchEvent(event);
   plus.dispatchEvent(event2);
 
-  for(var i = 0 ; i < maxpits ; i++)
+  //6 is the type of tyres
+  for(var i = 0 ; i < 6 ; i++)
   {
     if(tyreD.childNodes[i].id != tyre)
     {

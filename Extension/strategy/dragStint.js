@@ -158,6 +158,7 @@ function getStintInfo(stintColumn){
   return {tyre,fuel,push,laps};
 }
 function setStintInfo(stintColumn,tyre,fuel,push,laps){
+  stintColumn[1].lastChild.textContent = tyre;
   stintColumn[1].querySelector('input').value = tyre;
   stintColumn[1].className = 'ts-' + tyre;
   stintColumn[1].setAttribute('data-tyre',tyre);

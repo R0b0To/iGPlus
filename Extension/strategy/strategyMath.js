@@ -71,7 +71,7 @@ function get_wear(tyre,laps,track_info,car_economy,multiplier){
   const stint3 = calculateWear(laps,t,pushDecay,diff);
 
   //console.log('laps:',laps,stint3, stint);
-  const average = ((stint + stint3 + stint) / 3).toFixed(2);
+  const average = ((stint + stint) / 2).toFixed(2);
   // return average;
   return average;
 }
