@@ -26,6 +26,8 @@ function inject_button() {
 
   const iconUrl = chrome.runtime.getURL('images/Sheet.svg');
   const image = document.createElement('img');
+  const export_container = document.createElement('div');
+  export_container.classList.add('export_container');
   image.src = iconUrl;
   image.style.width = "1.6em";
   button = document.createElement('button');
@@ -39,19 +41,21 @@ function inject_button() {
   
   button.id = 'extract_button';
   button2.id = 'sheet_icon';
-  button.addEventListener('click', button_function);
-  button.addEventListener('touchstart', button_function);
+  button.addEventListener('click', extract_function);
+  button.addEventListener('touchstart', extract_function);
   button2.addEventListener('click', import_to_sheets);
   const title_location = document.getElementsByClassName('dialog-head'); //location of the button
+  
+  export_container.append(button,button2);
 
   try {
+    title_location[0].classList.add('inj_header');
      if (title_location[0].childElementCount == 1) {
-    title_location[0].append(button,button2);
-  
- 
+    title_location[0].append(export_container);
  
   //p = document.querySelector('#dialogs-container > div > div > div');
   export_button = document.querySelector('.csvExport');
+  const tiers_buttons = export_button.parentElement.querySelectorAll('a');
   p = export_button.parentElement;
   quali_button = export_button.cloneNode(true);
   race_button = export_button.cloneNode(true);
@@ -64,9 +68,17 @@ function inject_button() {
   race_button.addEventListener('click', race_export);
   
   if (p.childElementCount == 5) {
-    p.prepend(podium);
-    p.prepend(quali_button);
-    p.prepend(export_button)
+    const buttons_container = document.createElement('div');
+    const tier_container = document.createElement('div');
+    buttons_container.classList.add('inj_container','f_right');
+    tier_container.classList.add('inj_container','f_left');
+    tier_container.append(tiers_buttons[0],tiers_buttons[1],tiers_buttons[2]);
+    buttons_container.append(export_button,quali_button,podium);
+
+    p.prepend(buttons_container);
+    p.prepend(tier_container);
+    //p.prepend(quali_button);
+    //p.prepend(export_button)
 
   }
 
@@ -296,12 +308,13 @@ function quali_export(download)
 }
 function all_export()
 {
-  const p = document.querySelector('.csvExport').parentElement;
   const export_button = document.querySelector('.csvExport');
+  const p = export_button.parentElement;
   const all_button = export_button.cloneNode(true);
   all_button.id = 'alldrivers';
-  all_button.textContent = 'All Drivers CSV';
-  if (p.childElementCount == 7) {
+  all_button.textContent = 'Full CSV';
+  c
+  if (p.childElementCount == 3) {
     p.prepend(all_button);
     p.prepend(export_button);
   }
@@ -374,11 +387,16 @@ function get_quali()
     manager.push(manager_template);
   }
 }
-function button_function() {
+function extract_function() {
 
-  b_parent = this.parentElement;
-  this.remove();
-  b_parent.appendChild(progress());
+  b_parent = document.getElementsByClassName('dialog')[0];
+  const extract_button = document.getElementById('extract_button');
+  if(extract_button.disabled)
+    return
+  //this.remove();
+  extract_button.disabled = true;
+  extract_button.classList.add('disabled');
+  b_parent.append(progress());
   race_results = document.querySelector('#race table').tBodies[0];
   quali_results = document.querySelector('#qualifying table').tBodies[0];
 
@@ -641,14 +659,18 @@ function formatTable(){
 
     //document.querySelector('#race table').tBodies[0].rows[0].append(document.createTextNode('Average pit time loss: ' + (total / valid).toFixed(2)));
 
-
-    var table = document.querySelector('#race table').tBodies[0];
+    const table = document.querySelector('#race table');
+    const t_head = table.tHead;
+    t_head.classList.add('tyre_preview');
+    //t_head.rows[0].cells[0].style.width ="29px";
+    //t_head.rows[0].cells[1].style.width ="60%";
+    const t_body = table.tBodies[0];
 
     var history = document.createElement('div');
     history.id = 'histTyre';
 
 
-    for(var i = 0 ; i < table.rows.length ; i++){
+    for(var i = 0 ; i < t_body.rows.length ; i++){
 
       history = document.createElement('div');
       history.id = 'histTyre';
@@ -662,7 +684,7 @@ function formatTable(){
 
         history.appendChild(ele);
       });
-      table.rows[i].childNodes[1].lastChild.appendChild(history);
+      t_body.rows[i].childNodes[1].lastChild.appendChild(history);
 
     }
 
