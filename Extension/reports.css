@@ -58,3 +58,55 @@
 #selectSheetBtn:hover{
     transform: scale(1.05)
 }
+.inj_container{
+    display: flex;
+    width: 50%;
+    
+}
+.inj_header{
+    display: flex;
+    flex-wrap: wrap;
+}
+.export_container{
+    display: flex;
+    align-items: center;
+}
+.f_right{
+    float: right;
+    flex-direction: row-reverse
+}
+.f_left{
+    float: left;
+}
+@media only screen and (max-width: 501px) {
+    .f_right {
+        float: none;
+    }
+  }
+@media only screen and (max-width: 343px) {
+    .f_right {
+        flex-direction: column-reverse;
+    }
+    .f_left {
+        flex-direction: column;
+    }
+  }
+  @media only screen and (max-width: 767px) {
+    .tyre_preview th:nth-child(6){
+        width: 5%!important;
+    }
+    .tyre_preview th:nth-child(3){
+        width: 30%!important;
+    }
+    .tyre_preview th:nth-child(2){
+        width: 60%!important;
+    }
+    .tyre_preview th:nth-child(1){
+        width: 5%!important;
+    }
+    table.acp td {
+        padding: 0!important;
+    }
+  }
+  
+  
