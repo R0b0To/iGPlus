@@ -93,6 +93,11 @@
   height: 2em;
   
 }
+#statsTable{
+  float: right;
+  top: -49px;
+  position: relative;
+}
 #statsTable > thead > th{
   z-index: 3;
   border-radius: 0!important;
@@ -103,7 +108,12 @@
 #statsTable > tbody{
  border-spacing: 0; 
  border: transparent;
+ font-size: 1.2em;
 }
+#statsTable > tbody > tr{
+  height: 43.2px;
+  
+ }
 #statsTable > thead{
   border: transparent;
 }
@@ -151,7 +161,8 @@
 
 .researchFooter {
   position: relative;
-  background: #e3e4e5;
+  background: #22304a;
+  bottom: 10px;
   z-index: 2;
 }
 
@@ -166,7 +177,7 @@
 }
 
 .researchSuggestion {
-  background: #ADD8E6;
+  background: #23728d;
 }
 .researchFooter > th:nth-child(2){
   background: transparent;

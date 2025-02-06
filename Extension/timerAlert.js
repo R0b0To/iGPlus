@@ -29,7 +29,7 @@ function injectNotification (resetDate){
     const notification = document.createElement('div');
     notification.className = 'notify';
     notification.id = 'academyAlert';
-    notification.setAttribute('style','display:flex;background:#5986b3!important;width: fit-content!important;min-width: 24px;');
+    notification.setAttribute('style','display:flex;background:#5986b3!important;');
     notification.setAttribute('expire',resetDate);
     const span = document.createElement('span');
     span.className = 'robotoBold';

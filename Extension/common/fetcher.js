@@ -14,6 +14,31 @@ const getTeamUrl = (id) => `action=fetch&d=profile&team=${id}`;
 const getRaceUrl = (id) => `action=fetch&d=resultDetail&id=${id}`;
 const getRaceResultsUrl = (id) => `action=fetch&d=result&id=${id}`;
 
+
+async function getPostData(itemLocator, isThirdParty = false){
+  let url = `${baseUrl}?${itemLocator}&csrfName=&csrfToken=`;
+  if (isThirdParty) {
+    url = itemLocator;
+  }
+
+  try {
+    return await fetch(url,{
+      "credentials": "include",
+      "headers": {
+          "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+      },
+      "body": "initString=p%3Drace%26tab%3Dstrategy",
+      "method": "POST",
+      "mode": "cors"
+  }).then((response) => response.json());
+  } catch (err) {
+    console.error(err);
+    return null;
+  }
+
+}
+
+
 async function getData(itemLocator, isThirdParty = false) {
   let url = `${baseUrl}?${itemLocator}&csrfName=&csrfToken=`;
   if (isThirdParty) {
@@ -100,13 +125,20 @@ function fetchRaceResultInfo(raceId) {
 function fetchNextRace() {
   return getData('action=fetch&p=race');
 }
+function fetchProgressInfo() {
+  return getData('action=fetch&d=progress')
+}
+
 
 /**
  * @returns {Promise<{Object}|null>}
  */
-function fetchManagerData() {
+function fetchManagerData(option) {
   const managerUrl = 'action=fireUp&addon=igp&ajax=1&jsReply=fireUp&uwv=false';
+  if(option == 1)
   return getData(managerUrl);
+  else
+  return getPostData(managerUrl);
 }
 function fetchCarData(){
   return getData('action=fetch&p=cars');
@@ -135,5 +167,6 @@ export {
   fetchCarData,
   fetchIGPRaceWeatherNow,
   fetchRaceResultInfo,
-  fetchSettings
+  fetchSettings,
+  fetchProgressInfo
 };

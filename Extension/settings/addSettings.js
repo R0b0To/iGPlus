@@ -76,7 +76,10 @@ async function handleSettings() {
   const exportSave = document.getElementById('exportSave');
   const darkmode = document.getElementById('darkmode');
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
-
+  const hq = document.getElementById('hq');
+  [reviewCheckbox,trainingCheckbox,staffCheckbox,marketDriverCheckbox,overviewCheckbox,hq].forEach((ele)=>{
+    ele.classList.add('disabled');
+  });
   async function displayPreview(){
     const d = await chrome.storage.local.get('save');
     if(exportSave.value != 0)

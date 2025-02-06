@@ -40,7 +40,9 @@ function inject_button() {
   button.innerText = 'Extract';
   
   button.id = 'extract_button';
+  button.classList.add('pushBtn');
   button2.id = 'sheet_icon';
+  button2.classList.add('pushBtn');
   button.addEventListener('click', extract_function);
   button.addEventListener('touchstart', extract_function);
   button2.addEventListener('click', import_to_sheets);
@@ -313,8 +315,8 @@ function all_export()
   const all_button = export_button.cloneNode(true);
   all_button.id = 'alldrivers';
   all_button.textContent = 'Full CSV';
-  c
-  if (p.childElementCount == 3) {
+  
+  if (p.childElementCount == 4) {
     p.prepend(all_button);
     p.prepend(export_button);
   }
@@ -350,8 +352,8 @@ function get_quali()
   for (let i = 0; i < quali_results.childElementCount; i++) {
     const driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
     const driver_id = driver_quali[0].href.replace(/\D/g, '');
-    const driver_name = quali_results.childNodes[i].childNodes[1].childNodes[4].textContent.substring(1);
-    const team_name = quali_results.childNodes[i].childNodes[1].childNodes[6].innerText;
+    const driver_name = quali_results.childNodes[i].childNodes[1].childNodes[2].textContent.substring(1);
+    const team_name = quali_results.childNodes[i].childNodes[1].childNodes[4].innerText;
     const race_id = window.location.href.replace(/\D/g, '');
     const manager_template = {
       race_info:
