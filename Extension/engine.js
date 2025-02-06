@@ -33,7 +33,8 @@ function swapMap()
 circuit_code = document.querySelector('[id=editTrack] .flag').classList[1].split('-')[1];
 const image = document.querySelector('[id=editTrack] img:last-child:not(.flag)');
 image.id = "customMap";
-document.getElementById('igplus_darkmode') ? image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}_dark.png`) : image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}.png`);
+//document.getElementById('igplus_darkmode') ? image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}_dark.png`) : image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}.png`);
+image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}_dark.png`)
 image.style.width = '90%';
 image.style.margin = 'auto';
 }

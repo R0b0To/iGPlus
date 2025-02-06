@@ -89,7 +89,8 @@ function loadTrack()
   imageContainer.classList.add('statsContainer');
 
   if(trackId != 0 && trackId != 8){
-    document.getElementById('igplus_darkmode') ? image.src = chrome.runtime.getURL(`images/circuits/${trackCharacteristics[trackId].code}_dark.png`) : image.src = chrome.runtime.getURL(`images/circuits/${trackCharacteristics[trackId].code}.png`)
+    //document.getElementById('igplus_darkmode') ? image.src = chrome.runtime.getURL(`images/circuits/${trackCharacteristics[trackId].code}_dark.png`) : image.src = chrome.runtime.getURL(`images/circuits/${trackCharacteristics[trackId].code}.png`)
+    image.src = chrome.runtime.getURL(`images/circuits/${trackCharacteristics[trackId].code}_dark.png`);
     image.classList.add('trackImage');
     image.id = 'trackMap';
 
