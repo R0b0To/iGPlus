@@ -16,7 +16,7 @@ async function enhanceResearchTable() {
     const statsTable = document.createElement('table');
     statsTable.id = 'statsTable';
     statsTable.classList.add('acp', 'hoverCopy');
-    statsTable.style.width = 'auto'; // important to have it here, otherwise game's .acp overwrites it always
+    //statsTable.style.width = 'auto'; // important to have it here, otherwise game's .acp overwrites it always
 
     const header = document.createElement('thead');
     header.append(

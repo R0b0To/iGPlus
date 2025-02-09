@@ -77,7 +77,7 @@ async function handleSettings() {
   const darkmode = document.getElementById('darkmode');
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
   const hq = document.getElementById('hq');
-  [reviewCheckbox,trainingCheckbox,staffCheckbox,marketDriverCheckbox,overviewCheckbox,hq].forEach((ele)=>{
+  [reviewCheckbox,staffCheckbox,overviewCheckbox,hq].forEach((ele)=>{
     ele.classList.add('disabled');
   });
   async function displayPreview(){

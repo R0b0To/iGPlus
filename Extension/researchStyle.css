@@ -27,12 +27,17 @@
   opacity: 0.5;
 }
 
-@media only screen and (max-width: 376px) {
+@media only screen and (max-width: 641px) {
   .hoverCopy {
     width: 100% !important;
   }
   #carResearch {
+    width: 100%!important;
     width: -moz-available;
+  }
+  #statsTable{
+    top: 0px!important;
+    width: 100%!important;
   }
 }
 
@@ -97,6 +102,7 @@
   float: right;
   top: -49px;
   position: relative;
+  width: 20%;
 }
 #statsTable > thead > th{
   z-index: 3;
@@ -104,6 +110,7 @@
   position: relative;
   border-spacing: 0;
   border: none;
+  background:#24314c ;
 }
 #statsTable > tbody{
  border-spacing: 0; 
@@ -123,13 +130,11 @@
 
 .researchImg {
   height: 1.4em;
-  filter: invert(0.3);
+  filter: invert(1);
 }
 
 #carResearch {
-  width: calc(100% - 164px);
-  width: fill-available;
-  width: -webkit-fill-available;
+  width: 80%
 }
 
 .sponsorEffect {

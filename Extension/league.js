@@ -98,7 +98,7 @@ async function inject_history()
 
 
 try {
-  setTimeout(inject_history,100);
+  //setTimeout(inject_history,100);
 } catch (error) {
 
 }

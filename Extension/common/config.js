@@ -75,6 +75,10 @@ const tabScripts = {
     key: 'marketDriver',
     scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
   },
+  '/app/p=transfers': {
+    key: 'marketDriver',
+    scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
+  },
   '/app/p=race': {
     key: 'overview',
     scripts: ['lib/highcharts.js', 'race/race.js'],

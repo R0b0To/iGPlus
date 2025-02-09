@@ -6,17 +6,17 @@ function fuel_calc(f){
         case f >= 120:
           return ((f ** -0.089) * 0.679);*/
   case f >= 100:
-    return (((0.5 * f) ** -0.0792) * 0.652);
+    return (((0.65 * f) ** -0.0792) * 0.652);
   case f >= 80:
-    return (((0.5 * f) ** -0.081) * 0.657);
+    return (((0.65 * f) ** -0.081) * 0.657);
   case f >= 60:
-    return (((0.5 * f) ** -0.0835) * 0.665);
+    return (((0.65 * f) ** -0.0835) * 0.665);
   case f >= 40:
-    return (((0.5 * f) ** -0.0854) * 0.669); //very good
+    return (((0.65 * f) ** -0.0854) * 0.669); //very good
   case f >= 20: //(20-40)
-    return (((0.5 * f) ** -0.0886) * 0.678);
+    return (((0.55 * f) ** -0.0886) * 0.678);
   default:  //(1-20)
-    return (((0.5 * f) ** -0.0947) * 0.69);
+    return (((0.55 * f) ** -0.0947) * 0.69);
   }}
 
 function get_wear(tyre,laps,track_info,car_economy,multiplier){
@@ -57,7 +57,7 @@ function get_wear(tyre,laps,track_info,car_economy,multiplier){
   const track_length = track_info.length;
   const te = car_economy.te;
 
-  const t = (1.70 * te ** -0.0696) * (0.00527 * track_wear + 0.556) * track_length * multiplier * tyreWear;
+  const t = (1.29 * te ** -0.0696) * (0.00527 * track_wear + 0.556) * track_length * multiplier * tyreWear;
 
   //calculate stint wear
   const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;
