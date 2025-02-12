@@ -38,8 +38,7 @@ async function enhanceResearchTable() {
 
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
-
-      const scaleFactor = ( tier == 3) ? 3 : 2;
+      const scaleFactor = tier ;//( tier == 3) ? 3 : 2;
       const bestTeamValue = /(\d+)/.exec(bar.querySelector('svg').style.left)[0] * scaleFactor;
       const myValue = bar.previousSibling.lastChild.textContent;
 
@@ -56,6 +55,7 @@ async function enhanceResearchTable() {
 
       return row;
     });
+    
 
     const body = document.createElement('tbody');
     body.append(...researchStatsRows);
@@ -121,6 +121,17 @@ function createTd(value) {
   const ele = document.createElement('td');
   ele.className = 'hoverCopyTd';
   ele.textContent = value;
+  
+  ele.addEventListener("mouseover", function() {
+    let colIndex = [...this.parentNode.children].indexOf(this); // Get column index
+
+    document.querySelectorAll(`.hoverCopyTr .hoverCopyTd:nth-child(${colIndex + 1})`)
+        .forEach(cell => cell.classList.add("highlight"));
+});
+  ele.addEventListener("mouseleave", function() {
+  document.querySelectorAll(".hoverCopyTd").forEach(cell => cell.classList.remove("highlight"));
+});
+
 
   ele.addEventListener('click', copyColumnData);
   ele.setAttribute('style', 'height:32px;text-align: center;');

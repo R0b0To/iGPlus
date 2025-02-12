@@ -6,7 +6,7 @@
 }
 
 .hoverCopyTd {
-  z-index: 3;
+  z-index: 2;
   padding: 10px;
   position: relative;
   cursor: pointer;
@@ -14,14 +14,9 @@
 .hoverCopyTd:hover{
   z-index: 2!important;
 }
-.hoverCopyTd:hover::after {
+.highlight  {
   background-color: #00a2ff80;
-  content: '';
-  height: 10000px;
-  left: 0;
-  position: absolute;
-  top: -5000px;
-  width: 100%;
+  transition: background-color 0.3s ease-in-out;
 }
 .hoverCopyTd:active::after {
   opacity: 0.5;
@@ -43,7 +38,7 @@
 
 @media only screen and (max-width: 442px) {
   .ratings {
-    display: none;
+    display: flex;
   }
   div.bgGrey {
     height: 0px;
@@ -103,6 +98,10 @@
   top: -49px;
   position: relative;
   width: 20%;
+  border-collapse: separate!important;
+  border-spacing: 0!important;
+  overflow: hidden!important;
+  border-radius: 8px!important;
 }
 #statsTable > thead > th{
   z-index: 3;

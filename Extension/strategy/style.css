@@ -57,6 +57,7 @@
         cursor: pointer;      
 }
 .slider-label{
+  transform: scale(1.2);
   position: absolute;
   justify-content: center;
 	top: -225%;

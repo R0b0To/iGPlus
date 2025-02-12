@@ -77,9 +77,12 @@ async function handleSettings() {
   const darkmode = document.getElementById('darkmode');
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
   const hq = document.getElementById('hq');
-  [reviewCheckbox,staffCheckbox,overviewCheckbox,hq].forEach((ele)=>{
+  
+  //#region Enabled scripts
+  [reviewCheckbox,staffCheckbox,hq].forEach((ele)=>{
     ele.classList.add('disabled');
   });
+  //#endregion
   async function displayPreview(){
     const d = await chrome.storage.local.get('save');
     if(exportSave.value != 0)
@@ -333,9 +336,11 @@ async function handleSettings() {
       field[1].textContent = language[code].optionsText.track;
       field[2].textContent = language[code].optionsText.sheetName;
 
+      
+
       [gdrive,gsheetCheckbox, leagueCheckbox, researchCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, overviewCheckbox, advancedHisCheckbox, sponsorCheckbox]
         .forEach(addFieldtipEvent);
-
+      
     }
     );
 
