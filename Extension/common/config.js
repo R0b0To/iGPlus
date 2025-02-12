@@ -68,10 +68,14 @@ const tabScripts = {
   },
   '/app/p=race&tab=setup': {
     key: 'setup',
-    scripts: ['raceSetup/setups.js'],
+    scripts: ['raceSetup/setups.js','lib/purify.js'],
     styles: ['strategy/style.css', 'raceSetup/style.css']
   },
   '/app/p=transfers&tab=drivers': {
+    key: 'marketDriver',
+    scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
+  },
+  '/app/p=transfers': {
     key: 'marketDriver',
     scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
   },
@@ -98,7 +102,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['strategy/strategy.js','lib/gsi.js'],
+    scripts: ['strategy/strategy.js','lib/gsi.js','lib/purify.js'],
     styles: ['strategy/style.css','css/strategyPreview.css']
   },
   '/app/p=league&id=': {

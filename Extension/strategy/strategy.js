@@ -1,9 +1,7 @@
 if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
   (async function main(){
     document.getElementById('strategy').setAttribute('injected',true);
-    //console.log('strategy loading');
     const observer = new MutationObserver(function (mutations) {
-      //console.log(mutations);
       if(document.getElementsByClassName('PLFE')[0]?.value ?? false)
         mutations.forEach(mut => {
 
@@ -37,12 +35,19 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     const {language}  = await chrome.storage.local.get({ language: 'en' });
     const {language: i18n}  = await import(chrome.runtime.getURL('common/localization.js'));
     //track information
-    const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
+    //const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
+    const TRACK_CODE = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
     const {track_info, multipliers, trackLink ,trackDictionary} = await import(chrome.runtime.getURL('/strategy/const.js'));
     let TRACK_INFO = track_info[TRACK_CODE];
+
     //league information
-    const league = document.querySelector('#mLeague').href;
-    const league_id = /(?<=id=).*/gm.exec(league)[0];
+    const {fetchManagerData} = await import(chrome.runtime.getURL('common/fetcher.js'));
+    const allInfo = await fetchManagerData(2);
+
+    const rules = JSON.parse(allInfo.vars.rulesJson);	
+    //const league = document.querySelector('#mLeague').href;
+    //const league_id = /(?<=id=).*/gm.exec(league)[0];
+    const league_id = allInfo.team._league;
     const { fetchLeagueData, fetchCarData } = await import(chrome.runtime.getURL('common/fetcher.js'));
     const league_info = await fetchLeagueData(league_id) ?? false;
     const league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(league_info.vars.rules)[0];
@@ -50,7 +55,14 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     //car information
     const { fuel_calc, get_wear } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
     const car_data = await fetchCarData() ?? false;
-    const CAR_ECONOMY = {fe:car_data.vars.fuel_economyBar,te:car_data.vars.tyre_economyBar,fuel:fuel_calc(car_data.vars.fuel_economyBar)};
+    const {cleanHtml} = await import(chrome.runtime.getURL('strategy/utility.js'));
+
+    const car_attributes = cleanHtml(car_data.vars.carAttributes);
+
+
+
+    //const CAR_ECONOMY = {fe:car_data.vars.fuel_economyBar,te:car_data.vars.tyre_economyBar,fuel:fuel_calc(car_data.vars.fuel_economyBar)};
+    const CAR_ECONOMY = {fe:car_attributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent,te:car_attributes.querySelector('[id=wrap-tyre_economy] .ratingVal').textContent,fuel:fuel_calc(car_attributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent)};
     //active scripts
     const active_scripts = await chrome.storage.local.get('script');
     //utility
@@ -130,18 +142,19 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     async function injectAdvancedStint(){
       const dstrategy = document.getElementsByClassName('fuel');
 
+
       Object.keys(dstrategy).forEach(async driver =>{
         const driverForm = dstrategy[driver].closest('form');
         const strategyIDNumber = driverForm.id[1];
         observer.observe(dstrategy[driver].closest('tbody'), { characterData: true, attributes: true, childList: true, subtree: true });
         //add fuel div if the race is no refuel
-        if(document.getElementById(`d${strategyIDNumber}strategyAdvanced`).querySelectorAll('.greyWrap').length > 2)
+        if(rules.refuelling == '0')
         {
           var elem = document.createElement('div');
           elem.setAttribute('style','color:white; font-family:RobotoCondensedBold; font-size:.9em;');
           elem.className = 'fuelEst';
           const placement = driverForm.querySelector('[id^=\'d\']').parentElement;
-          if(placement.childElementCount < 2)
+          if(placement.childElementCount < 3)
             placement.append(elem);
         }
         else{
@@ -150,7 +163,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           lapsRow.cells[0].addEventListener('click',function(){
             lapsRow.querySelectorAll('td').forEach(e => {
               const [fuel,laps] = e.querySelectorAll('input');
-              const push = lapsRow.nextElementSibling.nextElementSibling.cells[e.cellIndex];
+              const push = lapsRow.closest('tbody').querySelector('[pushevent]').cells[e.cellIndex];
               const pushToAdd = push.querySelector('select').value;
               laps.value =  Math.floor((parseFloat(fuel.value) / ((CAR_ECONOMY.fuel + parseFloat(pushToAdd)) * TRACK_INFO.length)));
               e.querySelector('span').textContent = laps.value;
@@ -159,7 +172,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
         }
 
-
+        
         Promise.all([createPushRow(dstrategy[driver])]).then(() => {
         //after wear and push rows are generated execute this
           createWearRow(dstrategy[driver]);
@@ -183,7 +196,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         const box = document.getElementsByClassName('not-selectable');
         const button = document.getElementsByClassName('dropbtn1');
         Object.keys(box).forEach(key => {
-        //console.log(box[key].closest('th').contains(event.target));
           if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
 
             if( box[key].classList)
@@ -271,7 +283,6 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             }
             if (strategy.parentElement.querySelector('[pushevent=true]') == null) {
               
-              //console.log(strategy.parentElement)
               
               strategy.parentElement.insertBefore(pushEle, strategy.parentElement.lastChild);
 
@@ -334,6 +345,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
         });
       }
       function createWearRow(strategy) {
+
         return new Promise((resolve, reject) => {
           const wearEle = document.createElement('tr');
           wearEle.setAttribute('wearevent', true);
@@ -344,9 +356,12 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           //starts at 1 because the first element is the name title
           for (var i = 1; i < strategy.childElementCount; i++) {
             var stint = document.createElement('td');
-            var tyre = strategy.previousElementSibling.cells[i].className.slice(3); //tyre of stint i
-            var laps = strategy.cells[i].textContent;  
-            CAR_ECONOMY.push =  strategy.nextElementSibling.cells[1].childNodes[0].selectedIndex; 
+            var tyre = strategy.closest('tbody').querySelector('.tyre').cells[i].className.slice(3); //tyre of stint i
+            var laps = strategy.cells[i].textContent ?? "test";
+            
+            
+            CAR_ECONOMY.push =  strategy.closest('tbody').querySelector('[pushevent]').cells[1].childNodes[0].selectedIndex; 
+
             var w = get_wear(tyre, laps ,TRACK_INFO , CAR_ECONOMY, multiplier);
             stint.style.visibility = strategy.cells[i].style.visibility;
             //event will fire when laps or tyre is changed
@@ -363,7 +378,9 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
 
     }
     async function addBetterStintFuel(el){
-      const track_code = document.querySelector('.flag').className.slice(-2) ?? 'au';
+
+      const track_code = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
+
       TRACK_INFO = track_info[track_code];
       const fuel_el = el.querySelector('.num');
       const fe_used = Number(document.getElementsByClassName('PLFE')[0].value);
@@ -399,6 +416,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     }
     // add observer for dialog opening. this will handle
     function waitForAddedNode(params) {
+
 
       if(params.parent.getAttribute('observing') ?? false)
         return;
@@ -508,7 +526,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           select.classList.add("select_overwrite")
           select.selectedIndex = main_select.selectedIndex;
           select.disabled = true;
-          update_stint(select.closest("tbody").rows[2].cells[select.parentElement.cellIndex])
+          update_stint(select.closest("tbody").querySelector('.fuel').cells[select.parentElement.cellIndex])
         })
 
         
@@ -550,7 +568,8 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
           const target = document.querySelector('[id=strategy] .eight');
           const circuit = document.createElement('img');
           circuit.id = 'customMap';
-          document.getElementById('igplus_darkmode') ? circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`) : circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`)
+          //document.getElementById('igplus_darkmode') ? circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`) : circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`)
+          circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`);
           circuit.setAttribute('style','width:100%;');
           const imageLink = document.createElement('a');
           imageLink.href = trackLink[TRACK_CODE];
@@ -772,13 +791,13 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
     function addWeatherInStrategy(){
       const strategy = document.getElementsByClassName('fuel');
       Object.keys(strategy).forEach(car=>{
-        const w = (document.getElementsByClassName('pWeather text-right green')[0]).cloneNode(true);
+        const w = (document.getElementsByClassName('pWeather')[0]).cloneNode(true);
         w.className = '';
         w.childNodes[0].style.filter = 'brightness(0) invert(1)';
         w.childNodes[1].style.color = 'white';
         w.childNodes[2].setAttribute('style','width: 28px;height: 28px;');
         w.setAttribute('style','display: inline;padding-right: 10px;');
-        const notice = strategy[car].closest('tbody').querySelector('.notice');
+        const notice = strategy[car].closest('form').querySelector('.notice');
         if(notice.querySelector('.waterLevel') == null)
           notice.prepend(w);
       });

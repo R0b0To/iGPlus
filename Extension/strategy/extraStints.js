@@ -99,7 +99,7 @@ function removeExtraStint(driver_pit_div) {
       e.remove();
 
     const pit_number = (parseInt(lastPit[0].textContent.match(/\d+/)[0]) - 1);
-    driver_pit_div.closest('form').querySelector('[colspan]').colSpan--;
+    //driver_pit_div.closest('form').querySelector('[colspan]').colSpan--;
     replacePitNumber(driver_pit_div,pit_number);
   }
 
@@ -110,19 +110,18 @@ function addExtraStint(driver_pit_div){
     //nodelist
     const lastPit = driver_pit_div.closest('form').querySelectorAll('th:last-child,td:last-child:not(.trash):not([colspan])');
     const clonedColumn = Array.from(lastPit).map(e => {  return {node:e.cloneNode(true),parent:e.parentElement};});
-    // console.log(clonedColumn)
     const pit_number = (parseInt(lastPit[0].textContent.match(/\d+/)[0]) + 1);
     replacePitNumber(driver_pit_div,pit_number);
     clonedColumn[0].node.textContent = clonedColumn[0].node.textContent.replace(/\d+/, pit_number);
     clonedColumn[1].node.querySelector('input').name = 'tyre' + (pit_number + 1);
     clonedColumn[1].node.addEventListener('click',openTyreDialog);
-    clonedColumn[2].node.querySelector('[name^=fuel]').name = 'fuel' + (pit_number + 1);
-    clonedColumn[2].node.querySelector('[name^=laps]').name = 'laps' + (pit_number + 1);
-    clonedColumn[4].node.querySelector('select').selectedIndex = lastPit[4].querySelector('select').selectedIndex;
-    clonedColumn[4].node.querySelector('select').addEventListener('change',updateFuel);
+    clonedColumn[4].node.querySelector('[name^=fuel]').name = 'fuel' + (pit_number + 1);
+    clonedColumn[4].node.querySelector('[name^=laps]').name = 'laps' + (pit_number + 1);
+    clonedColumn[3].node.querySelector('select').selectedIndex = lastPit[3].querySelector('select').selectedIndex;
+    clonedColumn[3].node.querySelector('select').addEventListener('change',updateFuel);
     for(const node of clonedColumn)
       node.parent.append(node.node);
-    driver_pit_div.closest('form').querySelector('[colspan]').colSpan++;
+    //driver_pit_div.closest('form').querySelector('[colspan]').colSpan++;
 
     resolve(true);
   });
@@ -153,7 +152,7 @@ async function update_stint(s)
 }
 async function updateFuel(tbod)
 {
-  const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
+  const TRACK_CODE = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
   const { fuel_calc } = await import(chrome.runtime.getURL('strategy/strategyMath.js'));
   const {track_info } = await import(chrome.runtime.getURL('/strategy/const.js'));
   let TRACK_INFO = track_info[TRACK_CODE];
@@ -183,7 +182,7 @@ async function updateFuel(tbod)
     totalfuel += parseInt(laps) * fuellap;
   }
   const fuelEle = tbod.closest('form').getElementsByClassName('fuelEst')[0];
-  const lapsTextNode = tbod.querySelector('.robotoBold');
+  const lapsTextNode = tbod.closest('form').querySelector('.robotoBold');
   lapsTextNode.textContent = totalLaps;
   const raceLapsText = Number(lapsTextNode.nextSibling.textContent.split('/')[1]);
   lapsTextNode.classList.remove('block-orange');

@@ -7,7 +7,7 @@ function addCustomWeatherLink() {
   weatherAlt.textContent = 'Weather';
   weatherAlt.href = '#'; // url+weatherLocation[trackID];
   weatherAlt.id = 'chartWeather';
-  weatherAlt.className = 'btn4';
+  weatherAlt.className = 'btn4 pushBtn';
 
   const weatherContainer = document.createElement('div');
   weatherContainer.id = 'container';
@@ -24,8 +24,9 @@ function swapMap() {
   const mapCode = countryFlagImg.classList[1].split('-')[1];
 
   const circuitImg = document.querySelector('#race img:not(.flag)');
-  document.getElementById('igplus_darkmode') ? circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}_dark.png`) : circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`)
+  //document.getElementById('igplus_darkmode') ? circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}_dark.png`) : circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`)
   //circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
+  circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}_dark.png`)
   circuitImg.style.width = '90%';
   circuitImg.style.margin = 'auto';
 }

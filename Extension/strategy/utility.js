@@ -194,24 +194,41 @@ function simulateClick(node){
 
 
 }
+
+
+
+function cleanHtml(string){
+    const fragmentToParse = document.createElement('div');
+    fragmentToParse.innerHTML = DOMPurify.sanitize(string);
+    return fragmentToParse.children[0];
+}
+
+
 /**
  * Finds the league tier of the manager.
  * @returns {1|2|3} 1 is for Rookie, 3 is for Elite
  */
 async function findCurrentTier() {
-  const { fetchLeagueData } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const { fetchManagerData } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const response = await fetchManagerData(2);
+ /* const tier = response.vars.manager.match(/class="([^"]*\bblock-[^\s"]*)/)[1].split('-')[1]; 
+  const tierMap = {
+    gold: 3,
+    silver: 2,
+    bronze: 1
+};
+*/
 
-  const leagueUrl = document.getElementById('mLeague').href;
-  const leagueId = /id=(.*)/.exec(leagueUrl)[1];
+  //const leagueUrl = document.getElementById('mLeague').href;
+  //const leagueId = /id=(.*)/.exec(leagueUrl)[1];
 
-  const { vars = {} } = (await fetchLeagueData(leagueId)) || {};
+  //const { vars = {} } = (await fetchLeagueData(leagueId)) || {};
 
-  let tier = 1;
-  for (/* no-op */; tier <= 2; tier += 1) {
-    if (vars[`standings${tier}`]?.includes('myTeam')) break;
-  }
-
-  return tier;
+  //let tier = 1;
+  //for (/* no-op */; tier <= 2; tier += 1) {
+  //  if (vars[`standings${tier}`]?.includes('myTeam')) break;
+  //}
+  return response._tier || 3;
 }
 
 export{
@@ -221,5 +238,6 @@ export{
   createDownloadButton,
   createDeleteButton,
   simulateClick,
-  findCurrentTier
+  findCurrentTier,
+  cleanHtml
 };

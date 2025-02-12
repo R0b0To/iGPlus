@@ -17,7 +17,7 @@ function addExtraButtons() {
 }
 
 addExtraButtons();
-whenLockedSetup();
+//whenLockedSetup();
 
 function whenLockedSetup(){
   const raceID = document.getElementById('mRace').href.replace(/^\D+/g, '');

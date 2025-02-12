@@ -55,6 +55,13 @@
     width: 100%;
 
 }
+#alldrivers{
+    margin-right: 3px;
+    height: 42px;
+}
+#extract_button{
+    border: none;
+}
 #selectSheetBtn:hover{
     transform: scale(1.05)
 }

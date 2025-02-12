@@ -8,24 +8,25 @@ async function startHealthMonitor() {
   // If drivers are not found error is invoked stopping executing the task any further
   const trainTable = document.getElementById('dTrainTable');
   const pitCrewTable = document.getElementById('pcTrainTable');
-  const staff = document.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
+  //const staff = document.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
+  const staff = Array.from(document.getElementById("dTrainTable").querySelectorAll('tbody > tr')).map(tr => tr.querySelector('.ratingBar > div'));
   const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
-  const noticeDiv = document.querySelectorAll('div.darkgrey.shrinkText');
+  const noticeDiv = document.querySelectorAll('div.shrinkText');
   
-  if (nextRaceData && !noticeDiv[0].querySelectorAll('span').length) {
+  if (nextRaceData && !noticeDiv[2].querySelectorAll('span').length) {
     const raceDate = new Date(nextRaceData.nextLeagueRaceTime * 1000);
     const raceTme = `${padValue(raceDate.getHours())}:${padValue(raceDate.getMinutes())}`;
     const raceDay = raceDate.getDate() === (new Date).getDate() ? 'today' : `in ${((raceDate.getTime()-(new Date).getTime())/ (1000 * 60 * 60 * 24)).toFixed(1)} days`;
 
     const healthNotice = document.createElement('span');
-    healthNotice.innerText = `${noticeDiv[0].textContent}.`;
+    healthNotice.innerText = `${noticeDiv[2].textContent}.`;
 
     const nextRaceNotice = document.createElement('span');
     nextRaceNotice.innerText = `\n Next race: ${raceDay} at ${raceTme}`;
 
-    noticeDiv[0].replaceChildren(healthNotice, nextRaceNotice);
-    noticeDiv[1].replaceChildren(healthNotice.cloneNode(true), nextRaceNotice.cloneNode(true));
+    noticeDiv[2].replaceChildren(healthNotice, nextRaceNotice);
+    //noticeDiv[1].replaceChildren(healthNotice.cloneNode(true), nextRaceNotice.cloneNode(true));
   }
 
   // reset custom health colors before updating current health states
@@ -64,12 +65,12 @@ async function startHealthMonitor() {
         if (hoursDiff > 0) {
           const alertClass = hoursDiff < 3 ? healthClasses[1] : healthClasses[2];
           driver.parentElement.classList.remove(...healthClasses);
+          driver.classList.remove(...healthClasses);
           driver.parentElement.classList.add(alertClass);
         }
       }
       const dateString = `~${padValue(fullDate.getHours())}:01`;
       const healthText = health < 100 ? dateString : '';
-
       const healthBarCell = driver.closest('td');
       let estimatedHealTimeCell;
       if (driver.closest('tr').querySelectorAll('[id=dateTd]').length == 0) {
@@ -115,7 +116,7 @@ async function startHealthMonitor() {
       await startHealthMonitor();
       break;
     } catch (err) {
-      //console.log(`Retry to start health monitoring #${i + 1}/3`);
+      console.log(`Retry to start health monitoring #${i + 1}/3`);
     }
   }
 })();

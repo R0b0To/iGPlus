@@ -11,32 +11,47 @@ async function getHeightAdjustment(driverHeight, tier) {
 
 async function addSetupSuggestionsForDrivers() {
 
-  const [{ fetchDriverInfo }, { parseAttributes }, { circuits },{ findCurrentTier }] = await Promise.all([
+  const [{ fetchDriverInfo }, { parseAttributes }, { circuits },{ fetchManagerData },{cleanHtml}] = await Promise.all([
     import(chrome.runtime.getURL('common/fetcher.js')),
     import(chrome.runtime.getURL('driver/driverHelpers.js')),
     import(chrome.runtime.getURL('raceSetup/const.js')),
+    import(chrome.runtime.getURL('common/fetcher.js')),
     import(chrome.runtime.getURL('strategy/utility.js'))
   ]);
 
   const { script } = await chrome.storage.local.get('script');
 
-  const driverIds = {};
+  /*const driverIds = {};
   [...document.getElementsByClassName('staffImage')].forEach((d, index) => {
     const id = d.dataset.staffid;
     if (!driverIds[id]) driverIds[id] = index += 1;
   });
-  const leagueTier = await findCurrentTier();
-  const trackSetup = getTrackSetup(circuits, leagueTier);
+  */
+  //const leagueTier = await findCurrentTier();
+  const allInfo =  await fetchManagerData(1)
 
-  for await (const [driverId, index] of Object.entries(driverIds)) {
-    const driverData = await fetchDriverInfo(driverId);
-    const driverHeight = parseAttributes(driverData).sHeight;
+  const driversHtml = cleanHtml(allInfo.vars.drivers ?? allInfo.preCache["p=staff"].vars.drivers);
+  const leagueTier = allInfo.team._tier;
+
+  const drivers_data = driversHtml.querySelectorAll('.hoverData');
+
+  
+  const trackSetup = getTrackSetup(circuits, leagueTier);
+  let index = 1;
+  for await (const node of drivers_data) {
+    
+    //const driverData = await fetchDriverInfo(driverId);
+    //const driverHeight = parseAttributes(driverData).sHeight;
+
+    const driverHeight = node.dataset.driver.split(',')[13];
+
     const heightAdjustment = await getHeightAdjustment(driverHeight, leagueTier);
 
     if (script.slider) addSettingSliders(index);
     if (script.edit) allowDirectEdit(index);
 
     addSetupSuggestions(trackSetup, heightAdjustment, index);
+    index++; // Increment index manually
   }
 }
 
@@ -58,7 +73,7 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
   }
 
   /** @type {HTMLTableElement} */
-  const settingTable = setupForm.querySelector('table.acp.linkFill.pad');
+  const settingTable = setupForm.querySelector('table.acp');
   const header = settingTable.createTHead();
   header.id = 'setupSuggestionHeader';
   header.append(document.createElement('tr'));
@@ -72,7 +87,7 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
   header.rows[0].append(...headers);
 
   // suspension element
-  const suspensionSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(1)');
+  const suspensionSetting = setupForm.querySelector('table.acp > tbody > tr:nth-child(1)');
   suspensionSetting.id = 'suggestedSetup';
   const suspensionSuggestion = document.createElement('td');
   suspensionSuggestion.classList.add('suggestedSetup');
@@ -80,14 +95,14 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
   suspensionSetting.append(suspensionSuggestion);
 
   // ride element
-  const rideHeightSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(2)');
+  const rideHeightSetting = setupForm.querySelector('table.acp > tbody > tr:nth-child(2)');
   const heightSuggestion = document.createElement('td');
   heightSuggestion.classList.add('suggestedSetup');
   heightSuggestion.append(document.createTextNode((ride + heightAdjustment)==0? 1 :ride + heightAdjustment));
   rideHeightSetting.append(heightSuggestion);
 
   // wing element
-  const wingSetting = setupForm.querySelector('table.acp.linkFill.pad > tbody > tr:nth-child(3)');
+  const wingSetting = setupForm.querySelector('table.acp > tbody > tr:nth-child(3)');
   const wingSuggestion = document.createElement('td');
   wingSuggestion.classList.add('suggestedSetup');
   wingSuggestion.append(document.createTextNode(wing));
@@ -99,10 +114,13 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
 // Fixed circuit setup
 function getTrackSetup(circuits, tierIndex) {
   const circuit = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML;
-  const circuitCode = /[^-]+(?=">)/g.exec(circuit)[0];
+  //const circuitCode = /[^-]+(?=">)/g.exec(circuit)[0];
+  const circuitCode = circuit.split("-")[1].split(" ")[0];
+  
 
   const suspensionSettingBtn = document.querySelector('.rotateThis');
   const setup = circuits[tierIndex][circuitCode];
+  //console.log(setup);
   setup.ride = (setup.ride <= 0) ? 1 : setup.ride;
   setup.wing = (setup.wing <= 0) ? 1 : setup.wing;
   // in setup, there is the index of recommended setting - so we just get

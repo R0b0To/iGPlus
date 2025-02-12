@@ -1,4 +1,5 @@
 async function enhanceResearchTable() {
+
   const { language } = await chrome.storage.local.get({ language: 'en' });
   const { language: i18n } = await import(chrome.runtime.getURL('/common/localization.js'));
   const { findCurrentTier} = await import(chrome.runtime.getURL('strategy/utility.js'));
@@ -10,12 +11,12 @@ async function enhanceResearchTable() {
 
   const researchPowerSpan = document.getElementById('checkboxTotal');
   const currentResearchPower = researchPowerSpan.textContent.slice(0, -1) / 100;
-
+  console.log('initializing research')
   if (document.getElementById('statsTable') == null) {
     const statsTable = document.createElement('table');
     statsTable.id = 'statsTable';
     statsTable.classList.add('acp', 'hoverCopy');
-    statsTable.style.width = 'auto'; // important to have it here, otherwise game's .acp overwrites it always
+    //statsTable.style.width = 'auto'; // important to have it here, otherwise game's .acp overwrites it always
 
     const header = document.createElement('thead');
     header.append(
@@ -32,19 +33,18 @@ async function enhanceResearchTable() {
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
     const researchStatsRows = [...ratingBars].map( (bar) => {
       // this will hide Comparsion column for narrow screens
-      gameTable.tHead.rows[0].cells[2].className = 'ratings';
+      //gameTable.tHead.rows[0].cells[2].className = 'ratings';
       bar.parentElement.classList.add('ratings');
 
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
-
-      const scaleFactor = ( tier == 3) ? 2 : 1;
-      const bestTeamValue = /(\d+)/.exec(bar.querySelector('img').style.left)[0] * scaleFactor;
-      const myValue = parseInt(bar.querySelector('div').style.width) * scaleFactor;
+      const scaleFactor = tier ;//( tier == 3) ? 3 : 2;
+      const bestTeamValue = /(\d+)/.exec(bar.querySelector('svg').style.left)[0] * scaleFactor;
+      const myValue = bar.previousSibling.lastChild.textContent;
 
       const ratingGap = bestTeamValue - myValue;
-      const isChecked = bar.closest('tr').querySelector('input').checked;
-      row.dataset.id = bar.closest('tr').querySelector('input').value;
+      const isChecked = bar.parentElement.parentElement.querySelector('input').checked;
+      row.dataset.id = bar.parentElement.parentElement.querySelector('input').value;
 
       let gain = 0;
       if (isChecked) {
@@ -55,6 +55,7 @@ async function enhanceResearchTable() {
 
       return row;
     });
+    
 
     const body = document.createElement('tbody');
     body.append(...researchStatsRows);
@@ -110,6 +111,7 @@ async function enhanceResearchTable() {
       await enhanceResearchTable();
       break;
     } catch (err) {
+      console.log(err)
       console.warn(`Retry to enhance research table #${i + 1}/3`);
     }
   }
@@ -119,6 +121,17 @@ function createTd(value) {
   const ele = document.createElement('td');
   ele.className = 'hoverCopyTd';
   ele.textContent = value;
+  
+  ele.addEventListener("mouseover", function() {
+    let colIndex = [...this.parentNode.children].indexOf(this); // Get column index
+
+    document.querySelectorAll(`.hoverCopyTr .hoverCopyTd:nth-child(${colIndex + 1})`)
+        .forEach(cell => cell.classList.add("highlight"));
+});
+  ele.addEventListener("mouseleave", function() {
+  document.querySelectorAll(".hoverCopyTd").forEach(cell => cell.classList.remove("highlight"));
+});
+
 
   ele.addEventListener('click', copyColumnData);
   ele.setAttribute('style', 'height:32px;text-align: center;');
@@ -239,7 +252,7 @@ function createHelpButton(text) {
   });
 
   if (document.getElementById('fieldtip') == null) {
-    const place = document.getElementsByClassName('bgGrey')[0];
+    const place = document.getElementsByClassName('text-center pad')[1];
     place.append(fieldTip);
   }
 
@@ -255,9 +268,9 @@ function calculateTotalResearchGain() {
   const gameTable = document.getElementById('statsTable').tBodies[0];
 
   let totalGain = 0;
-
+  let index = 0;
   Object.keys(checkedItems).forEach((area) => {
-    const areaIndex = checkedItems[area].parentElement.parentElement.rowIndex - 1;
+    const areaIndex = index;
 
     if (!checkedItems[area].checked) {
       gameTable.rows[areaIndex].cells[3].textContent = '';
@@ -265,12 +278,12 @@ function calculateTotalResearchGain() {
 
     let gain = '';
     let scaleFactor = 1;
-    const researchAreaRow = checkedItems[area].parentElement.previousElementSibling.parentElement;
+    const researchAreaRow = checkedItems[area].parentElement.nextElementSibling;
     if (checkedItems[area].checked) {
-      if (researchAreaRow.classList.contains('bgLightGreen')) {
+      if (researchAreaRow.classList.contains('green')) {
         scaleFactor = 1.1;
       }
-      if (researchAreaRow.classList.contains('bgLightRed')) {
+      if (researchAreaRow.classList.contains('red')) {
         scaleFactor = 0.5;
       }
 
@@ -279,6 +292,7 @@ function calculateTotalResearchGain() {
     }
 
     gameTable.rows[areaIndex].cells[3].textContent = gain;
+    index ++;
   });
 
   document.getElementById('totalGain').textContent = totalGain;

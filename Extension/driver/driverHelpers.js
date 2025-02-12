@@ -9,7 +9,7 @@ function parseAttributes(personData) {
     fragmentToParse.innerHTML = personData.vars[varName];
     return fragmentToParse;
   }
-
+  console.log(personData);
   const dName = createHTMLElement('dName').textContent.slice(1); //removing extra space
   const favTrack = createHTMLElement('favTrack').textContent.slice(1);
   const sTalent = createHTMLElement('sTalent').textContent;

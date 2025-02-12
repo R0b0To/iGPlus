@@ -6,7 +6,7 @@
 }
 
 .hoverCopyTd {
-  z-index: 3;
+  z-index: 2;
   padding: 10px;
   position: relative;
   cursor: pointer;
@@ -14,31 +14,31 @@
 .hoverCopyTd:hover{
   z-index: 2!important;
 }
-.hoverCopyTd:hover::after {
+.highlight  {
   background-color: #00a2ff80;
-  content: '';
-  height: 10000px;
-  left: 0;
-  position: absolute;
-  top: -5000px;
-  width: 100%;
+  transition: background-color 0.3s ease-in-out;
 }
 .hoverCopyTd:active::after {
   opacity: 0.5;
 }
 
-@media only screen and (max-width: 376px) {
+@media only screen and (max-width: 641px) {
   .hoverCopy {
     width: 100% !important;
   }
   #carResearch {
+    width: 100%!important;
     width: -moz-available;
+  }
+  #statsTable{
+    top: 0px!important;
+    width: 100%!important;
   }
 }
 
 @media only screen and (max-width: 442px) {
   .ratings {
-    display: none;
+    display: flex;
   }
   div.bgGrey {
     height: 0px;
@@ -93,17 +93,33 @@
   height: 2em;
   
 }
+#statsTable{
+  float: right;
+  top: -49px;
+  position: relative;
+  width: 20%;
+  border-collapse: separate!important;
+  border-spacing: 0!important;
+  overflow: hidden!important;
+  border-radius: 8px!important;
+}
 #statsTable > thead > th{
   z-index: 3;
   border-radius: 0!important;
   position: relative;
   border-spacing: 0;
   border: none;
+  background:#24314c ;
 }
 #statsTable > tbody{
  border-spacing: 0; 
  border: transparent;
+ font-size: 1.2em;
 }
+#statsTable > tbody > tr{
+  height: 43.2px;
+  
+ }
 #statsTable > thead{
   border: transparent;
 }
@@ -113,13 +129,11 @@
 
 .researchImg {
   height: 1.4em;
-  filter: invert(0.3);
+  filter: invert(1);
 }
 
 #carResearch {
-  width: calc(100% - 164px);
-  width: fill-available;
-  width: -webkit-fill-available;
+  width: 80%
 }
 
 .sponsorEffect {
@@ -151,7 +165,8 @@
 
 .researchFooter {
   position: relative;
-  background: #e3e4e5;
+  background: #22304a;
+  bottom: 10px;
   z-index: 2;
 }
 
@@ -166,7 +181,7 @@
 }
 
 .researchSuggestion {
-  background: #ADD8E6;
+  background: #23728d;
 }
 .researchFooter > th:nth-child(2){
   background: transparent;

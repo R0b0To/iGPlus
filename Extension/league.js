@@ -98,7 +98,7 @@ async function inject_history()
 
 
 try {
-  setTimeout(inject_history,100);
+  //setTimeout(inject_history,100);
 } catch (error) {
 
 }
@@ -215,7 +215,7 @@ async function standingsChanges(){
     //add css arrows based on gain
     const change_col = rows[i].insertCell(2);
     change_col.classList.add('arrow_container');
-    const value = Object.entries(standings_changes)[i][1];
+    const value = standings_changes[rows[i].querySelector('span.grey').textContent];
 
     const arrow_span = document.createElement('span')
     const value_span = document.createElement('span')
@@ -305,7 +305,7 @@ function getTeamStandings(tier_table){
 
   for(i=0; i<teams.length; i++)
     {
-      current_standings[teams[i].textContent] = parseInt(scores[i].textContent)
+      current_standings[String(teams[i].textContent)] = parseInt(scores[i].textContent)
     }
   return current_standings
 }
