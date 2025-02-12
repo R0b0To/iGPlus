@@ -5,18 +5,24 @@ function fuel_calc(f){
         case f >= 140:
         case f >= 120:
           return ((f ** -0.089) * 0.679);*/
+  case f >= 250:
+    return (((0.6666 * f) ** -0.08434) * 0.669);          
+  case f >= 200:
+    return (((0.6666 * f) ** -0.08434) * 0.669);          
+  case f >= 150:
+    return (((0.6666 * f) ** -0.08473) * 0.669);        
   case f >= 100:
-    return (((0.65 * f) ** -0.0792) * 0.652);
+    return (((0.6666 * f) ** -0.08505) * 0.669);
   case f >= 80:
-    return (((0.65 * f) ** -0.081) * 0.657);
+    return (((0.6666 * f) ** -0.08505) * 0.669);
   case f >= 60:
-    return (((0.65 * f) ** -0.0835) * 0.665);
+    return (((0.6666 * f) ** -0.08505) * 0.669);
   case f >= 40:
-    return (((0.65 * f) ** -0.0854) * 0.669); //very good
+    return (((0.6666 * f) ** -0.0842) * 0.669); //very good
   case f >= 20: //(20-40)
-    return (((0.55 * f) ** -0.0886) * 0.678);
+    return (((0.6666 * f) ** -0.083) * 0.669);
   default:  //(1-20)
-    return (((0.55 * f) ** -0.0947) * 0.69);
+    return (((0.6666 * f) ** -0.11) * 0.725);
   }}
 
 function get_wear(tyre,laps,track_info,car_economy,multiplier){

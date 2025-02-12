@@ -210,7 +210,7 @@ function cleanHtml(string){
  */
 async function findCurrentTier() {
   const { fetchManagerData } = await import(chrome.runtime.getURL('common/fetcher.js'));
-  const response = await fetchManagerData();
+  const response = await fetchManagerData(2);
  /* const tier = response.vars.manager.match(/class="([^"]*\bblock-[^\s"]*)/)[1].split('-')[1]; 
   const tierMap = {
     gold: 3,
