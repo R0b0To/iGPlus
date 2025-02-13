@@ -40,6 +40,10 @@ function inject_button() {
   button.innerText = 'Extract';
   
   button.id = 'extract_button';
+  const spinner = document.createElement('span');
+  spinner.classList.add('spinner');
+  button.append(spinner);
+  spinner.style.display = 'none';
   button.classList.add('pushBtn');
   button2.id = 'sheet_icon';
   button2.classList.add('pushBtn');
@@ -62,14 +66,19 @@ function inject_button() {
   quali_button = export_button.cloneNode(true);
   race_button = export_button.cloneNode(true);
   podium = export_button.cloneNode(true);
+  const spinner = document.createElement('span');
+  spinner.classList.add('spinner');
+  
   podium.id = 'top3';
   podium.textContent = 'Top 3';
+  podium.append(spinner);
   quali_button.textContent = 'Export Q';
+  [podium,quali_button].forEach((ele) =>{ ele.classList.add('mRight')});
   podium.addEventListener('click', podium_copy);
   quali_button.addEventListener('click', quali_export);
   race_button.addEventListener('click', race_export);
   
-  if (p.childElementCount == 5) {
+  if (p.childElementCount == 3) {
     const buttons_container = document.createElement('div');
     const tier_container = document.createElement('div');
     buttons_container.classList.add('inj_container','f_right');
@@ -93,51 +102,79 @@ function inject_button() {
 
 async function podium_copy()
 {
-  const [{ fetchDriverInfo },{ fetchTeamInfo }, { parseAttributes }] = await Promise.all([
-    import(chrome.runtime.getURL('common/fetcher.js')),
+  this.childNodes[0].textContent = '';
+  this.childNodes[1].style.display = 'inline-block';
+  const [{ fetchDriverInfo, fetchTeamInfo }, { parseAttributes }] = await Promise.all([
     import(chrome.runtime.getURL('common/fetcher.js')),
     import(chrome.runtime.getURL('driver/driverHelpers.js'))
   ]);
 
-  async function getManagerNameFrom(driver){
+  async function getManagerName(driver){
     const driverInfo = await fetchDriverInfo(driver);
     const managerId =  new URLSearchParams(parseAttributes(driverInfo).tLink).get('team');
     const managerdata = await fetchTeamInfo(managerId);
     const managerName = managerdata.vars.manager.match(/\/>(.*)$/)[1].substring(1);
     return managerName;
   }
-  const raceTable = document.querySelector('#race table').tBodies[0];
-  const trackName = document.querySelector('#dialogs-container > div > div > div.dialog-head > h1').textContent.substring(1);
 
-  //driver1 = r.rows[0].childNodes[1].childNodes[4].textContent.substring(1);
-  const team_name1 = raceTable.rows[0].childNodes[1].childNodes[6].childNodes[0].textContent;
-  let driverId = new URLSearchParams(raceTable.rows[0].querySelector('a').href).get('id');
-  const manager1 = await getManagerNameFrom(driverId);
-  //driver2 = r.rows[1].childNodes[1].childNodes[4].textContent.substring(1);
-  const team_name2 = raceTable.rows[1].childNodes[1].childNodes[6].childNodes[0].textContent;
-  driverId = new URLSearchParams(raceTable.rows[1].querySelector('a').href).get('id');
-  const  manager2 = await getManagerNameFrom(driverId);
-  //driver3 = r.rows[2].childNodes[1].childNodes[4].textContent.substring(1);
-  const team_name3 = raceTable.rows[2].childNodes[1].childNodes[6].childNodes[0].textContent;
-  driverId = new URLSearchParams(raceTable.rows[2].querySelector('a').href).get('id');
-  const manager3 = await getManagerNameFrom(driverId);
+  function extractStrategyPreview(strategyDiv) {
+    if (!strategyDiv) return "";
 
-  const fastLap = document.getElementsByClassName('mOpt purple robotoBold')[0];
-  const teamFastLap = fastLap.parentElement.childNodes[1].childNodes[6].childNodes[0].textContent;
+    const tireMap = {
+        "ts-M": "⚪", // Medium
+        "ts-H": "🟠", // Hard
+        "ts-S": "🟡", // Soft
+        "ts-SS": "🔴", // Super Soft
+        "ts-W": "🔵", // Wet
+        "ts-I": "🟢"  // Intermediate
+    };
+
+    let result = "";
+
+    strategyDiv.querySelectorAll('td').forEach(td => {
+        const tireClass = Object.keys(tireMap).find(cls => td.classList.contains(cls));
+        if (tireClass) {
+            result += tireMap[tireClass]; 
+        } else {
+            result += td.textContent.trim();
+        }
+    });
+
+    return result;
+}
+
+  const raceTable = document.querySelector('#race table tbody');
+  const trackName = document.querySelector('.dialog-head h1').textContent.trim();
+  const medals = ["🥇", "🥈", "🥉"];
+  const advanced_podium = document.getElementsByClassName('strategy-preview');
+
+  const podium = await Promise.all(
+    Array.from(raceTable.rows).slice(0, 3).map(async (row, index) => {
+      const teamName = row.querySelector('.teamName').textContent;
+      const driverId = new URLSearchParams(row.querySelector('a').href).get('id');
+      const managerName = await getManagerName(driverId);
+
+      let podium_string = `${medals[index]} ${teamName} - ${managerName}`
+
+      if(advanced_podium.length>0)
+        podium_string += `\n${" ".repeat("🥇".length + 1)}${extractStrategyPreview(advanced_podium[index])}` ;
+
+      return podium_string;
+    })
+  );
+  const fastLap = document.getElementsByClassName('mOpt bgFastest robotoBold')[0];
+  const teamFastLap = fastLap.parentElement.childNodes[1].childNodes[4].childNodes[0].textContent;
   const driverFastLap = fastLap.parentElement.childNodes[1].childNodes[0].href.match(/\d+/)[0];
-  const managerFastLap = await getManagerNameFrom(driverFastLap);
+  const managerFastLap = await getManagerName(driverFastLap);
 
   const bestLapString = raceTable.parentElement.childNodes[0].childNodes[0].childNodes[3].textContent;
-  const string = '🚦 🏁' + trackName + '🚦\n' +
-        '🥇' + team_name1 + ' - ' + manager1 + '\n' +
-        '🥈' + team_name2 + ' - ' + manager2 + '\n' +
-        '🥉' + team_name3 + ' - ' + manager3 + '\n' +
-        '🏎️💨' + bestLapString + ': ' + teamFastLap + ' - ' + managerFastLap + '\n' +
-        '👇 🎤..... 👇';
+  const resultString = `🚦 🏁 ${trackName} 🚦\n${podium.join('\n')}\n🏎️💨 ${bestLapString}: ${teamFastLap} - ${managerFastLap}\n👇 🎤..... 👇`;
 
-  navigator.clipboard.writeText(string).then(() => {
+  navigator.clipboard.writeText(resultString).then(() => {
     var button = document.getElementById('top3');
-    button.setAttribute('style','pointer-events:none; opacity:50%');
+    button.childNodes[0].textContent = "Copied!";
+    button.childNodes[1].style.display = 'none';
+    button.classList.add('podium-off');
   }, () => {
     alert('failed to copy top 3');
   });
@@ -316,7 +353,7 @@ function all_export()
   all_button.id = 'alldrivers';
   all_button.textContent = 'Full CSV';
   
-  if (p.childElementCount == 4) {
+  if (p.childElementCount == 3) {
     p.prepend(all_button);
     p.prepend(export_button);
   }
@@ -335,11 +372,11 @@ function all_export()
 function progress() {
 
   const progress_div = document.createElement('div');
-  progress_div.setAttribute('style', 'background-color:#ddd; height:10px; border-radius:4px;');
+  
   progress_div.id = 'progress';
-
+  progress_div.classList.add('progress')
   const bar_div = document.createElement('div');
-  bar_div.setAttribute('style', 'background-color:#4CAF50; width:1%; height:10px; border-radius:4px;');
+  bar_div.setAttribute('style', 'background-color:#4CAF50; width:1%; height:5px; border-radius:4px;');
   bar_div.id = 'bar';
   progress_div.appendChild(bar_div);
   return progress_div;
@@ -396,9 +433,14 @@ function extract_function() {
   if(extract_button.disabled)
     return
   //this.remove();
+  var button = document.getElementById('top3');
+  button.classList.remove('podium-off');
+  button.childNodes[0].textContent = 'Top 3';
   extract_button.disabled = true;
-  extract_button.classList.add('disabled');
-  b_parent.append(progress());
+  extract_button.classList.add('disabled','podium-off');
+  extract_button.childNodes[0].textContent = '';
+  extract_button.childNodes[1].style.display = 'inline-block';
+  b_parent.prepend(progress());
   race_results = document.querySelector('#race table').tBodies[0];
   quali_results = document.querySelector('#qualifying table').tBodies[0];
 
@@ -461,6 +503,9 @@ async function race_report() {
   await storeCopyOfActive();
   formatTable();
   document.getElementById('progress').remove();
+  const extract_button = document.getElementById('extract_button');
+  extract_button.childNodes[0].textContent = "Extract";
+  extract_button.childNodes[1].style.display = 'none';
   all_export();
 }
 
@@ -635,7 +680,7 @@ async function update_managers(table, index) {
 }
 function formatTable(){
 
-  if(document.getElementById('histTyre') != null)
+  if(document.getElementsByClassName('strategy-preview').length > 0)
     return;
 
   chrome.storage.local.get('active', function(data) {
@@ -668,14 +713,13 @@ function formatTable(){
     //t_head.rows[0].cells[1].style.width ="60%";
     const t_body = table.tBodies[0];
 
-    var history = document.createElement('div');
-    history.id = 'histTyre';
+    
 
 
     for(var i = 0 ; i < t_body.rows.length ; i++){
 
-      history = document.createElement('div');
-      history.id = 'histTyre';
+      var history = document.createElement('div');
+      history.classList.add('strategy-preview');
       stops = manager[i].pit_stop.split(',');
       stops.forEach(item =>{
         var ele;
