@@ -12,8 +12,8 @@ function parseSkills(personData) {
   const fragmentToParse = document.createElement('table');
   fragmentToParse.innerHTML = personData.vars.skillTable;
 
-  const strength = fragmentToParse.querySelector('td.bgLightGreen icon')?.textContent || null;
-  const weakness = fragmentToParse.querySelector('td.bgLightRed icon')?.textContent || null;
+  const strength = fragmentToParse.querySelector('.padSmall.block-green icon')?.textContent || null;
+  const weakness = fragmentToParse.querySelector('.padSmall.block-red icon')?.textContent || null;
 
   return { strength, weakness };
 }
@@ -29,7 +29,7 @@ function createSkillLabel(skill, type) {
 
   const image = document.createElement('svg');
   image.innerHTML = iconsSVG[skill];
-  image.childNodes[0].style.width = "18px";
+  //image.childNodes[0].style.width = "18px";
   image.childNodes[0].style.display=" inline-flex";
 
  // image.src = icons[skill];

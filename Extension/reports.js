@@ -38,7 +38,8 @@ function inject_button() {
   button.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
   button2.setAttribute('style', 'position:relative; left:10px;');
   button.innerText = 'Extract';
-  
+  const closebutton = document.querySelector('.close');
+  closebutton.classList.add('close-fix');
   button.id = 'extract_button';
   const spinner = document.createElement('span');
   spinner.classList.add('spinner');
@@ -72,7 +73,7 @@ function inject_button() {
   podium.id = 'top3';
   podium.textContent = 'Top 3';
   podium.append(spinner);
-  quali_button.textContent = 'Export Q';
+  quali_button.textContent = 'Q';
   [podium,quali_button].forEach((ele) =>{ ele.classList.add('mRight')});
   podium.addEventListener('click', podium_copy);
   quali_button.addEventListener('click', quali_export);
@@ -153,11 +154,12 @@ async function podium_copy()
       const teamName = row.querySelector('.teamName').textContent;
       const driverId = new URLSearchParams(row.querySelector('a').href).get('id');
       const managerName = await getManagerName(driverId);
+      const finish = row.cells[2].textContent;
 
       let podium_string = `${medals[index]} ${teamName} - ${managerName}`
 
       if(advanced_podium.length>0)
-        podium_string += `\n${" ".repeat("🥇".length + 1)}${extractStrategyPreview(advanced_podium[index])}` ;
+        podium_string += `\n${" ".repeat("🥇".length + 1)}${extractStrategyPreview(advanced_podium[index])} (${finish})` ;
 
       return podium_string;
     })

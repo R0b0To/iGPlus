@@ -9,6 +9,10 @@
     border-radius:4px;
 
 }
+.close-fix{
+    float: right;
+  position: relative!important;
+}
 .spinner {
     display: none;
     
@@ -100,6 +104,7 @@
 .inj_header{
     display: flex;
     flex-wrap: wrap;
+    background: none;
 }
 .export_container{
     display: flex;

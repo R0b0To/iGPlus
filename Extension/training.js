@@ -22,8 +22,13 @@ async function startHealthMonitor() {
     const healthNotice = document.createElement('span');
     healthNotice.innerText = `${noticeDiv[2].textContent}.`;
 
-    const nextRaceNotice = document.createElement('span');
-    nextRaceNotice.innerText = `\n Next race: ${raceDay} at ${raceTme}`;
+    const nextRaceNotice = document.createElement('div');
+    const nextRace_text = document.createElement('span');
+    const nextRace_date = document.createElement('span');
+    nextRace_date.classList.add('date-highlight');
+    nextRaceNotice.append(nextRace_text,nextRace_date);
+    nextRace_text.textContent = `\n Next race: ${raceDay} at `;
+    nextRace_date.textContent = raceTme;
 
     noticeDiv[2].replaceChildren(healthNotice, nextRaceNotice);
     //noticeDiv[1].replaceChildren(healthNotice.cloneNode(true), nextRaceNotice.cloneNode(true));
@@ -60,31 +65,41 @@ async function startHealthMonitor() {
       const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
 
       // highlight healthbar depending on the next race time & estimated health to that moment
-      if (nextRaceData) {
-        const hoursDiff = (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000;
-        if (hoursDiff > 0) {
-          const alertClass = hoursDiff < 3 ? healthClasses[1] : healthClasses[2];
-          driver.parentElement.classList.remove(...healthClasses);
-          driver.classList.remove(...healthClasses);
-          driver.parentElement.classList.add(alertClass);
-        }
-      }
+      
       const dateString = `~${padValue(fullDate.getHours())}:01`;
-      const healthText = health < 100 ? dateString : '';
+      const health_at_race_time = Math.max(0, Math.min(100, Math.floor(100 - (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000 * 5)));
+      const healthText = health < 100  ? `${dateString} ${health_at_race_time > 0 ? health_at_race_time + '%' : ''}` 
+    : '100%';
       const healthBarCell = driver.closest('td');
+     
+      
       let estimatedHealTimeCell;
       if (driver.closest('tr').querySelectorAll('[id=dateTd]').length == 0) {
+        date_span = document.createElement('span');
+        date_span.classList.add('training-date');
         // works when you refresh the page
         estimatedHealTimeCell = document.createElement('td');
         estimatedHealTimeCell.id = 'dateTd';
-
+        estimatedHealTimeCell.append(date_span);
         healthBarCell.parentElement.insertBefore(estimatedHealTimeCell, healthBarCell);
       } else {
         // works when you train a driver and the health has to be updated
         estimatedHealTimeCell = driver.closest('tr').querySelector('#dateTd');
       }
+        date_span = driver.closest('tr').querySelector('.training-date');
+        date_span.textContent = healthText;
+        if (nextRaceData) {
+          const hoursDiff = (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000;
+          date_span.classList.remove(...healthClasses);
+          if (hoursDiff > 0) {
+            const alertClass = hoursDiff < 3 ? healthClasses[1] : healthClasses[2];
+            date_span.classList.add(alertClass);
+            driver.classList.remove(...healthClasses);
+            driver.classList.remove(...healthClasses);
+            driver.classList.add(alertClass);
+          }
 
-      estimatedHealTimeCell.textContent = healthText;
+        }
     });
   }
 

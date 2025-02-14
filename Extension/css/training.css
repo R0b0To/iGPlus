@@ -8,12 +8,15 @@
   filter: invert(.35);
 }
 
-.healthAlert > div{
+.healthAlert {
   background: #ae6562 !important;
 }
 
-.healthWarn > div {
+.healthWarn  {
   background: #b0a858 !important;
+}
+.healthGood  {
+  background: #7ca66c!important;
 }
 
 #trainingForm div.notice {
@@ -24,4 +27,19 @@
 
 #trainingForm div.notice > span {
   padding: 0 .2em;
+}
+
+.training-date{
+  padding: 10px;
+  border-radius: 8px;
+  background: #7ca66c;
+  min-width: 40px;
+  display: flex;
+  z-index: 1;
+  position: relative;
+}
+.date-highlight{
+  background: #1a2235;
+  padding: 3px;
+  border-radius: 8px;
 }

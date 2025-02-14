@@ -79,7 +79,7 @@ async function handleSettings() {
   const hq = document.getElementById('hq');
   
   //#region Enabled scripts
-  [reviewCheckbox,staffCheckbox,hq].forEach((ele)=>{
+  [reviewCheckbox].forEach((ele)=>{
     ele.classList.add('disabled');
   });
   //#endregion
