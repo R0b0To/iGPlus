@@ -37,8 +37,8 @@ async function addLevelLabels() {
     //building.previousSibling.append(levelDiv);
     //building.closest('.staff-profile').firstElementChild.append(levelDiv);
     const label = building.nextSibling.querySelector('.building-name-overlay');
-
-    label.prepend(levelDiv);
+    if(label.querySelectorAll('.levelSpan').length == 0)
+      label.prepend(levelDiv);
 
   });
 }
