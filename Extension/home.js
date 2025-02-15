@@ -15,23 +15,26 @@ function addExtraButtons() {
     console.warn(err);
   }
 }
-
-addExtraButtons();
-//whenLockedSetup();
+//addExtraButtons();
+whenLockedSetup();
 
 function whenLockedSetup(){
-  const raceID = document.getElementById('mRace').href.replace(/^\D+/g, '');
-  if(raceID != '')injectLockedShortcuts(raceID);
+  //const raceID = document.getElementById('mRace').href.replace(/^\D+/g, '');
+  const is_live = document.getElementById('mRace').classList.contains('live');
+  if(is_live)injectLockedShortcuts();
 }
 
-function injectLockedShortcuts(raceID){
+async function injectLockedShortcuts(){
+  const { fetchNextRace } = await import(chrome.runtime.getURL('./common/fetcher.js'));
+  const nextRaceData = await fetchNextRace();
   const setupURL = 'p=race&tab=setup';
   const strategyURL = 'p=race&tab=strategy';
+  const raceID =  nextRaceData.nextLeagueRaceId; //document.querySelector('a[href^="p=league&id="]').href.replace(/^\D+/g, '');
   const qualiURL = `d=result&id=${raceID}&tab=qualifying`;
   const carDesignURL = 'd=design';
   const carResearchURL = 'd=research';
-  const shortcutsLocation = document.getElementById('splashPrep');
-
+  const shortcutsLocation = document.getElementById('race-tile').parentElement;
+  shortcutsLocation.classList.add('adapt-row');
   const setupbtn = createdButton('lockedsetup',setupURL,'Setup');
   const strategybtn = createdButton('lockedstrat',strategyURL,'Strategy');
   const qualibtn = createdButton('lockedquali',qualiURL,'Qualifying');
@@ -42,13 +45,13 @@ function injectLockedShortcuts(raceID){
     btn.style.flexGrow = 1;
     btn.style.margin = '2px';}
   );
-  container.setAttribute('style','display: flex;justify-content: center;margin-top: 5px;');
-
-  container.append(researchbtn,designbtn,strategybtn,qualibtn);
+  //container.setAttribute('style','display: flex;justify-content: center;margin-top: 5px;');
+  container.classList.add('shortcuts-igp');
+  container.append(researchbtn,designbtn,qualibtn,strategybtn);
 
   if(document.getElementById('lockedstrat') == null)
   {
-    shortcutsLocation.append(container);
+    shortcutsLocation.insertBefore(container, shortcutsLocation.lastChild)
   }
     
 
@@ -57,7 +60,7 @@ function injectLockedShortcuts(raceID){
 function createdButton(id,link,name){
   const btn = document.createElement('a');
   btn.id = id;
-  btn.classList.add('btn');
+  btn.classList.add('btn','pushBtn');
   btn.href = link;
   btn.textContent = name;
   return btn;

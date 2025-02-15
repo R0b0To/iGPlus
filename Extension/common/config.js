@@ -116,7 +116,7 @@ const tabScripts = {
     styles: ['reports.css']
   },
   // main Staff page
-  '/app/p=staff&tab=staff': {
+  '/app/p=staff': {
     key: 'staff',
     scripts: ['staff/staff.js'],
     styles: ['css/staff.css']

@@ -1,24 +1,29 @@
 (async () => {
-  const { createSkillLabel} = await import(chrome.runtime.getURL('/staff/helpers.js'));
+  const { createSkillLabel, parseSkills} = await import(chrome.runtime.getURL('/staff/helpers.js'));
+  const { fetchStaffInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
 
   const staffDiv = document.getElementById('staff');
-
   await Promise.all([addActiveDesignerSkills(), addReserveStaffSkills()]);
 
   async function addActiveDesignerSkills() {
     /** @type HTMLAnchorElement */
-    const activeChiefDesigner = staffDiv.querySelector('.hoverData')//staffDiv.querySelector('div.staff-profile a.linkParent');
     
-    const {strength, weakness} = parseAppend(activeChiefDesigner.dataset.append);
-    console.log(strength, weakness)
+    //const activeChiefDesigner = staffDiv.querySelector('.hoverData')//staffDiv.querySelector('div.staff-profile a.linkParent');
     
-    const cdHeader = activeChiefDesigner.closest('div');
-    console.log(cdHeader)
+    const active_CD = staffDiv.querySelector('.hover a');
+    const id_activeCD = new URLSearchParams(active_CD.href).get('id');
+    const data = await fetchStaffInfo(id_activeCD);
+    const { strength, weakness } = parseSkills(data);
+    //const {strength, weakness} = parseAppend(activeChiefDesigner.dataset.append);
+
+    //const cdHeader = activeChiefDesigner.closest('div');
+    const cdHeader = active_CD.closest('div');
 
     // adding strength for active designer
-    if (cdHeader.childElementCount === 2) {
+    if (cdHeader.childElementCount === 4) {
       const wrapper = document.createElement('div');
       wrapper.classList.add('skillWrapper');
+      wrapper.style.position = 'relative'
       wrapper.append(createSkillLabel(strength, 'strength'), createSkillLabel(weakness, 'weakness'));
       cdHeader.append(wrapper);
     }
@@ -35,14 +40,17 @@ function parseAppend(append){
 
   async function addReserveStaffSkills() {
     /** @type HTMLTBodyElement */
-    const reserveStaff = staffDiv.lastChild.querySelector('tbody');
-
+    const reserveStaffTable = document.getElementById('reserveStaff');
+    const reserveStaff = reserveStaffTable.tBodies[0];
     for (let i = 0; i < reserveStaff.rows.length; i += 1) {
     
       const {strength, weakness} = parseAppend(reserveStaff.rows[i].cells[2].dataset.append);
       
-      if (reserveStaff.rows[i].childNodes[0].childElementCount == 3 && strength) {
-        reserveStaff.rows[i].childNodes[0].append(createSkillLabel(strength, 'strength'),createSkillLabel(weakness, 'weakness'));
+      if (reserveStaff.rows[i].cells[1].childElementCount == 2 && strength) {
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('skillWrapper','opt');
+        wrapper.append(createSkillLabel(strength, 'strength'),createSkillLabel(weakness, 'weakness'))
+        reserveStaff.rows[i].cells[1].append(wrapper);
 
       }
     }

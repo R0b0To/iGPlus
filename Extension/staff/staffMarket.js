@@ -33,7 +33,6 @@ async function displayStaff(){
       for (let i = 0; i < CDNames.length; i++) {
         const name = CDNames[i];
         const elements = document.querySelectorAll(`[data-sort="${name}"]`);
-
         if (elements.length > 0) {
           elements.forEach((cdStaff)=>addDesignerSkills(cdStaff));
           break; //stop looking for correct CD language
@@ -58,7 +57,6 @@ async function displayStaff(){
       for (let i = 0; i < TDNames.length; i++) {
         const name = TDNames[i];
         const elements = document.querySelectorAll(`[data-sort="${name}"]`);
-
         if (elements.length > 0) {
           elements.forEach(async (tdStaff)=>{
 

@@ -354,7 +354,7 @@ top:-14px;
   pointer-events:none;
 }
 .dropzone{
-  
+  transform: scale(1)!important;
   background-color: rgba(155, 155, 155, 0.5);
   border-radius: 0!important;
   z-index: 99;
@@ -378,6 +378,7 @@ td.dropzone{
 }
 .dropzone.accept{
   background-color: #768a6e!important;
+  transition: background-color 0.3s ease-in-out;
 }
 .dragging{
   opacity: 0.2;
@@ -387,6 +388,10 @@ td.dropzone{
   color: #ffffff;
   border-radius: 8px;
   cursor: pointer;
+}
+.dragMe:hover{
+  transform: scale(1.2);
+  transition: transform 0.3s ease-in-out;
 }
 .pushSelect{
   margin-bottom:0px; 

@@ -1,21 +1,29 @@
 async function addStaffSkillLabels() {
   /** @type HTMLTBodyElement[] */
   const staffTable = document.querySelector('#dialogs-container form table tbody');
-
   const { fetchStaffInfo } = await import(chrome.runtime.getURL('/common/fetcher.js'));
   const { createSkillLabel, parseSkills } = await import(chrome.runtime.getURL('/staff/helpers.js'));
+  
+  function filterTableRows(rowCollection) {
+    const CDNames = ['CD','JD','LE','DC','CC','HO','gł. inż.','KD','VT','ГК','PS','BT','رئيس مصممين','수석 디자이너','光盘'];
+    return Array.from(rowCollection).filter(row => {
+        const cell = row.cells[3];
+        return cell && CDNames.some(cdName => cell.textContent.includes(cdName));
+    });
+}
+
+  const cd_rows = filterTableRows(staffTable.rows)
 
   await Promise.all(
-    [...staffTable.rows].map(async (row) => {
+    [...cd_rows].map(async (row) => {
       const personId = row.querySelector('input').value;
       const data = await fetchStaffInfo(personId);
       const { strength, weakness } = parseSkills(data);
-
       const wrapper = document.createElement('div');
-      wrapper.classList.add('skillWrapper');
+      wrapper.classList.add('skillWrapper','opt');
       wrapper.append(createSkillLabel(strength, 'strength'), createSkillLabel(weakness, 'weakness'));
 
-      row.childNodes[0].appendChild(wrapper);
+      row.cells[2].append(wrapper);
     })
   );
 }
