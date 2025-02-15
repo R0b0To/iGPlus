@@ -54,7 +54,7 @@ const language = {
     researchHelp: 'The highlighted row denotes the recommended research, determined through a weighted system.',
     scriptDescription: {
       gsheet: 'Import google data to be displayed in the strategy page below the advanced options',
-      raceReview: 'Home page shortcuts.',
+      raceReview: 'Home page shortcuts during live race.',
       leagueHome: 'In the league page add a full race history button and position finished to each track',
       research: 'Add a table with the values from the bars in the research menu.',
       training: 'Add an extra column in the training page if driver is recovering.',
@@ -76,7 +76,7 @@ const language = {
       RaceReport: 'Segno Resoconto gara',
       StartOvertakes: 'Segno Sorpassi fine 2° giro',
       separator: 'Separatore di elenco',
-      home: 'Scorciatoie nella home page',
+      home: 'Scorciatoie nella home page durante le gare live',
       leagueHome: 'Campionato',
       research:'Sviluppo Auto',
       training:'Allenamento',

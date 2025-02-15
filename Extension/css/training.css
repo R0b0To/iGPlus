@@ -5,7 +5,7 @@
 #dateHeader > img {
   width: 1.6em;
   padding-top: 0.3em;
-  filter: invert(.35);
+  filter: invert(0.9);
 }
 
 .healthAlert {
@@ -30,16 +30,19 @@
 }
 
 .training-date{
-  padding: 10px;
+  padding: 8px;
   border-radius: 8px;
   background: #7ca66c;
   min-width: 40px;
   display: flex;
   z-index: 1;
   position: relative;
+  justify-content: center;
+  font-size: clamp(0.5rem, 2.5vw, 1rem);
+
 }
 .date-highlight{
-  background: #1a2235;
+  background: #517593;;
   padding: 3px;
   border-radius: 8px;
 }

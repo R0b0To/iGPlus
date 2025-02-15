@@ -21,3 +21,13 @@
     width: 100% !important;
   }
 }
+
+.shortcuts-igp{
+  display: flex;
+  position: relative;
+  z-index: 1;
+}
+
+.adapt-row{
+  grid-template-rows: 60% 8% 30%!important;
+}

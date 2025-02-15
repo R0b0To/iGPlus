@@ -78,11 +78,6 @@ async function handleSettings() {
   //const forceSyncBtnDown = document.getElementById('forceSyncDown');
   const hq = document.getElementById('hq');
   
-  //#region Enabled scripts
-  [reviewCheckbox].forEach((ele)=>{
-    ele.classList.add('disabled');
-  });
-  //#endregion
   async function displayPreview(){
     const d = await chrome.storage.local.get('save');
     if(exportSave.value != 0)

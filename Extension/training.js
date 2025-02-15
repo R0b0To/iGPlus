@@ -68,7 +68,7 @@ async function startHealthMonitor() {
       
       const dateString = `~${padValue(fullDate.getHours())}:01`;
       const health_at_race_time = Math.max(0, Math.min(100, Math.floor(100 - (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000 * 5)));
-      const healthText = health < 100  ? `${dateString} ${health_at_race_time > 0 ? health_at_race_time + '%' : ''}` 
+      const healthText = health < 100  ? `${dateString} ${health_at_race_time > 0 ? `(${health_at_race_time}%)` : ''}` 
     : '100%';
       const healthBarCell = driver.closest('td');
      
