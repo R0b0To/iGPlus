@@ -44,6 +44,7 @@ const language = {
       startOvertakes:'End lap 2 Overtakes',
       fullRaceReport:'All reports and race info.'
     },
+    shortcuts:{research:'Research', design: 'Upgrade', qualifying: 'Qualifying', strategy: 'Strategy'},
     fuelText: 'Fuel',
     lapText: 'Lap',
     pushText: 'Push',
@@ -100,6 +101,7 @@ const language = {
       sheetName:'Nome Foglio',
       cloudSync:'Cloud Sync'
     },
+    shortcuts:{research:'Ricerca', design: 'Aggiorna', qualifying: 'Qualifica', strategy: 'Strategia'},
     popupText:{
       saveText: 'Salva',
       PitReport: 'Storia Pit',
@@ -169,6 +171,7 @@ const language = {
         sheetName: 'Nombre de la Hoja',
         cloudSync: 'Sincronización en la Nube'
       },
+      shortcuts:{research:'investigación', design: 'Mejorar', qualifying: 'Clasificación', strategy: 'Estrategia'},
       popupText: {
         saveText: 'Guardar',
         PitReport: 'Informe de Pits',

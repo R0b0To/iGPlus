@@ -28,13 +28,13 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
       
       //inject darkmode style at any page
       if(origin == 'https://igpmanager.com' && ['/forum-index','/forum-thread'].some(path=>{return pathname.startsWith(path);}) && enabledScripts.darkmode){
-        injectScripts(tabId,["common/darkmode_forum.js"])
+        injectScripts(tabId,["scripts/darkmode_forum.js"])
       }else if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){   
-          injectScripts(tabId,["common/darkmode.js"])
+          injectScripts(tabId,["scripts/darkmode.js"])
       }
       
       else if (origin == 'https://igpmanager.com' && !enabledScripts.darkmode){
-        injectScripts(tabId,["common/darkmode_off.js"])
+        injectScripts(tabId,["scripts/darkmode_off.js"])
       }
       if (!key || enabledScripts[key]) {
         scriptRunning = pathname;

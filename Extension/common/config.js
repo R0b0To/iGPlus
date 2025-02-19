@@ -34,121 +34,122 @@ const scriptDefaults = {
 const tabScripts = {
   '/app/d=sponsor&location=': {
     key: 'sponsor',
-    scripts: ['sponsor.js'],
-    styles: ['sponsor.css']
+    scripts: ['scripts/sponsor.js'],
+    styles: ['css/sponsor.css']
   },
   '/app/p=training': {
     key: 'train',
-    scripts: ['training.js'],
+    scripts: ['scripts/training.js'],
     styles: ['css/training.css']
   },
   '/app/d=research': {
     key: 'research',
-    scripts: ['research.js'], // TODO dynamically import localization!
-    styles: ['researchStyle.css']
+    scripts: ['scripts/research.js'], // TODO dynamically import localization!
+    styles: ['css/research.css']
   },
   '/app/p=cars': {
     key: 'research',
-    scripts: ['overview.js']
+    scripts: ['scripts/overview.js']
   },
   '/app/p=home': {
     key: 'review',
-    scripts: ['home.js'],
+    scripts: ['scripts/home.js'],
     styles: ['css/home.css']
   },
   '/app/&tab=news': {
     key: 'review',
-    scripts: ['home.js'],
+    scripts: ['scripts/home.js'],
     styles: ['css/home.css']
   },
   '/app/p=login&tab=news': {
     key: 'review',
-    scripts: ['home.js'],
+    scripts: ['scripts/home.js'],
     styles: ['css/home.css']
   },
   '/app/p=race&tab=setup': {
     key: 'setup',
-    scripts: ['raceSetup/setups.js','lib/purify.js'],
-    styles: ['strategy/style.css', 'raceSetup/style.css']
+    scripts: ['scripts/raceSetup/setups.js','lib/purify.js'],
+    styles: ['css/strategy.css', 'css/setups.css']
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
-    scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
+    scripts: ['scripts/driver/driverMarket.js','scripts/transfer.js','lib/purify.js']
   },
   '/app/p=transfers': {
     key: 'marketDriver',
-    scripts: ['driver/driverMarket.js','transfer.js','lib/purify.js']
+    scripts: ['scripts/driver/driverMarket.js','scripts/transfer.js','lib/purify.js']
   },
   '/app/p=race': {
     key: 'overview',
-    scripts: ['lib/highcharts.js', 'race/race.js'],
-    styles: ['race/style.css']
+    scripts: ['lib/highcharts.js', 'scripts/race/race.js'],
+    styles: ['css/race.css']
   },
   '/app/p=settings&tab=general': {
-    scripts: ['settings/addSettings.js','lib/gsi.js'],
-    styles: ['settings/settings.css','css/strategyPreview.css']
+    scripts: ['scripts/settings/addSettings.js','lib/gsi.js'],
+    styles: ['css/settings.css','css/strategyPreview.css']
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',
-    scripts: ['staff/staffMarket.js','transfer.js','lib/purify.js'],
+    scripts: ['scripts/staff/staffMarket.js','scripts/transfer.js','lib/purify.js'],
     styles: ['css/staff.css']
   },
   '/app/p=headquarters': {
     key: 'hq',
-    scripts: ['headquarters.js']
+    scripts: ['scripts/headquarters.js']
   },
   '/app/d=shortlist&tab=drivers': {
-    scripts: ['shortlist.js']
+    scripts: ['scripts/shortlist.js']
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['strategy/strategy.js','lib/gsi.js','lib/purify.js'],
-    styles: ['strategy/style.css','css/strategyPreview.css']
+    scripts: ['scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
+    styles: ['css/strategy.css','css/strategyPreview.css']
   },
   '/app/p=league&id=': {
     key: 'league',
-    scripts: ['league.js'],
+    scripts: ['scripts/league.js'],
     styles: ['css/league.css']
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['reports.js', 'lib/purify.js','lib/gsi.js'],
-    styles: ['reports.css']
+    scripts: ['scripts/reports.js', 'lib/purify.js','lib/gsi.js'],
+    styles: ['css/reports.css']
   },
   // main Staff page
   '/app/p=staff': {
     key: 'staff',
-    scripts: ['staff/staff.js'],
+    scripts: ['scripts/staff/staff.js'],
     styles: ['css/staff.css']
   },
   // dialog to change active Chief Designer
   '/app/d=change&eType=2&sType=design': {
     key: 'staff',
-    scripts: ['staff/changeDesigner.js']
+    scripts: ['scripts/staff/changeDesigner.js']
   },
   '/app/d=teamSettings': {
-    scripts: ['team_settings.js']
+    scripts: ['scripts/team_settings.js']
   },
   '/app/d=resultDetail&id=': {
-    scripts: ['raceResult.js']
+    scripts: ['scripts/raceResult.js']
   },
   '/app/d=history': {
     key: 'history',
-    scripts: ['track_history.js'],
-    styles: ['race/style.css']
+    scripts: ['scripts/track_history.js'],
+    styles: ['css/race/style.css']
   },
   '/app/d=brand&id=': {
     key: 'engine',
-    scripts: ['engine.js'],
-    styles: ['race/style.css']
+    scripts: ['scripts/engine.js'],
+    styles: ['css/race/style.css']
   },
   '/app/': {
     key: 'refresh',
-    scripts: ['timerAlert.js']
+    scripts: ['scripts/timerAlert.js','scripts/home.js'],
+    styles: ['css/home.css']
   },
   gdrive: {
     key: 'gdrive',
-    scripts: ['autoSync.js','lib/gsi.js']
+    scripts: ['scripts/autoSync.js','lib/gsi.js']
   }
 };
 

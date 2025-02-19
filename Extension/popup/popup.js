@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', async function() {
-  const { addData, getAllData, clearData, getElementById,deleteElementById  } = await import(chrome.runtime.getURL('/common/database.js'));
-  const { language } = await import(chrome.runtime.getURL('/common/localization.js'));
+  const { addData, getAllData, clearData, getElementById,deleteElementById  } = await import(chrome.runtime.getURL('common/database.js'));
+  const { language } = await import(chrome.runtime.getURL('common/localization.js'));
   const isSyncEnabled = await chrome.storage.local.get({script:false}) ?? await browser.storage.local.get({script:false});
   const data = await chrome.storage.local.get({separator:','}) ?? await browser.storage.local.get({separator:','}) ?? false;
   const  separator =  data.separator;
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       if(!is_report_to_be_deleted_empty)
         if(isSyncEnabled.script?.gdrive ?? false){
         //can't get request on extension domain. This works only if the token is already stored locally
-          const { getAccessToken } = await import(chrome.runtime.getURL('/auth/googleAuth.js'));
+          const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
           const token = await getAccessToken() ?? false;
           if(token != false)
             chrome.runtime.sendMessage({
