@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "iGPlus",
-  "version": "1.5.43",
+  "version": "1.5.45",
   "description": "Enhance your iGPmanager experience",
   "permissions": [
     "tabs",

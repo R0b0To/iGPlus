@@ -1,4 +1,6 @@
-if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
+strategy_page = document.getElementById('strategy') ?? false;
+if(strategy_page !=false)
+if(!strategy_page?.getAttribute('injected') ?? false)
   (async function main(){
     document.getElementById('strategy').setAttribute('injected',true);
     const observer = new MutationObserver(function (mutations) {
@@ -228,7 +230,7 @@ if(!document.getElementById('strategy')?.getAttribute('injected') ?? false)
             var pushButtonHeader = document.createElement('th');
             pushButtonHeader.className = 'dropdown1';
             var pushButton = document.createElement('div');
-            pushButton.className = 'dropbtn1';
+            pushButton.classList.add('dropbtn1','pushBtn');
             pushButton.textContent = i18n[language].pushText;
             pushButton.addEventListener('click',function(){
               this.nextSibling.classList.toggle('show');

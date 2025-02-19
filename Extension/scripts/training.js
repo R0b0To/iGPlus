@@ -1,3 +1,9 @@
+(async () => {
+  const { delay } = await import(chrome.runtime.getURL('common/utility.js'));
+  await delay(200) // sleep a bit, while page loads
+  await startHealthMonitor();
+})();
+
 async function startHealthMonitor() {
   // green bar -> 100% healthy to the race
   // yellow (.healthWarn) -> 85% to 100% health at the race time
@@ -123,15 +129,4 @@ async function startHealthMonitor() {
   checkTimeToFullHealth();
 }
 
-// TODO move to separate retry module?
-(async () => {
-  for (let i = 0; i < 3; i += 1) {
-    try {
-      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
-      await startHealthMonitor();
-      break;
-    } catch (err) {
-      console.log(`Retry to start health monitoring #${i + 1}/3`);
-    }
-  }
-})();
+
