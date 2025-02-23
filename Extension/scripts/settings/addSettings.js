@@ -71,6 +71,7 @@ async function handleSettings() {
   const overviewCheckbox = document.getElementById('overview');
   const advancedHisCheckbox = document.getElementById('history');
   const sponsorCheckbox = document.getElementById('sponsor');
+  const disablebgCheckbox = document.getElementById('disablebg');
   const gdrive = document.getElementById('gdrive');
   const forceSyncBtn = document.getElementById('forceSync');
   const exportSave = document.getElementById('exportSave');
@@ -186,6 +187,7 @@ async function handleSettings() {
   }
 
   async function mergeStorage(scriptName, scriptValue) {
+    //console.log(scriptName,scriptValue);
     chrome.storage.local.get({ script: '' }, async (data) => {
       data.script[scriptName] = scriptValue;
       await chrome.storage.local.set({ script: data.script });
@@ -294,6 +296,7 @@ async function handleSettings() {
         overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
       });
 
+      //#region  Localization
       setTextToFieldtip(gsheetCheckbox, 'gsheet');
       setTextToFieldtip(leagueCheckbox, 'leagueHome');
       setTextToFieldtip(researchCheckbox, 'research');
@@ -308,7 +311,7 @@ async function handleSettings() {
       setTextToFieldtip(advancedHisCheckbox, 'history');
       setTextToFieldtip(sponsorCheckbox, 'sponsor');
       setTextToFieldtip(gdrive, 'gdriveHelp');
-
+    
       setTextToCheckbox(reviewCheckbox, 'home');
       setTextToCheckbox(leagueCheckbox, 'leagueHome');
       setTextToCheckbox(researchCheckbox, 'research');
@@ -321,6 +324,7 @@ async function handleSettings() {
       setTextToCheckbox(overviewCheckbox, 'carOverview');
       setTextToCheckbox(advancedHisCheckbox, 'advancedHis');
       setTextToCheckbox(sponsorCheckbox, 'verticalSponsor');
+      setTextToCheckbox(disablebgCheckbox, 'disablebg');
       setTextToCheckbox(document.getElementById('strategy'), 'raceStrategy');
       setTextToCheckbox(document.getElementById('setup'), 'raceSetup');
       setTextToCheckbox(document.getElementById('editS'), 'edit');
@@ -339,7 +343,7 @@ async function handleSettings() {
     }
     );
 
-
+    //#endregion
 
     chrome.storage.local.get({ 'separator': ',' }, function (data) {
       separator.value = data.separator;

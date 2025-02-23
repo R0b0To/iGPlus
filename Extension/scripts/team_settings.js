@@ -1,55 +1,76 @@
-colorPicker = document.getElementsByClassName("colorPicker")[0];
-new_colorPicker = document.createElement("input");
-new_colorPicker.setAttribute("style","width:32px; height: 32px");
- new_colorPicker.type = "color";
- new_colorPicker.value = colorPicker.value;
- new_colorPicker.addEventListener("change",update);
-
-
-
-parent = colorPicker.parentElement;
-
-parent.append(new_colorPicker);
-
-if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent))
-    {
-        
-        parent.setAttribute("style","display:grid; align-items: center; justify-content: start");
-       
-        text_input = document.createElement("input");
-        text_input.setAttribute("style","grid-Column: 2/span 1; width:64px;");
-        text_input.placeholder = colorPicker.value;
-
-        validate = document.createElement("a");
-        validate.setAttribute("style","width:32px; height:32px; background:#689954; border-radius:4px; text-align:center; font-family:RobotoCondensedBold; color:white; grid-column: 3/span 1; display:grid; align-content:center;");
-        validate.textContent = "ok";
-        validate.addEventListener("click",confirm);
-
-        parent.append(text_input);
-        parent.append(validate);
-    }
-
-
-colorPicker.style.display= "none";
+addCustom();
 
 
 function update(){
-    colorPicker.value = new_colorPicker.value;
+    const colorPicker = document.getElementById('teamColour');
+    colorPicker.value = this.value;
 }
-function confirm()
-{
-    t_value = text_input.value;
-    if(t_value != "")
-    {
-    regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/gm;
-    if(regex.test(t_value))
-    {
-        colorPicker.value = text_input.value;
-        new_colorPicker.value = text_input.value;
-    }
-    else{
-        alert("Wrong input, The format is #123456");
-    }
-}
+
+function addCustom(){
+  
+    const colorPicker = document.getElementById('teamColour');
+    const parent = colorPicker.parentElement;
+    parent.classList.add('custom-color-container');
+    const new_colorPicker = document.createElement("input");
+            new_colorPicker.classList.add('custom-color');
+            new_colorPicker.type = "color";
+            new_colorPicker.value = colorPicker.value;
+            new_colorPicker.addEventListener("change",update);
+            
+            colorPicker.style.display= "none";
+
+    if(document.getElementsByClassName('custom-color').length>0)return;
+    parent.append(new_colorPicker);  
+    const device = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if(device)
+        {
+            
+            //parent.setAttribute("style","display:grid; align-items: center; justify-content: start");
+            
+            new_colorPicker.addEventListener("change",function(e){
+                text_input.value = this.value});
+            const text_input = document.createElement("input");
+            text_input.classList.add('text-color');
+            text_input.placeholder = colorPicker.value;
+            text_input.maxLength = 7;
+            text_input.addEventListener("input", function(event) {
+                if (this.value.length === 7) {
+                   
+                    const t_value = this.value;
+                    if(t_value != "")
+                    {
+                    const regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/gm;
+                    if(regex.test(t_value))
+                    {
+                        colorPicker.value = text_input.value; 
+                        new_colorPicker.value = text_input.value;  
+                    }
+                    else{
+                        alert("Wrong input, The format is #0934af");
+                        text_input.value = colorPicker.value;
+                    }
+                    }      
+
+
+                }
+            });
+            //const validate = document.createElement("a");
+            //validate.classList.add('validate-button','pushBtn','btn');
+            //validate.textContent = "ok";
+            //validate.addEventListener("click",confirm);
+            //parent.append(validate);
+            
+            parent.append(text_input);
+            
+       
+        }
+        else{
+            
+        }
+    
+    
+    
+
 
 }

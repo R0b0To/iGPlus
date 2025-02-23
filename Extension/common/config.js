@@ -23,7 +23,8 @@ const scriptDefaults = {
   gdrive:false,
   transferLanguage:true,
   darkmode:false,
-  engine:true
+  engine:true,
+  disablebg:false
 };
 
 /**
@@ -127,7 +128,8 @@ const tabScripts = {
     scripts: ['scripts/staff/changeDesigner.js']
   },
   '/app/d=teamSettings': {
-    scripts: ['scripts/team_settings.js']
+    scripts: ['scripts/team_settings.js'],
+    styles: ['css/team_settings.css']
   },
   '/app/d=resultDetail&id=': {
     scripts: ['scripts/raceResult.js']
@@ -135,12 +137,12 @@ const tabScripts = {
   '/app/d=history': {
     key: 'history',
     scripts: ['scripts/track_history.js'],
-    styles: ['css/race/style.css']
+    styles: ['css/race.css']
   },
   '/app/d=brand&id=': {
     key: 'engine',
     scripts: ['scripts/engine.js'],
-    styles: ['css/race/style.css']
+    styles: ['css/race.css']
   },
   '/app/': {
     key: 'refresh',
@@ -150,6 +152,11 @@ const tabScripts = {
   gdrive: {
     key: 'gdrive',
     scripts: ['scripts/autoSync.js','lib/gsi.js']
+  },
+  disablebg: {
+    key: 'disablebg',
+    scripts: ['scripts/disablebg.js'],
+    styles: ['css/disablebg.css']
   }
 };
 

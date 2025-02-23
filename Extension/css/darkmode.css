@@ -24,6 +24,13 @@
   .myTeam{
     background: var(--dark-green)!important;
   }
+  .background{
+    background: #111 !important;
+}
+#myProfile > div > a{
+ color: var(--text-color)!important;
+}
+
   #header,
   #mManager,
   #myProfile,
@@ -274,6 +281,12 @@ table.rowBorders tbody tr,.com-wrap{
 
   background-color: var(--dark-background2)!important;
 
+}
+.tabs2 > a{
+  color:var(--text-color);
+}
+#headerBg{
+  background: rgb(32, 32, 32)!important;
 }
 #ts-W, .ts-W
 {

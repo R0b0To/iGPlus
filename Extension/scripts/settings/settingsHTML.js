@@ -72,7 +72,7 @@ function injectIGPlusOptions() {
       scriptsContainer.id = 'scripts';
       const scriptsLegend = create('legend');
       scriptsLegend.textContent = 'Scripts';
-
+      //id is important. it uses the same name as the config script
       scriptsContainer.append(scriptsLegend,
         appendWithDescription(createScriptCheckbox('review', 'Race Review'),
           addDescription('Home page review button. It opens https://igpmanager.com/app/d=raceReview')),
@@ -114,6 +114,9 @@ function injectIGPlusOptions() {
 
         appendWithDescription(createScriptCheckbox('sponsor', 'Vertical Sponsor'),
           addDescription('Display the sponsor options vertically')),
+        
+        createScriptCheckbox('disablebg', 'Disable Background image')
+
 
       );
       //#endregion

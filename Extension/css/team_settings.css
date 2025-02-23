@@ -1,0 +1,27 @@
+.custom-color{
+width: 38px; 
+height: 38px;
+border-radius: 8px;
+min-width: 38px;
+}
+.custom-color-container{
+    display:flex; 
+    align-items: center; 
+    justify-content: start
+}
+.validate-button{
+    width:32px!important; 
+    text-align:center; 
+    font-family:RobotoCondensedBold; 
+    color:white; 
+    align-content:center;
+}
+.colorPicker{
+    width: 38px; 
+    height: 38px;
+    border-radius: 8px;
+    min-width: 38px;
+}
+.text-color{
+    max-width: 78px;
+}
