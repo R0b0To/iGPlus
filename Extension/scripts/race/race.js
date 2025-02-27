@@ -99,7 +99,7 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
       {
       date: entry.dt,
       temperature: entry.main.temp,
-      precipitation: entry.rain ? entry.rain['3h'] || 0 : 0, // Extract precipitation data, default to 0 if not available
+      precipitation: entry.rain?.['3h'] ?? entry.snow?.['3h'] ?? entry.rain?.['1h'] ?? entry.snow?.['1h'] ?? 0, // Extract precipitation data, default to 0 if not available
       // humidity: entry.main.humidity
       // You can extract more information as needed
     }));

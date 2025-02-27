@@ -299,8 +299,8 @@ function race_export(download)
    race_table = r.tBodies[0];
   for (let i = 0; i < race_table.childElementCount; i++) {
     const  rank = i+1;
-    const driver_name = race_table.rows[i].cells[1].childNodes[4].textContent.trim();
-    const team_name = race_table.rows[i].cells[1].querySelector('.teamName').textContent.trim();
+    const driver_name = race_table.rows[i].cells[1].childNodes[2].textContent.trim();
+    const team_name = race_table.rows[i].cells[1].querySelector('.teamName').childNodes[0].textContent.trim();
     const original_finish = race_table.rows[i].cells[2].textContent;
     const finish = (!download && original_finish.charAt(0) === '+') ? "'" + original_finish : original_finish;
     const best_lap = race_table.rows[i].cells[3].textContent;
@@ -332,8 +332,8 @@ function quali_export(download)
   const quali_table = q.tBodies[0];
   for (let i = 0; i < quali_table.childElementCount; i++) {
     const rank = i+1;
-    const driver_name = quali_table.rows[i].cells[1].childNodes[4].textContent.trim();
-    const team_name = quali_table.rows[i].cells[1].querySelector('.teamName').textContent.trim();
+    const driver_name = quali_table.rows[i].cells[1].childNodes[2].textContent.trim();
+    const team_name = quali_table.rows[i].cells[1].querySelector('.teamName').childNodes[0].textContent.trim();
     const lap = quali_table.rows[i].cells[2].textContent;
     const original_gap = quali_table.rows[i].cells[3].textContent;
     const gap = (!download && original_gap.charAt(0) === '+') ? "'" + original_gap : original_gap;
