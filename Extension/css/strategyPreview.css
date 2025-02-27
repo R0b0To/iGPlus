@@ -2,9 +2,9 @@
     background-color: #d66e67;
     cursor: pointer;
     border-radius: 8px;
-  }
-  .trash:hover{
-    background-color: #994d48;
+    display: flex;
+    justify-content: center;
+    align-items: center;  
   }
 .trash > svg{
     padding: 2px;

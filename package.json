@@ -8,7 +8,7 @@
     "run:ff": "web-ext run --source-dir ./Extension",
     "lint:ff": "web-ext lint --source-dir ./Extension",
     "swapManifest": "./swapManifest.sh",
-    "androidFirefox":"web-ext run -t firefox-android --android-device=localhost:53249 --firefox-apk org.mozilla.fenix --source-dir ./Extension",
+    "androidFirefox":"web-ext run -t firefox-android --android-device=192.168.1.111:1111 --firefox-apk org.mozilla.firefox_beta --source-dir ./Extension",
     "chromeFirefoxSwapManifest-win":"cd ./Extension && IF EXIST manifest-ff.json (REN manifest.json manifest-c.json & REN manifest-ff.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-ff.json & REN manifest-c.json manifest.json)",
     "chromeEdgeSwapManifest-win":"cd ./Extension && IF EXIST manifest-e.json (REN manifest.json manifest-c.json & REN manifest-e.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-e.json & REN manifest-c.json manifest.json)"
   },

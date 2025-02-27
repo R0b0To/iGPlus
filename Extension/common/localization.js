@@ -28,7 +28,8 @@ const language = {
       link:'Link:',
       track:'Track ID column header',
       sheetName:'Sheet Name',
-      cloudSync:'Cloud Sync'
+      cloudSync:'Cloud Sync',
+      disablebg:'Disable background image'
 
     },
     popupText:{
@@ -44,6 +45,7 @@ const language = {
       startOvertakes:'End lap 2 Overtakes',
       fullRaceReport:'All reports and race info.'
     },
+    shortcuts:{research:'Research', design: 'Upgrade', qualifying: 'Qualifying', strategy: 'Strategy'},
     fuelText: 'Fuel',
     lapText: 'Lap',
     pushText: 'Push',
@@ -98,8 +100,10 @@ const language = {
       link:'Link:',
       track:'Nome colonna dei circuiti',
       sheetName:'Nome Foglio',
-      cloudSync:'Cloud Sync'
+      cloudSync:'Cloud Sync',
+      disablebg:"Disabilita l'immagine di sfondo"
     },
+    shortcuts:{research:'Ricerca', design: 'Aggiorna', qualifying: 'Qualifica', strategy: 'Strategia'},
     popupText:{
       saveText: 'Salva',
       PitReport: 'Storia Pit',
@@ -167,8 +171,10 @@ const language = {
         link: 'Enlace:',
         track: 'Encabezado de la Columna de ID de la Pista',
         sheetName: 'Nombre de la Hoja',
-        cloudSync: 'Sincronización en la Nube'
+        cloudSync: 'Sincronización en la Nube',
+        disablebg:'Desactivar imagen de fondo'
       },
+      shortcuts:{research:'investigación', design: 'Mejorar', qualifying: 'Clasificación', strategy: 'Estrategia'},
       popupText: {
         saveText: 'Guardar',
         PitReport: 'Informe de Pits',
