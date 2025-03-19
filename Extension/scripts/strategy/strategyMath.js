@@ -22,7 +22,7 @@ function fuel_calc(f){
   case f >= 20: //(20-40)
     return (((0.6666 * f) ** -0.083) * 0.669);
   default:  //(1-20)
-    return (((0.6666 * f) ** -0.11) * 0.725);
+    return (((0.6666 * f) ** -0.11) * 0.697);
   }}
 
 function get_wear(tyre,laps,track_info,car_economy,multiplier){
