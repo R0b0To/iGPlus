@@ -10,7 +10,7 @@ async function whenLockedSetup(){
   const countdown = document.getElementsByClassName('countdown')[1].textContent;
   const timeLeft = convertToSeconds(countdown);
 
-  if (timeLeft < 600 && timeLeft!=null)
+  if (timeLeft < 600)
     injectLockedShortcuts();
   else {
     setTimeout(injectLockedShortcuts, (timeLeft - 600) * 1000);
@@ -82,7 +82,7 @@ function createdButton(id,link,name){
 function convertToSeconds(timeString) {
   const timeParts = timeString.match(/(?:(\d+)d)?\s*(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?/);
 
-  if (!timeParts) return null; // Handle invalid format
+  if (!timeParts) return 999999999999;
 
   const days = parseInt(timeParts[1] || 0, 10);
   const hours = parseInt(timeParts[2] || 0, 10);
