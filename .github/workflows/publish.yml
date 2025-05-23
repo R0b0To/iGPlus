@@ -1,0 +1,51 @@
+name: Publish Web Extension
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build extension for Chrome
+        run: |
+          npm run swapManifest -- chrome
+          web-ext build --source-dir ./Extension --overwrite-dest --artifacts-dir web-ext-artifacts
+          mv web-ext-artifacts/*.zip web-ext-artifacts/chrome-extension.zip
+
+      - name: Publish to Chrome Web Store
+        uses: browser-actions/release-chrome-extension@latest
+        with:
+          extension-id: ${{ env.CHROME_EXTENSION_ID }}
+          extension-path: web-ext-artifacts/chrome-extension.zip
+          oauth-client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          oauth-refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      - name: Build extension for Firefox
+        run: |
+          npm run swapManifest -- firefox
+          web-ext build --source-dir ./Extension --overwrite-dest --artifacts-dir web-ext-artifacts
+          mv web-ext-artifacts/*.zip web-ext-artifacts/firefox-extension.zip
+
+      - name: Publish to Firefox Add-on Store
+        uses: browser-actions/release-firefox-addon@latest
+        with:
+          addon-id: ${{ env.UUID }}
+          addon-path: web-ext-artifacts/firefox-extension.zip
+          auth-api-issuer: ${{ secrets.AUTH_API_ISSUER }}
+          auth-api-secret: ${{ secrets.AUTH_API_SECRET }}
+          channel: listed # or unlisted
