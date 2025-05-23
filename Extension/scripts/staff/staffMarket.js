@@ -4,7 +4,8 @@ async function displayStaff(){
   const tableStaffObserver = new MutationObserver(function (_mutations) {getCDStaffDiv();});
 
   //observing change in the table istead of the timer because of the irregular server response time
-  tableStaffObserver.observe(document.getElementById('staff-table'), { childList: true, subtree: true });
+  //game chanched how it updated the table. working wihtout the observer !!!!
+  //tableStaffObserver.observe(document.getElementById('staff-table'), { childList: true, subtree: true });
 
   async function addDesignerSkills(staffDiv) {
     /** @type HTMLAnchorElement */

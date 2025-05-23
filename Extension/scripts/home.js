@@ -6,11 +6,16 @@ async function whenLockedSetup(){
   const { delay } = await import(chrome.runtime.getURL('common/utility.js'));
   //const raceID = document.getElementById('mRace').href.replace(/^\D+/g, '');
   await delay(200);
-  const is_live = document.getElementsByClassName('pulse').length > 0;
-  if(is_live)
+  //const is_live = document.getElementsByClassName('pulse').length > 0;
+  const countdown = document.getElementsByClassName('countdown')[1].textContent;
+  const timeLeft = convertToSeconds(countdown);
+
+  if (timeLeft < 600)
     injectLockedShortcuts();
-  else 
-    return
+  else {
+    setTimeout(injectLockedShortcuts, (timeLeft - 600) * 1000);
+  return;
+}
 }
 
 async function injectLockedShortcuts(){
@@ -42,7 +47,7 @@ async function injectLockedShortcuts(){
 
   if(document.getElementById('lockedstrat') == null)
   {
-    shortcutsLocation.insertBefore(container, shortcutsLocation.lastChild)
+    shortcutsLocation.insertBefore(container, shortcutsLocation.querySelectorAll('.tile')[1])
   }
     
 
@@ -73,4 +78,16 @@ function createdButton(id,link,name){
   btn.href = link;
   btn.textContent = name;
   return btn;
+}
+function convertToSeconds(timeString) {
+  const timeParts = timeString.match(/(?:(\d+)d)?\s*(?:(\d+)h)?\s*(?:(\d+)m)?\s*(?:(\d+)s)?/);
+
+  if (!timeParts) return 999999999999;
+
+  const days = parseInt(timeParts[1] || 0, 10);
+  const hours = parseInt(timeParts[2] || 0, 10);
+  const minutes = parseInt(timeParts[3] || 0, 10);
+  const seconds = parseInt(timeParts[4] || 0, 10);
+
+  return (days * 86400) + (hours * 3600) + (minutes * 60) + seconds;
 }

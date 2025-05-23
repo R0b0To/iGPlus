@@ -14,7 +14,9 @@ async function displayDriver() {
   const tableStaffObserver = new MutationObserver(function (_mutations) {addTalent();});
 
   //observing change in the table istead of the timer because of the irregular server response time
-  tableStaffObserver.observe(document.getElementById('driver-table'), { childList: true, subtree: true });
+  
+  //game chanched how it updated the table. working wihtout the observer
+  //tableStaffObserver.observe(document.getElementById('driver-table'), { childList: true, subtree: true });
 
   function addTalent(){
     
