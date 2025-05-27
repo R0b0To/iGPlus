@@ -46,10 +46,12 @@
 }
 .sheetStyle:hover {
     background-color: #a8a8a8; 
+    color: black;
   }
 #sheetDialog{
     border-radius: 9px;
-    background-color: #f4f4f5;
+    background-color: #26334e;
+    color: #adadad;
     border: none;
 }
 #sheet_icon{

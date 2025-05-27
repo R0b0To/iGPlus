@@ -68,6 +68,7 @@ function inject_button() {
   race_button = export_button.cloneNode(true);
   podium = export_button.cloneNode(true);
   const spinner = document.createElement('span');
+  spinner.style.display ='none';
   spinner.classList.add('spinner');
   
   podium.id = 'top3';
@@ -259,8 +260,16 @@ function closeSheetDialog() {
   const quali_to_export = quali_export(false).split('\n').map(row =>[race_id,"Q",... row.split(',')]);
   const race_to_export_pre = race_export(false).split('\n').map(row =>[race_id,"R",... row.split(',')]);
   var race_to_export = race_to_export_pre;
-  const race_date = document.getElementsByClassName('notice')[1].textContent ?? "error";
+  const  race_info = document.getElementsByClassName('notice') ?? "error";
+  
+  const race_date = race_info[1].textContent ?? "error";
+ 
   const track_code = document.querySelector('.flag').classList[1].substring(2);
+  
+  
+  const fuel_rule = (race_info[0].children[0].className == 'grey') ? false : true;
+  const tyre_rule = (race_info[0].children[1].className == 'grey') ? false : true;
+  const fast_rule = (race_info[0].children[2].className == 'grey') ? false : true;
 
   if(document.getElementById('alldrivers')){
     manager.sort((a, b) => { return a.race_finish - b.race_finish; });
@@ -274,7 +283,7 @@ function closeSheetDialog() {
   }
   const combinedValues = quali_to_export.concat(race_to_export);
   
-  access_gSheet(selectedSheetId,token.access_token,combinedValues,{race_date:race_date,track_code:track_code})
+  access_gSheet(selectedSheetId,token.access_token,combinedValues,{race_date:race_date,track_code:track_code,rules:`⛽${fuel_rule},🛞${tyre_rule},⏱️${fast_rule}`});
   closeSheetDialog();
 }
 

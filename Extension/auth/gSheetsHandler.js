@@ -25,14 +25,15 @@ fetch(apiUrl, {
                 startRowIndex: 0,
                 startColumnIndex: 0,
                 endRowIndex: 150, 
-                endColumnIndex: 3, 
+                endColumnIndex: 4, 
               },
               rows: id_list.map((id, index) => {
                 return {  
                   values: [
                     {userEnteredValue: {numberValue: id[0]}},//race id
                     {userEnteredValue: {stringValue: id[1]}},//race track 
-                    {userEnteredValue: {stringValue: id[2]}} //race timestamp
+                    {userEnteredValue: {stringValue: id[2]}}, //race timestamp
+                    {userEnteredValue: {stringValue: id[3]}} //race rules
                   ]                
                 };
 
@@ -120,7 +121,8 @@ function access_gSheet(id,access_token,values,race_info){
               
             //import the race if it's not present in the sheet and there are less than 150 races saved
             if(!isValuePresent && id_list.length < 151){
-                id_list.push([race_id,race_info.track_code,race_info.race_date]);
+                console.log(race_info.rules);
+                id_list.push([race_id,race_info.track_code,race_info.race_date,race_info.rules]);
                  import_to_sheet(id,access_token,values,id_list,sheetId)
             }else{
                 alert("Race report already stored")
