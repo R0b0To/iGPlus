@@ -213,7 +213,14 @@ input,textarea#commentContent,
 body,h1,h2,.forumUpperTools > a,div.num.green > span,.news .newsFooter div, h2 a{
     color: var(--text-color)!important;
 }
-table.acp th,.sheetStyle{
+.sheetStyle.selected_radio{
+  color: var(--dark-color)!important;
+}
+.sheetStyle:hover{
+    background: rgb(104, 153, 84)!important;
+    color: var(--dark-color)!important;
+}
+table.acp th{
     background: var(--dark-btn)!important;
     color: var(--text-color)!important;
     border-right: 1px solid var(--dark-btn-hover);

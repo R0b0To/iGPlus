@@ -11,11 +11,16 @@ async function startHealthMonitor() {
   const healthClasses = ['green', 'healthWarn', 'healthAlert'];
   const padValue = (val) => `${val}`.padStart(2, '0');
 
+  function getRatingBarElements(tableElement) {
+    return Array.from(tableElement.querySelectorAll('tbody > tr')).map(tr => tr.querySelector('.ratingBar > div'));
+  }
+
   // If drivers are not found error is invoked stopping executing the task any further
   const trainTable = document.getElementById('dTrainTable');
   const pitCrewTable = document.getElementById('pcTrainTable');
   //const staff = document.querySelectorAll(...healthClasses.map((name) => `.ratingBar.${name} > div`));
-  const staff = Array.from(document.getElementById("dTrainTable").querySelectorAll('tbody > tr')).map(tr => tr.querySelector('.ratingBar > div'));
+  const staff = getRatingBarElements(trainTable);
+  const pitCrew = getRatingBarElements(pitCrewTable);
   const { fetchNextRace } = await import(chrome.runtime.getURL('common/fetcher.js'));
   const nextRaceData = await fetchNextRace();
   const noticeDiv = document.querySelectorAll('div.shrinkText');
@@ -41,31 +46,36 @@ async function startHealthMonitor() {
   }
 
   // reset custom health colors before updating current health states
-  staff.forEach((d) => {
-    d.parentElement.classList.remove('healthWarn', 'healthAlert');
-    d.parentElement.classList.add('green');
-  });
+  function resetHealthColors(elements) {
+    elements.forEach((d) => {
+      d.parentElement.classList.remove('healthWarn', 'healthAlert');
+      d.parentElement.classList.add('green');
+    });
+  }
 
+  resetHealthColors(staff);
+  resetHealthColors(pitCrew);
 
   const healthObserver = new MutationObserver(function (_mutations) {
-    checkTimeToFullHealth();
+    checkTimeToFullHealthForElements(staff);
+    checkTimeToFullHealthForElements(pitCrew);
   });
 
   /**
    * This observer will observe mutations on the width of the health indicator
    */
-  function monitorDriversHealth() {
-    staff.forEach((driver) => {
-      healthObserver.observe(driver, { attributes: true, attributeFilter: ['style'] });
+  function monitorHealth(elements) {
+    elements.forEach((element) => {
+      healthObserver.observe(element, { attributes: true, attributeFilter: ['style'] });
     });
   }
 
   /**
    * Health regenerates 5% each time new hour starts (first minute of the next hour)
    */
-  function checkTimeToFullHealth() {
-    staff.forEach((driver) => {
-      const health = parseInt(driver.style.width);
+  function checkTimeToFullHealthForElements(elements) {
+    elements.forEach((element) => {
+      const health = parseInt(element.style.width);
 
       const hoursToFull = Math.ceil((100 - health) / 5);
       const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
@@ -74,13 +84,13 @@ async function startHealthMonitor() {
       
       const dateString = `~${padValue(fullDate.getHours())}:01`;
       const health_at_race_time = Math.max(0, Math.min(100, Math.floor(100 - (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000 * 5)));
-      const healthText = health < 100  ? `${dateString} ${health_at_race_time > 0 ? `(${health_at_race_time}%)` : ''}` 
+      const healthText = health < 100  ? `${dateString} ${health_at_race_time > 0 ? `(${health_at_race_time}%)` : ''}`
     : '100%';
-      const healthBarCell = driver.closest('td');
+      const healthBarCell = element.closest('td');
      
       
       let estimatedHealTimeCell;
-      if (driver.closest('tr').querySelectorAll('[id=dateTd]').length == 0) {
+      if (element.closest('tr').querySelectorAll('[id=dateTd]').length == 0) {
         date_span = document.createElement('span');
         date_span.classList.add('training-date');
         // works when you refresh the page
@@ -90,9 +100,9 @@ async function startHealthMonitor() {
         healthBarCell.parentElement.insertBefore(estimatedHealTimeCell, healthBarCell);
       } else {
         // works when you train a driver and the health has to be updated
-        estimatedHealTimeCell = driver.closest('tr').querySelector('#dateTd');
+        estimatedHealTimeCell = element.closest('tr').querySelector('#dateTd');
       }
-        date_span = driver.closest('tr').querySelector('.training-date');
+        date_span = element.closest('tr').querySelector('.training-date');
         date_span.textContent = healthText;
         if (nextRaceData) {
           const hoursDiff = (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000;
@@ -100,9 +110,9 @@ async function startHealthMonitor() {
           if (hoursDiff > 0) {
             const alertClass = hoursDiff < 3 ? healthClasses[1] : healthClasses[2];
             date_span.classList.add(alertClass);
-            driver.classList.remove(...healthClasses);
-            driver.classList.remove(...healthClasses);
-            driver.classList.add(alertClass);
+            element.classList.remove(...healthClasses);
+            element.classList.remove(...healthClasses);
+            element.classList.add(alertClass);
           }
 
         }
@@ -125,8 +135,10 @@ async function startHealthMonitor() {
   }
 
   addHeader(); // makes sense to add it anyway?
-  monitorDriversHealth();
-  checkTimeToFullHealth();
+  monitorHealth(staff);
+  monitorHealth(pitCrew);
+  checkTimeToFullHealthForElements(staff);
+  checkTimeToFullHealthForElements(pitCrew);
 }
 
 
