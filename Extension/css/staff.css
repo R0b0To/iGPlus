@@ -18,6 +18,9 @@
 {
   display: inline-flex;
 }
+.staff-list{
+  position: relative;
+}
 table.acp th{
   text-align: inherit;
 }

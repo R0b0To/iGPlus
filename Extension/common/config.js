@@ -108,7 +108,7 @@ const tabScripts = {
   },
   '/app/p=league&id=': {
     key: 'league',
-    scripts: ['scripts/league.js'],
+    scripts: ['scripts/league.js','lib/purify.js'],
     styles: ['css/league.css']
   },
   '/app/d=result&id=': {

@@ -52,7 +52,7 @@ function openHistory()
   const scheduleTable = document.getElementById('scheduleTable');
   const raceRow = this.parentElement.rowIndex;
   const track = scheduleTable.rows[raceRow].childNodes[1].childNodes[0];
-  const code = track.className.slice(-2);
+  const code = track.classList[1].slice(-2);
   try {
     const a = this.querySelector('a');
     a.href = historyLink[code];
@@ -74,15 +74,15 @@ async function inject_history()
       const tableToAdd = addExtraTable(track_numbers);
       const fullHistoryShortcut = document.createElement('a');
       fullHistoryShortcut.href = 'd=history';
-      fullHistoryShortcut.setAttribute('style','display: inline-block;width:100%; height:24px ;background:#c1c1c1;text-align: center;font-family: RobotoCondensed;border-radius: 8px 8px 8px 8px;');
+      fullHistoryShortcut.setAttribute('style','display: inline-block;width:100%; height:24px ;background:#628f50;text-align: center;font-family: RobotoCondensed;border-radius: 8px 8px 8px 8px;');
       fullHistoryShortcut.textContent = 'Full race history';
       scheduleTable.parentElement.insertBefore(tableToAdd, scheduleTable);
       scheduleTable.parentElement.append(fullHistoryShortcut);
 
-      const myLeague = new URLSearchParams(document.getElementById('mLeague').href).get('id');
-      const league = new URLSearchParams(window.location.href).get('id');
-
-      if(myLeague == league)
+      //const myLeague = new URLSearchParams(document.getElementById('mLeague').href).get('id');
+      //const league = new URLSearchParams(window.location.href).get('id');
+      // myLeague = myLeague ?? league;
+      if(document.getElementsByClassName('myTeam').length>0)
       {
         advancedExtract();
         if(document.getElementsByClassName("changes_th")[0]==null)
@@ -98,7 +98,7 @@ async function inject_history()
 
 
 try {
-  //setTimeout(inject_history,100);
+  setTimeout(inject_history,100);
 } catch (error) {
 
 }
@@ -120,7 +120,7 @@ async function advancedExtract(){
       saveRaceResultsHistory(id,result_info);
     }//else{console.log('data already stored')}
     if(result_info.quali_pos!='none')// only if the player has raced
-    link.parentElement.textContent += ` [${result_info.quali_pos}]-->[${result_info.race_finish}]`;
+    link.parentElement.textContent += `  [${result_info.quali_pos}]-->[${result_info.race_finish}]`;
 
 
   });
@@ -178,24 +178,26 @@ function parseRaceResults(data){
 
 
 async function standingsChanges(){
-  
-  const races_completed = document.getElementById("scheduleTable").querySelectorAll("tr.pointer");
+  const {fetchLeagueData} = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const league = new URLSearchParams(window.location.href).get('id');
+  const league_data = await fetchLeagueData(league);
+  const fragmentToParse = document.createElement('table');
+  fragmentToParse.innerHTML = DOMPurify.sanitize(`<table>${league_data.vars.scheduleTable}</table>`);
+  const races_completed = [...fragmentToParse.querySelectorAll('a')].filter(a => a.href.endsWith('&tab=race')).map(a => a.href)
   let tier = 'elite'; //default 0 elite
   //wait atleast until the second race is completed.
   if(races_completed.length>2){
-  const [rookie,pro,elite] = document.querySelectorAll('table.col2');
+  const [pro,elite] = document.querySelectorAll('table.col2');
 
-  const tier_map = {elite:{table:elite,val:0},pro:{table:pro,val:-1},rookie:{table:rookie,val:-2}}
+  const tier_map = {elite:{table:elite,val:0},pro:{table:pro,val:-1}};
   //check if not elite
   if(elite.querySelector('tr.myTeam')==null)
     if(pro.querySelector('tr.myTeam')!=null)
       tier = 'pro';
-    else if(rookie.querySelector('tr.myTeam')!=null)
-      tier = 'rookie';
- 
-    
+
+
   //the link will be the same tier as the manager
-  const last_race_link = races_completed[races_completed.length-2].querySelector('a');
+  const last_race_link = races_completed[races_completed.length-1];
   //doing only the manager's tier for now
   const standings_changes = await getRankChangesOfTier(tier_map[tier],last_race_link);
   
@@ -223,7 +225,7 @@ async function standingsChanges(){
     value_span.classList.add('value_change');
     change_col.append(value_span);
     if(value<0)
-      arrow_span.classList.add('arrow_up')
+      arrow_span.classList.add('arrow_ups')
     else if(value>0)
       arrow_span.classList.add('arrow_down')
     else
@@ -237,9 +239,9 @@ async function standingsChanges(){
 
 async function getRankChangesOfTier(tier,last_race_link){
 const {fetchRaceResultInfo} = await import(chrome.runtime.getURL('common/fetcher.js'));
- const tier_standings = getTeamStandings(tier.table);
+const tier_standings = getTeamStandings(tier.table);
  
- const id_race = new URLSearchParams(last_race_link.href).get('id')
+ const id_race = new URLSearchParams(last_race_link).get('id');
  //should save the race result in the db for future requests?
  let result= await chrome.runtime.sendMessage({
   type:'getDataFromDB',

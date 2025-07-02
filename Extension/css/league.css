@@ -1,4 +1,4 @@
-.arrow_up::before,
+.arrow_ups::before,
 .arrow_down::before
 {
     content: '';
@@ -6,16 +6,16 @@
 }
 
 .arrow,
-.arrow_up,
+.arrow_ups,
 .arrow_down{
     display: flex;
    
 }
 
 
-.arrow_up::before {
+.arrow_ups::before {
     border-width: 0 10px 10px 10px;
-    border-color: transparent transparent green transparent;
+    border-color:  transparent transparent green transparent;
 }
 
 .arrow_down::before {
@@ -29,6 +29,7 @@
     height: 6px;
     font-size: 10px; 
     line-height: 5px; 
+      overflow: visible; /* allow pseudo-elements to show */
 }
 .arrow_container{
     flex-wrap: wrap;
