@@ -43,8 +43,8 @@ function parseAppend(append){
     const reserveStaffTable = document.getElementById('reserveStaff');
     const reserveStaff = reserveStaffTable.tBodies[0];
     for (let i = 0; i < reserveStaff.rows.length; i += 1) {
-    
-      const {strength, weakness} = parseAppend(reserveStaff.rows[i].cells[2].dataset.append);
+      try {
+        const {strength, weakness} = parseAppend(reserveStaff.rows[i].cells[2].dataset.append);
       
       if (reserveStaff.rows[i].cells[1].childElementCount == 2 && strength) {
         const wrapper = document.createElement('div');
@@ -53,6 +53,10 @@ function parseAppend(append){
         reserveStaff.rows[i].cells[1].append(wrapper);
 
       }
+      } catch (error) {
+        //console.error('Error parsing reserve staff skills:', error);
+      }
+      
     }
   }
 })();

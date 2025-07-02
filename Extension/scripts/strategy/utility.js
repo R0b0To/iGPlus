@@ -228,7 +228,7 @@ async function findCurrentTier() {
   //for (/* no-op */; tier <= 2; tier += 1) {
   //  if (vars[`standings${tier}`]?.includes('myTeam')) break;
   //}
-  return response._tier || 3;
+  return response.team._tier || 3;
 }
 
 export{
