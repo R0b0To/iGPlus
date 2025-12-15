@@ -47,9 +47,8 @@ async function addSetupSuggestionsForDrivers() {
 
     const heightAdjustment = await getHeightAdjustment(driverHeight, leagueTier);
 
-    if (script.slider) addSettingSliders(index);
-    if (script.edit) allowDirectEdit(index);
-
+    //if (script.slider) addSettingSliders(index);
+    //if (script.edit) allowDirectEdit(index);
     addSetupSuggestions(trackSetup, heightAdjustment, index);
     index++; // Increment index manually
   }
@@ -58,7 +57,7 @@ async function addSetupSuggestionsForDrivers() {
 /**
  * Inject html elements into setup page
  * @param {Object} trackSetup The suspension setup value.
- * @param {string} trackSetup.suspension The suspension setup value.
+ * @param {number} trackSetup.suspension The suspension setup value.
  * @param {number} trackSetup.ride The ride heigth setup value.
  * @param {number} trackSetup.wing The wing setup value.
  * @param {number} driverIndex The driver number.
@@ -73,37 +72,29 @@ function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
   }
 
   /** @type {HTMLTableElement} */
-  const settingTable = setupForm.querySelector('table.acp');
-  const header = settingTable.createTHead();
-  header.id = 'setupSuggestionHeader';
-  header.append(document.createElement('tr'));
+  const rideContainer = setupForm.querySelector(`#d${driverIndex}Ride`);
+  const suspensionContainer = setupForm.querySelector(`#d${driverIndex}Suspension`);
+  const wingContainer = setupForm.querySelector(`#d${driverIndex}Aerodynamics`);
 
-  const headers = ['Parameter', 'Value', 'Suggested'].map((txt) => {
-    const elem = document.createElement('td');
-    elem.textContent = txt;
-    return elem;
-  });
-
-  header.rows[0].append(...headers);
 
   // suspension element
-  const suspensionSetting = setupForm.querySelector('table.acp > tbody > tr:nth-child(1)');
+  const suspensionSetting = suspensionContainer.firstChild;
   suspensionSetting.id = 'suggestedSetup';
-  const suspensionSuggestion = document.createElement('td');
+  const suspensionSuggestion = document.createElement('span');
   suspensionSuggestion.classList.add('suggestedSetup');
   suspensionSuggestion.append(document.createTextNode(suspension));
   suspensionSetting.append(suspensionSuggestion);
 
   // ride element
-  const rideHeightSetting = setupForm.querySelector('table.acp > tbody > tr:nth-child(2)');
-  const heightSuggestion = document.createElement('td');
+  const rideHeightSetting = rideContainer.firstChild;
+  const heightSuggestion = document.createElement('span');
   heightSuggestion.classList.add('suggestedSetup');
   heightSuggestion.append(document.createTextNode((ride + heightAdjustment)==0? 1 :ride + heightAdjustment));
   rideHeightSetting.append(heightSuggestion);
 
   // wing element
-  const wingSetting = setupForm.querySelector('table.acp > tbody > tr:nth-child(3)');
-  const wingSuggestion = document.createElement('td');
+  const wingSetting = wingContainer.firstChild;
+  const wingSuggestion = document.createElement('span');
   wingSuggestion.classList.add('suggestedSetup');
   wingSuggestion.append(document.createTextNode(wing));
   wingSetting.append(wingSuggestion);
@@ -127,7 +118,7 @@ function getTrackSetup(circuits, tierIndex) {
   // current language based text directly from origin button
   return {
     ...setup,
-    suspension: suspensionSettingBtn?.childNodes[setup.suspension].textContent
+    suspension: setup.suspension
   };
 }
 
@@ -159,9 +150,10 @@ function allowDirectEdit(driverIndex) {
     return;
   }
 
-  const [ride, wing] = setupTable.querySelectorAll('.num');
-  makeEditable(wing);
+  const [ride,suspension, wing] = setupTable.querySelectorAll('.setupSlider-value');
   makeEditable(ride);
+  makeEditable(suspension);
+  makeEditable(wing);
 }
 
 /**

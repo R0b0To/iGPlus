@@ -75,24 +75,24 @@ if(!strategy_page?.getAttribute('injected') ?? false)
     let readAttempts = 3;
     try {
       if (league_info != false) {
-        injectAdvancedStint();
-        injectCircuitMap();       
+        //injectAdvancedStint();
+        //injectCircuitMap();       
         readGSheets();
-        addMoreStints();
-        addSaveButton({economy:CAR_ECONOMY,track:{code:TRACK_CODE,info:TRACK_INFO},league:league_length});
+        //addMoreStints();
+        //addSaveButton({economy:CAR_ECONOMY,track:{code:TRACK_CODE,info:TRACK_INFO},league:league_length});
         addWeatherInStrategy();
-        addSelectCheckbox();
+        //addSelectCheckbox();
 
         //eventAdded is a placeholder for knowing if the eventlistener is already present
-        if(document.getElementById('eventAdded') == null)
-          dragStintHandler();
+        //if(document.getElementById('eventAdded') == null)
+        //  dragStintHandler();
         if(active_scripts.script.sliderS)
           addFuelSlider();
         if(active_scripts.script.editS)
           addEdit();
 
         //add mutation observer to game dialog. detecting when user open the tyre/fuel dialog
-        waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el);}});
+        //waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el);}});
       }
 
     } catch (error) {
@@ -510,7 +510,6 @@ if(!strategy_page?.getAttribute('injected') ?? false)
       if(advancedFuel != null)
       {
         advancedFuel.forEach(car => {
-
           if(car.previousElementSibling.childElementCount < 4)
             createSlider(car,0,200);
 
@@ -748,7 +747,7 @@ if(!strategy_page?.getAttribute('injected') ?? false)
                     }
       
       
-                    document.querySelectorAll('.eight.columns.mOpt.aStrat')[0].append(output);
+                    document.querySelectorAll('.eight.columns.aStrat')[0].append(output);
                     removeColumn(output,t.gTrack);
                   }
                 }

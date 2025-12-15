@@ -1,4 +1,4 @@
-(async () => {
+async function displaySkill() {
   const { createSkillLabel, parseSkills} = await import(chrome.runtime.getURL('scripts/staff/helpers.js'));
   const { fetchStaffInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
 
@@ -13,7 +13,7 @@
     const active_CD = staffDiv.querySelector('.hover a');
     const id_activeCD = new URLSearchParams(active_CD.href).get('id');
     const data = await fetchStaffInfo(id_activeCD);
-    const { strength, weakness } = parseSkills(data);
+    const { strengthText, weaknessText } = parseSkills(data);
     //const {strength, weakness} = parseAppend(activeChiefDesigner.dataset.append);
 
     //const cdHeader = activeChiefDesigner.closest('div');
@@ -23,8 +23,8 @@
     if (cdHeader.childElementCount === 4) {
       const wrapper = document.createElement('div');
       wrapper.classList.add('skillWrapper');
-      wrapper.style.position = 'relative'
-      wrapper.append(createSkillLabel(strength, 'strength'), createSkillLabel(weakness, 'weakness'));
+      wrapper.style.position = 'relative';
+      wrapper.append(createSkillLabel(strengthText, 'strength'), createSkillLabel(weaknessText, 'weakness'));
       cdHeader.append(wrapper);
     }
   }
@@ -57,6 +57,19 @@ function parseAppend(append){
         //console.error('Error parsing reserve staff skills:', error);
       }
       
+    }
+  }
+};
+
+
+(async () => {
+  for (let i = 0; i < 2; i += 1) {
+    try {
+      await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+      await displaySkill();
+      break;
+    } catch (err) {
+      //console.warn(`Retry ${i + 1}/3`);
     }
   }
 })();

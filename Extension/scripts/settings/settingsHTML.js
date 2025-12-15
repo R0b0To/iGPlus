@@ -96,7 +96,7 @@ function injectIGPlusOptions() {
           addDescription('Add talent column for drivers in the transfer market')),
 
         appendSubCheks(createScriptCheckbox('strategy', 'Race Strategy'), createScriptCheckbox('sliderS', 'Slider'), createScriptCheckbox('editS', 'Editable')),
-        appendSubCheks(createScriptCheckbox('setup', 'Race Setup'), createScriptCheckbox('slider', 'Slider'), createScriptCheckbox('edit', 'Editable')),
+        (createScriptCheckbox('setup', 'Race Setup')),
 
         appendWithDescription(createScriptCheckbox('overview', 'Car Overview'),
           addDescription('Enable review button (design research) during a live race')),

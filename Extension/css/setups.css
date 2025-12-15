@@ -1,5 +1,6 @@
 .suggestedSetup {
   text-align: left;
+  width: 40px;
   color: #90df73;
 }
 
@@ -11,93 +12,10 @@
 .igpNum{
   position: relative;
 }
-.withSlider {
-  border-radius: 50%;
-  background-color: #467bb1;
-  color: #ffffff;
-  width: 2rem;
-  height: 2rem;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
 
-.sliderContainer {
-  position: absolute;
-  background-color: transparent;
-  visibility: hidden;
-  z-index: 1;
-  width: calc(100% - 64px);
-  left: 32px;
-}
-.sliderContainer .track{
-  position: absolute;
-	z-index: 0;
-	left: 10px;
-	right: 10px;
-	top: 0;
-	bottom: 0;
-}
 
 .visible {
   visibility: visible;
-}
-.sliderX {
-  position: relative;
-  z-index: 1;
-  top:-3px;
-  height: 1px;
-  margin:0;
-  border: 0;
-  width: 100%;
-  -webkit-appearance: none;
-  padding: 0;
-  background: #646464;
-  outline: none;
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-}
-.sliderX::-webkit-slider-thumb {
-  box-shadow: none;
-        border: 0px solid #ffffff;
-        box-shadow: 0px 10px 10px rgba(0,0,0,0.25);
-        height: 32px;
-        width: 18px;
-        border-radius: 22px;
-        background: #467bb1;
-        cursor: pointer;
-        -webkit-appearance: none;     
-}
-.sliderX::-moz-range-thumb {
-  box-shadow: none;
-        border: 0px solid #ffffff;
-        box-shadow: 0px 10px 10px rgba(0,0,0,0.25);
-        height: 32px;
-        width: 18px;
-        border-radius: 22px;
-        background: #467bb1;
-        cursor: pointer;      
-}
-.slider-label{
-  position: absolute;
-  justify-content: center;
-	top: -225%;
-  background-color: #467bb1!important;
-  color: black !important;
-  width: 50px;
-  height: 50px;
-  z-index: 2;
-  transform: translateX(-50%);
-  font-size: 25px;
-  line-height: 46px;
-  border: none;
-  justify-content: center;
-	align-items: center;
-  display: flex;
-}
-.slider-label:hover{
-  background-color: #467bb1!important;
 }
 
 

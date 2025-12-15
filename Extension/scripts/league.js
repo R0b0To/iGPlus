@@ -68,7 +68,12 @@ async function inject_history()
     if(document.getElementById('extraTable') == null)
     {
       //advancedExtract()
-      const scheduleTable = document.getElementById('scheduleTable');
+
+      const pageContent  = document.getElementById('page-content');
+      const schedule = pageContent.querySelector('a[href*="p=schedule&id="]');
+      const roundNumber = schedule.previousElementSibling.textContent.match(/\d+/)[0];
+
+      /*const scheduleTable = document.getElementById('scheduleTable');
       scheduleTable.setAttribute('style','width: 90%;width:-webkit-fill-available ;');
       const track_numbers = scheduleTable.rows.length;
       const tableToAdd = addExtraTable(track_numbers);
@@ -78,7 +83,7 @@ async function inject_history()
       fullHistoryShortcut.textContent = 'Full race history';
       scheduleTable.parentElement.insertBefore(tableToAdd, scheduleTable);
       scheduleTable.parentElement.append(fullHistoryShortcut);
-
+      
       //const myLeague = new URLSearchParams(document.getElementById('mLeague').href).get('id');
       //const league = new URLSearchParams(window.location.href).get('id');
       // myLeague = myLeague ?? league;
@@ -88,7 +93,7 @@ async function inject_history()
         if(document.getElementsByClassName("changes_th")[0]==null)
         standingsChanges();
       }
-
+        */
 
     }
   } catch (error) {

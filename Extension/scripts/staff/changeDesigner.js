@@ -32,10 +32,10 @@ async function addStaffSkillLabels() {
     [...cd_rows].map(async (row) => {
       const personId = row.querySelector('input').value;
       const data = await fetchStaffInfo(personId);
-      const { strength, weakness } = parseSkills(data);
+      const { strengthText, weaknessText } = parseSkills(data);
       const wrapper = document.createElement('div');
       wrapper.classList.add('skillWrapper','opt','staff-list');
-      wrapper.append(createSkillLabel(strength, 'strength'), createSkillLabel(weakness, 'weakness'));
+      wrapper.append(createSkillLabel(strengthText, 'strength'), createSkillLabel(weaknessText, 'weakness'));
       if(!row.cells[2].querySelector('.skillWrapper')) {
           row.cells[2].append(wrapper);
       }

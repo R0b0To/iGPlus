@@ -217,8 +217,8 @@ async function handleSettings() {
     checkbox.addEventListener('change', onlyOne);
   }
 
-  ['strategy', 'setup'].forEach(mainCheckboxEvent);
-  ['edit', 'slider', 'editS', 'sliderS'].forEach(onlyOneEvent);
+  ['strategy'].forEach(mainCheckboxEvent);
+  ['editS', 'sliderS'].forEach(onlyOneEvent);
 
 
   //exportSave.removeEventListener('change')
@@ -328,7 +328,7 @@ async function handleSettings() {
       setTextToCheckbox(document.getElementById('strategy'), 'raceStrategy');
       setTextToCheckbox(document.getElementById('setup'), 'raceSetup');
       setTextToCheckbox(document.getElementById('editS'), 'edit');
-      setTextToCheckbox(document.getElementById('edit'), 'edit');
+     
       document.getElementById('exportLabel').textContent = language[code].optionsText.export;
       const field = document.getElementById('googleSheetContainer').querySelectorAll('.text');
       field[0].textContent = language[code].optionsText.link;
@@ -397,7 +397,7 @@ async function handleSettings() {
       const strategy = document.getElementById('strategy').querySelectorAll('input');
       const setup = document.getElementById('setup').querySelectorAll('input');
       subCheckboxStatus(strategy);
-      subCheckboxStatus(setup);
+      
 
     });
 

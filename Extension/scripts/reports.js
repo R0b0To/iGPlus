@@ -36,7 +36,7 @@ function inject_button() {
   button.setAttribute('class', 'btn3');
   button2.id = "sheet_icon";
   button.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
-  button2.setAttribute('style', 'position:relative; left:10px;');
+  button2.setAttribute('style', 'position:relative; left:10px; background-color:transparent; vertical-align: middle; cursor: pointer; border-width: initial; border-style: none; border-color: initial; border-image: initial;');
   button.innerText = 'Extract';
   const closebutton = document.querySelector('.close');
   closebutton.classList.add('close-fix');
@@ -170,7 +170,7 @@ async function podium_copy()
   const driverFastLap = fastLap.parentElement.childNodes[1].childNodes[0].href.match(/\d+/)[0];
   const managerFastLap = await getManagerName(driverFastLap);
 
-  const bestLapString = raceTable.parentElement.childNodes[0].childNodes[0].childNodes[3].textContent;
+  const bestLapString = raceTable.parentElement.childNodes[1].childNodes[0].childNodes[3].textContent;
   const resultString = `🚦 🏁 ${trackName} 🚦\n${podium.join('\n')}\n🏎️💨 ${bestLapString}: ${teamFastLap} - ${managerFastLap}\n👇 🎤..... 👇`;
 
   navigator.clipboard.writeText(resultString).then(() => {
@@ -398,10 +398,10 @@ function get_quali()
   const  race_info = document.getElementsByClassName('notice') ?? "error";
   // get quali results
   for (let i = 0; i < quali_results.childElementCount; i++) {
-    const driver_quali = quali_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
+    const driver_quali = quali_results.rows[i].getElementsByClassName('linkParent');
     const driver_id = driver_quali[0].href.replace(/\D/g, '');
-    const driver_name = quali_results.childNodes[i].childNodes[1].childNodes[2].textContent.substring(1);
-    const team_name = quali_results.childNodes[i].childNodes[1].childNodes[4].innerText;
+    const driver_name = quali_results.rows[i].childNodes[1].childNodes[2].textContent.substring(1);
+    const team_name = quali_results.rows[i].childNodes[1].childNodes[4].innerText;
     const race_id = window.location.href.replace(/\D/g, '');
     const manager_template = {
       race_info:
@@ -461,10 +461,10 @@ function extract_function() {
   for (let i = 0; i < race_results.childElementCount; i++) {
 
     //driver id and name
-    driver_race_result = race_results.childNodes[i].childNodes[1].getElementsByClassName('linkParent');
+    driver_race_result = race_results.rows[i].childNodes[1].getElementsByClassName('linkParent');
 
     try {
-      driver_race_report = race_results.childNodes[i].childNodes[2].getElementsByClassName('linkParent')[0].href;
+      driver_race_report = race_results.rows[i].childNodes[2].getElementsByClassName('linkParent')[0].href;
 
     }
     catch (err) {
@@ -476,7 +476,6 @@ function extract_function() {
 
     // extract driver id from reports url
     driver_id = driver_race_result[0].href.replace(/\D/g, '');
-
 
 
     finish_position = i;
