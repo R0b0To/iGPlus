@@ -22,7 +22,8 @@ const track_info = {
   'az': { 'length': 6.053212, 'wear': 45, avg:220.409 },//Azerbaijan
   'mx': { 'length': 4.3076024, 'wear': 60, avg:172.32 },//Mexico
   'ru': { 'length': 6.078335, 'wear': 50, avg:197.092 },//Russia
-  'us': { 'length': 4.60296, 'wear': 65, avg:186.568 }//USA
+  'us': { 'length': 4.60296, 'wear': 65, avg:186.568 },//USA
+  'nl': { 'length': 4.259, 'wear': 65, avg:186.568 },//Netherlands
 };
 const trackLink = {
   'au': 'd=circuit&id=1&tab=history' ,//Australia
@@ -48,7 +49,8 @@ const trackLink = {
   'az': 'd=circuit&id=22&tab=history' ,//Azerbaijan
   'mx': 'd=circuit&id=23&tab=history' ,//Mexico
   'ru': 'd=circuit&id=24&tab=history' ,//Russia
-  'us': 'd=circuit&id=25&tab=history' //USA
+  'us': 'd=circuit&id=25&tab=history', //USA
+  'nl': 'd=circuit&id=26&tab=history' //Netherlands
 };
 const trackDictionary  = {
   'au':['australia','au',1],//,//Australia
@@ -74,7 +76,9 @@ const trackDictionary  = {
   'az':['azerbaijan','az',22],//,//Azerbaijan
   'mx':['mexico','mx',23],//,//Mexico
   'ru':['russia','ru',24],//,//Russia
-  'us':['usa','us',25]////USA
+  'us':['usa','us',25],////USA
+  'nl':['netherlands','nl',25]////Netherlands
+
 
 };
 const multipliers = { 100: 1, 75: 1.25, 50: 1.5, 25: 3 };

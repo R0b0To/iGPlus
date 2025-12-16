@@ -34,16 +34,16 @@ async function injectLockedShortcuts(){
   //const setupbtn = createdButton('lockedsetup',setupURL,i18n[language].shortcuts.strategy);
   const strategybtn = createdButton('lockedstrat',strategyURL,i18n[language].shortcuts.strategy);
   const qualibtn = createdButton('lockedquali',qualiURL,i18n[language].shortcuts.qualifying);
-  const researchbtn = createdButton('lockedresearch',carResearchURL,i18n[language].shortcuts.research);
-  const designbtn = createdButton('lockeddesign',carDesignURL,i18n[language].shortcuts.design);
+  //const researchbtn = createdButton('lockedresearch',carResearchURL,i18n[language].shortcuts.research);
+  //const designbtn = createdButton('lockeddesign',carDesignURL,i18n[language].shortcuts.design);
   const container = document.createElement('div');
-  [strategybtn,qualibtn,researchbtn,designbtn].forEach(btn => {
+  [strategybtn,qualibtn].forEach(btn => {
     btn.style.flexGrow = 1;
     btn.style.margin = '2px';}
   );
   //container.setAttribute('style','display: flex;justify-content: center;margin-top: 5px;');
   container.classList.add('shortcuts-igp');
-  container.append(researchbtn,designbtn,qualibtn,strategybtn);
+  container.append(qualibtn,strategybtn);
 
   if(document.getElementById('lockedstrat') == null)
   {
