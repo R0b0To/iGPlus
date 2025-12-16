@@ -103,7 +103,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
+    scripts: ['scripts/strategy/strategy2.js','lib/gsi.js','lib/purify.js'],
     styles: ['css/strategy.css','css/strategyPreview.css']
   },
   '/app/p=league&id=': {
