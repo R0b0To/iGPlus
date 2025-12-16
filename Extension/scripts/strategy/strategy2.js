@@ -1,6 +1,10 @@
 TRACK_INFO = null;
 CAR_ECONOMY = null;
 HTML_ELEMENTS = [];
+if (!window.__strategyInit) {
+  window.__strategyInit = true;
+ initEvents();
+}
 
 
 async function strategy(){
@@ -24,6 +28,7 @@ async function strategy(){
     console.log(TRACK_INFO);
     console.log(CAR_ECONOMY);
     console.log(savedStrategy);
+    console.log('fuel per lap: ',CAR_ECONOMY.fuel*TRACK_INFO.length);
     const rules = JSON.parse(savedStrategy.vars.rulesJson);
 
     is2tyres = rules.two_tyres == 1;
@@ -33,12 +38,15 @@ async function strategy(){
     currentCar1Strategy = getParsedStrategy(savedStrategy.vars.d1StintCards);
     
     makeCustomStrategy(1,currentCar1Strategy);
+    console.log(currentCar1Strategy);
 
     if(is2carLeague){
         currentCar2Strategy = getParsedStrategy(savedStrategy.vars.d2StintCards);
         prepareStrategyContainer(2);
         makeCustomStrategy(2,currentCar2Strategy);
     }
+    //initEvents();
+    console.log(HTML_ELEMENTS);
 
 }
 function getTotalStrategyLaps(stints) {
@@ -67,6 +75,14 @@ function createStrategyFooter(strategyData) {
   } else {
     footer.classList.add('laps-under');
   }
+  if (!isRefuelling) {
+  const fuel = getTotalFuelEstimate(strategyData);
+  footer.innerHTML += `
+    <div class="footer-fuel">
+      Est. Fuel: <strong>${fuel}</strong>
+    </div>
+  `;
+}
 
   return footer;
 }
@@ -100,6 +116,44 @@ function getParsedStrategy(htmlString){
     const numberOfStints = Number(strategyJSON.stints ?? stintsArray.length);
     return { stints: stintsArray.slice(0, numberOfStints) };
 }
+function saveStintToForm(carIndex, strategyData) {
+  const driverForm = HTML_ELEMENTS[carIndex - 1].closest('form');
+  console.log(driverForm);
+  
+  if (!driverForm) return;
+
+  const tyreInputs = driverForm.querySelectorAll('[name^="tyre"]');
+  const fuelInputs = driverForm.querySelectorAll('[name^="fuel"]');
+  const lapsInputs = driverForm.querySelectorAll('[name^="laps"]');
+  const numPits = driverForm.querySelector(`[name=numPits]`);
+
+  const stints = strategyData.stints;
+
+  const max = Math.max(
+    tyreInputs.length,
+    fuelInputs.length,
+    lapsInputs.length
+  );
+  console.log(numPits,stints.length-1);
+  numPits.value = stints.length-1;
+  for (let i = 0; i < max; i++) {
+    const stint = stints[i];
+
+    /* TYRE */
+    if (tyreInputs[i]) {
+      tyreInputs[i].value = stint?.tyre ?? '';
+    }
+
+ 
+      if (lapsInputs[i]) {
+        lapsInputs[i].value = stint?.laps ?? '';
+      }
+      if (fuelInputs[i]) {
+        fuelInputs[i].value = stint?.fuel ?? '';
+      }
+    
+  }
+}
 
 function prepareStrategyContainer(carIndex){
     const originalStintsContainer = document.getElementById(`d${carIndex}StintCards`);
@@ -114,7 +168,7 @@ function prepareStrategyContainer(carIndex){
   root.id = `strategyRoot${carIndex}`;
   root.classList.add('strategy-container'); 
   originalStintsContainer.parentElement.appendChild(root);
-  initEvents();
+  
 }
 }
 function makeCustomStrategy(carIndex,strategyData) {
@@ -162,6 +216,7 @@ controlCol.appendChild(createTrashButton(carIndex,strategyData));
 wrapper.appendChild(controlCol);
 const footer = createStrategyFooter(strategyData);
 root.appendChild(footer);
+saveStintToForm(carIndex,strategyData);
 }
 function allStintsSameTyre(stints) {
     if (!stints.length) return false;
@@ -524,6 +579,10 @@ function ensureWearCalculated(strategyData) {
     }
   });
 }
+function getTotalFuelEstimate(strategyData) {
+  const totalLaps = getTotalStrategyLaps(strategyData.stints);
+  return CAR_ECONOMY.fuel * TRACK_INFO.length * totalLaps;
+}
 
 function fuelToLaps(stint) {
   const estimatedLap = stint.fuel / (CAR_ECONOMY.fuel * TRACK_INFO.length); // -------------------------- to add push
@@ -564,10 +623,12 @@ function ensureFuelDerived(strategyData) {
 
 
 function initEvents (){
+    console.log('registering stepper listener');
     document.addEventListener('click', e => {
   const btn = e.target.closest('.step-btn');
   if (!btn) return;
-
+  
+  console.log('pressing button');
   const stepper = btn.closest('.stepper');
   const input = stepper.querySelector('input');
 
@@ -584,7 +645,7 @@ function initEvents (){
   input.dispatchEvent(new Event('input', { bubbles: true }));
 });
 
-        document.addEventListener('click', e => {
+    document.addEventListener('click', e => {
   if (!editorContext) return;
 
   if (e.target.closest('.editor-tyres .customTyre')) {

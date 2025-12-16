@@ -71,7 +71,7 @@ export const circuits = {
     az: { ride: 33, wing: 5, suspension: 60, pit: 17 }, // Azerbaijan
     be: { ride: 23, wing: 12, suspension: -1, pit: 15 }, // Belgium
     bh: { ride: 15, wing: 0, suspension: 70, pit: 23 }, // Bahrain
-    br: { ride: 15, wing: 10, suspension: -1, pit: 21 }, // Brazil
+    br: { ride: 15, wing: 10, suspension: 50, pit: 21 }, // Brazil
     ca: { ride: 18, wing: -5, suspension: 80, pit: 17 }, // Canada
     cn: { ride: 10, wing: 10, suspension: 50, pit: 26 }, // China
     de: { ride: 15, wing: 10, suspension: -1, pit: 17 }, // Germany
@@ -79,7 +79,7 @@ export const circuits = {
     eu: { ride: 23, wing: 20, suspension: -1, pit: 17 }, // Europe
     fr: { ride: 33, wing: 10, suspension: -1, pit: 20 }, // France
     gb: { ride: 18, wing: 0, suspension: 70, pit: 23 }, // Great Britain
-    hu: { ride: 20, wing: 25, suspension: -1, pit: 17 }, // Hungary
+    hu: { ride: 20, wing: 25, suspension: 20, pit: 17 }, // Hungary
     it: { ride: 23, wing: -10, suspension: 90, pit: 24 }, // Italy
     jp: { ride: 23, wing: 20, suspension: 30, pit: 20 }, // Japan
     mc: { ride: 43, wing: 35, suspension: -1, pit: 16 }, // Monaco
