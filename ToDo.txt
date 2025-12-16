@@ -1,0 +1,31 @@
+remove overview script (design page was removed)
+Strategy
+    invoke game save button on stint changes
+    add push to the calculation
+    add wear calculation
+    implement/adapt save/load
+    implement/adapt push settings
+    implement history button
+    enable gsheet append
+    enable fuel slider
+    show full stint on drag?
+    animate stint drop on plus or remove containers
+    add weather in the strategy footer?
+    show rules?
+Setup
+    update suspension values
+    add weater setup?
+HQ
+    implement auto collection of points, parts?
+League
+    make calendar complete
+        past results are current raceId -2
+        next races have the button
+Home
+    home shortcuts are still needed?
+    qualifying is fixed? check if showing when 8 minutes of race strategy
+    use the game strategy button as shortcut?
+        the link is for the p=race, change to p=strategy
+Car design
+    page was removed, now everything is in p=containers
+       
