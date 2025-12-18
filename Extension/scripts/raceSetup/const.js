@@ -83,7 +83,7 @@ export const circuits = {
     it: { ride: 23, wing: -10, suspension: 90, pit: 24 }, // Italy
     jp: { ride: 23, wing: 20, suspension: 30, pit: 20 }, // Japan
     mc: { ride: 43, wing: 35, suspension: 1, pit: 16 }, // Monaco
-    mx: { ride: 13, wing: 10, suspension: -1, pit: 19 }, // Mexico
+    mx: { ride: 13, wing: 10, suspension: 25, pit: 19 }, // Mexico
     my: { ride: 23, wing: 5, suspension: 60, pit: 22 }, // Malaysia
     ru: { ride: 8, wing: 10, suspension: 50, pit: 21 }, // Russia
     sg: { ride: 33, wing: 27, suspension: 15, pit: 20 }, // Singapore

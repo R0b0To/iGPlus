@@ -1162,5 +1162,22 @@ outline: 2px dashed #4a90e2;}
     color: #ffffff40;
     width: 30px;
   }
+  .stint-header {
+  touch-action: none;
+}
+
 
   .oneLap::before { content: '●';  color: #a7a7a7; margin-right: 3px;}
+
+  .drag-preview {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.85;
+  transform: scale(1.05);
+  transition: transform 0.1s ease;
+}
+
+.stint.dragging {
+  opacity: 0.4;
+}

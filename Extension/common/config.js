@@ -3,7 +3,7 @@ const scriptDefaults = {
   hq: true,
   league: true,
   market: true,
-  overview: false,
+  overview: true,
   reports: true,
   research: false,
   setup: true,
@@ -77,7 +77,6 @@ const tabScripts = {
     scripts: ['scripts/driver/driverMarket.js','scripts/transfer.js','lib/purify.js']
   },
   '/app/p=race': {
-    key: 'overview',
     scripts: ['lib/highcharts.js', 'scripts/race/race.js'],
     styles: ['css/race.css']
   },

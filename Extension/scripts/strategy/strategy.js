@@ -428,7 +428,24 @@ function allStintsSameTyre(stints) {
     return stints.every(s => s.tyre === firstTyre);
 }
 
+function createDragPreview(stintEl) {
+  const clone = stintEl.cloneNode(true);
+  clone.classList.add('drag-preview');
+  document.body.appendChild(clone);
+  return clone;
+}
 
+function moveDragPreview(preview, x, y) {
+  preview.style.left = `${x + 10}px`;
+  preview.style.top = `${y + 10}px`;
+}
+
+function removeDragPreview() {
+  if (dragPreview) {
+    dragPreview.remove();
+    dragPreview = null;
+  }
+}
 function createStint(stint, index, carIndex,strategyData) {
 const el = document.createElement('div');
 el.className = 'stint';
@@ -461,6 +478,9 @@ el.innerHTML = `
 el.querySelector('.customTyre').onclick = () => {
   openStintEditor(carIndex, strategyData, index);
 };
+dragPreview = null;
+
+
 
 attachDragLogic(el,carIndex,strategyData);
 const pushDiv = el.querySelector('.customPush');
@@ -562,84 +582,112 @@ if (type === 'left') el.classList.add('edge-left');
 else if (type === 'right') el.classList.add('edge-right');
 else el.classList.add('edge-center');
 }
-
-
-function attachDragLogic(stintEl,carIndex,strategyData) {
-const header = stintEl.querySelector('.stint-header');
-header.setAttribute('draggable', 'true');
-
-
-header.addEventListener('dragstart', e => {
-draggedStint = stintEl;
-e.dataTransfer.effectAllowed = 'move';
-});
-
-
-header.addEventListener('dragend', () => {
 draggedStint = null;
-clearDropHints();
-});
+ dragPreview = null;
 
 
-stintEl.addEventListener('dragover', e => {
-e.preventDefault();
-if (!draggedStint || draggedStint === stintEl) return;
+function attachDragLogic(stintEl, carIndex, strategyData) {
+  const header = stintEl.querySelector('.stint-header');
 
+  let pointerId = null;
 
-const rect = stintEl.getBoundingClientRect();
-const x = e.clientX - rect.left;
+  header.style.touchAction = 'none';
 
+  header.addEventListener('pointerdown', e => {
+    e.preventDefault();
 
-if (x < rect.width * 0.25) showHint(stintEl, 'left');
-else if (x > rect.width * 0.75) showHint(stintEl, 'right');
-else showHint(stintEl, 'center');
-});
+    draggedStint = stintEl;
+    pointerId = e.pointerId;
 
+    stintEl.classList.add('dragging');
 
-stintEl.addEventListener('dragleave', clearDropHints);
+    dragPreview = createDragPreview(stintEl);
+    moveDragPreview(dragPreview, e.clientX, e.clientY);
 
+    header.setPointerCapture(pointerId);
+  });
 
-stintEl.addEventListener('drop', e => {
-e.preventDefault();
-clearDropHints();
+  header.addEventListener('pointermove', e => {
+    if (!draggedStint || pointerId !== e.pointerId) return;
 
+    if (dragPreview) {
+      moveDragPreview(dragPreview, e.clientX, e.clientY);
+    }
 
-if (!draggedStint || draggedStint === stintEl) return;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const target = el?.closest('.stint');
 
+    if (!target || target === draggedStint) {
+      clearDropHints();
+      return;
+    }
 
-const from = +draggedStint.dataset.index;
-const to = +stintEl.dataset.index;
+    const rect = target.getBoundingClientRect();
+    const x = e.clientX - rect.left;
 
+    if (x < rect.width * 0.25) showHint(target, 'left');
+    else if (x > rect.width * 0.75) showHint(target, 'right');
+    else showHint(target, 'center');
+  });
 
-const rect = stintEl.getBoundingClientRect();
-const x = e.clientX - rect.left;
+  header.addEventListener('pointerup', e => {
+    if (!draggedStint || pointerId !== e.pointerId) return;
 
+    header.releasePointerCapture(pointerId);
+    pointerId = null;
 
-const isLeft = x < rect.width * 0.25;
-const isRight = x > rect.width * 0.75;
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const target = el?.closest('.stint');
 
+    clearDropHints();
+    removeDragPreview();
+    stintEl.classList.remove('dragging');
 
-// Center drop = copy
-if (!isLeft && !isRight) {
-strategyData.stints[to] = structuredClone(strategyData.stints[from]);
-makeCustomStrategy(carIndex,strategyData);
-return;
+    if (!target || target === draggedStint) {
+      draggedStint = null;
+      return;
+    }
+
+    const from = +draggedStint.dataset.index;
+    const to = +target.dataset.index;
+
+    const rect = target.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+
+    const isLeft = x < rect.width * 0.25;
+    const isRight = x > rect.width * 0.75;
+
+    // Center drop → copy
+    if (!isLeft && !isRight) {
+      strategyData.stints[to] = structuredClone(strategyData.stints[from]);
+      makeCustomStrategy(carIndex, strategyData);
+      draggedStint = null;
+      return;
+    }
+
+    // Reorder
+    const targetIndex = isLeft ? to : to + 1;
+    const [moved] = strategyData.stints.splice(from, 1);
+
+    strategyData.stints.splice(
+      targetIndex > from ? targetIndex - 1 : targetIndex,
+      0,
+      moved
+    );
+
+    makeCustomStrategy(carIndex, strategyData);
+    draggedStint = null;
+  });
+
+  header.addEventListener('pointercancel', () => {
+    clearDropHints();
+    removeDragPreview();
+    stintEl.classList.remove('dragging');
+    draggedStint = null;
+    pointerId = null;
+  });
 }
 
-
-// Reorder
-const targetIndex = isLeft ? to : to + 1;
-const [moved] = strategyData.stints.splice(from, 1);
-strategyData.stints.splice(
-targetIndex > from ? targetIndex - 1 : targetIndex,
-0,
-moved
-);
-
-
-makeCustomStrategy(carIndex,strategyData);
-});
-}
 
 
 function ensureStintEditor() {
