@@ -1,10 +1,10 @@
 function fuel_calc(f){
-  switch (true) {
-  /* case f >= 180:
+  /*switch (true) {
+   case f >= 180:
         case f >= 160:
         case f >= 140:
         case f >= 120:
-          return ((f ** -0.089) * 0.679);*/
+          return ((f ** -0.089) * 0.679);
   case f >= 250:
     return (((0.6666 * f) ** -0.08434) * 0.669);          
   case f >= 200:
@@ -22,8 +22,12 @@ function fuel_calc(f){
   case f >= 20: //(20-40)
     return (((0.6666 * f) ** -0.083) * 0.669);
   default:  //(1-20)
-    return (((0.6666 * f) ** -0.11) * 0.697);
-  }}
+    return (((0.6616417192 * f) ** -0.06846035841));
+  }*/
+  const fuel = (0.6566417192 * f ** -0.06846035841);
+    return fuel;
+ 
+  }
 
 function get_wear(tyre,laps,track_info,car_economy,multiplier){
   //console.log(tyre,laps,track_info,car_economy,multiplier);

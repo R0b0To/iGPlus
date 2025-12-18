@@ -1,453 +1,96 @@
-strategy_page = document.getElementById('strategy') ?? false;
-if(strategy_page !=false)
-if(!strategy_page?.getAttribute('injected') ?? false)
-  (async function main(){
-    document.getElementById('strategy').setAttribute('injected',true);
-    const observer = new MutationObserver(function (mutations) {
-      if(document.getElementsByClassName('PLFE')[0]?.value ?? false)
-        mutations.forEach(mut => {
 
-          //extra stint added or removed
-          if(mut.type == 'childList' && mut.target.classList.contains('darkgrey'))
-          {
-            const driver_form = mut.target.closest('form');
-            setTotalLapsText(driver_form);
-            updateFuel(driver_form.querySelector('tbody'));
-          }
+getWearFn = null;
+getFuelFn = null;
+readAttempts = 3;
+if (!window.__strategyInit) {
+ window.__strategyInit = true;
+ initEvents();
+}
 
-          //mutation of lap number
-          if(mut.target.tagName == 'SPAN' && mut.addedNodes.length > 0 && mut.target.classList.length == 0)
-          {
-            update_stint(mut.target.closest('td'));
-            setTotalLapsText(mut.target.closest('form'));
-          }
-
-        });
-    });
-
-    function setTotalLapsText(driver_form){
-      const stintsLaps = driver_form.querySelectorAll('td[style="visibility: visible;"]>span');
-      let total = 0;
-      for(const laps of stintsLaps)
-        total += Number(laps.textContent);
-
-      driver_form.querySelector('[id*=TotalLaps]').textContent = total;
-    }
-    //language
-    const {language}  = await chrome.storage.local.get({ language: 'en' });
-    const {language: i18n}  = await import(chrome.runtime.getURL('common/localization.js'));
-    //track information
-    //const TRACK_CODE = document.querySelector('.flag').className.slice(-2) ?? 'au';
-    const TRACK_CODE = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
-    const {track_info, multipliers, trackLink ,trackDictionary} = await import(chrome.runtime.getURL('scripts/strategy/const.js'));
-    let TRACK_INFO = track_info[TRACK_CODE];
-
-    //league information
-    const {fetchManagerData} = await import(chrome.runtime.getURL('common/fetcher.js'));
-    const allInfo = await fetchManagerData(2);
-
-    const rules = JSON.parse(allInfo.vars.rulesJson);	
-    //const league = document.querySelector('#mLeague').href;
-    //const league_id = /(?<=id=).*/gm.exec(league)[0];
-    const league_id = allInfo.team._league;
-    const { fetchLeagueData, fetchCarData } = await import(chrome.runtime.getURL('common/fetcher.js'));
-    const league_info = await fetchLeagueData(league_id) ?? false;
-    const league_length = /(?<=chronometer<\/icon> ).\d+/gm.exec(league_info.vars.rules)[0];
-    const multiplier = multipliers[league_length] ?? 1;
-    //car information
-    const { fuel_calc, get_wear } = await import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
-    const car_data = await fetchCarData() ?? false;
-    const {cleanHtml} = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
-
-    const car_attributes = cleanHtml(car_data.vars.carAttributes);
+if (!window.__igplus_strategy_state__) {
+  window.__igplus_strategy_state__ = {
+    TRACK_INFO: null,
+    CAR_ECONOMY: null,
+    CAR_STRATEGY:[],
+    RULES: null
+  };
+}
 
 
+async function strategy(){
 
-    //const CAR_ECONOMY = {fe:car_data.vars.fuel_economyBar,te:car_data.vars.tyre_economyBar,fuel:fuel_calc(car_data.vars.fuel_economyBar)};
-    const CAR_ECONOMY = {fe:car_attributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent,te:car_attributes.querySelector('[id=wrap-tyre_economy] .ratingVal').textContent,fuel:fuel_calc(car_attributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent)};
-    //active scripts
-    const active_scripts = await chrome.storage.local.get('script');
-    //utility
-    const {createSlider} = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
-    const {addStintEventHandler, updateFuel, update_stint} = await import(chrome.runtime.getURL('scripts/strategy/extraStints.js'));
-    const {dragStintHandler} = await import(chrome.runtime.getURL('scripts/strategy/dragStint.js'));
-    const {addSaveButton} = await import(chrome.runtime.getURL('scripts/strategy/saveLoad.js'));
-    let readAttempts = 3;
+    prepareStrategyContainer(1)
+    // 1. Start all imports at the same time (no await here yet)
+const fetcherPromise = import(chrome.runtime.getURL('common/fetcher.js'));
+const mathPromise = import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
+const constPromise = import(chrome.runtime.getURL('scripts/strategy/const.js'));
+const utilityPromise = import(chrome.runtime.getURL('scripts/strategy/utility.js'));
+
+// 2. Wait for all of them to finish together
+const [fetcher, constants, utility] = await Promise.all([
+    fetcherPromise, 
+    constPromise, 
+    utilityPromise
+]);
+const active_scripts = await chrome.storage.local.get('script');
+// 3. Destructure the functions/objects you need
+const { fetchCarData, fetchNextRace } = fetcher;
+const { track_info } = constants;
+const { cleanHtml } = utility;
+    
     try {
-      if (league_info != false) {
-        //injectAdvancedStint();
-        //injectCircuitMap();       
-        readGSheets();
-        //addMoreStints();
-        //addSaveButton({economy:CAR_ECONOMY,track:{code:TRACK_CODE,info:TRACK_INFO},league:league_length});
-        addWeatherInStrategy();
-        //addSelectCheckbox();
+    const carData = await fetchCarData();
+    const carAttributes = cleanHtml(carData.vars.carAttributes);
+    window.__igplus_strategy_state__.CAR_ECONOMY = {fe:carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent,
+                   te:carAttributes.querySelector('[id=wrap-tyre_economy] .ratingVal').textContent,
+                   fuel:getFuelFn(carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent),
+                   push:await getPushValues(),
+                   originalFe:carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent}; 
+//get from savedStrategy.vars.raceName instead??
+    const TRACK_CODE = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
+    const savedStrategy = await fetchNextRace();
+    window.__igplus_strategy_state__.TRACK_INFO = track_info[TRACK_CODE];
+    window.__igplus_strategy_state__.TRACK_INFO.code = TRACK_CODE;
+    window.__igplus_strategy_state__.TRACK_INFO.laps = savedStrategy.vars.raceLaps;
+    const rules = JSON.parse(savedStrategy.vars.rulesJson);
 
-        //eventAdded is a placeholder for knowing if the eventlistener is already present
-        //if(document.getElementById('eventAdded') == null)
-        //  dragStintHandler();
+    const is2tyres = rules.two_tyres == 1;
+    const isRefuelling = rules.refuelling == 1;
+
+    window.__igplus_strategy_state__.RULES = {is2tyres:is2tyres,isRefuelling:isRefuelling};
+    const is2carLeague = !!(savedStrategy && savedStrategy.vars.d2Id);
+ currentCar1Strategy = getParsedStrategy(savedStrategy.vars.d1StintCards);
+    makeCustomStrategy(1,currentCar1Strategy,true);
+    
+    window.__igplus_strategy_state__.CAR_STRATEGY.push({carIndex:1,strategyData:currentCar1Strategy});
+    
+    if(is2carLeague){
+        currentCar2Strategy = getParsedStrategy(savedStrategy.vars.d2StintCards);
+        prepareStrategyContainer(2);
+        makeCustomStrategy(2,currentCar2Strategy,true);
+        window.__igplus_strategy_state__.CAR_STRATEGY.push({carIndex:2,strategyData:currentCar2Strategy});
+
+    }
         if(active_scripts.script.sliderS)
           addFuelSlider();
         if(active_scripts.script.editS)
           addEdit();
 
-        //add mutation observer to game dialog. detecting when user open the tyre/fuel dialog
-        //waitForAddedNode({id: 'stintDialog',parent: document.getElementById('dialogs-container'),recursive: false,done:function(el){addBetterStintFuel(el);}});
-      }
 
     } catch (error) {
-      console.log(error);
-    }
-    function savePush(tbody){
-    // console.log('saving');
-
-      const newPL = tbody.querySelectorAll('[class^=PL]');
-      const pushes = document.querySelectorAll('[class^=PL]');
-
-      let pl = [];
-      pl.push(tbody.getElementsByClassName('PL1')[0].value);
-      pl.push(tbody.getElementsByClassName('PL2')[0].value);
-      pl.push(tbody.getElementsByClassName('PL3')[0].value);
-      pl.push(tbody.getElementsByClassName('PL4')[0].value);
-      pl.push(tbody.getElementsByClassName('PL5')[0].value);
-      const fe = tbody.getElementsByClassName('PLFE')[0].value;
-
-      CAR_ECONOMY.fuel = fuel_calc(parseInt(fe));
-
-      //get the push value from all the select elements
-      for(let i = 1; i < 6 ;i++){
-        const p = document.querySelectorAll(`[class^=PL${i}]`);
-        Object.keys(p).forEach(key=>{
-          p[key].value = pl[i - 1];
-        });
-      }
-      const pFE = document.getElementsByClassName('PLFE');
-      const feToolTip = document.getElementsByClassName('tooltiptext');
-      for (let i = 0; i < pFE.length; i++) {
-        pFE[i].value = fe;
-        feToolTip[i].textContent =  i18n[language].pushDescriptionPart1 + ((fuel_calc(fe)).toFixed(3)) + i18n[language].pushDescriptionPart2;
-      }
-      chrome.storage.local.set({'pushLevels':pl});
-      for(var j = 0 ; j < 5 ; j++)
-      {
-        const option = document.getElementsByClassName('OPL' + (j + 1));
-        for(let item of option)
-        {
-          item.value = pl[j];
-        }
-      }
-      const toUpdate = document.getElementsByClassName('fuelEst');
-      Object.keys(toUpdate).forEach(car=>{
-        updateFuel(toUpdate[car].closest('tbody'));
-      });
-    }
-    async function injectAdvancedStint(){
-      const dstrategy = document.getElementsByClassName('fuel');
-
-
-      Object.keys(dstrategy).forEach(async driver =>{
-        const driverForm = dstrategy[driver].closest('form');
-        const strategyIDNumber = driverForm.id[1];
-        observer.observe(dstrategy[driver].closest('tbody'), { characterData: true, attributes: true, childList: true, subtree: true });
-        //add fuel div if the race is no refuel
-        if(rules.refuelling == '0')
-        {
-          var elem = document.createElement('div');
-          elem.setAttribute('style','color:white; font-family:RobotoCondensedBold; font-size:.9em;');
-          elem.className = 'fuelEst';
-          const placement = driverForm.querySelector('[id^=\'d\']').parentElement;
-          if(placement.childElementCount < 3)
-            placement.append(elem);
-        }
-        else{
-          const lapsRow = driverForm.getElementsByClassName('fuel')[0];
-          lapsRow.classList.add('reallaps');
-          lapsRow.cells[0].addEventListener('click',function(){
-            lapsRow.querySelectorAll('td').forEach(e => {
-              const [fuel,laps] = e.querySelectorAll('input');
-              const push = lapsRow.closest('tbody').querySelector('[pushevent]').cells[e.cellIndex];
-              const pushToAdd = push.querySelector('select').value;
-              laps.value =  Math.floor((parseFloat(fuel.value) / ((CAR_ECONOMY.fuel + parseFloat(pushToAdd)) * TRACK_INFO.length)));
-              e.querySelector('span').textContent = laps.value;
-            });
-          });
-
-        }
-
-        
-        Promise.all([createPushRow(dstrategy[driver])]).then(() => {
-        //after wear and push rows are generated execute this
-          createWearRow(dstrategy[driver]);
-          update_stint(dstrategy[driver].cells[1]);
-
-
-        });
-
-
-      });
-
-      if(document.body.getAttribute('boxEvent') == null)
-      {
-        document.body.removeEventListener('click',handleClickOutsidePushBox,false);
-        document.body.addEventListener('click',handleClickOutsidePushBox,false);
-
-      }
-
-      function handleClickOutsidePushBox(event) {
-        document.body.setAttribute('boxEvent', true);
-        const box = document.getElementsByClassName('not-selectable');
-        const button = document.getElementsByClassName('dropbtn1');
-        Object.keys(box).forEach(key => {
-          if (!box[key].closest('th').contains(event.target) && box[key].classList.contains('show')) {
-
-            if( box[key].classList)
-              box[key].classList.remove('show');
-            box[key].nextElementSibling.classList.remove('show');
-
-            savePush(box[key].closest('tbody'));
-          //updateFuel(box[key].closest('tbody'));
-          }
-        });
-      }
-
-      function createPushRow(strategy)
-      {
-        const pushesText = document.getElementsByName('pushLevel')[0];
-        const pushEquivalent = {
-          FE:'FE',
-          1:pushesText[4].textContent,
-          2:pushesText[3].textContent,
-          3:pushesText[2].textContent,
-          4:pushesText[1].textContent,
-          5:pushesText[0].textContent};
-        return new Promise((resolve, reject) => {
-          const defaultPush = [-0.007, -0.004, 0, 0.01, 0.02];
-          let pushToUse = [];
-          chrome.storage.local.get({ 'pushLevels': defaultPush }, function (data) {
-            pushToUse = data.pushLevels;
-            const pushEle = document.createElement('tr');
-            pushEle.setAttribute('pushevent', true);
-            var pushButtonHeader = document.createElement('th');
-            pushButtonHeader.className = 'dropdown1';
-            var pushButton = document.createElement('div');
-            pushButton.classList.add('dropbtn1','pushBtn');
-            pushButton.textContent = i18n[language].pushText;
-            pushButton.addEventListener('click',function(){
-              this.nextSibling.classList.toggle('show');
-              this.nextSibling.nextSibling.classList.toggle('show');
-              //savePush();
-
-            });
-
-            pushButtonHeader.append(pushButton);
-            //TO DO? change to dialog?
-            var pushDiv = document.createElement('div');
-            pushDiv.className = 'dropdown1-content not-selectable';
-            pushDiv.id = 'myDropdown';
-            const fuelEco = createPushElement('FE', CAR_ECONOMY.fe, 1);
-            pushDiv.append(fuelEco);
-            for (let i = 5; i > 0; i--) {
-              const p = createPushElement(i, '', 0.001);
-              pushDiv.append(p);
-              pushButtonHeader.append(pushDiv);
-            }
-            var tooltipElem = document.createElement('div');
-            tooltipElem.className = 'dropdown1-content tooltip1';
-            tooltipElem.textContent = '?';
-            const tooltipText = document.createElement('span');
-            tooltipText.className = 'tooltiptext';
-            tooltipText.textContent = i18n[language].pushDescriptionPart1 + ((CAR_ECONOMY.fuel).toFixed(3)) + i18n[language].pushDescriptionPart2;
-            tooltipElem.append(tooltipText);
-            pushButtonHeader.append(tooltipElem);
-            const row_name = pushButtonHeader;
-            row_name.setAttribute('style', 'color:white; height:20px; border-radius:4px; text-align:center; border:0px; font-family:RobotoCondensedBold; width:100%;');
-            pushEle.append(row_name);
-            
-            for (let i = 1; i < strategy.childElementCount; i++) {
-              var stint = document.createElement('td');
-              var pushSelect = document.createElement('select');
-              pushSelect.classList.add('pushSelect');
-              pushSelect.addEventListener('change',updateFuel);
-              for (var j = 5; j > 0; j--) //5 push options
-              {
-                var pushOption = document.createElement('option');
-                pushOption.textContent = pushEquivalent[j];
-                if (j == 3)
-                  pushOption.selected = true; //pre select middle push
-                pushOption.value = pushToUse[j - 1];
-                pushOption.className = 'OPL' + j;
-                pushSelect.append(pushOption);
-              }
-              stint.append(pushSelect);
-              stint.style.visibility = strategy.childNodes[i].style.visibility;
-              pushEle.append(stint);
-
-            }
-            if (strategy.parentElement.querySelector('[pushevent=true]') == null) {
-              
-              
-              strategy.parentElement.insertBefore(pushEle, strategy.parentElement.lastChild);
-
-              resolve(`driver ${strategy.closest('form').id[1]} push is done`);
-            }
-          });
-
-
-
-          function createPushElement(i, value, step) {
-            var pushInputDiv = document.createElement('div');
-            pushInputDiv.className = 'pushDiv';
-
-            var pushInputLabel = document.createElement('div');
-            pushInputLabel.textContent = pushEquivalent[i];
-            pushInputLabel.classList.add('pushBox');
-
-            var pushInputDown = document.createElement('div');
-
-            var  textSpan = document.createElement('span');
-            textSpan.textContent = '−';
-            pushInputDown.append(textSpan);
-            pushInputDown.className = 'pushPlusMin';
-            pushInputDown.addEventListener('click', function () {
-              this.parentNode.querySelector('input[type=number]').stepDown();
-            });
-
-            var pushInput = document.createElement('input');
-            pushInput.className = 'PL' + i + ' pushInput';
-            pushInput.type = 'number';
-            pushInput.step = step; '0.001';
-            //pushInput.setAttribute("style", "margin: 9px;");
-
-            if (i == 'FE'){
-              pushInput.value = value;
-              pushInputLabel.textContent = '';
-              pushInputLabel.classList.add('feLabel');
-            }
-            else
-              pushInput.value = pushToUse[i - 1];
-
-
-            var pushInputUp = document.createElement('div');
-            pushInputUp.className = 'pushPlusMin';
-
-            var  textSpan = document.createElement('span');
-            textSpan.textContent = '+';
-            pushInputUp.append(textSpan);
-            pushInputUp.addEventListener('click', function () {
-              this.parentNode.querySelector('input[type=number]').stepUp();
-            });
-
-            pushInputDiv.append(pushInputLabel);
-            pushInputDiv.append(pushInputDown);
-            pushInputDiv.append(pushInput);
-            pushInputDiv.append(pushInputUp);
-
-            return pushInputDiv;
-          }
-        });
-      }
-      function createWearRow(strategy) {
-
-        return new Promise((resolve, reject) => {
-          const wearEle = document.createElement('tr');
-          wearEle.setAttribute('wearevent', true);
-          const row_name = document.createElement('th');
-          row_name.textContent = 'Wear';
-          row_name.style.fontSize = '.8em';
-          wearEle.append(row_name);
-          //starts at 1 because the first element is the name title
-          for (var i = 1; i < strategy.childElementCount; i++) {
-            var stint = document.createElement('td');
-            var tyre = strategy.closest('tbody').querySelector('.tyre').cells[i].className.slice(3); //tyre of stint i
-            var laps = strategy.cells[i].textContent ?? "test";
-            
-            
-            CAR_ECONOMY.push =  strategy.closest('tbody').querySelector('[pushevent]').cells[1].childNodes[0].selectedIndex; 
-
-            var w = get_wear(tyre, laps ,TRACK_INFO , CAR_ECONOMY, multiplier);
-            stint.style.visibility = strategy.cells[i].style.visibility;
-            //event will fire when laps or tyre is changed
-
-            stint.textContent = w;
-            wearEle.append(stint);
-          }
-          if (strategy.parentElement.querySelector('[wearevent=true]') == null) {
-            strategy.parentElement.insertBefore(wearEle, strategy.parentElement.querySelector('[pushevent]'));
-            resolve(`driver ${strategy.closest('form').id[1]} wear is done`);
-          }
-        });
-      }
-
-    }
-    async function addBetterStintFuel(el){
-
-      const track_code = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
-
-      TRACK_INFO = track_info[track_code];
-      const fuel_el = el.querySelector('.num');
-      const fe_used = Number(document.getElementsByClassName('PLFE')[0].value);
-      const fuelPerLap = fuel_calc(fe_used);
-      const driver = document.querySelector('form[id$="strategy"]:not([style*="display:none"]):not([style*="display: none"])');
-      const stintID = parseInt(document.getElementsByName('stintId')[0].value);
-      const pushToAdd = parseFloat(driver.querySelector('[pushevent]').cells[stintID].childNodes[0].value);
-      //observe the fuel change in the dialog for tyre/fuel selection+
-      const fuelChangeObserver = new MutationObserver(function (mutations) {
-        //console.log('fuelChangeObserver')
-        mutations.forEach(mut => {
-          const fuel_el = el.querySelector('.num');
-          const fuelPerLap = fuel_calc(document.getElementsByClassName('PLFE')[0].value);
-          const driver = document.querySelector('form[id$="strategy"]:not([style*="display:none"]):not([style*="display: none"])');
-          const stintID = parseInt(document.getElementsByName('stintId')[0].value);
-          const pushToAdd = parseFloat(driver.querySelector('[pushevent]').cells[stintID].childNodes[0].value);
-          document.getElementById('realfuel').textContent = (parseFloat(fuel_el.textContent) / ((fuelPerLap + pushToAdd) * TRACK_INFO.length)).toFixed(2);
-        });
-      });
-
-      fuelChangeObserver.observe(fuel_el, { characterData: false, attributes: false, childList: true, subtree: false });
-      const estimatedlaps = document.getElementById('fuelLapsPrediction');
-      if (document.getElementById('realfuel') == null) {
-        const real = document.createElement('span');
-        real.id = 'realfuel';
-        real.setAttribute('style', 'position: relative;top: 2px;vertical-align: text-bottom;width: 2rem;display: inline-table;color: #ffffff;margin-left: 5px;cursor: pointer;background-color: #96bf86;border-radius: 40%;');
-        real.textContent = (Number(fuel_el.textContent) / ((fuelPerLap + pushToAdd) * TRACK_INFO.length)).toFixed(2);
-        real.addEventListener('click',function overwrite(){
-          document.getElementById('fuelLapsPrediction').textContent = this.textContent;
-        });
-        estimatedlaps.parentElement.append(real);
-      }
-    }
-    // add observer for dialog opening. this will handle
-    function waitForAddedNode(params) {
-
-
-      if(params.parent.getAttribute('observing') ?? false)
         return;
-
-      params.parent.setAttribute('observing',true);
-      const dialogObserver = new MutationObserver(function(mutations) {
-        const el = params.parent.querySelector('form');
-        if (el) {
-        //is dialog the tyre/fuel selection?
-          if(el.querySelector('[id=fuelLapsPrediction]'))
-          {
-            try {
-              params.done(el);
-            } catch (error) {
-              console.log(error);
-            }
-          }
-        //this.disconnect();
-        }
-      });
-      // this observer will stay active until hard page reload
-      dialogObserver.observe(params.parent || document, {
-        subtree: !!params.recursive || !params.parent,
-        childList: true,
-      });
-      return dialogObserver;
     }
+    
 
-    function addEdit()
+    
+
+    
+        
+   
+     
+
+}
+ function addEdit()
     {
       const advancedFuel = document.getElementsByName('advancedFuel');
       if(advancedFuel != null)
@@ -463,7 +106,7 @@ if(!strategy_page?.getAttribute('injected') ?? false)
         });
       }
 
-      function createEdit(node){
+    function createEdit(node){
 
         const  text = node.parentElement.querySelectorAll('.num')[0];
         text.contentEditable = true;
@@ -504,6 +147,66 @@ if(!strategy_page?.getAttribute('injected') ?? false)
         });
       }
     }
+function createSlider(node,min,max) {
+  const settingValueDiv = node.previousElementSibling.childNodes[1];
+  settingValueDiv.classList.remove('green');
+
+  const sliderContainer = document.createElement('div');
+  sliderContainer.classList.add('sliderContainer');
+  const sliderLabelTrack = document.createElement('div');
+  sliderLabelTrack.classList.add('track');
+  sliderContainer.append(sliderLabelTrack);
+  const slider = document.createElement('input');
+  slider.className = 'sliderX';
+  slider.type = 'range';
+  slider.max = max;
+  slider.min = min;
+  slider.value = settingValueDiv.textContent;
+
+  function getRangePercent(sliderE){
+    return (sliderE.value - sliderE.min) / (sliderE.max - sliderE.min) * 100;
+  }
+  slider.addEventListener('input', function () {
+    sliderLabelTrack.append(settingValueDiv);
+    settingValueDiv.textContent = this.value;
+    settingValueDiv.classList.add('slider-label');
+    settingValueDiv.style.left = getRangePercent(slider) + '%';
+  });
+
+  slider.addEventListener('change', function () {
+    settingValueDiv.classList.remove('slider-label');
+    sliderContainer.classList.remove('visible');
+    const parent = slider.closest(".igpNum");
+    parent.insertBefore(settingValueDiv,parent.lastChild)
+    slider.parentElement.parentElement.nextElementSibling.value = slider.value;
+    if(slider.value == 0)
+    {
+      const driverStrategyId = this.closest('form').id;
+      document.getElementsByName('fuel1')[driverStrategyId[1] - 1].value = 0;
+    }
+  });
+
+  settingValueDiv.addEventListener('click', function () {
+    if (!sliderContainer.classList.contains('visible')) {
+      sliderLabelTrack.append(settingValueDiv);
+      sliderContainer.classList.add('visible');
+      settingValueDiv.classList.add('slider-label');
+      settingValueDiv.style.left = getRangePercent(slider) + '%';
+    } else {
+      sliderContainer.classList.remove('visible');
+      settingValueDiv.classList.remove('slider-label');
+      const parent = slider.closest(".igpNum");
+      parent.insertBefore(settingValueDiv,parent.lastChild)
+    }
+  });
+
+  sliderContainer.append(slider);
+  settingValueDiv.classList.add('withSlider');
+
+  node.previousElementSibling.prepend(sliderContainer);
+
+
+}   
     function addFuelSlider()
     {
       advancedFuel = document.getElementsByName('advancedFuel');
@@ -517,63 +220,925 @@ if(!strategy_page?.getAttribute('injected') ?? false)
       }
 
     }
-    function syncSelects() {
-      const car = this.closest("form").id[1] 
-      const checkbox = this.parentElement.querySelector('.syncCheckbox');
-      const main_select = this.parentElement.querySelector('[name=pushLevel]');
-      const select_elements = document.getElementById(`d${car}strategy`).querySelectorAll(".pushSelect");
-      if (checkbox.checked) {    
-        select_elements.forEach(select=> {
-          select.classList.add("select_overwrite")
-          select.selectedIndex = main_select.selectedIndex;
-          select.disabled = true;
-          update_stint(select.closest("tbody").querySelector('.fuel').cells[select.parentElement.cellIndex])
-        })
+function getTotalStrategyLaps(stints) {
+  return stints.reduce((sum, stint) => {
+    const laps = Number(stint.laps);
+    return sum + (Number.isFinite(laps) ? laps : 0);
+  }, 0);
+}
+function createStrategyFooter(strategyData) {
+  const footer = document.createElement('div');
+  footer.className = 'strategy-footer';
 
-        
-      }
-      else{
-        select_elements.forEach(select=> {
-          select.classList.remove("select_overwrite")
-          select.disabled = false;
-        })
-      }
-    }
-    function addSelectCheckbox()
-    {
-      targetElement = document.getElementsByName('pushLevel');
-      if(targetElement != null)
-      {
-        
-        targetElement.forEach(car => {
+  const totalLaps = getTotalStrategyLaps(strategyData.stints);
+  const raceLaps = window.__igplus_strategy_state__.TRACK_INFO.laps;
 
-          if(car)
-            var checkbox = document.createElement("input");
-            checkbox.type = "checkbox";
-            checkbox.classList.add("syncCheckbox");
-            checkbox.textContent = "Synchronize Selects";
-            checkbox.addEventListener("change", syncSelects);
-            car.parentNode.insertBefore(checkbox, car.nextSibling);
-            car.addEventListener("change",syncSelects)
+  footer.innerHTML = `
+    <span class="laps-current">${totalLaps}</span>
+    <span class="laps-sep">/</span>
+    <span class="laps-total">${raceLaps}</span>
+  `;
 
+  if (totalLaps === raceLaps) {
+    footer.classList.add('laps-ok');
+  } else if (totalLaps > raceLaps) {
+    footer.classList.add('laps-over');
+  } else {
+    footer.classList.add('laps-under');
+  }
+  if (!window.__igplus_strategy_state__.RULES.isRefuelling) {
+  const lapLength = window.__igplus_strategy_state__.TRACK_INFO.length;
+  const fuelFor1Lap =  window.__igplus_strategy_state__.CAR_ECONOMY.fuel * lapLength;
+  const fuel = getTotalFuelEstimate(strategyData);
+  footer.innerHTML += `
+    <div class="footer-fuel">
+    <span class="oneLap">${fuelFor1Lap.toFixed(2)}</span>
+    <strong>${fuel}L</strong>
+    </div>
+  `;
+}
+
+  return footer;
+}
+
+
+function getParsedStrategy(htmlString){
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+
+    // Find the script tag where ID ends with "StrategyJson"
+    const jsonElement = doc.querySelector('script[id$="StrategyJson"]');
+    if (!jsonElement) return { stints: [] };
+
+    const strategyJSON = JSON.parse(jsonElement.textContent);
+    // Convert numeric-key object to array
+    const stintsArray = Object.keys(strategyJSON.stint)
+        .sort((a,b) => +a - +b)
+        .map(key => {
+            const s = strategyJSON.stint[key];
+            return {
+                tyre: s.tyre ?? '--',
+                fuel: Number(s.fuel) ?? 0,
+                laps: Number(s.laps) ?? 0,
+                wear: null,         
+                push: strategyJSON[2] ?? 60    // default ------------------------- possible variation if using TD with special skill??
+            };
         });
-      }
 
+    // Use only the number of stints specified in `strategyJSON.stints`
+    const numberOfStints = Number(strategyJSON.stints ?? stintsArray.length);
+    return { stints: stintsArray.slice(0, numberOfStints) };
+}
+function saveStintToForm(carIndex, strategyData) {
+  const gameStints = document.getElementById(`d${carIndex}StintCards`);
+  const driverForm = gameStints.closest('form');
+
+  if (!driverForm) return;
+
+  const tyreInputs = driverForm.querySelectorAll('[name^="tyre"]');
+  const fuelInputs = driverForm.querySelectorAll('[name^="fuel"]');
+  const lapsInputs = driverForm.querySelectorAll('[name^="laps"]');
+  const numPits = driverForm.querySelector(`[name=numPits]`);
+
+  const stints = strategyData.stints;
+
+  const max = Math.max(
+    tyreInputs.length,
+    fuelInputs.length,
+    lapsInputs.length
+  );
+
+  numPits.value = stints.length-1;
+  for (let i = 0; i < max; i++) {
+    const stint = stints[i];
+
+    /* TYRE */
+    if (tyreInputs[i]) {
+      tyreInputs[i].value = stint?.tyre ?? '';
     }
+
+ 
+    if (lapsInputs[i]) {
+        lapsInputs[i].value = stint?.laps ?? 1;
+      }
+    if (fuelInputs[i]) {
+        if(!window.__igplus_strategy_state__.RULES.isRefuelling)
+        {
+            if(i==0)
+            {
+                //fuelInputs[i].value = Math.ceil(parseFloat(driverForm.querySelector('strong').textContent));
+                
+                fuelInputs[i].value = document.getElementById(`d${carIndex}AdvancedFuel`).value;
+                
+            }
+            else{
+                fuelInputs[i].value = 0;
+            }
+        }else{
+            fuelInputs[i].value = stint?.fuel ?? 1;
+        }
+        
+      }
+    
+  }
+
+}
+
+function prepareStrategyContainer(carIndex){
+    try {
+    const originalStintsContainer = document.getElementById(`d${carIndex}StintCards`);
+    const originalTotalLaps = document.getElementById(`d${carIndex}TotalLaps`).parentElement;
+    originalStintsContainer.style.display = 'none';
+    originalTotalLaps.style.display = 'none';
+
+    let root = document.getElementById(`strategyRoot${carIndex}`);
+  if (!root) {
+  root = document.createElement('div');
+  root.id = `strategyRoot${carIndex}`;
+  root.classList.add('strategy-container'); 
+  originalStintsContainer.parentElement.appendChild(root);
+  
+}
+    } catch (error) {
+        //probably page was already done
+    }
+    
+}
+function makeCustomStrategy(carIndex,strategyData) {
+
+
+const root = document.getElementById(`strategyRoot${carIndex}`);
+root.innerHTML = '';
+window.__igplus_strategy_state__.CAR_STRATEGY[carIndex-1] = strategyData;
+ensureWearCalculated(strategyData);
+ensureFuelDerived(strategyData);
+
+const header = document.createElement('div');
+header.className = 'strategy-header';
+header.innerHTML = `
+<div class="header-left">
+<div class="header-btn customSave popup-save-btn"></div>
+</div>
+<div class="header-right">
+<div class="header-btn settings-btn">⚙</div>
+</div>`;
+root.appendChild(header);
+header.querySelector('.settings-btn')
+  .addEventListener('click', openStrategySettings);
+header.querySelector('.customSave').onclick = () => {
+  openStrategyPopup(carIndex, strategyData);
+};
+
+
+
+const wrapper = document.createElement('div');
+wrapper.className = 'stints-wrapper';
+
+    if (window.__igplus_strategy_state__.RULES.is2tyres && allStintsSameTyre(strategyData.stints)) {
+        wrapper.classList.add('two-tyre-warning');
+    }
+root.appendChild(wrapper);
+
+
+strategyData.stints.forEach((stint, index) => {
+wrapper.appendChild(createStint(stint, index,carIndex,strategyData));
+});
+
+
+const controlCol = document.createElement('div');
+controlCol.classList.add('controlCol');
+
+
+controlCol.appendChild(createAddStintButton(carIndex,strategyData));
+controlCol.appendChild(createTrashButton(carIndex,strategyData));
+
+
+wrapper.appendChild(controlCol);
+const footer = createStrategyFooter(strategyData);
+root.appendChild(footer);
+saveStintToForm(carIndex,strategyData);
+
+if(!arguments[2])invokeGameSave();
+
+
+}
+function allStintsSameTyre(stints) {
+    if (!stints.length) return false;
+    const firstTyre = stints[0].tyre;
+    return stints.every(s => s.tyre === firstTyre);
+}
+
+
+function createStint(stint, index, carIndex,strategyData) {
+const el = document.createElement('div');
+el.className = 'stint';
+el.dataset.index = index;
+// Map tyre type to CSS class
+    const tyreClassMap = {
+        'SS': 'customSS',
+        'S': 'customS',
+        'M': 'customM',
+        'H': 'customH',
+        'I': 'customI',
+        'W': 'customW'
+    };
+const tyreClass = tyreClassMap[stint.tyre] || '';
+// ${window.__igplus_strategy_state__.RULES.isRefuelling ? `<div class="field fuel">Fuel: ${stint.fuel ?? '--'}</div>` : ''}
+el.innerHTML = `
+    <div class="stint-header">${index === 0 ? 'Start' : 'Pit ' + index}</div>
+    <div class="stint-body">
+        <div class="field customTyre ${tyreClass}">${stint.laps ?? '--'}</div>
+       
+        <div class="wear-label">${stint.wear ?? '--'}%</div>
+        <div class="push-wrapper">
+            <div class="field push customPush" data-push="${stint.push ?? 60}"></div>
+            <div class="push-options">
+                ${[100,80,60,40,20].map(v => `<div class="push-option" data-value="${v}"></div>`).join('')}
+            </div>
+        </div>
+    </div>`;
+
+el.querySelector('.customTyre').onclick = () => {
+  openStintEditor(carIndex, strategyData, index);
+};
+
+attachDragLogic(el,carIndex,strategyData);
+const pushDiv = el.querySelector('.customPush');
+    const optionsDiv = el.querySelector('.push-options');
+
+    // Show/hide options on click
+    pushDiv.addEventListener('click', () => {
+        optionsDiv.style.display = optionsDiv.style.display === 'flex' ? 'none' : 'flex';
+        optionsDiv.style.flexDirection = 'column';
+    });
+
+    // Select option
+    optionsDiv.querySelectorAll('.push-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+            const value = Number(opt.dataset.value);
+            stint.push = value;
+            pushDiv.dataset.push = value;
+            optionsDiv.style.display = 'none';
+            //refresh stints
+            makeCustomStrategy(carIndex,strategyData);
+        });
+    });
+
+    // Hide dropdown if clicked outside
+    document.addEventListener('click', e => {
+        if (!el.contains(e.target)) optionsDiv.style.display = 'none';
+    });
+return el;
+}
+
+function invokeGameSave()
+{
+    document.getElementById('d1strategyAdvanced').querySelector('.tyreSelectInput td:not(.inactive)').click();
+}
+function createAddStintButton(carIndex,strategyData) {
+const btn = document.createElement('div');
+btn.className = 'add-stint';
+btn.textContent = '+';
+
+
+btn.onclick = () => {
+  const last = strategyData.stints[strategyData.stints.length - 1];
+  strategyData.stints.push(structuredClone(last));
+  makeCustomStrategy(carIndex, strategyData);
+};
+
+
+btn.addEventListener('dragover', e => e.preventDefault());
+btn.addEventListener('drop', () => {
+if (!draggedStint) return;
+const from = +draggedStint.dataset.index;
+strategyData.stints.push(structuredClone(strategyData.stints[from]));
+makeCustomStrategy(carIndex,strategyData);
+});
+
+
+return btn;
+}
+
+function createTrashButton(carIndex,strategyData) {
+const trash = document.createElement('div');
+trash.className = 'trash-zone';
+trash.textContent = '−';
+
+
+trash.onclick = () => {
+if (strategyData.stints.length <= 2) return;
+strategyData.stints.pop();
+makeCustomStrategy(carIndex,strategyData);
+};
+
+
+trash.addEventListener('dragover', e => e.preventDefault());
+trash.addEventListener('drop', () => {
+if (!draggedStint) return;
+if (strategyData.stints.length <= 2) return;
+const index = +draggedStint.dataset.index;
+strategyData.stints.splice(index, 1);
+makeCustomStrategy(carIndex,strategyData);
+});
+
+
+return trash;
+}
+
+ draggedStint = null;
+
+
+function clearDropHints() {
+document.querySelectorAll('.edge-left, .edge-right, .edge-center').forEach(el => {
+el.classList.remove('edge-left', 'edge-right', 'edge-center');
+});
+}
+
+
+function showHint(el, type) {
+clearDropHints();
+if (type === 'left') el.classList.add('edge-left');
+else if (type === 'right') el.classList.add('edge-right');
+else el.classList.add('edge-center');
+}
+
+
+function attachDragLogic(stintEl,carIndex,strategyData) {
+const header = stintEl.querySelector('.stint-header');
+header.setAttribute('draggable', 'true');
+
+
+header.addEventListener('dragstart', e => {
+draggedStint = stintEl;
+e.dataTransfer.effectAllowed = 'move';
+});
+
+
+header.addEventListener('dragend', () => {
+draggedStint = null;
+clearDropHints();
+});
+
+
+stintEl.addEventListener('dragover', e => {
+e.preventDefault();
+if (!draggedStint || draggedStint === stintEl) return;
+
+
+const rect = stintEl.getBoundingClientRect();
+const x = e.clientX - rect.left;
+
+
+if (x < rect.width * 0.25) showHint(stintEl, 'left');
+else if (x > rect.width * 0.75) showHint(stintEl, 'right');
+else showHint(stintEl, 'center');
+});
+
+
+stintEl.addEventListener('dragleave', clearDropHints);
+
+
+stintEl.addEventListener('drop', e => {
+e.preventDefault();
+clearDropHints();
+
+
+if (!draggedStint || draggedStint === stintEl) return;
+
+
+const from = +draggedStint.dataset.index;
+const to = +stintEl.dataset.index;
+
+
+const rect = stintEl.getBoundingClientRect();
+const x = e.clientX - rect.left;
+
+
+const isLeft = x < rect.width * 0.25;
+const isRight = x > rect.width * 0.75;
+
+
+// Center drop = copy
+if (!isLeft && !isRight) {
+strategyData.stints[to] = structuredClone(strategyData.stints[from]);
+makeCustomStrategy(carIndex,strategyData);
+return;
+}
+
+
+// Reorder
+const targetIndex = isLeft ? to : to + 1;
+const [moved] = strategyData.stints.splice(from, 1);
+strategyData.stints.splice(
+targetIndex > from ? targetIndex - 1 : targetIndex,
+0,
+moved
+);
+
+
+makeCustomStrategy(carIndex,strategyData);
+});
+}
+
+
+function ensureStintEditor() {
+  if (document.getElementById('stintEditor')) return;
+
+  const editor = document.createElement('div');
+  editor.id = 'stintEditor';
+  editor.innerHTML = `
+    <div class="editor-backdrop"></div>
+    <div class="editor-panel">
+      <div class="editor-title">Edit Stint</div>
+
+      <div class="editor-section">
+        <div class="editor-tyres">
+          <div data-tyre="SS" class="customTyre customSS"></div>
+          <div data-tyre="S"  class="customTyre customS"></div>
+          <div data-tyre="M"  class="customTyre customM"></div>
+          <div data-tyre="H"  class="customTyre customH"></div>
+          <div data-tyre="I"  class="customTyre customI"></div>
+          <div data-tyre="W"  class="customTyre customW"></div>
+        </div>
+      </div>
+
+
+      <div class="editor-section" id="editor-laps">
+  <label>Laps</label>
+
+  <div class="stepper">
+    <div class="step-btn minus">−</div>
+    <input type="number" min="1" max="80" step="1" />
+    <div class="step-btn plus">+</div>
+  </div>
+</div>
+
+
+      <div class="editor-section" id="editor-fuel">
+  <label>Fuel</label>
+
+  <div class="stepper">
+    <div class="step-btn minus">−</div>
+    <input type="number" min="1" max="300" step="1" />
+    <div class="step-btn plus">+</div>
+  </div>
+
+  <div class="fuel-derived">
+    ≈ <span class="fuel-laps">--</span> laps
+  </div>
+</div>
+
+
+        <div class="editor-section">
+        <div class="editor-push">
+          <div class="customPush" data-push="20"></div>
+          <div class="customPush" data-push="40"></div>
+          <div class="customPush" data-push="60"></div>
+          <div class="customPush" data-push="80"></div>
+          <div class="customPush" data-push="100"></div>
+        </div>
+      </div>
+      <div class="editor-section editor-wear">
+  <label>Estimated Wear</label>
+  <div class="wear-preview">
+    <span class="wear-value">--%</span>
+  </div>
+</div>
+
+      <div class="editor-actions">
+  <div class="editor-btn cancel" title="Cancel">✕</div>
+  <div class="editor-btn confirm" title="Confirm">✔</div>
+</div>
+
+    </div>
+  `;
+  document.body.appendChild(editor);
+}
+
+
+ editorContext = null;
+
+function openStintEditor(carIndex, strategyData, index) {
+  ensureStintEditor();
+  
+
+  const editor = document.getElementById('stintEditor');
+  const stint = strategyData.stints[index];
+  editorContext = { carIndex, strategyData, index };
+
+  editor.style.display = 'block';
+    
+  // Toggle fuel/laps
+  document.getElementById('editor-laps').style.display = window.__igplus_strategy_state__.RULES.isRefuelling ? 'none' : 'block';
+  document.getElementById('editor-fuel').style.display = window.__igplus_strategy_state__.RULES.isRefuelling ? 'block' : 'none';
+
+  // Preselect tyre
+  editor.querySelectorAll('.editor-tyres .customTyre').forEach(t => {
+    t.classList.toggle('selected', t.dataset.tyre === stint.tyre);
+  });
+
+  // Preselect push
+  editor.querySelectorAll('.editor-push div').forEach(p => {
+    p.classList.toggle('selected', +p.dataset.push == stint.push);
+  });
+
+  // Values
+  editor.querySelector('#editor-laps input').value = stint.laps ?? '';
+  editor.querySelector('#editor-fuel input').value = stint.fuel ?? '';
+
+  if (window.__igplus_strategy_state__.RULES.isRefuelling) {
+    updateFuelDerived(editor, strategyData.stints[index]);
+    }
+}
+
+
+ function calculateWearPreview({ tyre, push, laps, fuel }) {
+  return getWearFn(tyre, laps ,window.__igplus_strategy_state__.TRACK_INFO , window.__igplus_strategy_state__.CAR_ECONOMY, 1);
+}
+function updateWearPreview() {
+  const editor = document.getElementById('stintEditor');
+
+  const tyre = editor.querySelector('.editor-tyres .selected')?.dataset.tyre;
+  const push = +editor.querySelector('.editor-push .selected')?.dataset.push;
+
+  const laps = +editor.querySelector('#editor-laps input')?.value;
+  const fuel = +editor.querySelector('#editor-fuel input')?.value;
+
+  if (!tyre || !push) return;
+
+  const wear = calculateWearPreview({ tyre, push, laps, fuel });
+  editor.querySelector('.wear-value').textContent = `${wear}%`;
+}
+
+function ensureWearCalculated(strategyData) {
+  strategyData.stints.forEach(stint => {
+    if (stint.wear == null) {
+      stint.wear = calculateWearPreview({
+        tyre: stint.tyre,
+        push: stint.push ?? 60,
+        laps: stint.laps,
+        fuel: stint.fuel
+      });
+    }
+  });
+}
+function getTotalFuelEstimate(strategyData) {
+
+  const fuelEstimate = strategyData.stints.reduce((total, stint) => {
+
+    if (stint.laps == null) return total;
+
+    const perLapFuel =
+      (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[stint.push])) *
+      window.__igplus_strategy_state__.TRACK_INFO.length;
+
+    const stintFuel = perLapFuel * (+stint.laps || 0);
+
+    return total + stintFuel;
+  }, 0);
+
+  return fuelEstimate.toFixed(2);
+}
+
+function fuelToLaps(stint) {
+  const estimatedLap = parseFloat(stint.fuel) / ((window.__igplus_strategy_state__.CAR_ECONOMY.fuel+parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[stint.push])) * window.__igplus_strategy_state__.TRACK_INFO.length); 
+  return estimatedLap;
+}
+function updateFuelDerived(editor, stint) {
+  const fuelInput = editor.querySelector('#editor-fuel input');
+  const label = editor.querySelector('.fuel-laps');
+
+  if (!fuelInput || !label) return;
+
+  const fuel = +fuelInput.value;
+  if (isNaN(fuel)) return;
+
+  const tempPush = editor.querySelector('.customPush.selected').getAttribute('data-push');
+  const tempStint = {fuel:fuel,push:tempPush};
+  const calculatedLaps = fuelToLaps(tempStint);
+
+  label.textContent = calculatedLaps.toFixed(1);
+
+  // 🔹 IMPORTANT: update stint laps as FLOOR
+  stint.laps = Math.floor(calculatedLaps);
+
+  // Keep wear preview aligned
+  updateWearPreview();
+}
+
+function ensureFuelDerived(strategyData) {
+  strategyData.stints.forEach(stint => {
+    if (!window.__igplus_strategy_state__.RULES.isRefuelling) return;
+    if (stint.fuel == null) return;
+
+    const calculatedLaps = fuelToLaps(stint);
+
+    // 🔹 Always normalize laps from fuel
+    stint.laps = Math.floor(calculatedLaps);
+  });
+}
+
+
+function initEvents (){
+    document.addEventListener('click', e => {
+  const btn = e.target.closest('.step-btn');
+  if (!btn) return;
+  
+  const stepper = btn.closest('.stepper');
+  const input = stepper.querySelector('input');
+
+
+  let value = input.value === '' ? (+input.min || 0) : parseFloat(input.value);
+
+  const step = +input.step || 1;
+  
+
+  if (btn.classList.contains('plus')) value += step;
+  if (btn.classList.contains('minus')) value -= step;
+
+  const min = input.min !== '' ? +input.min : -Infinity;
+  const max = +input.max || Infinity;
+
+  value = Math.max(min, value);
+  // Clamp value
+  if (value < min) value = min;
+  if (value > max) value = max;
+
+  input.value = value;
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+});
+document.addEventListener('click', async e => {
+    const PUSH_KEYS = [20, 40, 60, 80, 100];
+
+  const modal = document.getElementById('strategySettings');
+  if (!modal) return;
+
+  if (e.target.classList.contains('modal-close') ||
+      e.target.classList.contains('modal-cancel')) {
+    modal.remove();
+    return;
+  }
+
+  if (e.target.classList.contains('modal-confirm')) {
+    const pushLevels = [];
+    const newPushMap = {};
+
+    PUSH_KEYS.forEach(k => {
+      const input = modal.querySelector(`[data-id="push-${k}"] input`);
+      const val = parseFloat(input.value);
+      newPushMap[k] = val;
+      pushLevels.push(val);
+    });
+
+    const fe = parseFloat(
+      modal.querySelector(`[data-id="fe"] input`).value
+    );
+
+    // Persist
+    await chrome.storage.local.set({ pushLevels });
+
+    // Update runtime economy
+    const STATE = window.__igplus_strategy_state__;
+    STATE.CAR_ECONOMY.push = newPushMap;
+    STATE.CAR_ECONOMY.fe = fe;
+    STATE.CAR_ECONOMY.fuel = getFuelFn(fe);
+
+    modal.remove();
+
+    // Re-render strategies
+    STATE.CAR_STRATEGY.forEach(({ carIndex, strategyData }) => {
+    makeCustomStrategy(carIndex, strategyData);
+  });
+  }
+});
+
+    document.addEventListener('click', e => {
+  if (!editorContext) return;
+
+  if (e.target.closest('.editor-tyres .customTyre')) {
+    document.querySelectorAll('.editor-tyres .customTyre')
+      .forEach(t => t.classList.remove('selected'));
+    e.target.classList.add('selected');
+  }
+
+  if (e.target.closest('.editor-push div')) {
+    document.querySelectorAll('.editor-push div')
+      .forEach(p => p.classList.remove('selected'));
+    e.target.classList.add('selected');
+    const { strategyData, index } = editorContext;
+    const editor = document.getElementById('stintEditor');
+    updateFuelDerived(editor, strategyData.stints[index]);
+  }
+  updateWearPreview();
+
+});
+document.addEventListener('input', e => {
+  if (e.target.closest('#stintEditor')) updateWearPreview();
+});
+document.addEventListener('input', e => {
+
+  if (!editorContext) return;
+
+  const editor = document.getElementById('stintEditor');
+  if (!editor.contains(e.target)) return;
+
+  const input = e.target.closest('input[type=number]');
+  if (!input) return;
+
+  const min = +input.min || 0;
+  const max = +input.max || Infinity;
+  let value = +input.value;
+
+  // Clamp value
+  if (value < min) value = min;
+  if (value > max) value = max;
+
+  input.value = value;
+
+  // Trigger fuel/laps recalculation if needed
+  if (input.closest('#editor-fuel')) {
+    const { strategyData, index } = editorContext;
+    updateFuelDerived(editor, strategyData.stints[index]);
+  } else if (input.closest('#editor-laps')) {
+    const { strategyData, index } = editorContext;
+    strategyData.stints[index].laps = Math.floor(value);
+    updateWearPreview();
+  }
+});
+document.addEventListener('click', e => {
+  if (!editorContext) return;
+
+  const editor = document.getElementById('stintEditor');
+
+  if (e.target.classList.contains('cancel')) {
+    editor.style.display = 'none';
+    editorContext = null;
+  }
+
+   if (e.target.closest('#editor-fuel')) {
+    const { strategyData, index } = editorContext;
+    updateFuelDerived(editor, strategyData.stints[index]);
+  }
+  if (e.target.classList.contains('confirm')) {
+    const { carIndex, strategyData, index } = editorContext;
+    const stint = strategyData.stints[index];
+
+    const tyre = editor.querySelector('.editor-tyres .selected')?.dataset.tyre;
+    const push = +editor.querySelector('.editor-push .selected')?.dataset.push;
+
+    if (tyre) stint.tyre = tyre;
+    if (push) stint.push = push;
+
+    if (window.__igplus_strategy_state__.RULES.isRefuelling) {
+      stint.fuel = +editor.querySelector('#editor-fuel input').value;
+    } else {
+      stint.laps = +editor.querySelector('#editor-laps input').value;
+    }
+
+    stint.wear = calculateWearPreview({
+    tyre: stint.tyre,
+    push: stint.push,
+    laps: stint.laps,
+    fuel: stint.fuel
+  });
+
+    editor.style.display = 'none';
+    editorContext = null;
+    makeCustomStrategy(carIndex, strategyData);
+  }
+});
+}
+
+
+async function getPushValues() {
+    function toPushMap(arr) {
+  return {
+    20: arr[0],
+     40: arr[1],
+     60: arr[2],
+     80: arr[3],
+     100: arr[4],
+  };
+}
+    const defaultPush = [-0.007, -0.004, 0, 0.01, 0.02];
+    const data = await chrome.storage.local.get({ 'pushLevels': defaultPush });
+    
+    return toPushMap(data.pushLevels);
+}
+async function loadSettingsValues() {
+  const pushMap = await getPushValues();
+
+  return {
+    push: pushMap,
+    fe: window.__igplus_strategy_state__.CAR_ECONOMY.fe
+  };
+}
+
+function openStrategySettings() {
+  if (document.getElementById('strategySettings')) return;
+
+  loadSettingsValues().then(({ push, fe }) => {
+    const PUSH_KEYS = [100,80,60,40,20];
+    const modal = document.createElement('div');
+    modal.id = 'strategySettings';
+    modal.className = 'strategy-modal';
+
+    modal.innerHTML = `
+      <div class="modal-content">
+
+        <div class="modal-section">
+          ${PUSH_KEYS.map(k => `
+            <div class="stepper-row">
+              <span class="push-symbol" data-push="${k}"></span>
+              ${createStepperHTML(`push-${k}`, push[k], 0.001, -0.1, 0.1)}
+            </div>
+          `).join('')}
+        </div>
+<hr class ="modal-separator">
+        <div class="modal-section-fuel">
+           <span class="fuel-symbol feLabel"></span>
+          ${createStepperHTML('fe', fe, 1, 1, 300)}
+        </div>
+
+        <div class="modal-actions">
+          <span class="modal-cancel">✕</span>
+          <span class="modal-confirm">✔</span>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    
+const feLabel = modal.querySelector('.feLabel');
+const feInput = modal.querySelector('[data-id=fe] input');
+
+if (feLabel && feInput) {
+  feLabel.addEventListener('click', () => {
+    const originalFe = window.__igplus_strategy_state__.CAR_ECONOMY.originalFe;
+
+    feInput.value = parseInt(originalFe);
+
+    // Trigger the same update path as manual input
+    feInput.dispatchEvent(new Event('input', { bubbles: true }));
+  });
+}
+  });
+}
+
+function createStepperHTML(id, value, step, min, max) {
+  return `
+    <div class="stepper" data-id="${id}">
+      <span class="step-btn minus">−</span>
+      <input type="number"
+             value="${value}"
+             step="${step}"
+             min="${min}"
+             max="${max}">
+      <span class="step-btn plus">+</span>
+    </div>
+  `;
+}
     function injectCircuitMap(){
-
-
+        const trackLink = {
+  'au': 'd=circuit&id=1&tab=history' ,//Australia
+  'my': 'd=circuit&id=2&tab=history' ,//Malaysia
+  'cn': 'd=circuit&id=3&tab=history' ,//China
+  'bh': 'd=circuit&id=4&tab=history' ,//Bahrain
+  'es': 'd=circuit&id=5&tab=history' ,//Spain
+  'mc': 'd=circuit&id=6&tab=history' ,//Monaco
+  'tr': 'd=circuit&id=7&tab=history' ,//Turkey
+  'de': 'd=circuit&id=9&tab=history' ,//Germany
+  'hu': 'd=circuit&id=10&tab=history' ,//Hungary
+  'eu': 'd=circuit&id=11&tab=history' ,//Europe
+  'be': 'd=circuit&id=12&tab=history' ,//Belgium
+  'it': 'd=circuit&id=13&tab=history' ,//Italy
+  'sg': 'd=circuit&id=14&tab=history' ,//Singapore
+  'jp': 'd=circuit&id=15&tab=history' ,//Japan
+  'br': 'd=circuit&id=16&tab=history' ,//Brazil
+  'ae': 'd=circuit&id=17&tab=history' ,//AbuDhabi
+  'gb': 'd=circuit&id=18&tab=history' ,//Great Britain
+  'fr': 'd=circuit&id=19&tab=history' ,//France
+  'at': 'd=circuit&id=20&tab=history' ,//Austria
+  'ca': 'd=circuit&id=21&tab=history' ,//Canada
+  'az': 'd=circuit&id=22&tab=history' ,//Azerbaijan
+  'mx': 'd=circuit&id=23&tab=history' ,//Mexico
+  'ru': 'd=circuit&id=24&tab=history' ,//Russia
+  'us': 'd=circuit&id=25&tab=history', //USA
+  'nl': 'd=circuit&id=26&tab=history' //Netherlands
+};
       if(!document.getElementById('customMap'))
       {
         try {
+          const trackCode = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
           const target = document.querySelector('[id=strategy] .eight');
           const circuit = document.createElement('img');
           circuit.id = 'customMap';
           //document.getElementById('igplus_darkmode') ? circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`) : circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`)
-          circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`);
+          circuit.src = chrome.runtime.getURL(`images/circuits/${trackCode}_dark.png`);
           circuit.setAttribute('style','width:100%;');
           const imageLink = document.createElement('a');
-          imageLink.href = trackLink[TRACK_CODE];
+          imageLink.href = trackLink[trackCode];
           imageLink.append(circuit);
           target.append(imageLink);
         } catch (error) {
@@ -582,12 +1147,12 @@ if(!strategy_page?.getAttribute('injected') ?? false)
 
       }
     }
-    async function readGSheets()
+async function readGSheets()
     {
       if(document.getElementById('importedTable') == null)
       {
         async function getCurrentTrack(trackj){
-
+          const {trackDictionary} = await import(chrome.runtime.getURL('scripts/strategy/const.js'));
           const jTrack = [];
          try {
           trackj.forEach((ele) =>
@@ -597,8 +1162,7 @@ if(!strategy_page?.getAttribute('injected') ?? false)
                 requestedTrack = ele[t.gTrack].toLowerCase();
               else
                 requestedTrack = ele[t.gTrack];
-
-              if(trackDictionary[TRACK_CODE].includes(requestedTrack))
+              if(trackDictionary[window.__igplus_strategy_state__.TRACK_INFO.code].includes(requestedTrack))
                 jTrack.push(ele);
 
             
@@ -652,7 +1216,6 @@ if(!strategy_page?.getAttribute('injected') ?? false)
           }
         }
         savedLink = await chrome.storage.local.get({'gLink':''});
-
         if(savedLink.gLink != '')
         {
           t = await chrome.storage.local.get({'gTrack':'track'});
@@ -661,7 +1224,6 @@ if(!strategy_page?.getAttribute('injected') ?? false)
           link = idRegex.exec(savedLink.gLink)[1];
           const sheetId = link;
           const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?`;
-          //console.log(sName);
           const sheetName = sName.gLinkName;
           const query = encodeURIComponent('Select *');
           const url = `${base}&sheet=${sheetName}&tq=${query}`;
@@ -746,8 +1308,8 @@ if(!strategy_page?.getAttribute('injected') ?? false)
                       }
                     }
       
-      
-                    document.querySelectorAll('.eight.columns.aStrat')[0].append(output);
+                    
+                    document.querySelectorAll('.eight.columns.aStrat')[0]?.append(output);
                     removeColumn(output,t.gTrack);
                   }
                 }
@@ -780,28 +1342,272 @@ if(!strategy_page?.getAttribute('injected') ?? false)
 
         }}
     }
-    async function addMoreStints()
-    {
-      const strategies = document.getElementsByClassName('fuel');
-      Object.keys(strategies).forEach(car=>{
-        addStintEventHandler(strategies[car].closest('form').querySelector('.igpNum').parentElement,{CAR_ECONOMY,TRACK_INFO,multiplier});
+function decodeTyre(tsTyre) {
+  // "ts-M" → "M"
+  return tsTyre?.replace('ts-', '') ?? 'M';
+}
+function encodeTyre(tyre) {
+  return `ts-${tyre}`;
+}
 
+function legacySaveToStrategyData(save) {
+const PUSH_INDEX_TO_VALUE = {
+  1: 100,
+  2: 80,
+  3: 60,
+  4: 40,
+  5: 20
+};
+
+  const stints = [];
+
+  Object.keys(save.stints)
+    .sort((a, b) => a - b)
+    .forEach(i => {
+      const s = save.stints[i];
+
+      const pushIndex = PUSH_INDEX_TO_VALUE[s.push] ?? 60;
+      const tempLaps = Number(s.laps);
+      const lapFuel = (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[pushIndex]) )* window.__igplus_strategy_state__.TRACK_INFO.length;
+      const totalStintFuel = Math.ceil(lapFuel * tempLaps)
+
+      stints.push({
+        tyre: decodeTyre(s.tyre),
+        laps: tempLaps,
+        fuel: totalStintFuel,          
+        wear: null,          // derived later
+        push: pushIndex
       });
+    });
 
-    }
-    function addWeatherInStrategy(){
-      const strategy = document.getElementsByClassName('fuel');
-      Object.keys(strategy).forEach(car=>{
-        const w = (document.getElementsByClassName('pWeather')[0]).cloneNode(true);
-        w.className = '';
-        w.childNodes[0].style.filter = 'brightness(0) invert(1)';
-        w.childNodes[1].style.color = 'white';
-        w.childNodes[2].setAttribute('style','width: 28px;height: 28px;');
-        w.setAttribute('style','display: inline;padding-right: 10px;');
-        const notice = strategy[car].closest('form').querySelector('.notice');
-        if(notice.querySelector('.waterLevel') == null)
-          notice.prepend(w);
-      });
-    }
-  })();
+  return { stints };
+}
 
+function strategyDataToLegacySave(strategyData) {
+    const PUSH_VALUE_TO_INDEX = {
+  100: 1,
+  80: 2,
+  60: 3,
+  40: 4,
+  20: 5
+};
+
+  const save = {
+    track: window.__igplus_strategy_state__.TRACK_INFO.code,
+    length: String(getLeagueLength(window.__igplus_strategy_state__.TRACK_INFO.code,window.__igplus_strategy_state__.TRACK_INFO.laps)),
+    laps: {
+      total: window.__igplus_strategy_state__.TRACK_INFO.laps,
+      doing: getTotalStrategyLaps(strategyData.stints)
+    },
+    stints: {}
+  };
+
+  strategyData.stints.forEach((stint, i) => {
+    save.stints[i] = {
+      tyre: encodeTyre(stint.tyre),
+      laps: String(stint.laps),
+      push: PUSH_VALUE_TO_INDEX[stint.push] ?? 2
+    };
+  });
+
+  return save;
+}
+
+function ensureStrategyPopup() {
+  if (document.getElementById('strategyPopup')) return;
+
+  const popup = document.createElement('div');
+  popup.id = 'strategyPopup';
+  popup.innerHTML = `
+    <div class="popup-backdrop"></div>
+    <div class="popup-panel">
+      <div class="popup-header">
+        <span class="popup-close">✕</span>
+      </div>
+
+      <div class="popup-section-preview">
+        <button class="popup-save-btn popup-save"></button>
+        <div id="currentStrategyPreview" class="strategy-preview"></div>
+      </div>
+
+      <div class="popup-section">
+        <div id="savedStrategiesList"></div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(popup);
+
+  popup.querySelector('.popup-close').onclick =
+  popup.querySelector('.popup-backdrop').onclick = () => {
+    popup.style.display = 'none';
+  };
+}
+function renderStrategyPreview(stints, container) {
+  container.innerHTML = '';
+
+  stints.forEach(stint => {
+    const tyre = document.createElement('div');
+    tyre.className = `customTyre custom${stint.tyre}`;
+    tyre.textContent = stint.laps;
+    container.appendChild(tyre);
+  });
+}
+async function openStrategyPopup(carIndex, strategyData) {
+  ensureStrategyPopup();
+
+  const popup = document.getElementById('strategyPopup');
+  popup.style.display = 'block';
+
+  // Current strategy preview
+  renderStrategyPreview(
+    strategyData.stints,
+    document.getElementById('currentStrategyPreview')
+  );
+
+  // Save button
+  popup.querySelector('.popup-save-btn').onclick = async () => {
+    await saveCurrentStrategy(strategyData);
+    await populateSavedStrategies(carIndex);
+  };
+
+  // Saved strategies list
+  await populateSavedStrategies(carIndex);
+}
+async function populateSavedStrategies(carIndex) {
+  const list = document.getElementById('savedStrategiesList');
+  list.innerHTML = '';
+
+  const trackCode = window.__igplus_strategy_state__.TRACK_INFO.code;
+  const { save } = await chrome.storage.local.get({ save: {} });
+
+  if (!save[trackCode]) {
+    list.innerHTML = '<div class="empty">No saved strategies</div>';
+    return;
+  }
+
+  Object.entries(save[trackCode]).forEach(([hash, legacySave]) => {
+    const item = document.createElement('div');
+    item.className = 'saved-strategy';
+
+    const preview = document.createElement('div');
+    preview.className = 'strategy-preview';
+
+    const strategyData = legacySaveToStrategyData(legacySave);
+    renderStrategyPreview(strategyData.stints, preview);
+
+
+
+    const loadBtn = document.createElement('button');
+    loadBtn.textContent = '▶';
+    loadBtn.onclick = () => {
+      makeCustomStrategy(carIndex, strategyData);
+      document.getElementById('strategyPopup').style.display = 'none';
+    };
+
+    const delBtn = document.createElement('button');
+    delBtn.textContent = '🗑';
+    delBtn.onclick = async () => {
+      delete save[trackCode][hash];
+      await chrome.storage.local.set({ save });
+      populateSavedStrategies(carIndex);
+    };
+
+    const left = document.createElement('div');
+    left.className = 'saved-left';
+    left.appendChild(loadBtn);
+
+    const right = document.createElement('div');
+    right.className = 'saved-right';
+    right.appendChild(delBtn);
+
+    item.append(left, preview, right);
+
+    list.appendChild(item);
+  });
+}
+function hashCode(string){
+  var hash = 0;
+  for (var i = 0; i < string.length; i++) {
+    var code = string.charCodeAt(i);
+    hash = ((hash << 5) - hash) + code;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return hash;
+}
+function getLeagueLength(countryCode, laps) {
+  const raceLengthMap = new Map([
+  ['ae', [50, 37, 25, 12]],
+  ['au', [57, 42, 28, 14]],
+  ['at', [68, 51, 34, 17]],
+  ['az', [46, 34, 23, 11]],
+  ['ba', [59, 44, 29, 14]],
+  ['be', [43, 32, 21, 10]],
+  ['br', [69, 51, 34, 17]],
+  ['ca', [63, 47, 31, 15]],
+  ['cn', [55, 41, 27, 13]],
+  ['eu', [50, 37, 25, 12]],
+  ['fr', [48, 36, 24, 12]],
+  ['de', [67, 50, 33, 16]],
+  ['jp', [55, 41, 27, 13]],
+  ['gb', [48, 36, 24, 12]],
+  ['it', [51, 38, 25, 12]],
+  ['my', [55, 41, 27, 13]],
+  ['mx', [70, 52, 35, 17]],
+  ['mo', [59, 44, 29, 14]],
+  ['ru', [46, 34, 23, 11]],
+  ['sg', [60, 45, 30, 15]],
+  ['es', [62, 46, 31, 15]],
+  ['us', [60, 45, 30, 15]],
+  ['tr', [54, 40, 27, 13]],
+  ['hu', [79, 59, 39, 19]],
+  ['nl', [50, 59, 39, 19]]
+]);
+  const lengths = [100, 75, 50, 25];
+  const trackLaps = raceLengthMap.get(countryCode.toLowerCase());
+
+  if (!trackLaps) return null; // Track not found
+
+  // Find the index of the lap count that matches our input
+  const index = trackLaps.indexOf(Number(laps));
+
+  // Return the percentage at that same index
+  return index !== -1 ? lengths[index] : null;
+}
+async function saveCurrentStrategy(strategyData) {
+  const trackCode = window.__igplus_strategy_state__.TRACK_INFO.code;
+  const legacySave = strategyDataToLegacySave(strategyData, trackCode);
+  const hash = hashCode(JSON.stringify(legacySave));
+
+  const storage = await chrome.storage.local.get({ save: {} });
+
+  if (!storage.save[trackCode]) {
+    storage.save[trackCode] = {};
+  }
+
+  storage.save[trackCode][hash] = legacySave;
+
+  await chrome.storage.local.set({ save: storage.save });
+
+}
+
+
+// TODO move to separate retry module?
+(async () => {
+  try {
+    await new Promise((res) => setTimeout(res, 0)); // sleep a bit, while page loads
+        if (getWearFn && getFuelFn) return;
+    const mod = await import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
+    getFuelFn = mod.fuel_calc;
+    getWearFn = mod.get_wear;
+    //make a condition if already loaded?
+    if (!document.getElementById(`strategyRoot1`)) {
+    injectCircuitMap(); 
+    readGSheets();
+    strategy();
+    }
+
+  } catch (err) {
+    console.log('page not loaded');
+  }
+})();

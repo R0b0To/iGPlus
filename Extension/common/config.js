@@ -3,9 +3,9 @@ const scriptDefaults = {
   hq: true,
   league: true,
   market: true,
-  overview: true,
+  overview: false,
   reports: true,
-  research: true,
+  research: false,
   setup: true,
   staff: true,
   strategy: true,
@@ -47,10 +47,6 @@ const tabScripts = {
     key: 'research',
     scripts: ['scripts/research.js'], // TODO dynamically import localization!
     styles: ['css/research.css']
-  },
-  '/app/p=cars': {
-    key: 'research',
-    scripts: ['scripts/overview.js']
   },
   '/app/p=home': {
     key: 'review',
@@ -103,7 +99,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['scripts/strategy/strategy2.js','lib/gsi.js','lib/purify.js'],
+    scripts: ['scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
     styles: ['css/strategy.css','css/strategyPreview.css']
   },
   '/app/p=league&id=': {
