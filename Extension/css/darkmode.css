@@ -153,7 +153,7 @@ table.hover tbody tr:hover,
 #setupSuggestionHeader > tr > td{
   border-right: 1px solid var(--dark-color3)!important;
 }
-  .btn,input[type=submit],
+  input[type=submit],
   .mailWrap,#editTrack > form > div:nth-child(1) > div.text-center.gradientBgGrey.pad,
   .selectBox-dropdown,
   .selectBox-dropdown-menu,.fReq,div.c-wrap,
@@ -164,9 +164,8 @@ table.hover tbody tr:hover,
   div.sceditor-toolbar,
   .blog-wrap,
   .post-head,
-  .sbutton,
-  .btn2,
-  .btn2:visited,.statWrap div,.btn:visited,td.key3,.mini-subhead,.news,#balance,#tokens,#back, #forward,.ratingBar,
+  .sbutton
+  ,.statWrap div,td.key3,.mini-subhead,.news,#balance,#tokens,#back, #forward,.ratingBar,
   #myDropdown,.inactivityNotice{
     color: var(--text-color)!important;
     background: var(--dark-btn)!important;
@@ -175,8 +174,13 @@ table.hover tbody tr:hover,
   #selectStrength > a:hover{
     background: var(--dark-btn)!important;
     color: var(--text-color);
+    
   }
- 
+ .btn2,.btn2:visited,.btn,.btn:visited{
+  color: var(--text-color)!important;
+  background: #252626 !important;
+  border: none!important;
+ }
   a,a:visited{
     color: var(--link-color);
   }
@@ -200,7 +204,7 @@ table.hover tbody tr:hover,
     border-top: none ;
     border-bottom: none!important;
 }
-input,textarea#commentContent,
+textarea#commentContent,
 .replyComment,
 #notes > div{
     background: var(--dark-text-area)!important;
@@ -248,7 +252,7 @@ table.rowBorders tbody tr,.com-wrap{
 }
 
 .minus, .plus,.igpNum,.bgWhite,.researchFooter,.researchFooter > th {
-    background: var(--dark-btn)!important; 
+    background: #00000069 !important; 
 }
 .bgGrey{
   background: #d9d9d9 !important

@@ -52,6 +52,8 @@ const { cleanHtml } = utility;
     window.__igplus_strategy_state__.TRACK_INFO = track_info[TRACK_CODE];
     window.__igplus_strategy_state__.TRACK_INFO.code = TRACK_CODE;
     window.__igplus_strategy_state__.TRACK_INFO.laps = savedStrategy.vars.raceLaps;
+    window.__igplus_strategy_state__.TRACK_INFO.raceLength = String(getLeagueLength(TRACK_CODE,savedStrategy.vars.raceLaps));
+
     const rules = JSON.parse(savedStrategy.vars.rulesJson);
 
     const is2tyres = rules.two_tyres == 1;
@@ -59,16 +61,18 @@ const { cleanHtml } = utility;
 
     window.__igplus_strategy_state__.RULES = {is2tyres:is2tyres,isRefuelling:isRefuelling};
     const is2carLeague = !!(savedStrategy && savedStrategy.vars.d2Id);
- currentCar1Strategy = getParsedStrategy(savedStrategy.vars.d1StintCards);
+    currentCar1Strategy = getParsedStrategy(savedStrategy.vars.d1StintCards);
+    window.__igplus_strategy_state__.CAR_STRATEGY.push({carIndex:1,strategyData:currentCar1Strategy});
     makeCustomStrategy(1,currentCar1Strategy,true);
     
-    window.__igplus_strategy_state__.CAR_STRATEGY.push({carIndex:1,strategyData:currentCar1Strategy});
+    
     
     if(is2carLeague){
         currentCar2Strategy = getParsedStrategy(savedStrategy.vars.d2StintCards);
         prepareStrategyContainer(2);
-        makeCustomStrategy(2,currentCar2Strategy,true);
         window.__igplus_strategy_state__.CAR_STRATEGY.push({carIndex:2,strategyData:currentCar2Strategy});
+        makeCustomStrategy(2,currentCar2Strategy,true);
+        
 
     }
         if(active_scripts.script.sliderS)
@@ -366,10 +370,10 @@ function prepareStrategyContainer(carIndex){
 }
 function makeCustomStrategy(carIndex,strategyData) {
 
-
+window.__igplus_strategy_state__.CAR_STRATEGY[carIndex-1] = {carIndex:carIndex,strategyData:strategyData};
 const root = document.getElementById(`strategyRoot${carIndex}`);
 root.innerHTML = '';
-window.__igplus_strategy_state__.CAR_STRATEGY[carIndex-1] = strategyData;
+
 ensureWearCalculated(strategyData);
 ensureFuelDerived(strategyData);
 
@@ -467,7 +471,7 @@ el.innerHTML = `
         <div class="field customTyre ${tyreClass}">${stint.laps ?? '--'}</div>
        
         <div class="wear-label">${stint.wear ?? '--'}%</div>
-        <div class="push-wrapper">
+        <div class="push-wrapper-igplus">
             <div class="field push customPush" data-push="${stint.push ?? 60}"></div>
             <div class="push-options">
                 ${[100,80,60,40,20].map(v => `<div class="push-option" data-value="${v}"></div>`).join('')}
@@ -478,6 +482,7 @@ el.innerHTML = `
 el.querySelector('.customTyre').onclick = () => {
   openStintEditor(carIndex, strategyData, index);
 };
+
 dragPreview = null;
 
 
@@ -698,8 +703,6 @@ function ensureStintEditor() {
   editor.innerHTML = `
     <div class="editor-backdrop"></div>
     <div class="editor-panel">
-      <div class="editor-title">Edit Stint</div>
-
       <div class="editor-section">
         <div class="editor-tyres">
           <div data-tyre="SS" class="customTyre customSS"></div>
@@ -778,8 +781,8 @@ function openStintEditor(carIndex, strategyData, index) {
   editor.style.display = 'block';
     
   // Toggle fuel/laps
-  document.getElementById('editor-laps').style.display = window.__igplus_strategy_state__.RULES.isRefuelling ? 'none' : 'block';
-  document.getElementById('editor-fuel').style.display = window.__igplus_strategy_state__.RULES.isRefuelling ? 'block' : 'none';
+  document.getElementById('editor-laps').style.display = window.__igplus_strategy_state__.RULES.isRefuelling ? 'none' : 'flex';
+  document.getElementById('editor-fuel').style.display = window.__igplus_strategy_state__.RULES.isRefuelling ? 'flex' : 'none';
 
   // Preselect tyre
   editor.querySelectorAll('.editor-tyres .customTyre').forEach(t => {
@@ -802,7 +805,7 @@ function openStintEditor(carIndex, strategyData, index) {
 
 
  function calculateWearPreview({ tyre, push, laps, fuel }) {
-  return getWearFn(tyre, laps ,window.__igplus_strategy_state__.TRACK_INFO , window.__igplus_strategy_state__.CAR_ECONOMY, 1);
+  return getWearFn(tyre, laps ,window.__igplus_strategy_state__.TRACK_INFO , window.__igplus_strategy_state__.CAR_ECONOMY, window.__igplus_strategy_state__.TRACK_INFO.raceLength );
 }
 function updateWearPreview() {
   const editor = document.getElementById('stintEditor');
@@ -810,7 +813,9 @@ function updateWearPreview() {
   const tyre = editor.querySelector('.editor-tyres .selected')?.dataset.tyre;
   const push = +editor.querySelector('.editor-push .selected')?.dataset.push;
 
-  const laps = +editor.querySelector('#editor-laps input')?.value;
+  const laps = window.__igplus_strategy_state__.RULES.isRefuelling 
+  ? Math.floor(editor.querySelector('.fuel-laps').textContent) 
+  : +editor.querySelector('#editor-laps input')?.value || 1;
   const fuel = +editor.querySelector('#editor-fuel input')?.value;
 
   if (!tyre || !push) return;
@@ -953,10 +958,11 @@ document.addEventListener('click', async e => {
     STATE.CAR_ECONOMY.fuel = getFuelFn(fe);
 
     modal.remove();
-
+    console.log(STATE.CAR_STRATEGY);
     // Re-render strategies
     STATE.CAR_STRATEGY.forEach(({ carIndex, strategyData }) => {
     makeCustomStrategy(carIndex, strategyData);
+    
   });
   }
 });

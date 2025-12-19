@@ -137,7 +137,6 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   try {
     await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
     if (document.getElementById('chartWeather') == null) {
-      console.log('race settings');
       addCustomWeatherLink();
       swapMap();
       showBarValues();

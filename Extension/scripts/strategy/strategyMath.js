@@ -29,9 +29,9 @@ function fuel_calc(f){
  
   }
 
-function get_wear(tyre,laps,track_info,car_economy,multiplier){
-  //console.log(tyre,laps,track_info,car_economy,multiplier);
-
+function get_wear(tyre,laps,track_info,car_economy,multiplierKey){
+  
+  const multipliers = { 100: 1, 75: 1.25, 50: 1.5, 25: 3 };
   //TO DO. if wear is needed for strategy preview make a request to open.weather with specified track
   const weatherNow = convertToCelsius((document.getElementsByClassName('pWeather text-right green')[0]?.lastChild.textContent ) ?? '25');
   //console.log('past temperature')
@@ -67,7 +67,7 @@ function get_wear(tyre,laps,track_info,car_economy,multiplier){
   const track_length = track_info.length;
   const te = car_economy.te;
 
-  const t = (1.29 * te ** -0.0696) * (0.00527 * track_wear + 0.556) * track_length * multiplier * tyreWear;
+  const t = (1.29 * te ** -0.0696) * (0.00527 * track_wear + 0.556) * track_length * multipliers[multiplierKey] * tyreWear;
 
   //calculate stint wear
   const stint = Math.exp(1) ** ((-t / 100 * 1.18) * laps) * 100;

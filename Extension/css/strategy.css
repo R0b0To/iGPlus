@@ -673,9 +673,9 @@ outline: 2px dashed #4a90e2;}
 .customI{ border: 8px solid #82a674; }
 .customW{ border: 8px solid #4786b3; }
 
-.push-wrapper {
+.push-wrapper-igplus {
   position: relative;
-  display: inline-block;
+  display: inline-block ;
 }
 
 .customPush {
@@ -749,8 +749,15 @@ outline: 2px dashed #4a90e2;}
 .push-options .push-option:hover {
   background: #444;
 }
-
-
+#editor-laps,#editor-fuel{
+  display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+  }
+#editor-laps > label,#editor-fuel > label{
+  margin-right: 10px;
+}
 #stintEditor {
   position: fixed;
   inset: 0;

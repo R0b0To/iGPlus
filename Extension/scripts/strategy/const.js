@@ -81,10 +81,9 @@ const trackDictionary  = {
 
 
 };
-const multipliers = { 100: 1, 75: 1.25, 50: 1.5, 25: 3 };
+
 export {
   track_info,
-  multipliers,
   trackLink,
   trackDictionary
 };

@@ -31,7 +31,9 @@ async function addSetupSuggestionsForDrivers() {
   const allInfo =  await fetchManagerData(1)
 
   const driversHtml = cleanHtml(allInfo.vars.drivers ?? allInfo.preCache["p=staff"].vars.drivers);
-  const leagueTier = allInfo.team._tier;
+  
+  //global leagues have tier as rookie
+  const leagueTier =  allInfo.team._tier;
 
   const drivers_data = driversHtml.querySelectorAll('.hoverData');
 
