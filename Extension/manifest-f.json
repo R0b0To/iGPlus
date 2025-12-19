@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "name": "iGPlus",
+  "description": "Enhance your iGPmanager experience",
+  "version": "1.5.71",
+  "icons": {
+    "128": "./images/Icon128.png"
+  },
+  "background": {
+    "page": "background.html"
+  },
+  "browser_action": {
+    "default_icon": "./images/Icon128.png",
+    "default_title": "iGPlus",
+    "default_popup": "popup/popup.html"
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "*://igpmanager.com/*",
+    "*://docs.google.com/*",
+    "*://api.openweathermap.org/*",
+    "*://www.googleapis.com/*",
+    "*://sheets.googleapis.com/*"
+  ],
+  "web_accessible_resources": [
+    "*.js"
+  ]
+}

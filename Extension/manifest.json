@@ -1,30 +1,42 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "iGPlus",
-  "description": "Enhance your iGPmanager experience",
   "version": "1.5.71",
-  "icons": {
-    "128": "./images/Icon128.png"
-  },
-  "background": {
-    "page": "background.html"
-  },
-  "browser_action": {
-    "default_icon": "./images/Icon128.png",
-    "default_title": "iGPlus",
-    "default_popup": "popup/popup.html"
-  },
+  "description": "Enhance your iGPmanager experience",
+  "key":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnUe8HeNjRMPeZa7maP/SFuVuN9d8Zi/76LVeI5lv5ycUwvz6vATphN42paO61NNzxcuGKWFhq59yIwS145zbUTEuErt4g6shq10rn62pkagkmQc3JnVz/ZiB95N81ljsuyXwI5HUtYkeHdMdduhYnQNE0ZPF24+ybcEDfDASnfMOqgxnajKNEAk4DKp33yX5Qb0xPfOd8p40cm1esMMwtIlO3GAf4QCRFirXqPqvgjkMLFwnFivIKAHywTKLnn9+ELhLXvDIoi4ZmdWgRhyqaFoDJtkef/YWbk4XIt30efdSejzViviLcfK6O+I1/+zIhEFpYthj5GqAhuwxdelROQIDAQAB",
   "permissions": [
     "tabs",
     "storage",
-    "scripting",
-    "*://igpmanager.com/*",
-    "*://docs.google.com/*",
-    "*://api.openweathermap.org/*",
-    "*://www.googleapis.com/*",
-    "*://sheets.googleapis.com/*"
+    "scripting"
   ],
+  "action": {
+    "default_icons": {
+      "128": "images/Icon128.png"
+    },
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "host_permissions": [
+    "*://igpmanager.com/*"
+  ],
+  "icons": {
+    "128": "images/Icon128.png"
+  },
   "web_accessible_resources": [
-    "*.js"
+    {
+      "matches": [
+        "*://igpmanager.com/*"
+      ],
+      "resources": [
+        "*.png",
+        "*.PNG",
+        "*.svg",
+        "*.css",
+        "*.js"
+      ]
+    }
   ]
 }
