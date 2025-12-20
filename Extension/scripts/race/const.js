@@ -24,6 +24,7 @@ const raceTrackCoords = {
   23: [19.4, -99.09], //mexico
   24: [43.59, 39.72], //russia
   25: [30.17, -97.62], //usa
+  26: [52.23, 4.32] //netherlands
 };
 
 const weatherStats = {

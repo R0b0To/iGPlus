@@ -62,7 +62,6 @@
   justify-content: center;
 	top: -225%;
   background-color: #467bb1!important;
-  color: black!important;
   width: 50px!important;
   height: 50px!important;
   z-index: 2;
@@ -1187,4 +1186,25 @@ outline: 2px dashed #4a90e2;}
 
 .stint.dragging {
   opacity: 0.4;
+}
+
+.strategy-placeholder {
+  opacity: 0.6;
+}
+
+.placeholder-header {
+  height: 40px;
+  background: #222;
+  margin-bottom: 8px;
+}
+
+.placeholder-stints {
+  height: 120px;
+  background: repeating-linear-gradient(
+    45deg,
+    #1c1c1c,
+    #1c1c1c 10px,
+    #222 10px,
+    #222 20px
+  );
 }

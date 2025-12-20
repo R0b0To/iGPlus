@@ -252,7 +252,8 @@ function createStrategyFooter(strategyData) {
   }
   if (!window.__igplus_strategy_state__.RULES.isRefuelling) {
   const lapLength = window.__igplus_strategy_state__.TRACK_INFO.length;
-  const fuelFor1Lap =  window.__igplus_strategy_state__.CAR_ECONOMY.fuel * lapLength;
+  const fuelFor1Lap =  (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push["60"])) * lapLength;
+
   const fuel = getTotalFuelEstimate(strategyData);
   footer.innerHTML += `
     <div class="footer-fuel">
@@ -348,31 +349,47 @@ function saveStintToForm(carIndex, strategyData) {
 
 }
 
-function prepareStrategyContainer(carIndex){
-    try {
+function prepareStrategyContainer(carIndex) {
+  try {
     const originalStintsContainer = document.getElementById(`d${carIndex}StintCards`);
-    const originalTotalLaps = document.getElementById(`d${carIndex}TotalLaps`).parentElement;
+    const originalTotalLaps = document
+      .getElementById(`d${carIndex}TotalLaps`)
+      ?.parentElement;
+
+    if (!originalStintsContainer) return;
+
+    // Measure BEFORE hiding
+    const reservedHeight =
+      originalStintsContainer.offsetHeight +
+      (originalTotalLaps?.offsetHeight || 0);
+
+    // Hide originals
     originalStintsContainer.style.display = 'none';
-    originalTotalLaps.style.display = 'none';
+    if (originalTotalLaps) originalTotalLaps.style.display = 'none';
 
     let root = document.getElementById(`strategyRoot${carIndex}`);
-  if (!root) {
-  root = document.createElement('div');
-  root.id = `strategyRoot${carIndex}`;
-  root.classList.add('strategy-container'); 
-  originalStintsContainer.parentElement.appendChild(root);
-  
-}
-    } catch (error) {
-        //probably page was already done
+    if (!root) {
+      root = document.createElement('div');
+      root.id = `strategyRoot${carIndex}`;
+      root.className = 'strategy-container';
+
+      // 🔒 Freeze layout
+      root.style.minHeight = `${reservedHeight}px`;
+
+      originalStintsContainer.parentElement.appendChild(root);
     }
-    
+  } catch (e) {
+    // Page already prepared or DOM not ready — safe to ignore
+  }
 }
+
+
+
 function makeCustomStrategy(carIndex,strategyData) {
 
 window.__igplus_strategy_state__.CAR_STRATEGY[carIndex-1] = {carIndex:carIndex,strategyData:strategyData};
 const root = document.getElementById(`strategyRoot${carIndex}`);
-root.innerHTML = '';
+    root.innerHTML = '';
 
 ensureWearCalculated(strategyData);
 ensureFuelDerived(strategyData);
@@ -423,6 +440,7 @@ root.appendChild(footer);
 saveStintToForm(carIndex,strategyData);
 
 if(!arguments[2])invokeGameSave();
+
 
 
 }
@@ -1615,7 +1633,7 @@ function getLeagueLength(countryCode, laps) {
   ['us', [60, 45, 30, 15]],
   ['tr', [54, 40, 27, 13]],
   ['hu', [79, 59, 39, 19]],
-  ['nl', [50, 59, 39, 19]]
+  ['nl', [72, 59, 36, 19]]
 ]);
   const lengths = [100, 75, 50, 25];
   const trackLaps = raceLengthMap.get(countryCode.toLowerCase());
@@ -1656,9 +1674,9 @@ async function saveCurrentStrategy(strategyData) {
     getWearFn = mod.get_wear;
     //make a condition if already loaded?
     if (!document.getElementById(`strategyRoot1`)) {
-    injectCircuitMap(); 
     readGSheets();
     strategy();
+    injectCircuitMap(); 
     }
 
   } catch (err) {
