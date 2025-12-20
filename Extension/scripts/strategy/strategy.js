@@ -237,10 +237,16 @@ function createStrategyFooter(strategyData) {
   const totalLaps = getTotalStrategyLaps(strategyData.stints);
   const raceLaps = window.__igplus_strategy_state__.TRACK_INFO.laps;
 
+  const lapLength = window.__igplus_strategy_state__.TRACK_INFO.length;
+  const fuelFor1Lap =  (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel.M) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push["60"])) * lapLength;
+
   footer.innerHTML = `
     <span class="laps-current">${totalLaps}</span>
     <span class="laps-sep">/</span>
     <span class="laps-total">${raceLaps}</span>
+    <div class="footer-fuel">
+     <span class="oneLap">${fuelFor1Lap.toFixed(2)}</span>
+     </div>
   `;
 
   if (totalLaps === raceLaps) {
@@ -250,18 +256,19 @@ function createStrategyFooter(strategyData) {
   } else {
     footer.classList.add('laps-under');
   }
-  if (!window.__igplus_strategy_state__.RULES.isRefuelling) {
-  const lapLength = window.__igplus_strategy_state__.TRACK_INFO.length;
-  const fuelFor1Lap =  (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push["60"])) * lapLength;
-
+  
+  
+  
+ if (!window.__igplus_strategy_state__.RULES.isRefuelling) {
   const fuel = getTotalFuelEstimate(strategyData);
-  footer.innerHTML += `
-    <div class="footer-fuel">
-    <span class="oneLap">${fuelFor1Lap.toFixed(2)}</span>
-    <strong>${fuel}L</strong>
-    </div>
-  `;
+
+  const strong = document.createElement('strong');
+  strong.textContent = `${fuel}L`;
+
+  const fuelDiv = footer.querySelector('.footer-fuel');
+  fuelDiv.appendChild(strong);
 }
+
 
   return footer;
 }
@@ -394,6 +401,9 @@ const root = document.getElementById(`strategyRoot${carIndex}`);
 ensureWearCalculated(strategyData);
 ensureFuelDerived(strategyData);
 
+const weatherSource = document.getElementById('d1setup').querySelector('.left');
+const clonedWeather = weatherSource.cloneNode(true);
+
 const header = document.createElement('div');
 header.className = 'strategy-header';
 header.innerHTML = `
@@ -409,6 +419,14 @@ header.querySelector('.settings-btn')
 header.querySelector('.customSave').onclick = () => {
   openStrategyPopup(carIndex, strategyData);
 };
+const headerLeft = header.querySelector('.header-left');
+const headerRight = header.querySelector('.header-right');
+
+// Optional: add a class so you can style it
+clonedWeather.classList.add('strategy-middle');
+
+// Insert between left and right
+header.insertBefore(clonedWeather, headerRight);
 
 
 
@@ -861,7 +879,7 @@ function getTotalFuelEstimate(strategyData) {
     if (stint.laps == null) return total;
 
     const perLapFuel =
-      (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[stint.push])) *
+      (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel[stint.tyre]) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[stint.push])) *
       window.__igplus_strategy_state__.TRACK_INFO.length;
 
     const stintFuel = perLapFuel * (+stint.laps || 0);
@@ -873,7 +891,7 @@ function getTotalFuelEstimate(strategyData) {
 }
 
 function fuelToLaps(stint) {
-  const estimatedLap = parseFloat(stint.fuel) / ((window.__igplus_strategy_state__.CAR_ECONOMY.fuel+parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[stint.push])) * window.__igplus_strategy_state__.TRACK_INFO.length); 
+  const estimatedLap = parseFloat(stint.fuel) / ((window.__igplus_strategy_state__.CAR_ECONOMY.fuel[stint.tyre]+parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[stint.push])) * window.__igplus_strategy_state__.TRACK_INFO.length); 
   return estimatedLap;
 }
 function updateFuelDerived(editor, stint) {
@@ -886,15 +904,14 @@ function updateFuelDerived(editor, stint) {
   if (isNaN(fuel)) return;
 
   const tempPush = editor.querySelector('.customPush.selected').getAttribute('data-push');
-  const tempStint = {fuel:fuel,push:tempPush};
+  const tempTyre =  editor.querySelector('.customTyre.selected').getAttribute('data-tyre');
+  const tempStint = {fuel:fuel,push:tempPush,tyre:tempTyre};
   const calculatedLaps = fuelToLaps(tempStint);
 
   label.textContent = calculatedLaps.toFixed(1);
 
-  // 🔹 IMPORTANT: update stint laps as FLOOR
   stint.laps = Math.floor(calculatedLaps);
 
-  // Keep wear preview aligned
   updateWearPreview();
 }
 
@@ -976,7 +993,7 @@ document.addEventListener('click', async e => {
     STATE.CAR_ECONOMY.fuel = getFuelFn(fe);
 
     modal.remove();
-    console.log(STATE.CAR_STRATEGY);
+
     // Re-render strategies
     STATE.CAR_STRATEGY.forEach(({ carIndex, strategyData }) => {
     makeCustomStrategy(carIndex, strategyData);
@@ -988,20 +1005,24 @@ document.addEventListener('click', async e => {
     document.addEventListener('click', e => {
   if (!editorContext) return;
 
+  const { strategyData, index } = editorContext;
+  const editor = document.getElementById('stintEditor');
+
   if (e.target.closest('.editor-tyres .customTyre')) {
     document.querySelectorAll('.editor-tyres .customTyre')
       .forEach(t => t.classList.remove('selected'));
     e.target.classList.add('selected');
+
   }
 
   if (e.target.closest('.editor-push div')) {
     document.querySelectorAll('.editor-push div')
       .forEach(p => p.classList.remove('selected'));
     e.target.classList.add('selected');
-    const { strategyData, index } = editorContext;
-    const editor = document.getElementById('stintEditor');
-    updateFuelDerived(editor, strategyData.stints[index]);
+    
   }
+
+  updateFuelDerived(editor, strategyData.stints[index]);
   updateWearPreview();
 
 });
@@ -1221,7 +1242,8 @@ function createStepperHTML(id, value, step, min, max) {
     }
 async function readGSheets()
     {
-      if(document.getElementById('importedTable') == null)
+      try {
+        if(document.getElementById('importedTable') == null)
       {
         async function getCurrentTrack(trackj){
           const {trackDictionary} = await import(chrome.runtime.getURL('scripts/strategy/const.js'));
@@ -1413,6 +1435,10 @@ async function readGSheets()
           });
 
         }}
+      } catch (error) {
+        
+      }
+      
     }
 function decodeTyre(tsTyre) {
   // "ts-M" → "M"
@@ -1437,10 +1463,9 @@ const PUSH_INDEX_TO_VALUE = {
     .sort((a, b) => a - b)
     .forEach(i => {
       const s = save.stints[i];
-
       const pushIndex = PUSH_INDEX_TO_VALUE[s.push] ?? 60;
       const tempLaps = Number(s.laps);
-      const lapFuel = (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[pushIndex]) )* window.__igplus_strategy_state__.TRACK_INFO.length;
+      const lapFuel = (parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.fuel[decodeTyre(s.tyre)]) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push[pushIndex]) )* window.__igplus_strategy_state__.TRACK_INFO.length;
       const totalStintFuel = Math.ceil(lapFuel * tempLaps)
 
       stints.push({
@@ -1672,6 +1697,21 @@ async function saveCurrentStrategy(strategyData) {
     const mod = await import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
     getFuelFn = mod.fuel_calc;
     getWearFn = mod.get_wear;
+
+    //load static css file 
+    if(!document.getElementById('igplus_strategy'))
+    {
+      const file = chrome.runtime.getURL('css/strategy.css');
+      fetch(file)
+        .then(response => response.text())
+        .then(cssContent => {
+          injectStyles(cssContent)
+        })
+        .catch(error => {
+          console.error('Error fetching file:', error);
+        });
+    }
+
     //make a condition if already loaded?
     if (!document.getElementById(`strategyRoot1`)) {
     readGSheets();
@@ -1683,3 +1723,14 @@ async function saveCurrentStrategy(strategyData) {
     console.log('page not loaded');
   }
 })();
+
+function injectStyles(rule) {
+    const style = document.createElement("div");
+    style.id = "igplus_strategy";
+    style.innerHTML = '<style>' + rule + '</style>';
+       document.body.append(style);   
+    }
+    
+    
+    
+        

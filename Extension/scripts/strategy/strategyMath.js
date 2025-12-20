@@ -1,32 +1,23 @@
 function fuel_calc(f){
-  /*switch (true) {
-   case f >= 180:
-        case f >= 160:
-        case f >= 140:
-        case f >= 120:
-          return ((f ** -0.089) * 0.679);
-  case f >= 250:
-    return (((0.6666 * f) ** -0.08434) * 0.669);          
-  case f >= 200:
-    return (((0.6666 * f) ** -0.08434) * 0.669);          
-  case f >= 150:
-    return (((0.6666 * f) ** -0.08473) * 0.669);        
-  case f >= 100:
-    return (((0.6666 * f) ** -0.08505) * 0.669);
-  case f >= 80:
-    return (((0.6666 * f) ** -0.08505) * 0.669);
-  case f >= 60:
-    return (((0.6666 * f) ** -0.08505) * 0.669);
-  case f >= 40:
-    return (((0.6666 * f) ** -0.0842) * 0.669); //very good
-  case f >= 20: //(20-40)
-    return (((0.6666 * f) ** -0.083) * 0.669);
-  default:  //(1-20)
-    return (((0.6616417192 * f) ** -0.06846035841));
-  }*/
-  const fuel = (0.6566417192 * f ** -0.06846035841);
-    return fuel;
- 
+
+  const tyreCoefficient = {
+  SS: [0.6986964739, -0.08924702802],
+  S:  [0.7017950044, -0.08788437695],
+  M:  [0.695785524, -0.08589356802],
+  H:  [0.7004197465, -0.08446657537],
+  W:  [0.7427201587, -0.088],
+  I:  [0.7454,       -0.088]
+  };
+                           
+   
+  const fuel = {};
+  for (const tyre in tyreCoefficient) {
+    const [coef, exp] = tyreCoefficient[tyre];
+    fuel[tyre] = coef * f ** exp;
+  }
+
+  return fuel;
+
   }
 
 function get_wear(tyre,laps,track_info,car_economy,multiplierKey){

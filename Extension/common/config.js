@@ -66,7 +66,7 @@ const tabScripts = {
   '/app/p=race&tab=setup': {
     key: 'setup',
     scripts: ['scripts/raceSetup/setups.js','lib/purify.js'],
-    styles: ['css/strategy.css', 'css/setups.css']
+    styles: ['css/setups.css']
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
@@ -98,8 +98,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
-    styles: ['css/strategy.css','css/strategyPreview.css']
+    scripts: ['scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js']
   },
   '/app/p=league&id=': {
     key: 'league',
