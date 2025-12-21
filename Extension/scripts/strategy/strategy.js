@@ -2,18 +2,35 @@
 getWearFn = null;
 getFuelFn = null;
 readAttempts = 3;
+
 if (!window.__strategyInit) {
  window.__strategyInit = true;
  initEvents();
 }
-
 if (!window.__igplus_strategy_state__) {
   window.__igplus_strategy_state__ = {
     TRACK_INFO: null,
     CAR_ECONOMY: null,
     CAR_STRATEGY:[],
-    RULES: null
+    RULES: null,
+    DEFAULT_TYRE_COEFFICIENTS : {
+  SS: [0.6986964739, -0.08924702802],
+  S:  [0.7017950044, -0.08788437695],
+  M:  [0.695785524, -0.08589356802],
+  H:  [0.7004197465, -0.08446657537],
+  W:  [0.7427201587, -0.088],
+  I:  [0.7454,       -0.088]
+  },
+    TYRE_COEFFICIENTS : {
+  SS: [0.6986964739, -0.08924702802],
+  S:  [0.7017950044, -0.08788437695],
+  M:  [0.695785524, -0.08589356802],
+  H:  [0.7004197465, -0.08446657537],
+  W:  [0.7427201587, -0.088],
+  I:  [0.7454,       -0.088]
+  }
   };
+  
 }
 
 
@@ -22,7 +39,6 @@ async function strategy(){
     prepareStrategyContainer(1)
     // 1. Start all imports at the same time (no await here yet)
 const fetcherPromise = import(chrome.runtime.getURL('common/fetcher.js'));
-const mathPromise = import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
 const constPromise = import(chrome.runtime.getURL('scripts/strategy/const.js'));
 const utilityPromise = import(chrome.runtime.getURL('scripts/strategy/utility.js'));
 
@@ -40,10 +56,13 @@ const { cleanHtml } = utility;
     
     try {
     const carData = await fetchCarData();
+    const { tyreFuelModel } = await chrome.storage.local.get({
+    tyreFuelModel: window.__igplus_strategy_state__.TYRE_COEFFICIENTS
+  });
     const carAttributes = cleanHtml(carData.vars.carAttributes);
     window.__igplus_strategy_state__.CAR_ECONOMY = {fe:carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent,
                    te:carAttributes.querySelector('[id=wrap-tyre_economy] .ratingVal').textContent,
-                   fuel:getFuelFn(carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent),
+                   fuel:getFuelFn(carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent,tyreFuelModel),
                    push:await getPushValues(),
                    originalFe:carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent}; 
 //get from savedStrategy.vars.raceName instead??
@@ -53,7 +72,7 @@ const { cleanHtml } = utility;
     window.__igplus_strategy_state__.TRACK_INFO.code = TRACK_CODE;
     window.__igplus_strategy_state__.TRACK_INFO.laps = savedStrategy.vars.raceLaps;
     window.__igplus_strategy_state__.TRACK_INFO.raceLength = String(getLeagueLength(TRACK_CODE,savedStrategy.vars.raceLaps));
-
+    
     const rules = JSON.parse(savedStrategy.vars.rulesJson);
 
     const is2tyres = rules.two_tyres == 1;
@@ -986,12 +1005,34 @@ document.addEventListener('click', async e => {
     // Persist
     await chrome.storage.local.set({ pushLevels });
 
-    // Update runtime economy
-    const STATE = window.__igplus_strategy_state__;
+    
+const STATE = window.__igplus_strategy_state__;
+    const updated = {};
+
+  modal.querySelectorAll('.tyre-row').forEach(row => {
+  const tyre = row.dataset.tyre;
+  const coefInput = row.querySelector('.tyre-coef');
+  const expInput  = row.querySelector('.tyre-exp');
+
+  const [defC, defE] =
+    STATE.DEFAULT_TYRE_COEFFICIENTS[tyre];
+
+  const coef = coefInput.value === '' ? defC : parseFloat(coefInput.value);
+  const exp  = expInput.value  === '' ? defE : parseFloat(expInput.value);
+
+  updated[tyre] = [coef, exp];
+});
+
+    STATE.TYRE_COEFFICIENTS = updated;
+  // Update runtime economy
+    
     STATE.CAR_ECONOMY.push = newPushMap;
     STATE.CAR_ECONOMY.fe = fe;
-    STATE.CAR_ECONOMY.fuel = getFuelFn(fe);
-
+    STATE.CAR_ECONOMY.fuel = getFuelFn(fe,STATE.TYRE_COEFFICIENTS);
+  
+    await chrome.storage.local.set({ tyreFuelModel: updated });
+  
+  
     modal.remove();
 
     // Re-render strategies
@@ -1122,21 +1163,33 @@ async function getPushValues() {
 async function loadSettingsValues() {
   const pushMap = await getPushValues();
 
+  const { tyreFuelModel } = await chrome.storage.local.get({
+    tyreFuelModel: window.__igplus_strategy_state__.DEFAULT_TYRE_COEFFICIENTS
+  });
+
   return {
     push: pushMap,
-    fe: window.__igplus_strategy_state__.CAR_ECONOMY.fe
+    fe: window.__igplus_strategy_state__.CAR_ECONOMY.fe,
+    tyreFuelModel
   };
 }
 
+
 function openStrategySettings() {
+  
   if (document.getElementById('strategySettings')) return;
 
-  loadSettingsValues().then(({ push, fe }) => {
+  loadSettingsValues().then(({ push, fe, tyreFuelModel }) => {
     const PUSH_KEYS = [100,80,60,40,20];
+    const TYRES = ['SS', 'S', 'M', 'H', 'I', 'W'];
+    
+
     const modal = document.createElement('div');
     modal.id = 'strategySettings';
     modal.className = 'strategy-modal';
-
+    const lapLength = window.__igplus_strategy_state__.TRACK_INFO.length;
+    const tempFuel = getFuelFn(window.__igplus_strategy_state__.CAR_ECONOMY.fe,tyreFuelModel);
+    
     modal.innerHTML = `
       <div class="modal-content">
 
@@ -1151,8 +1204,65 @@ function openStrategySettings() {
 <hr class ="modal-separator">
         <div class="modal-section-fuel">
            <span class="fuel-symbol feLabel"></span>
+           <span>FE</span>
+           
           ${createStepperHTML('fe', fe, 1, 1, 300)}
         </div>
+<hr class="modal-separator">
+
+<div class="modal-section fuel-model-section collapsed" id="tyreFuelSection">
+
+  <div class="section-title toggle-header">
+    <span class="chevron">▶</span>
+    Fuel Model
+    <span class="formula-preview">
+      C × FE<sup>E</sup> = L / km
+    </span>
+  </div>
+
+  <div class="toggle-body">
+    <div class="tyre-header-row">
+      <span class="col-title">Coefficient (C)</span>
+      <span class="col-title">Exponent (E)</span>
+      <span>One Lap</span>
+    </div>
+
+    ${TYRES.map(t => {
+  const [defC, defE] = window.__igplus_strategy_state__.DEFAULT_TYRE_COEFFICIENTS[t];
+  const [curC, curE] = tyreFuelModel[t];
+
+  const coefValue = curC === defC ? '' : curC;
+  const expValue  = curE === defE ? '' : curE;
+
+  
+
+
+  return `
+    <div class="tyre-row" data-tyre="${t}">
+      <input
+        type="text"
+        placeholder="default"
+        class="tyre-coef"
+        inputmode="decimal"
+        value="${coefValue}"
+      >
+
+      <input
+        type="text"
+         placeholder="default"
+        class="tyre-exp"
+        inputmode="decimal"
+        value="${expValue}"
+      >
+
+      <div class="customTyre custom${t}">${((parseFloat(tempFuel[t]) + parseFloat(window.__igplus_strategy_state__.CAR_ECONOMY.push["60"])) * lapLength).toFixed(2)}</div>
+    </div>
+  `;
+}).join('')}
+
+  </div>
+</div>
+
 
         <div class="modal-actions">
           <span class="modal-cancel">✕</span>
@@ -1165,6 +1275,82 @@ function openStrategySettings() {
     
 const feLabel = modal.querySelector('.feLabel');
 const feInput = modal.querySelector('[data-id=fe] input');
+const tyreSection = modal.querySelector('#tyreFuelSection');
+const toggleHeader = tyreSection.querySelector('.toggle-header');
+
+toggleHeader.addEventListener('click', () => {
+  tyreSection.classList.toggle('collapsed');
+});
+
+  
+
+    modal.addEventListener('input', e => {
+  const input = e.target;
+  if (!input.matches('.tyre-coef, .tyre-exp')) return;
+
+  let v = input.value.replace(/[^\d.-]/g, '');
+
+  // Only one dot
+  const dotParts = v.split('.');
+  if (dotParts.length > 2) {
+    v = dotParts.shift() + '.' + dotParts.join('');
+  }
+
+  // Minus only at start
+  if (v.indexOf('-') > 0) {
+    v = v.replace(/-/g, '');
+  }
+
+  input.value = v;
+});
+function getTyreCoefficient(tyreRow) {
+  const tyre = tyreRow.dataset.tyre;
+  const [defC, defE] = window.__igplus_strategy_state__.TYRE_COEFFICIENTS[tyre];
+
+  const coefInput = tyreRow.querySelector('.tyre-coef');
+  const expInput  = tyreRow.querySelector('.tyre-exp');
+
+  const coef = parseFloat(coefInput.value) || defC;
+  const exp  = parseFloat(expInput.value) || defE;
+
+  return [coef, exp];
+}
+
+function updateAllFuelPreviews() {
+  const lapLength = window.__igplus_strategy_state__.TRACK_INFO.length;
+  const fe = parseFloat(document.querySelector('[data-id=fe] input').value) || window.__igplus_strategy_state__.CAR_ECONOMY.fe;
+  const push60Input = modal.querySelector('[data-id="push-60"] input');
+  const push60 = parseFloat(push60Input.value) || window.__igplus_strategy_state__.CAR_ECONOMY.push["60"];
+
+
+  document.querySelectorAll('.tyre-row').forEach(row => {
+    const tyre = row.dataset.tyre;
+    const [coef, exp] = getTyreCoefficient(row);
+    const tempTyreFuel = getFuelFn(fe, { [tyre]: [coef, exp] });
+
+    const fuelPreviewDiv = row.querySelector(`.customTyre`);
+    fuelPreviewDiv.textContent = ((parseFloat(tempTyreFuel[tyre]) + push60) * lapLength).toFixed(2);
+  });
+}
+
+// --- Event listeners ---
+modal.addEventListener('blur', e => {
+  if (!e.target.matches('.tyre-coef, .tyre-exp')) return;
+
+  // optional: clamp values if needed
+  let value = parseFloat(e.target.value);
+  if (isNaN(value)) value = 0;
+  e.target.value = value || '';
+
+  updateAllFuelPreviews();
+}, true);
+
+// Also recalc when FE changes
+document.querySelector('[data-id=fe] input').addEventListener('input', () => {
+  updateAllFuelPreviews();
+});
+modal.querySelector('[data-id="push-60"] input').addEventListener('input', updateAllFuelPreviews);
+
 
 if (feLabel && feInput) {
   feLabel.addEventListener('click', () => {
@@ -1532,7 +1718,7 @@ function ensureStrategyPopup() {
       </div>
     </div>
   `;
-
+  
   document.body.appendChild(popup);
 
   popup.querySelector('.popup-close').onclick =
@@ -1691,7 +1877,7 @@ async function saveCurrentStrategy(strategyData) {
 
 // TODO move to separate retry module?
 (async () => {
-  try {
+  try {   
     await new Promise((res) => setTimeout(res, 0)); // sleep a bit, while page loads
         if (getWearFn && getFuelFn) return;
     const mod = await import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
@@ -1713,7 +1899,7 @@ async function saveCurrentStrategy(strategyData) {
     }
 
     //make a condition if already loaded?
-    if (!document.getElementById(`strategyRoot1`)) {
+    if (!document.getElementById(`strategyRoot1`)) {    
     readGSheets();
     strategy();
     injectCircuitMap(); 

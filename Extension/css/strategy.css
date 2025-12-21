@@ -1208,3 +1208,90 @@ outline: 2px dashed #4a90e2;}
     #222 20px
   );
 }
+
+.fuel-model-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section-title {
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.formula-preview {
+  font-size: 11px;
+  opacity: 0.6;
+  font-weight: normal;
+}
+
+.tyre-header-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 37px;
+  gap: 6px;
+  font-size: 11px;
+  opacity: 0.6;
+  padding-left: 2px;
+}
+
+.tyre-row {
+  display: grid;
+  grid-template-columns:  1fr 1fr 37px;
+  align-items: center;
+}
+
+.tyre-row input {
+  width: 70px;
+  background: #111;
+  border: 1px solid #333;
+  color: #ddd;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: right;
+}
+
+.tyre-row input:focus {
+  outline: none;
+  border-color: #6fdc6f;
+}
+
+.toggle-header {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chevron {
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.toggle-body {
+  overflow: hidden;
+  max-height: 500px;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+  opacity: 1;
+}
+
+.collapsed .toggle-body {
+  max-height: 0;
+  opacity: 0;
+}
+
+.collapsed .chevron {
+  transform: rotate(0deg);
+}
+
+:not(.collapsed) .chevron {
+  transform: rotate(90deg);
+}
+
+.fuel-model-section .customTyre {
+  font-size: 7pt;
+}

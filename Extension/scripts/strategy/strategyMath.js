@@ -1,15 +1,5 @@
-function fuel_calc(f){
-
-  const tyreCoefficient = {
-  SS: [0.6986964739, -0.08924702802],
-  S:  [0.7017950044, -0.08788437695],
-  M:  [0.695785524, -0.08589356802],
-  H:  [0.7004197465, -0.08446657537],
-  W:  [0.7427201587, -0.088],
-  I:  [0.7454,       -0.088]
-  };
-                           
-   
+function fuel_calc(f,tyreCoefficient){
+ 
   const fuel = {};
   for (const tyre in tyreCoefficient) {
     const [coef, exp] = tyreCoefficient[tyre];
