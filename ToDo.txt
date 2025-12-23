@@ -1,12 +1,10 @@
 remove overview script (design page was removed)
 Strategy
-    show full stint on drag?
     animate stint drop on plus or remove containers
-    add weather in the strategy footer?
     show rules?
 Setup
     update suspension values
-    add weather setup?
+    add rain weather setup?
 HQ
     implement auto collection of points, parts?
 League
@@ -15,5 +13,5 @@ League
         next races have the button
 
 Car design
-    page was removed, now everything is in p=containers
+    research tier problem. is everything scaled to 300?
        

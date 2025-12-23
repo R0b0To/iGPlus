@@ -43,7 +43,7 @@ const tabScripts = {
     scripts: ['scripts/training.js'],
     styles: ['css/training.css']
   },
-  '/app/d=research': {
+  '/app/p=cars': {
     key: 'research',
     scripts: ['scripts/research.js'], // TODO dynamically import localization!
     styles: ['css/research.css']

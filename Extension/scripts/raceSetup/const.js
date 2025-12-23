@@ -12,15 +12,15 @@ export const circuits = {
   // rookie
   1: {
     ae: { ride: 6, wing: 1, suspension: 15, pit: 23 }, // AbuDhabi
-    at: { ride: 4, wing: 0, suspension: -1, pit: 27 }, // Austria
+    at: { ride: 4, wing: 0, suspension: 14, pit: 27 }, // Austria
     au: { ride: 9, wing: 4, suspension: 10, pit: 24 }, // Australia
-    az: { ride: 8, wing: 1, suspension: 15, pit: 17 }, // Azerbaijan
+    az: { ride: 8, wing: 1, suspension: 12, pit: 17 }, // Azerbaijan
     be: { ride: 6, wing: 3, suspension: -1, pit: 15 }, // Belgium
     bh: { ride: 4, wing: 0, suspension: -1, pit: 23 }, // Bahrain
     br: { ride: 4, wing: 2, suspension: -1, pit: 21 }, // Brazil
     ca: { ride: 4, wing: -1, suspension: 16, pit: 17 }, // Canada
     cn: { ride: 2, wing: 2, suspension: 10, pit: 26 }, // China
-    de: { ride: 4, wing: 2, suspension: -1, pit: 17 }, // Germany
+    de: { ride: 4, wing: 2, suspension: 10, pit: 17 }, // Germany
     es: { ride: 2, wing: 5, suspension: -1, pit: 25 }, // Spain
     eu: { ride: 6, wing: 5, suspension: -1, pit: 17 }, // Europe
     fr: { ride: 8, wing: 2, suspension: -1, pit: 20 }, // France
@@ -34,7 +34,7 @@ export const circuits = {
     ru: { ride: 2, wing: 2, suspension: -1, pit: 21 }, // Russia
     sg: { ride: 8, wing: 7, suspension: 3, pit: 20 }, // Singapore
     tr: { ride: 6, wing: 2, suspension: 10, pit: 18 }, // Turkey
-    us: { ride: 2, wing: 2, suspension: 28, pit: 16 }, // USA
+    us: { ride: 2, wing: 2, suspension: 14, pit: 16 }, // USA
      nl: { ride: -1, wing: -1, suspension: -1, pit: -1 }, // Netherlands
   },
   // pro
@@ -43,7 +43,7 @@ export const circuits = {
     at: { ride: 9, wing: 0, suspension: 35, pit: 27 }, // Austria
     au: { ride: 19, wing: 8, suspension: 20, pit: 24 }, // Australia
     az: { ride: 17, wing: 3, suspension: 30, pit: 17 }, // Azerbaijan
-    be: { ride: 12, wing: 6, suspension: -1, pit: 15 }, // Belgium
+    be: { ride: 12, wing: 6, suspension: 23, pit: 15 }, // Belgium
     bh: { ride: 8, wing: 0, suspension: 35, pit: 23 }, // Bahrain
     br: { ride: 8, wing: 5, suspension: 25, pit: 21 }, // Brazil
     ca: { ride: 9, wing: -3, suspension: 40, pit: 17 }, // Canada
@@ -62,7 +62,7 @@ export const circuits = {
     ru: { ride: 4, wing: 5, suspension: 25, pit: 21 }, // Russia
     sg: { ride: 17, wing: 14, suspension: 8, pit: 20 }, // Singapore
     tr: { ride: 13, wing: 5, suspension: 25, pit: 18 }, // Turkey
-    us: { ride: 4, wing: 4, suspension: -1, pit: 16 }, // USA
+    us: { ride: 4, wing: 4, suspension: 28, pit: 16 }, // USA
      nl: { ride: -1, wing: -1, suspension: -1, pit: -1 } // Netherlands
   },
   // elite
