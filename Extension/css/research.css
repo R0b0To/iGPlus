@@ -94,10 +94,7 @@
   
 }
 #statsTable{
-  float: right;
-  top: -49px;
   position: relative;
-  width: 20%;
   border-collapse: separate!important;
   border-spacing: 0!important;
   overflow: hidden!important;
@@ -187,3 +184,14 @@
 .researchFooter > th:nth-child(2){
   background: transparent;
 }
+.customResearchBtn{
+  cursor: pointer;
+  height: 38px;
+  padding: 2px!important;
+  margin-right: 4px;
+}
+.hidden-away{
+  position: fixed;
+  top: -9999px;
+}
+
