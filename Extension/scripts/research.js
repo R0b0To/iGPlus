@@ -87,9 +87,9 @@ async function enhanceResearchTable() {
   
   const { language } = await chrome.storage.local.get({ language: 'en' });
   const { language: i18n } = await import(chrome.runtime.getURL('common/localization.js'));
-  const { findCurrentTier} = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
+  //const { findCurrentTier} = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
   
-  const tier = await findCurrentTier();
+  //const tier = await findCurrentTier();
 
   const researchPowerSpan = document.createElement('div');
   
@@ -123,7 +123,7 @@ async function enhanceResearchTable() {
 
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
-      const scaleFactor = tier ;//( tier == 3) ? 3 : 2;
+      const scaleFactor = 3;
       const bestTeamValue = /(\d+)/.exec(bar.querySelector('svg').style.left)[0] * scaleFactor;
       const myValue = bar.previousSibling.lastChild.textContent;
       const clonedCheckbox = checkboxInput[index].parentElement.cloneNode(true);
