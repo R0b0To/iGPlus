@@ -189,6 +189,15 @@
   height: 38px;
   padding: 2px!important;
   margin-right: 4px;
+  background: #dafefe5e;
+  border-radius: 8px;
+  
+}
+.customResearchBtn:hover{
+      transition: transform 300ms 
+cubic-bezier(0.3, 0.7, 0.4, 1.5), box-shadow 300ms 
+cubic-bezier(0.3, 0.7, 0.4, 1.5);
+    transform: translateY(-2px);
 }
 .hidden-away{
   position: fixed;

@@ -1,9 +1,23 @@
 async function initResearch(){
   const { delay } = await import(chrome.runtime.getURL('common/utility.js'));
+    if(!document.getElementById('igplus_research_styles')){
+    {
+      const file = chrome.runtime.getURL('css/research.css');
+      fetch(file)
+        .then(response => response.text())
+        .then(cssContent => {
+          const style = document.createElement("div");
+          style.id = "igplus_research_styles";
+          style.innerHTML = '<style>' + cssContent + '</style>';
+          document.body.append(style);  
+        })
+        .catch(error => {
+          console.error('Error fetching file:', error);
+        });
+    }}
   if(!document.getElementById('carsReviewBtn')){
     await delay(500);
   }else{
-    console.log('-------------------------------------only once');
     const gameResearchBtn = document.getElementById('carsReviewBtn');
     gameResearchBtn.addEventListener('click',toggleCustomResearchTable);
     document.getElementById('researchInline').classList.add('hidden-away');
@@ -57,13 +71,16 @@ async function toggleCustomResearchTable(){
   const gameResearchBtn = document.getElementById('carsReviewBtn');
   const toggleOriginalResearchBtn = gameResearchBtn.previousElementSibling;
 
-  await delay(50);
+  //await delay(50);
   if(gameResearchBtn.classList.contains('btn2')){
     toggleOriginalResearchBtn.classList.remove('hide');
   }
   else{
     toggleOriginalResearchBtn.classList.add('hide');
-
+    const originalResearchTable = document.getElementById('researchInline');
+    originalResearchTable.classList.add('hidden-away');
+    statsTable.classList.add('hide');
+    
     //document.getElementById('carAttributesDisplay').classList.remove('hide');
 
   }

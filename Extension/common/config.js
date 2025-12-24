@@ -5,7 +5,7 @@ const scriptDefaults = {
   market: true,
   overview: true,
   reports: true,
-  research: false,
+  research: true,
   setup: true,
   staff: true,
   strategy: true,
@@ -45,7 +45,7 @@ const tabScripts = {
   },
   '/app/p=cars': {
     key: 'research',
-    scripts: ['scripts/research.js'], // TODO dynamically import localization!
+    scripts: ['scripts/research.js'],
     styles: ['css/research.css']
   },
   '/app/p=home': {

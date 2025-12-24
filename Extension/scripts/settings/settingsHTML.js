@@ -80,8 +80,8 @@ function injectIGPlusOptions() {
         appendWithDescription(createScriptCheckbox('league', 'League Home'),
           addDescription('In the league page add a full race history button and position finished to each track')),
 
-        //appendWithDescription(createScriptCheckbox('research', 'Research'),
-          //addDescription('Add a table with the values from the bars in the research menu')),
+        appendWithDescription(createScriptCheckbox('research', 'Research'),
+          addDescription('Add a table with the values from the bars in the research menu')),
 
         appendWithDescription(createScriptCheckbox('train', 'Training'),
           addDescription('Add an extra column in the training page if driver is recovering.')),

@@ -59,7 +59,7 @@ async function handleSettings() {
   const languageSelection = document.getElementsByName('language')[0];
   const separator = document.getElementById('separator');
   const leagueCheckbox = document.getElementById('league');
-  //const researchCheckbox = document.getElementById('research');
+  const researchCheckbox = document.getElementById('research');
   const trainingCheckbox = document.getElementById('train');
   const staffCheckbox = document.getElementById('staff');
   const marketCheckbox = document.getElementById('market');
@@ -299,7 +299,7 @@ async function handleSettings() {
       //#region  Localization
       setTextToFieldtip(gsheetCheckbox, 'gsheet');
       setTextToFieldtip(leagueCheckbox, 'leagueHome');
-      //setTextToFieldtip(researchCheckbox, 'research');
+      setTextToFieldtip(researchCheckbox, 'research');
       setTextToFieldtip(trainingCheckbox, 'training');
       setTextToFieldtip(reviewCheckbox, 'raceReview');
       setTextToFieldtip(marketCheckbox, 'market');
@@ -314,7 +314,7 @@ async function handleSettings() {
     
       setTextToCheckbox(reviewCheckbox, 'home');
       setTextToCheckbox(leagueCheckbox, 'leagueHome');
-      //setTextToCheckbox(researchCheckbox, 'research');
+      setTextToCheckbox(researchCheckbox, 'research');
       setTextToCheckbox(trainingCheckbox, 'training');
       setTextToCheckbox(marketCheckbox, 'staffMarket');
       setTextToCheckbox(staffCheckbox, 'staff');
@@ -337,7 +337,7 @@ async function handleSettings() {
 
       
 
-      [gdrive,gsheetCheckbox, leagueCheckbox, trainingCheckbox, reviewCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, advancedHisCheckbox, sponsorCheckbox]
+      [gdrive,gsheetCheckbox, leagueCheckbox, trainingCheckbox, reviewCheckbox,researchCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, advancedHisCheckbox, sponsorCheckbox]
         .forEach(addFieldtipEvent);
       
     }

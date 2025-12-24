@@ -26,7 +26,7 @@ export const circuits = {
     fr: { ride: 8, wing: 2, suspension: -1, pit: 20 }, // France
     gb: { ride: 4, wing: 0, suspension: -1, pit: 23 }, // Great Britain
     hu: { ride: 5, wing: 6, suspension: 5, pit: 17 }, // Hungary
-    it: { ride: 6, wing: -2, suspension: -1, pit: 24 }, // Italy
+    it: { ride: 6, wing: -2, suspension: 18, pit: 24 }, // Italy
     jp: { ride: 6, wing: 5, suspension: -1, pit: 20 }, // Japan
     mc: { ride: 11, wing: 9, suspension: -1, pit: 16 }, // Monaco
     mx: { ride: 3, wing: 2, suspension: 10, pit: 19 }, // Mexico

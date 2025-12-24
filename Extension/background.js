@@ -1,86 +1,91 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
-import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud , cloudToLocal } from './auth/gDriveHandler.js';
+import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud, cloudToLocal } from './auth/gDriveHandler.js';
 import { addData, getAllData, getElementById } from './common/database.js';
 
-let scriptRunning = 'none';
+// Use an object to track the last path executed per tabId
+// This prevents cross-tab interference and double-triggering
+const tabState = {};
 
-chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
-  let tab_status = changeInfo.status;
-  const { pathname, origin } = new URL(tab.url);
+// Helper to determine if we are in Firefox or Chrome
+const api = typeof browser !== 'undefined' ? browser : chrome;
 
-  if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-    tab_status = 'complete';
-  }
+api.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  // Only trigger on 'complete' status
+  if (changeInfo.status !== 'complete') return;
 
-  //changed to allow execution of only one instance of the same script
-  if (tab_status === 'complete' && pathname != scriptRunning) {
-    // await doesn't work in firefox, only here,bug? fix by avoiding it or using browser.storage
-    chrome.storage.local.get({ script: scriptDefaults }, function (data) {
-      const enabledScripts = data.script;
-      chrome.storage.local.set({ script: enabledScripts });
+  const url = new URL(tab.url);
+  const { pathname, origin } = url;
 
-      const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
-      const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
-      
-      //at any igp page check for sync
-      if(origin == 'https://igpmanager.com' && enabledScripts.gdrive && !['/forum','/press','/news','/changelog'].some(path=>{return pathname.startsWith(path);}))
-        injectScripts(tabId, tabScripts.gdrive.scripts);
-      
-      if(origin == 'https://igpmanager.com' && enabledScripts.disablebg){
-        //injectScripts(tabId, tabScripts.disablebg.scripts);
-        injectStyles(tabId, tabScripts.disablebg.styles);
-      }
-        
-      
-      //inject darkmode style at any page
-      if(origin == 'https://igpmanager.com' && ['/forum-index','/forum-thread'].some(path=>{return pathname.startsWith(path);}) && enabledScripts.darkmode){
-        injectScripts(tabId,["scripts/darkmode_forum.js"])
-      }else if(origin == 'https://igpmanager.com' && enabledScripts.darkmode){   
-          injectScripts(tabId,["scripts/darkmode.js"])
-      }
-      
-      else if (origin == 'https://igpmanager.com' && !enabledScripts.darkmode){
-        injectScripts(tabId,["scripts/darkmode_off.js"])
-      }
-      if (!key || enabledScripts[key]) {
-        scriptRunning = pathname;
-        styles.length && injectStyles(tabId, styles);
-        scripts.length && injectScripts(tabId, scripts);
-      }
-    });
-  }
+  // Prevent double execution on the same page in the same tab
+  if (tabState[tabId] === pathname) return;
+  tabState[tabId] = pathname;
+
+  // Use standard callback to ensure Firefox compatibility
+  api.storage.local.get({ script: scriptDefaults }, function (data) {
+    const enabledScripts = data.script;
+    
+    // Safety check for origin
+    if (origin !== 'https://igpmanager.com') return;
+
+    // Logic to find matches
+    const matchedPath = Object.keys(tabScripts).find((pageKey) => pathname.startsWith(pageKey));
+    const { key, scripts = [], styles = [] } = tabScripts[pathname] || tabScripts[matchedPath] || {};
+
+    // 1. GDrive Sync
+    const isExcluded = ['/forum', '/press', '/news', '/changelog'].some(path => pathname.startsWith(path));
+    if (enabledScripts.gdrive && !isExcluded) {
+      injectScripts(tabId, tabScripts.gdrive.scripts);
+    }
+
+    // 2. Disable Background
+    if (enabledScripts.disablebg) {
+      injectStyles(tabId, tabScripts.disablebg.styles);
+    }
+
+    // 3. Dark Mode
+    if (enabledScripts.darkmode) {
+      const isForum = ['/forum-index', '/forum-thread'].some(path => pathname.startsWith(path));
+      const dmScript = isForum ? "scripts/darkmode_forum.js" : "scripts/darkmode.js";
+      injectScripts(tabId, [dmScript]);
+    } else {
+      injectScripts(tabId, ["scripts/darkmode_off.js"]);
+    }
+
+    // 4. Page Specific Scripts
+    if (!key || enabledScripts[key]) {
+      if (styles.length) injectStyles(tabId, styles);
+      if (scripts.length) injectScripts(tabId, scripts);
+    }
+  });
+});
+
+// Cleanup memory when tab is closed
+api.tabs.onRemoved.addListener((tabId) => {
+  delete tabState[tabId];
 });
 
 /**
- * @param {number} tabId
- * @param {string[]} scriptFiles
+ * Injection helpers using the appropriate API
  */
-function injectScripts(tabId, scriptFiles) {
-  chrome.scripting.executeScript(
-    {
-      target: { tabId },
-      files: scriptFiles
-    },
-    function () {
-      scriptRunning = 'none';
-    }
-  );
+function injectScripts(tabId, files) {
+  // Manifest V3 uses scripting.executeScript, V2 uses tabs.executeScript
+  if (api.scripting) {
+    api.scripting.executeScript({ target: { tabId }, files: files });
+  } else {
+    files.forEach(file => api.tabs.executeScript(tabId, { file }));
+  }
 }
 
-/**
- * @param {number} tabId
- * @param {string[]} styleFiles
- */
-async function injectStyles(tabId, styleFiles) {
-  await chrome.scripting.removeCSS({
-    target: { tabId },
-    files: styleFiles
-  });
-  chrome.scripting.insertCSS({
-    target: { tabId },
-    files: styleFiles
-  });
+function injectStyles(tabId, files) {
+  if (api.scripting) {
+    api.scripting.insertCSS({ target: { tabId }, files: files });
+    
+  } else {
+    files.forEach(file => api.tabs.insertCSS(tabId, { file }));
+  }
 }
+
+
 let isDeleting = false;
 async function sendDeleteRequest(request){
   if(!isDeleting){
