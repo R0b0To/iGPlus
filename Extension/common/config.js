@@ -77,7 +77,7 @@ const tabScripts = {
     scripts: ['scripts/driver/driverMarket.js','scripts/transfer.js','lib/purify.js']
   },
   '/app/p=race': {
-    scripts: ['lib/highcharts.js', 'scripts/race/race.js'],
+    scripts: ['lib/highcharts.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
     styles: ['css/race.css']
   },
   '/app/p=settings&tab=general': {
