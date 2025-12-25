@@ -49,8 +49,6 @@ async function addSetupSuggestionsForDrivers() {
 
     const heightAdjustment = await getHeightAdjustment(driverHeight, leagueTier);
 
-    //if (script.slider) addSettingSliders(index);
-    //if (script.edit) allowDirectEdit(index);
     addSetupSuggestions(trackSetup, heightAdjustment, index);
     index++; // Increment index manually
   }
@@ -58,48 +56,40 @@ async function addSetupSuggestionsForDrivers() {
 
 /**
  * Inject html elements into setup page
- * @param {Object} trackSetup The suspension setup value.
- * @param {number} trackSetup.suspension The suspension setup value.
- * @param {number} trackSetup.ride The ride heigth setup value.
- * @param {number} trackSetup.wing The wing setup value.
+ * @param {number} suspension The suspension setup value.
+ * @param {number} ride The ride heigth setup value.
+ * @param {number} wing The wing setup value.
  * @param {number} driverIndex The driver number.
  */
-function addSetupSuggestions(trackSetup, heightAdjustment, driverIndex) {
-  const { ride, wing, suspension } = trackSetup;
-
+function addSetupSuggestions({ ride, wing, suspension }, heightAdjustment, driverIndex) {
   const setupForm = document.querySelector(`#d${driverIndex}setup`);
+  if (!setupForm || setupForm.classList.contains('withSuggestion')) return;
 
-  if (setupForm.classList.contains('withSuggestion')) {
-    return;
-  }
+  const createSuggestion = (parentId, value, setId = false) => {
+    const target = setupForm.querySelector(`#d${driverIndex}${parentId}`).firstChild;
+    if (setId) target.id = 'suggestedSetup';
 
-  /** @type {HTMLTableElement} */
-  const rideContainer = setupForm.querySelector(`#d${driverIndex}Ride`);
-  const suspensionContainer = setupForm.querySelector(`#d${driverIndex}Suspension`);
-  const wingContainer = setupForm.querySelector(`#d${driverIndex}Aerodynamics`);
+    const span = document.createElement('span');
+    span.className = 'suggestedSetup';
+    span.textContent = value;
+    span.style.cursor = 'pointer'; // Visual hint that it's clickable
 
+    span.onclick = () => {
+      const input = target.querySelector('.setupSlider-input');
+      if (input) {
+        input.value = value;
+        // Trigger events so the UI updates (essential for most modern web apps)
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
 
-  // suspension element
-  const suspensionSetting = suspensionContainer.firstChild;
-  suspensionSetting.id = 'suggestedSetup';
-  const suspensionSuggestion = document.createElement('span');
-  suspensionSuggestion.classList.add('suggestedSetup');
-  suspensionSuggestion.append(document.createTextNode(suspension));
-  suspensionSetting.append(suspensionSuggestion);
+    target.append(span);
+  };
 
-  // ride element
-  const rideHeightSetting = rideContainer.firstChild;
-  const heightSuggestion = document.createElement('span');
-  heightSuggestion.classList.add('suggestedSetup');
-  heightSuggestion.append(document.createTextNode((ride + heightAdjustment)==0? 1 :ride + heightAdjustment));
-  rideHeightSetting.append(heightSuggestion);
-
-  // wing element
-  const wingSetting = wingContainer.firstChild;
-  const wingSuggestion = document.createElement('span');
-  wingSuggestion.classList.add('suggestedSetup');
-  wingSuggestion.append(document.createTextNode(wing));
-  wingSetting.append(wingSuggestion);
+  createSuggestion('Suspension', suspension, true);
+  createSuggestion('Ride', (ride + heightAdjustment) || 1);
+  createSuggestion('Aerodynamics', wing);
 
   setupForm.classList.add('withSuggestion');
 }
@@ -110,8 +100,6 @@ function getTrackSetup(circuits, tierIndex) {
   //const circuitCode = /[^-]+(?=">)/g.exec(circuit)[0];
   const circuitCode = circuit.split("-")[1].split(" ")[0];
   
-
-  const suspensionSettingBtn = document.querySelector('.rotateThis');
   const setup = circuits[tierIndex][circuitCode];
   //console.log(setup);
   setup.ride = (setup.ride <= 0) ? 1 : setup.ride;
@@ -124,86 +112,6 @@ function getTrackSetup(circuits, tierIndex) {
   };
 }
 
-
-
-async function addSettingSliders(driverIndex) {
-  try {
-    const setupTable = document.getElementById(`d${driverIndex}setup`);
-    if (setupTable.classList.contains('withSliders')) {
-      return;
-    }
-    const { createSlider } = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
-
-    const ride = setupTable.querySelector('[name=ride]');
-    createSlider(ride,1,50);
-
-    const aero = setupTable.querySelector('[name=aerodynamics]');
-    createSlider(aero,1,50);
-
-    setupTable.classList.add('withSliders');
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-function allowDirectEdit(driverIndex) {
-  const setupTable = document.getElementById(`d${driverIndex}setup`);
-  if (setupTable.classList.contains('directEdit')) {
-    return;
-  }
-
-  const [ride,suspension, wing] = setupTable.querySelectorAll('.setupSlider-value');
-  makeEditable(ride);
-  makeEditable(suspension);
-  makeEditable(wing);
-}
-
-/**
- * Changes div to be directly editable by clicking and typing
- * @param {HTMLDivElement} node
- */
-function makeEditable(node) {
-  node.contentEditable = true;
-  node.classList.add('withSlider');
-  node.classList.remove('green');
-
-  /** @type {HTMLInputElement} */
-  const inputConrol = node.closest('td').querySelector('input.number');
-
-  node.addEventListener('click', () => {
-    if (node.textContent) {
-      inputConrol.value = node.textContent;
-    }
-    node.textContent = '';
-  });
-
-  node.addEventListener('focusout', () => {
-    const value = inputConrol.value;
-    if (!isNaN(value)) node.textContent = inputConrol.value;
-  });
-
-  node.addEventListener('input', (e) => {
-    if (!e.data.match(/^[0-9]{0,2}$/)) {
-      node.textContent = '';
-    }
-
-    let settingValue = parseInt(node.textContent);
-    if (isNaN(settingValue)) {
-      settingValue = inputConrol.value;
-    }
-
-    if (settingValue > parseInt(inputConrol.max)) {
-      node.textContent = inputConrol.max;
-      settingValue = inputConrol.max;
-    }
-
-    if (settingValue == 0) {
-      settingValue++;
-    }
-
-    inputConrol.value = settingValue;
-  });
-}
 
 async function copyPracticeRow(row, toClipboard = true) {
   const tyre = row.childNodes[0].className.split('-')[1];
