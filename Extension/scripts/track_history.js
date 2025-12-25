@@ -78,7 +78,8 @@ function loadTrack()
     22:{code:'az', overtake:90,bumpiness:70,fuel:60,tyre:45},
     23:{code:'mx', overtake:70,bumpiness:30,fuel:60,tyre:60},
     24:{code:'ru', overtake:70,bumpiness:20,fuel:70,tyre:50},
-    25:{code:'us', overtake:70,bumpiness:20,fuel:70,tyre:65}
+    25:{code:'us', overtake:70,bumpiness:20,fuel:70,tyre:65},
+    26:{code:'nl', overtake:0,bumpiness:0,fuel:0,tyre:0}
   };
   const selectedTrack = document.getElementsByClassName('historyFilterTrack')[0];
   const image = document.createElement('img');
