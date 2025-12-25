@@ -21,7 +21,6 @@ const scriptDefaults = {
   sponsor:true,
   settings:true,
   gdrive:false,
-  transferLanguage:true,
   darkmode:false,
   engine:true,
   disablebg:false
@@ -70,11 +69,11 @@ const tabScripts = {
   },
   '/app/p=transfers&tab=drivers': {
     key: 'marketDriver',
-    scripts: ['scripts/driver/driverMarket.js','scripts/transfer.js','lib/purify.js']
+    scripts: ['scripts/driver/driverMarket.js','lib/purify.js']
   },
   '/app/p=transfers': {
     key: 'marketDriver',
-    scripts: ['scripts/driver/driverMarket.js','scripts/transfer.js','lib/purify.js']
+    scripts: ['scripts/driver/driverMarket.js','lib/purify.js']
   },
   '/app/p=race': {
     scripts: ['lib/highcharts.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
@@ -86,7 +85,7 @@ const tabScripts = {
   },
   '/app/p=transfers&tab=staff': {
     key: 'market',
-    scripts: ['scripts/staff/staffMarket.js','scripts/transfer.js','lib/purify.js'],
+    scripts: ['scripts/staff/staffMarket.js','lib/purify.js'],
     styles: ['css/staff.css']
   },
   '/app/p=headquarters': {

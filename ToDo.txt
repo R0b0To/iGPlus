@@ -8,7 +8,7 @@ Setup
 HQ
     implement auto collection of points, parts?
 League
-    make calendar complete
+    make calendar complete (wait a bit. they may revert back)
         past results are current raceId -2
         next races have the button
 
