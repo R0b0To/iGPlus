@@ -1,30 +1,41 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "iGPlus",
-  "description": "Enhance your iGPmanager experience",
   "version": "1.5.81",
-  "icons": {
-    "128": "./images/Icon128.png"
-  },
-  "background": {
-    "page": "background.html"
-  },
-  "browser_action": {
-    "default_icon": "./images/Icon128.png",
-    "default_title": "iGPlus",
-    "default_popup": "popup/popup.html"
-  },
+  "description": "Enhance your iGPmanager experience",
   "permissions": [
     "tabs",
     "storage",
-    "scripting",
-    "*://igpmanager.com/*",
-    "*://docs.google.com/*",
-    "*://api.openweathermap.org/*",
-    "*://www.googleapis.com/*",
-    "*://sheets.googleapis.com/*"
+    "scripting"
   ],
+  "host_permissions": [
+    "*://igpmanager.com/*"
+  ],
+  "action": {
+    "default_icon": {
+      "128": "images/Icon128.png"
+    },
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "scripts": ["background.js"],
+    "type": "module"
+  },
+  "icons": {
+    "128": "images/Icon128.png"
+  },
   "web_accessible_resources": [
-    "*.js"
-  ]
+    {
+      "matches": ["*://igpmanager.com/*"],
+      "resources": ["*.png", "*.PNG", "*.svg", "*.css", "*.js"]
+    }
+  ],
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "{6782657b-7bf7-4152-8eb4-a32bbc822aa8}",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+    }
+  }
 }
