@@ -19,35 +19,53 @@ async function initResearch(){
     await delay(500);
   }else{
     const gameResearchBtn = document.getElementById('carsReviewBtn');
-    gameResearchBtn.addEventListener('click',toggleCustomResearchTable);
-    document.getElementById('researchInline').classList.add('hidden-away');
+    const originalResearchTable = document.getElementById('researchInline');
+    originalResearchTable.classList.add('hidden-away');
     const toggleOriginalResearchBtn = document.createElement('div');
-    const designBtn = document.getElementById('nDesignPoints');
     toggleOriginalResearchBtn.id = 'toggleOriginalResearch';
     toggleOriginalResearchBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" height="38px" width="38px"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M384 64L224 64C206.3 64 192 78.3 192 96C192 113.7 206.3 128 224 128L224 279.5L103.5 490.3C98.6 499 96 508.7 96 518.7C96 550.4 121.6 576 153.3 576L486.7 576C518.3 576 544 550.4 544 518.7C544 508.7 541.4 498.9 536.5 490.3L416 279.5L416 128C433.7 128 448 113.7 448 96C448 78.3 433.7 64 416 64L384 64zM288 279.5L288 128L352 128L352 279.5C352 290.6 354.9 301.6 360.4 311.3L402 384L238 384L279.6 311.3C285.1 301.6 288 290.7 288 279.5z"/></svg>`;
     toggleOriginalResearchBtn.classList.add('hide','left','customResearchBtn');
     toggleOriginalResearchBtn.addEventListener('click',toggleOriginalResearchTable);
-    designBtn.addEventListener('click',removeOther);
     gameResearchBtn.parentElement.insertBefore(toggleOriginalResearchBtn,gameResearchBtn);
     window.__initResearch = true;
+
+
+    //observe class changes on gameResearchBtn to show/hide toggleOriginalResearchBtn
+    const observer = new MutationObserver((mutations) =>{
+      mutations.forEach((mutation) => {
+      const statsTable = document.getElementById('statsTable');
+
+      if (mutation.type === "attributes" && mutation.attributeName === "class") 
+        {
+        if (gameResearchBtn.classList.contains('btn2')) {
+          toggleOriginalResearchBtn.classList.remove('hide');
+          statsTable.classList.remove('hide');   
+        }else{
+          toggleOriginalResearchBtn.classList.add('hide');
+          originalResearchTable.classList.add('hidden-away');
+          statsTable.classList.add('hide');
+        }
+
+      
+        }
+      });
+    });
+
+observer.observe(gameResearchBtn, {
+  attributes: true,
+  attributeFilter: ["class"], // only watch class changes
+});
+
+
   }
   
-}
-function removeOther(){
-  const toggleOriginalResearchBtn = document.getElementById('toggleOriginalResearch');
-  const statsTable = document.getElementById('statsTable');
-  const originalResearchTable = document.getElementById('researchInline');
-  statsTable.classList.add('hide');
-  originalResearchTable.classList.add('hidden-away');
-  toggleOriginalResearchBtn.classList.add('hide');
-
 }
 
 
 function toggleOriginalResearchTable() {
   const statsTable = document.getElementById('statsTable');
   const originalResearchTable = document.getElementById('researchInline');
-
+  
   originalResearchTable.classList.toggle('hidden-away');
   statsTable.classList.toggle('hide', !originalResearchTable.classList.contains('hidden-away'));
 }
@@ -63,29 +81,7 @@ function toggleOriginalResearchTable() {
   
 })();
 
-async function toggleCustomResearchTable(){ 
-  const { delay } = await import(chrome.runtime.getURL('common/utility.js'));
-    
-  const statsTable = document.getElementById('statsTable');
-  statsTable.classList.toggle('hide');
-  const gameResearchBtn = document.getElementById('carsReviewBtn');
-  const toggleOriginalResearchBtn = gameResearchBtn.previousElementSibling;
 
-  //await delay(50);
-  if(gameResearchBtn.classList.contains('btn2')){
-    toggleOriginalResearchBtn.classList.remove('hide');
-  }
-  else{
-    toggleOriginalResearchBtn.classList.add('hide');
-    const originalResearchTable = document.getElementById('researchInline');
-    originalResearchTable.classList.add('hidden-away');
-    statsTable.classList.add('hide');
-    
-    //document.getElementById('carAttributesDisplay').classList.remove('hide');
-
-  }
-
-}
 function syncCheckboxes(target) {
   target.click();
 
