@@ -2,11 +2,13 @@ remove overview script (design page was removed)
 Strategy
     animate stint drop on plus or remove containers
     show rules?
+    random strategy generator?
 Setup
     update suspension values
     add rain weather setup?
 HQ
     implement auto collection of points, parts?
+    auto repair of selected facilities (design,technology and manufacturing)
 League
     make calendar complete (wait a bit. they may revert back)
         past results are current raceId -2
@@ -14,4 +16,8 @@ League
 
 Car design
     research tier problem. is everything scaled to 300?
-       
+    repair. remove slow animation
+Training
+    add stamina cost preview when selecting the intensity
+Daily
+    move daily donut to home page (replace vip)
