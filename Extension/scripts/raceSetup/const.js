@@ -16,7 +16,7 @@ export const circuits = {
     au: { ride: 9, wing: 4, suspension: 8, pit: 24 }, // Australia
     az: { ride: 8, wing: 1, suspension: 12, pit: 17 }, // Azerbaijan
     be: { ride: 6, wing: 3, suspension: 9, pit: 15 }, // Belgium
-    bh: { ride: 4, wing: 0, suspension: -1, pit: 23 }, // Bahrain
+    bh: { ride: 4, wing: 0, suspension: 14, pit: 23 }, // Bahrain
     br: { ride: 4, wing: 2, suspension: 10, pit: 21 }, // Brazil
     ca: { ride: 4, wing: -1, suspension: 16, pit: 17 }, // Canada
     cn: { ride: 2, wing: 2, suspension: 10, pit: 26 }, // China

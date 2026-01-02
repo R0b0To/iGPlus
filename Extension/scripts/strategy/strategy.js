@@ -72,7 +72,6 @@ const { cleanHtml } = utility;
     window.__igplus_strategy_state__.TRACK_INFO.code = TRACK_CODE;
     window.__igplus_strategy_state__.TRACK_INFO.laps = savedStrategy.vars.raceLaps;
     window.__igplus_strategy_state__.TRACK_INFO.raceLength = String(getLeagueLength(TRACK_CODE,savedStrategy.vars.raceLaps));
-    
     const rules = JSON.parse(savedStrategy.vars.rulesJson);
 
     const is2tyres = rules.two_tyres == 1;
@@ -1824,7 +1823,7 @@ function getLeagueLength(countryCode, laps) {
   ['au', [57, 42, 28, 14]],
   ['at', [68, 51, 34, 17]],
   ['az', [46, 34, 23, 11]],
-  ['ba', [59, 44, 29, 14]],
+  ['bh', [59, 44, 29, 14]],
   ['be', [43, 32, 21, 10]],
   ['br', [69, 51, 34, 17]],
   ['ca', [63, 47, 31, 15]],
