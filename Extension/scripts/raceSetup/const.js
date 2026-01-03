@@ -22,10 +22,10 @@ export const circuits = {
     cn: { ride: 2, wing: 2, suspension: 10, pit: 26 }, // China
     de: { ride: 4, wing: 2, suspension: 10, pit: 17 }, // Germany
     es: { ride: 2, wing: 5, suspension: -1, pit: 25 }, // Spain
-    eu: { ride: 6, wing: 5, suspension: -1, pit: 17 }, // Europe
+    eu: { ride: 6, wing: 5, suspension: 6, pit: 17 }, // Europe
     fr: { ride: 8, wing: 2, suspension: -1, pit: 20 }, // France
     gb: { ride: 4, wing: 0, suspension: -1, pit: 23 }, // Great Britain
-    hu: { ride: 5, wing: 6, suspension: 5, pit: 17 }, // Hungary
+    hu: { ride: 5, wing: 6, suspension: 4, pit: 17 }, // Hungary
     it: { ride: 6, wing: -2, suspension: 18, pit: 24 }, // Italy
     jp: { ride: 6, wing: 5, suspension: 6, pit: 20 }, // Japan
     mc: { ride: 11, wing: 9, suspension: -1, pit: 16 }, // Monaco
