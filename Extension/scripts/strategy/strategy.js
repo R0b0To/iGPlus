@@ -1505,7 +1505,7 @@ async function readGSheets()
           const base = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?`;
           const sheetName = sName.gLinkName;
           const query = encodeURIComponent('Select *');
-          const url = `${base}&sheet=${sheetName}&tq=${query}`;
+          const url = `${base}&sheet=${sheetName}&tq=${query}&headers=1`;
           const data = [];
           var output = document.createElement('table');//document.querySelector('.output')
           output.setAttribute('style','width: 100%;table-layout: auto;text-align: center;');

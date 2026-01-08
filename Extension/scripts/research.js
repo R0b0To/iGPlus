@@ -311,9 +311,9 @@ function getWeightedResearchGain({ value, gap }, rPower, code) {
 }
 
 function weightedResearch() {
-  const gameTable = document.getElementById('researchInline')
+  const gameTable = document.getElementById('researchInline');
   const checkboxInput = gameTable.querySelectorAll('[name="c[]"]');
-  const currentResearchPower = 10/countChecked(checkboxInput)/100 || 0;
+  const currentResearchPower = 10/countChecked(checkboxInput) || 0;
   const statsTable = document.getElementById('statsTable');
 
   const mainResearchFields = ['acceleration', 'braking', 'handling', 'downforce'];
@@ -325,7 +325,6 @@ function weightedResearch() {
       const design = getStatsForResearchField(statsTableRows, field);
       carDesign[field] = getWeightedResearchGain(design, currentResearchPower, field);
     });
-
     const bestWResearch = Math.max(...Object.values(carDesign));
 
     statsTableRows.forEach((row) => {
