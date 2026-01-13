@@ -186,6 +186,15 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
 
 });
 
+chrome.runtime.onInstalled.addListener((details) => {
+  const CURRENT_VERSION = chrome.runtime.getManifest().version;
+  console.log(`iGPlus version ${CURRENT_VERSION}`);
+  if (details.reason === "update") {
+    chrome.storage.local.remove("tyreFuelModel", () => {
+      console.log("Old tyreFuelModel deleted. It will be recreated on next use.");
+    });
+  }
+});
 
 function storeReports(cloudReports){
 
