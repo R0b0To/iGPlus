@@ -66,7 +66,7 @@ const { cleanHtml } = utility;
                    push:await getPushValues(),
                    originalFe:carAttributes.querySelector('[id=wrap-fuel_economy] .ratingVal').textContent}; 
 //get from savedStrategy.vars.raceName instead??
-    const TRACK_CODE = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
+    const TRACK_CODE = document.querySelector('.flag').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
     const savedStrategy = await fetchNextRace();
     window.__igplus_strategy_state__.TRACK_INFO = track_info[TRACK_CODE];
     window.__igplus_strategy_state__.TRACK_INFO.code = TRACK_CODE;
@@ -100,6 +100,7 @@ const { cleanHtml } = utility;
 
 
     } catch (error) {
+      //console.log('Error in strategy function:', error);
         return;
     }
     
@@ -419,7 +420,7 @@ const root = document.getElementById(`strategyRoot${carIndex}`);
 ensureWearCalculated(strategyData);
 ensureFuelDerived(strategyData);
 
-const weatherSource = document.getElementById('d1setup').querySelector('.left');
+const weatherSource = document.getElementById('d1SetupWrap').querySelector('a');
 const clonedWeather = weatherSource.cloneNode(true);
 
 const header = document.createElement('div');
@@ -1408,7 +1409,7 @@ function createStepperHTML(id, value, step, min, max) {
       if(!document.getElementById('customMap'))
       {
         try {
-          const trackCode = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
+          const trackCode = document.querySelector('.flag').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
           const target = document.querySelector('[id=strategy] .eight');
           const circuit = document.createElement('img');
           circuit.id = 'customMap';

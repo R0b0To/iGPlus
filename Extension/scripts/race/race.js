@@ -1,5 +1,6 @@
 function addCustomWeatherLink() {
-  const weatherBtn = document.getElementById('race').querySelector('a');
+  const weatherBtn = document.querySelector('.raceWeatherBadge');
+  const weatherLocation = document.querySelector('.raceLeagueBar');
   weatherBtn.parentElement.className = 'three-btn';
 
   const weatherAlt = weatherBtn.cloneNode(true);
@@ -12,18 +13,18 @@ function addCustomWeatherLink() {
   const weatherContainer = document.createElement('div');
   weatherContainer.id = 'container';
 
-  weatherBtn.parentElement.append(weatherAlt);
-  weatherBtn.parentElement.parentElement.append(weatherContainer);
+  weatherLocation.append(weatherAlt);
+  weatherLocation.parentElement.append(weatherContainer);
 }
 
 /**
  * Replaces plain default map to the more detailed one
  */
 function swapMap() {
-  const countryFlagImg = document.querySelector('#race .flag');
+  const countryFlagImg = document.querySelector('.flag');
   const mapCode = countryFlagImg.classList[1].split('-')[1];
 
-  const circuitImg = document.querySelector('#race img:not(.flag)');
+  const circuitImg = document.querySelector('img:not(.flag)');
   //document.getElementById('igplus_darkmode') ? circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}_dark.png`) : circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`)
   //circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}.png`);
   circuitImg.src = chrome.runtime.getURL(`images/circuits/${mapCode}_dark.png`)
@@ -70,7 +71,7 @@ async function getWeather() {
 
   const { manager } = await fetchManagerData();
   const { nextLeagueRaceTime } = await fetchNextRace();
-  const trackID = new URLSearchParams(document.querySelector('a[href*="circuit&id="]').href).get('id');
+  const trackID = new URLSearchParams(document.querySelector('.raceWeatherBadge').href).get('id');
   const params = {
     lat: raceTrackCoords[trackID][0],
     lon: raceTrackCoords[trackID][1],
@@ -137,8 +138,8 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   try {
     await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
     if (document.getElementById('chartWeather') == null) {
+      //swapMap();
       addCustomWeatherLink();
-      swapMap();
       showBarValues();
     }
   } catch (err) {

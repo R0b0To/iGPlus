@@ -10,7 +10,7 @@ async function displaySkill() {
     
     //const activeChiefDesigner = staffDiv.querySelector('.hoverData')//staffDiv.querySelector('div.staff-profile a.linkParent');
     
-    const active_CD = staffDiv.querySelector('.hover a');
+    const active_CD = staffDiv.querySelector('.linkParent');
     const id_activeCD = new URLSearchParams(active_CD.href).get('id');
     const data = await fetchStaffInfo(id_activeCD);
     const { strengthText, weaknessText } = parseSkills(data);

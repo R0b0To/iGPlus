@@ -20,7 +20,7 @@ async function whenLockedSetup(){
 
 async function enableStrategy(){
 
- const strategyButton = document.getElementById('shortHandStandings').parentElement.parentElement.querySelector('a[href="p=race"]');
+ const strategyButton = document.querySelector('a[href="p=race"]');
  strategyButton.classList.remove('disabled');
 }
 

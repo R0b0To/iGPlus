@@ -96,7 +96,7 @@ function addSetupSuggestions({ ride, wing, suspension }, heightAdjustment, drive
 
 // Fixed circuit setup
 function getTrackSetup(circuits, tierIndex) {
-  const circuit = document.querySelector('#race > div:nth-child(1) > h1 > img').outerHTML;
+  const circuit = document.getElementsByClassName('flag')[0].outerHTML;
   //const circuitCode = /[^-]+(?=">)/g.exec(circuit)[0];
   const circuitCode = circuit.split("-")[1].split(" ")[0];
   
