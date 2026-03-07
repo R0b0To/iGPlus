@@ -2,7 +2,18 @@ manager = [];
 progress_status = 0;
 data_extracted = false;
 
-inject_button();
+(async () => {
+  for (let i = 0; i < 3; i += 1) {
+    try {
+      inject_button();
+      break;
+    } catch (err) {
+      await new Promise((res) => setTimeout(inject_button, 200)); // sleep a bit, while page loads  
+      console.warn(`Retry #${i + 1}/3`);
+    }
+  }
+})();
+
 
 function downloadFile(data,download_name){
   var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
@@ -36,7 +47,7 @@ function inject_button() {
   button.setAttribute('class', 'btn3');
   button2.id = "sheet_icon";
   button.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
-  button2.setAttribute('style', 'position:relative; left:10px; background-color:transparent; vertical-align: middle; cursor: pointer; border-width: initial; border-style: none; border-color: initial; border-image: initial;');
+  button2.setAttribute('style', 'position:relative; margin-right:5px;left:10px; background-color:transparent; vertical-align: middle; cursor: pointer; border-width: initial; border-style: none; border-color: initial; border-image: initial;');
   button.innerText = 'Extract';
   const closebutton = document.querySelector('.close');
   closebutton.classList.add('close-fix');
@@ -62,8 +73,7 @@ function inject_button() {
  
   //p = document.querySelector('#dialogs-container > div > div > div');
   export_button = document.querySelector('.csvExport');
-  const tiers_buttons = export_button.parentElement.querySelectorAll('a');
-  p = export_button.parentElement;
+  p = title_location[0];
   quali_button = export_button.cloneNode(true);
   race_button = export_button.cloneNode(true);
   podium = export_button.cloneNode(true);
@@ -79,26 +89,26 @@ function inject_button() {
   podium.addEventListener('click', podium_copy);
   quali_button.addEventListener('click', quali_export);
   race_button.addEventListener('click', race_export);
-  
-  if (p.childElementCount == 3) {
+  export_button.parentNode.replaceChild(race_button, export_button);
+  export_container.append(export_button);
+  if (p.childElementCount == 2) {
     const buttons_container = document.createElement('div');
     const tier_container = document.createElement('div');
     buttons_container.classList.add('inj_container','f_right');
     tier_container.classList.add('inj_container','f_left');
-    tier_container.append(tiers_buttons[0],tiers_buttons[1],tiers_buttons[2]);
     buttons_container.append(export_button,quali_button,podium);
 
-    p.prepend(buttons_container);
-    p.prepend(tier_container);
+    p.append(buttons_container);
     //p.prepend(quali_button);
     //p.prepend(export_button)
 
   }
 
-  export_button.parentNode.replaceChild(race_button, export_button);
+  
+
 }
 } catch (error) {
-  
+  console.log(error);
 }
 }
 

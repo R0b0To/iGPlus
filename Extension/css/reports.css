@@ -57,8 +57,11 @@
 #sheet_icon{
     vertical-align: middle;
     border: none;
+    padding-right: 10px;
+
     background-color: transparent;
     cursor: pointer;
+
 }
 #sheet_icon:hover {
     opacity: 0.8; 
