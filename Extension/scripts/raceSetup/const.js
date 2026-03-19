@@ -35,7 +35,7 @@ export const circuits = {
     sg: { ride: 8, wing: 7, suspension: 3, pit: 20 }, // Singapore
     tr: { ride: 6, wing: 2, suspension: 10, pit: 18 }, // Turkey
     us: { ride: 2, wing: 2, suspension: 11, pit: 16 }, // USA
-     nl: { ride: -1, wing: -1, suspension: -1, pit: -1 }, // Netherlands
+     nl: { ride: 1, wing: 1, suspension: 10, pit: -1 }, // Netherlands
   },
   // pro
   2: {
@@ -63,7 +63,7 @@ export const circuits = {
     sg: { ride: 17, wing: 14, suspension: 8, pit: 20 }, // Singapore
     tr: { ride: 13, wing: 5, suspension: 25, pit: 18 }, // Turkey
     us: { ride: 4, wing: 4, suspension: 28, pit: 16 }, // USA
-     nl: { ride: -1, wing: -1, suspension: -1, pit: -1 } // Netherlands
+     nl: { ride: -1, wing: -1, suspension: 20, pit: -1 } // Netherlands
   },
   // elite
   3: {
@@ -91,6 +91,6 @@ export const circuits = {
     sg: { ride: 33, wing: 27, suspension: 15, pit: 20 }, // Singapore
     tr: { ride: 25, wing: 10, suspension: 50, pit: 18 }, // Turkey
     us: { ride: 8, wing: 7, suspension: 55, pit: 16 }, // USA
-    nl: { ride: -1, wing: -1, suspension: -1, pit: -1 } // Netherlands
+    nl: { ride: -1, wing: -1, suspension: 40, pit: -1 } // Netherlands
   }
 };

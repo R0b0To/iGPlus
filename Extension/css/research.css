@@ -102,6 +102,7 @@
 }
 #statsTable > thead > th{
   z-index: 3;
+  text-align: center;
   border-radius: 0!important;
   position: relative;
   border-spacing: 0;
