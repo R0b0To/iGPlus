@@ -1820,41 +1820,43 @@ function hashCode(string){
 }
 function getLeagueLength(countryCode, laps) {
   const raceLengthMap = new Map([
-  ['ae', [50, 37, 25, 12]],
-  ['au', [57, 42, 28, 14]],
-  ['at', [68, 51, 34, 17]],
-  ['az', [46, 34, 23, 11]],
-  ['bh', [59, 44, 29, 14]],
-  ['be', [43, 32, 21, 10]],
-  ['br', [69, 51, 34, 17]],
-  ['ca', [63, 47, 31, 15]],
-  ['cn', [55, 41, 27, 13]],
-  ['eu', [50, 37, 25, 12]],
-  ['fr', [48, 36, 24, 12]],
-  ['de', [67, 50, 33, 16]],
-  ['jp', [55, 41, 27, 13]],
-  ['gb', [48, 36, 24, 12]],
-  ['it', [51, 38, 25, 12]],
-  ['my', [55, 41, 27, 13]],
-  ['mx', [70, 52, 35, 17]],
-  ['mc', [59, 44, 29, 14]],
-  ['ru', [46, 34, 23, 11]],
-  ['sg', [60, 45, 30, 15]],
-  ['es', [62, 46, 31, 15]],
-  ['us', [60, 45, 30, 15]],
-  ['tr', [54, 40, 27, 13]],
-  ['hu', [79, 59, 39, 19]],
-  ['nl', [72, 59, 36, 19]]
-]);
+    ['ae', [50, 37, 25, 12]],
+    ['au', [57, 42, 28, 14]],
+    ['at', [68, 51, 34, 17]],
+    ['az', [46, 34, 23, 11]],
+    ['bh', [59, 44, 29, 14]],
+    ['be', [43, 32, 21, 10]],
+    ['br', [69, 51, 34, 17]],
+    ['ca', [63, 47, 31, 15]],
+    ['cn', [55, 41, 27, 13]],
+    ['eu', [50, 37, 25, 12]],
+    ['fr', [48, 36, 24, 12]],
+    ['de', [67, 50, 33, 16]],
+    ['jp', [55, 41, 27, 13]],
+    ['gb', [48, 36, 24, 12]],
+    ['it', [51, 38, 25, 12]],
+    ['my', [55, 41, 27, 13]],
+    ['mx', [70, 52, 35, 17]],
+    ['mc', [59, 44, 29, 14]],
+    ['ru', [46, 34, 23, 11]],
+    ['sg', [60, 45, 30, 15]],
+    ['es', [62, 46, 31, 15]],
+    ['us', [60, 45, 30, 15]],
+    ['tr', [54, 40, 27, 13]],
+    ['hu', [79, 59, 39, 19]],
+    ['nl', [72, 59, 36, 19]]
+  ]);
+
   const lengths = [100, 75, 50, 25];
   const trackLaps = raceLengthMap.get(countryCode.toLowerCase());
 
-  if (!trackLaps) return null; // Track not found
+  if (!trackLaps) return null;
 
-  // Find the index of the lap count that matches our input
-  const index = trackLaps.indexOf(Number(laps));
+  laps = Number(laps);
 
-  // Return the percentage at that same index
+  // Find first value within ±2
+  const index = trackLaps.findIndex(v => Math.abs(v - laps) <= 2);
+
   return index !== -1 ? lengths[index] : null;
 }
 async function saveCurrentStrategy(strategyData) {
