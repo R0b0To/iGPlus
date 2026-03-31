@@ -104,7 +104,7 @@ async function createPreview(strategy,id,car_info){
         laps.style.width = `${strategy.stints[key].laps / strategy.laps.total * 100}%`;
         const wearText = document.createElement('span');
         wearText.classList.add('wearText');
-        wearText.textContent = `${Math.round(get_wear(strategy.stints[key].tyre.split('-')[1],strategy.stints[key].laps,TRACK_INFO,car_info,multipliers[strategy.length]))}%`;
+        wearText.textContent = "";//`${Math.round(get_wear(strategy.stints[key].tyre.split('-')[1],strategy.stints[key].laps,TRACK_INFO,car_info,multipliers[strategy.length]))}%`;
         laps.append(wearText);
 
         laps.style.zIndex = zindex;
