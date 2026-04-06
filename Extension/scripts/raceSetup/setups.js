@@ -49,23 +49,25 @@ async function addSetupSuggestionsForDrivers() {
   if (!baseTrackSetup) return;
 
   // 3. Process Drivers
-  driversData.forEach((node, index) => {
-    const driverIndex = index + 1;
-    const driverHeight = node.dataset.driver.split(',')[13];
-    const heightAdjustment = calculateHeightAdjustment(driverHeight, scale, leagueTier);
+ driversData.forEach((node, index) => {
+  const driverIndex = index + 1;
+  const driverHeight = node.dataset.driver.split(',')[13];
+  const heightAdjustment = calculateHeightAdjustment(driverHeight, scale, leagueTier);
 
-    injectSetupUI({
-      baseTrackSetup,
-      heightAdjustment,
-      driverIndex,
-      circuitCode,
-      leagueTier,
-      circuits // Pass reference for the modal to use
-    });
+  injectSetupUI({
+    baseTrackSetup,
+    heightAdjustment,
+    driverHeight, 
+    driverIndex,
+    circuitCode,
+    leagueTier,
+    circuits
   });
+});
+
 }
 
-function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitCode, leagueTier, circuits }) {
+function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitCode, leagueTier, circuits, driverHeight }) {
   const setupForm = document.querySelector(`#d${driverIndex}setup`);
   if (!setupForm || setupForm.classList.contains('withSuggestion')) return;
 
@@ -89,7 +91,6 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
     container.append(span);
   };
 
-  // Ensure values don't go below 1
   const finalRide = Math.max(1, baseTrackSetup.ride + heightAdjustment);
   const finalWing = Math.max(1, baseTrackSetup.wing);
 
@@ -97,7 +98,6 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   createSuggestion('Ride', finalRide);
   createSuggestion('Aerodynamics', finalWing);
 
-  // Settings Icon
   const editBtn = document.createElement('div');
   editBtn.className = 'setup-edit-icon';
   editBtn.innerHTML = '⚙️';
@@ -105,6 +105,7 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   editBtn.onclick = () => openPersonalizeModal({
     baseTrackSetup,
     heightAdjustment,
+    driverHeight,
     circuitCode,
     leagueTier,
     circuits
@@ -114,49 +115,67 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   setupForm.classList.add('withSuggestion');
 }
 
-/**
- * MODAL UI
- */
+function openPersonalizeModal({ baseTrackSetup, heightAdjustment, driverHeight, circuitCode, leagueTier, circuits }) {
+  // Calculate the current adjusted values
+  const currentRide = baseTrackSetup.ride + heightAdjustment;
+  const currentSuspension = baseTrackSetup.suspension;
+  const currentWing = baseTrackSetup.wing;
 
-function openPersonalizeModal({ baseTrackSetup, heightAdjustment, circuitCode, leagueTier, circuits }) {
   const modal = document.createElement('div');
   modal.id = 'setup-modal-overlay';
   modal.innerHTML = `
-    <div class="setup-modal-content">
+   <div class="setup-modal-content">
       <header>
-        <h3>Edit Base Setup: ${circuitCode.toUpperCase()}</h3>
-        <p style="font-size: 0.85em; color: #bbb;">Editing values for height 170-174cm.</p>
+        <h3 id="modal-title">${circuitCode.toUpperCase()}</h3>
       </header>
       <div class="setup-row">
-        <label>Base Ride</label>
-        <input type="number" id="edit-ride" value="${baseTrackSetup.ride}">
-        <span class="preview-text">Adjusting for this driver, it becomes: <span id="res-ride">${baseTrackSetup.ride + heightAdjustment}</span></span>
+        <label>Ride Height</label>
+        <input type="number" id="edit-ride" value="${currentRide}" min="1">
       </div>
       <div class="setup-row">
-        <label>Base Suspension</label>
-        <input type="number" id="edit-susp" value="${baseTrackSetup.suspension}">
+        <label>Suspension</label>
+        <input type="number" id="edit-susp" value="${currentSuspension}">
       </div>
-            <div class="setup-row">
-        <label>Base Wing</label>
-        <input type="number" id="edit-wing" value="${baseTrackSetup.wing}">
+      <div class="setup-row">
+        <label>Wing</label>
+        <input type="number" id="edit-wing" value="${currentWing}">
       </div>
       <div class="modal-actions">
-        <button id="save-setup" class="btn-save">Save Base Setup</button>
+        <button id="save-setup" class="btn-save">Save Setup</button>
         <button id="close-modal" class="btn-cancel">Cancel</button>
       </div>
     </div>`;
 
   document.body.appendChild(modal);
 
+
+  const existingFlag = document.getElementsByClassName(`f-${circuitCode.toLowerCase()}`)[0];
+  if (existingFlag) {
+    const flagClone = existingFlag.cloneNode(true);
+    // Add some styling to make it look good next to the text
+    flagClone.style.marginRight = "10px";
+    flagClone.style.verticalAlign = "middle";
+    
+    const titleElement = modal.querySelector('#modal-title');
+    titleElement.prepend(flagClone); // Places it before the circuit code text
+  }
+
+
+  // Update the base value preview as user types
   const rideInput = document.getElementById('edit-ride');
   rideInput.oninput = () => {
-    document.getElementById('res-ride').innerText = (parseInt(rideInput.value) || 0) + heightAdjustment;
+    const enteredValue = parseInt(rideInput.value) || 0;
+    const baseValue = enteredValue - heightAdjustment;
+    document.getElementById('base-ride').innerText = baseValue;
   };
 
   document.getElementById('save-setup').onclick = async () => {
+    const enteredRide = parseInt(rideInput.value) || 0;
+    const baseRide = enteredRide - heightAdjustment;
+
     circuits[leagueTier][circuitCode] = {
       ...baseTrackSetup,
-      ride: parseInt(rideInput.value),
+      ride: baseRide,
       wing: parseInt(document.getElementById('edit-wing').value),
       suspension: parseInt(document.getElementById('edit-susp').value)
     };
@@ -167,6 +186,7 @@ function openPersonalizeModal({ baseTrackSetup, heightAdjustment, circuitCode, l
 
   document.getElementById('close-modal').onclick = () => modal.remove();
 }
+
 
 /**
  * PRACTICE DATA HELPERS

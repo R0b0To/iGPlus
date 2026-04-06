@@ -10,7 +10,7 @@ export const scale = {
 // [soft, neutral, firm] - index in array
 export const circuits = {
   // rookie
-  1: {
+  "rookie": {
     ae: { ride: 6, wing: 1, suspension: 12, pit: 23 }, // AbuDhabi
     at: { ride: 4, wing: 0, suspension: 14, pit: 27 }, // Austria
     au: { ride: 9, wing: 4, suspension: 8, pit: 24 }, // Australia
@@ -66,7 +66,7 @@ export const circuits = {
      nl: { ride: -1, wing: -1, suspension: 20, pit: -1 } // Netherlands
   },
   // elite
-  3: {
+  1: {
     ae: { ride: 25, wing: 5, suspension: 60, pit: 23 }, // AbuDhabi
     at: { ride: 18, wing: 0, suspension: 70, pit: 27 }, // Austria
     au: { ride: 38, wing: 15, suspension: 40, pit: 24 }, // Australia

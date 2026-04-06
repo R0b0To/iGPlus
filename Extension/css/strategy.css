@@ -82,6 +82,7 @@
   color: #ffffff;
   width: 2rem;
   height: 2rem;
+  flex: none !important;
   cursor: pointer;
   display: flex;
   justify-content: center;
