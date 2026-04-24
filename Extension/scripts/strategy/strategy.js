@@ -1410,7 +1410,7 @@ function createStepperHTML(id, value, step, min, max) {
       {
         try {
           const trackCode = document.querySelector('.flag').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
-          const target = document.querySelector('[id=strategy] .eight');
+          const target = document.querySelector('[id=strategy] div');
           const circuit = document.createElement('img');
           circuit.id = 'customMap';
           //document.getElementById('igplus_darkmode') ? circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`) : circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`)
@@ -1589,7 +1589,7 @@ async function readGSheets()
                     }
       
                     
-                    document.querySelectorAll('.eight.columns.aStrat')[0]?.append(output);
+                    document.querySelectorAll('[id=strategy] div.aStrat')[0]?.append(output);
                     removeColumn(output,t.gTrack);
                   }
                 }

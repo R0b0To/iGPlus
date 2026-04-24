@@ -151,8 +151,9 @@
 }
 
 .helpLabel {
+
   cursor: help;
-  display:block;
+  display:none;
   text-align: center;
   border-radius: 50%;
   background-color: #96bf86;
@@ -163,7 +164,7 @@
 
 .researchFooter {
   position: relative;
-  background: #22304a;
+  background: #1c3456;
   z-index: 2;
 }
 
@@ -187,6 +188,7 @@
 }
 .customResearchBtn{
   cursor: pointer;
+  float:left ! Important;
   height: 38px;
   padding: 2px!important;
   margin-right: 4px;
