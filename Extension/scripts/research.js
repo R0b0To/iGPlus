@@ -361,12 +361,14 @@ function createHelpButton(text) {
     fieldTip.classList.remove('tipVisible');
   });
 
-  if (document.getElementById('fieldtip') == null) {
-    const place = document.getElementsByClassName('text-center pad')[1];
-    place.append(fieldTip);
-  }
+ 
+
 
   const container = document.createElement('td');
+     if (document.getElementById('fieldtip') == null) {
+        container.append(fieldTip);
+  }
+
   container.append(helpLabel);
 
   return container;
