@@ -168,7 +168,14 @@ async function enhanceResearchTable() {
       if (isChecked) {
         gain = Math.ceil(ratingGap * currentResearchPower);
       }
-
+      // New Json with bestTeamValue from iGP
+      // <script id="leagueDesignData" type="application/json">{"acceleration":{"max":188},"braking":{"max":143},"cooling":{"max":72},"downforce":{"max":144},"fuel_economy":{"max":108},"handling":{"max":178},"reliability":{"max":72},"tyre_economy":{"max":85}}</script>
+      // Please check it
+      function getBestTeamValue(clave) {
+        return JSON.parse(document.getElementById('leagueDesignData').textContent)[clave].max;
+      }
+      _mybestvalue = getBestTeamValue(row.dataset.id)
+      
       row.append(createTd(myValue), createTd(bestTeamValue), createTd(ratingGap), createTd(gain),clonedCheckbox);
 
       return row;
