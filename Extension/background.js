@@ -193,9 +193,9 @@ chrome.runtime.onInstalled.addListener((details) => {
     chrome.storage.local.remove("tyreFuelModel", () => {
       console.log("Old tyreFuelModel deleted. It will be recreated on next use.");
     });
-    chrome.storage.local.remove('customCircuits', () => {
+   /* chrome.storage.local.remove('customCircuits', () => {
       console.log('Extension updated: customCircuits cleared to ensure compatibility.');
-    });
+    });*/
   }
 });
 
