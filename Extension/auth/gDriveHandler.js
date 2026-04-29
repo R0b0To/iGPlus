@@ -121,6 +121,7 @@ async function localConfigToCloud(data){
       if(key == 'gTrack') configInfo.gTrack = value;
       if(key == 'separator') configInfo.separator = value;
       if(key == 'pushLevels') configInfo.pushLevels = value;
+      if(key == 'customCircuits') configInfo.customCircuits = value;
     }
     const cloudConfig = await searchFile('config.json',data.token);
     if(cloudConfig == false)  storeFileIn(data.mainFolderId.id,'config',JSON.stringify(configInfo),data.token);
