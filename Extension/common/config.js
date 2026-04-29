@@ -73,13 +73,14 @@ const tabScripts = {
   },
   '/app/p=transfers': {
     key: 'marketDriver',
-    scripts: ['scripts/driver/driverMarket.js','lib/purify.js']
+    scripts: ['scripts/driver/driverMarket.js','lib/purify.js'],
+    styles: ['css/transfers.css']
   },
   '/app/p=race': {
     scripts: ['lib/highcharts.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
     styles: ['css/race.css']
   },
-  '/app/p=settings&tab=general': {
+  '/app/p=settings': {
     scripts: ['scripts/settings/addSettings.js','lib/gsi.js'],
     styles: ['css/settings.css','css/strategyPreview.css']
   },
