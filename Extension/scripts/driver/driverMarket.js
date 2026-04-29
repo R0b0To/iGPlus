@@ -40,7 +40,7 @@ async function displayDriver() {
         tEle.id = 'talentRow';  
         const stats = body.rows[i].querySelector('.hoverData').dataset;
         const talentValue = stats.driver.split(',')[1];
-        const skill = {grade: /'(.*)'/.exec(stats.append)[1].slice(0,-2), name:/>(.*)<\//.exec(stats.append)[1] };
+        const skill = {grade: /'(.*)'/.exec(stats.append)[1].slice(0,-1), name:/>(.*)<\//.exec(stats.append)[1] };
 
         tEle.textContent = talentValue;
         tEle.append(createSpecialSkillLabel(skill));
