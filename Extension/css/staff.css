@@ -24,3 +24,9 @@
 table.acp th{
   text-align: inherit;
 }
+.bgLightRed{
+    background: rgb(184, 102, 102);
+}
+.bgLightGreen{
+    background: rgb(128, 184, 108);
+}
