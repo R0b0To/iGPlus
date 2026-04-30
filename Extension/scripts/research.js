@@ -104,7 +104,8 @@ async function enhanceResearchTable() {
   
   //const tier = await findCurrentTier();
 
-  const researchPowerSpan = document.createElement('div');
+  const maxResearch = document.getElementById('researchMaxEffect').value;
+  const bestTeam = JSON.parse(document.getElementById('leagueDesignData').textContent);
   
   if (document.getElementById('statsTable') == null) {
     const statsTable = document.createElement('table');
@@ -128,7 +129,7 @@ async function enhanceResearchTable() {
     /** @type { NodeListOf<HTMLDivElement> } */
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
     const checkboxInput = gameTable.querySelectorAll('[name="c[]"]');
-    const currentResearchPower = 10/countChecked(checkboxInput)/100 || 0;
+    const currentResearchPower = maxResearch/countChecked(checkboxInput)/100 || 0;
     const researchStatsRows = [...ratingBars].map( (bar, index) => {
       // this will hide Comparsion column for narrow screens
       //gameTable.tHead.rows[0].cells[2].className = 'ratings';
@@ -136,12 +137,12 @@ async function enhanceResearchTable() {
 
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
-      const scaleFactor = 3;
-      const bestTeamValue = /(\d+)/.exec(bar.querySelector('svg').style.left)[0] * scaleFactor;
       const myValue = bar.previousSibling.lastChild.textContent;
       const clonedCheckbox = checkboxInput[index].parentElement.cloneNode(true);
       const clonedInput = clonedCheckbox.querySelector('input');
-      const clonedId = `${clonedCheckbox.querySelector('input').id}-clone`;
+      const idName = clonedCheckbox.querySelector('input').id.slice(1);
+      const clonedId = `c${idName}-clone`;
+      const bestTeamValue = bestTeam[idName].max;
       clonedInput.id = clonedId;
       clonedCheckbox.querySelector('label').setAttribute('for',clonedId);
 
@@ -154,28 +155,21 @@ async function enhanceResearchTable() {
       clonedInput.addEventListener('change', () =>  {
           //simulate click to invoke save button from game
           syncCheckboxes(checkboxInput[index])
-          weightedResearch();
-          calculateTotalResearchGain()
+          weightedResearch(maxResearch);
+          calculateTotalResearchGain(maxResearch)
 
       });
 
       const ratingGap = bestTeamValue - myValue;
       const isChecked = checkboxInput[index].checked;
-      row.dataset.id = bar.parentElement.parentElement.querySelector('input').value;
-    
+      row.dataset.id = idName;
 
       let gain = 0;
       if (isChecked) {
         gain = Math.ceil(ratingGap * currentResearchPower);
       }
-      // New Json with bestTeamValue from iGP
-      // <script id="leagueDesignData" type="application/json">{"acceleration":{"max":188},"braking":{"max":143},"cooling":{"max":72},"downforce":{"max":144},"fuel_economy":{"max":108},"handling":{"max":178},"reliability":{"max":72},"tyre_economy":{"max":85}}</script>
-      // Please check it
-      function getBestTeamValue(clave) {
-        return JSON.parse(document.getElementById('leagueDesignData').textContent)[clave].max;
-      }
-      _mybestvalue = getBestTeamValue(row.dataset.id)
-      
+
+      console.log();
       row.append(createTd(myValue), createTd(bestTeamValue), createTd(ratingGap), createTd(gain),clonedCheckbox);
 
       return row;
@@ -227,8 +221,8 @@ async function enhanceResearchTable() {
     gameTable.parentElement.insertBefore(statsTable,location);
   }
   
-  weightedResearch();
-  calculateTotalResearchGain();
+  weightedResearch(maxResearch);
+  calculateTotalResearchGain(maxResearch);
 }
 
 
@@ -317,10 +311,10 @@ function getWeightedResearchGain({ value, gap }, rPower, code) {
   return (2.23 + 4.23 * Math.log(value + gap * rPower) - (2.23 + 4.23 * Math.log(value))) * weight[code];
 }
 
-function weightedResearch() {
+function weightedResearch(maxResearch) {
   const gameTable = document.getElementById('researchInline');
   const checkboxInput = gameTable.querySelectorAll('[name="c[]"]');
-  const currentResearchPower = 10/countChecked(checkboxInput) || 0;
+  const currentResearchPower = maxResearch/countChecked(checkboxInput) || 0;
   const statsTable = document.getElementById('statsTable');
 
   const mainResearchFields = ['acceleration', 'braking', 'handling', 'downforce'];
@@ -381,9 +375,9 @@ function createHelpButton(text) {
   return container;
 }
 
-function calculateTotalResearchGain() {
+function calculateTotalResearchGain(maxResearch) {
   const checkboxInput = document.getElementById('researchInline').querySelectorAll('[name="c[]"]');
-  const currentResearchPower = 10/countChecked(checkboxInput)/100 || 0;
+  const currentResearchPower = maxResearch/countChecked(checkboxInput)/100 || 0;
 
   const rPower = currentResearchPower;
   const checkedItems = document.querySelectorAll('#researchInline input[type="checkbox"]:not(.checkAll)');
