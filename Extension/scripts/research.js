@@ -106,6 +106,7 @@ async function enhanceResearchTable() {
 
   const maxResearch = document.getElementById('researchMaxEffect').value;
   const bestTeam = JSON.parse(document.getElementById('leagueDesignData').textContent);
+  const currentResearchPower = getCurrentResearchPower(maxResearch);
   
   if (document.getElementById('statsTable') == null) {
     const statsTable = document.createElement('table');
@@ -114,13 +115,16 @@ async function enhanceResearchTable() {
     //statsTable.style.width = 'auto'; // important to have it here, otherwise game's .acp overwrites it always
     
     const header = document.createElement('thead');
+    const researchPowerHeader = document.createElement('th');
+    researchPowerHeader.id = 'researchPowerHeader';
+
     header.append(
       document.createElement('th'),
       createHeaderWithImage('images/user.svg'),
       createHeaderWithImage('images/users.svg'),
       createHeaderWithImage('images/gap.svg'),
       createHeaderWithImage('images/research.svg'),
-      document.createElement('th')
+      researchPowerHeader 
     );
     statsTable.append(header);
 
@@ -129,12 +133,12 @@ async function enhanceResearchTable() {
     /** @type { NodeListOf<HTMLDivElement> } */
     const ratingBars = gameTable.querySelectorAll('.ratingBar');
     const checkboxInput = gameTable.querySelectorAll('[name="c[]"]');
-    const currentResearchPower = maxResearch/countChecked(checkboxInput)/100 || 0;
+    researchPowerHeader.textContent = (currentResearchPower * 100).toFixed(2);
+
     const researchStatsRows = [...ratingBars].map( (bar, index) => {
       // this will hide Comparsion column for narrow screens
       //gameTable.tHead.rows[0].cells[2].className = 'ratings';
       bar.parentElement.classList.add('ratings');
-
       const row = document.createElement('tr');
       row.className = 'hoverCopyTr';
       const myValue = bar.previousSibling.lastChild.textContent;
@@ -155,8 +159,10 @@ async function enhanceResearchTable() {
       clonedInput.addEventListener('change', () =>  {
           //simulate click to invoke save button from game
           syncCheckboxes(checkboxInput[index])
-          weightedResearch(maxResearch);
-          calculateTotalResearchGain(maxResearch)
+          const currentResearchPower = getCurrentResearchPower(maxResearch);
+          weightedResearch(currentResearchPower);
+          calculateTotalResearchGain(currentResearchPower)
+          researchPowerHeader.textContent = (currentResearchPower * 100).toFixed(2);
 
       });
 
@@ -219,10 +225,13 @@ async function enhanceResearchTable() {
   });
     const location = document.getElementById('carAttributesDisplay');
     gameTable.parentElement.insertBefore(statsTable,location);
+
+  weightedResearch(currentResearchPower);
+  calculateTotalResearchGain(currentResearchPower);
   }
   
-  weightedResearch(maxResearch);
-  calculateTotalResearchGain(maxResearch);
+  
+  
 }
 
 
@@ -311,10 +320,18 @@ function getWeightedResearchGain({ value, gap }, rPower, code) {
   return (2.23 + 4.23 * Math.log(value + gap * rPower) - (2.23 + 4.23 * Math.log(value))) * weight[code];
 }
 
-function weightedResearch(maxResearch) {
+
+function getCurrentResearchPower(maxResearch){
   const gameTable = document.getElementById('researchInline');
   const checkboxInput = gameTable.querySelectorAll('[name="c[]"]');
-  const currentResearchPower = maxResearch/countChecked(checkboxInput) || 0;
+  const numberOfselectedAttributes = countChecked(checkboxInput)|| 0;
+  const currentResearchPower = maxResearch/ numberOfselectedAttributes;
+  return currentResearchPower/100;
+}
+
+
+function weightedResearch(researchPower) {
+  
   const statsTable = document.getElementById('statsTable');
 
   const mainResearchFields = ['acceleration', 'braking', 'handling', 'downforce'];
@@ -324,7 +341,7 @@ function weightedResearch(maxResearch) {
 
     mainResearchFields.forEach((field) => {
       const design = getStatsForResearchField(statsTableRows, field);
-      carDesign[field] = getWeightedResearchGain(design, currentResearchPower, field);
+      carDesign[field] = getWeightedResearchGain(design, researchPower, field);
     });
     const bestWResearch = Math.max(...Object.values(carDesign));
 
@@ -375,11 +392,8 @@ function createHelpButton(text) {
   return container;
 }
 
-function calculateTotalResearchGain(maxResearch) {
-  const checkboxInput = document.getElementById('researchInline').querySelectorAll('[name="c[]"]');
-  const currentResearchPower = maxResearch/countChecked(checkboxInput)/100 || 0;
+function calculateTotalResearchGain(rPower) {
 
-  const rPower = currentResearchPower;
   const checkedItems = document.querySelectorAll('#researchInline input[type="checkbox"]:not(.checkAll)');
   const gameTable = document.getElementById('statsTable').tBodies[0];
 
