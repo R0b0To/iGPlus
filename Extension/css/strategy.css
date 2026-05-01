@@ -77,6 +77,7 @@
   background-color: #467bb1!important;
 }
 .withSlider {
+ padding:2px!important;
   border-radius: 50%;
   background-color: #467bb1;
   color: #ffffff;
@@ -1023,6 +1024,7 @@ outline: 2px dashed #4a90e2;}
 }
 
 .popup-panel {
+  min-width: 310px;
   position: relative;
   width: fit-content;
   max-height: 80vh;
@@ -1058,23 +1060,32 @@ outline: 2px dashed #4a90e2;}
   color: #6fdc6f;
   font-size: 18px;
   cursor: pointer;
+  background-color: rgb(30 30 30);
+    cursor: pointer;
+    align-items: center;
+    border-radius: 8px;
+    height: 30px;
+    width: 30px;
 }
 .popup-close{
       float: right;
+      cursor: pointer;
+      position: relative;
 }
 .popup-section-preview{
   display: flex;
   margin-bottom: 20px;
   align-items: flex-end;
 }
-.saved-right button {
-  display: flex;
-  justify-content: center;
-  background: none;
-  border: none;
-  color: #e57373;
-  font-size: 16px;
-  cursor: pointer;
+.saved-right {
+      background-color: rgb(214, 110, 103);
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    height: 30px;
+    width: 30px;
 }
 
 .saved-left button:hover {

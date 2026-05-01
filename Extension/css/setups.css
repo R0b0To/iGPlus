@@ -129,4 +129,7 @@
       .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
       .btn-save { background: #689954; color: white; border: none; padding: 8px; flex: 1; cursor: pointer; border-radius: 4px; }
       .btn-cancel { background: #d66e67; color: white; border: none; padding: 8px; flex: 1; cursor: pointer; border-radius: 4px; }
-
+      #modal-title > img{
+        scale: 2;
+        margin-right: 15px!important;
+      }
