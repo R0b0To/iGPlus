@@ -1,670 +1,670 @@
+function el(tag, attrs = {}, ...children) {
+  const element = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === 'dataset') {
+      Object.entries(value).forEach(([dataKey, dataVal]) => element.dataset[dataKey] = dataVal);
+    } else if (key in element) {
+      element[key] = value;
+    } else {
+      element.setAttribute(key, value);
+    }
+  }
+  element.append(...children.filter(Boolean));
+  return element;
+}
+
 (async () => {
   if (!document.getElementById('iGPlus')) {
     const { injectIGPlusOptions } = await import(chrome.runtime.getURL('scripts/settings/settingsHTML.js'));
-
-    injectIGPlusOptions().then( res => {if(res) handleSettings();});
+    const success = await injectIGPlusOptions();
+    if (success) initializeSettingsLogic();
   }
 })();
-async function download() {
-  const d = await chrome.storage.local.get('save');
-  function downloadFile(data, download_name) {
-    var blob = new Blob([data], { type: 'application/json;charset=utf-8;' });
-    if (navigator.msSaveBlob) {
-      // IE 10+
-      navigator.msSaveBlob(blob, 'test');
-    } else {
-      const link = document.createElement('a');
-      if (link.download !== undefined) {
-        // feature detection
-        // chromes that support HTML5 download attribute
-        var url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', download_name);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-    }
-  }
 
-  const selectedStrategyTrack = document.getElementById('exportSave').value;
-  let filename = 'save';
-  let saved = d;
-
-  if (selectedStrategyTrack == 0) {
-    saved = d;
-    filename = 'save';
-  } else {
-    const saveID = this.parentElement.id;
-    const track = selectedStrategyTrack;
-    saved = { [track]: { [saveID]: d.save[track][saveID] } };
-    filename = `${track}_${saveID}`;
-  }
-  const saveJSON = JSON.stringify(saved);
-  downloadFile(saveJSON, filename);
-}
-
-async function handleSettings() {
+async function initializeSettingsLogic() {
   const { fetchManagerData } = await import(chrome.runtime.getURL('common/fetcher.js'));
   const { language } = await import(chrome.runtime.getURL('common/localization.js'));
   const { scriptDefaults } = await import(chrome.runtime.getURL('common/config.js'));
-  const {strategyPreview, createDownloadButton,createDeleteButton} = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
-  const DEBUG = false;
-  const raceSign = document.getElementById('raceSign');
-  const overSign = document.getElementById('overSign');
-  const link = document.getElementById('link');
-  const sname = document.getElementById('sname');
-  const trackName = document.getElementById('track');
-  const languageSelection = document.getElementsByName('language')[0];
-  const separator = document.getElementById('separator');
-  const leagueCheckbox = document.getElementById('league');
-  const researchCheckbox = document.getElementById('research');
-  const trainingCheckbox = document.getElementById('train');
-  const staffCheckbox = document.getElementById('staff');
-  const marketCheckbox = document.getElementById('market');
-  const marketDriverCheckbox = document.getElementById('marketDriver');
-  const refreshCheckbox = document.getElementById('refresh');
-  const reportsCheckbox = document.getElementById('reports');
-  const reviewCheckbox = document.getElementById('review');
-  const gsheetCheckbox = document.getElementById('Gsheet');
-  //const overviewCheckbox = document.getElementById('overview');
-  const advancedHisCheckbox = document.getElementById('history');
-  const sponsorCheckbox = document.getElementById('sponsor');
-  const disablebgCheckbox = document.getElementById('disablebg');
-  const gdrive = document.getElementById('gdrive');
-  const forceSyncBtn = document.getElementById('forceSync');
-  const exportSave = document.getElementById('exportSave');
-  const darkmode = document.getElementById('darkmode');
-  //const forceSyncBtnDown = document.getElementById('forceSyncDown');
-  const hq = document.getElementById('hq');
+  const { strategyPreview, createDownloadButton, createDeleteButton } = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
   
-  async function displayPreview(){
-    const d = await chrome.storage.local.get('save');
-    if(exportSave.value != 0)
-    {
-      document.getElementById('deleteBtn').style.display = 'none';
-      document.getElementById('exportBtn').style.display = 'none';
-    }else
-    {
-      document.getElementById('deleteBtn').style.display = 'block';
-      document.getElementById('exportBtn').style.display = 'block';
+  // Storage Wrapper for cleaner async calls
+  const storage = {
+    get: async (key) => (await chrome.storage.local.get(key))[key],
+    set: async (data) => await chrome.storage.local.set(data),
+    mergeScript: async (id, val) => {
+      const data = await chrome.storage.local.get({ script: scriptDefaults });
+      data.script[id] = val;
+      await chrome.storage.local.set({ script: data.script });
     }
-    try {
-      if (this.value != 0) {
-        Object.keys(d.save[this.value]).forEach((item) => {
-          const downloadButtons = document.querySelectorAll('.fa-download');
-          downloadButtons.forEach((button) => {
-            button.remove();
-          });
+  };
 
-        });
-        if (document.getElementById('saveList') != null) {
-          document.getElementById('saveList').remove();
-        }
-        if (Object.keys(d.save[this.value]).length > 0) {
-          const sList = await strategyPreview(d.save[this.value],{te:30});
-          sList.querySelectorAll('tr').forEach(e=>{
-            //add download button
-            const down_btn = createDownloadButton();
-            down_btn.addEventListener('click',download);
-            e.append(down_btn);
-          });
-          sList.querySelectorAll('.trash').forEach(e => {e.addEventListener('click',deleteSave);});
-          exportSave.parentElement.append(sList);
-        }
-      } else {
-        //selecting all strategies
-        const downloadButtons = document.querySelectorAll('.fa-download');
-        downloadButtons.forEach((button) => {
-          button.remove();
-        });
+  const UI = {
+    langSelect: document.getElementsByName('language')[0],
+    exportSaves: document.querySelectorAll('.exportSave'),
+    forceSyncBtn: document.getElementById('forceSync'),
+    gdrive: document.getElementById('gdrive'),
+    separator: document.getElementById('separator'),
+    links: { link: document.getElementById('link'), sname: document.getElementById('sname'), track: document.getElementById('track') },
+    fileUploads: document.querySelectorAll('.myFile')
+  };
 
-        if (document.getElementById('saveList') != null) {
-          document.getElementById('saveList').remove();
-        }
-        
+  // --- 1. LOCALIZATION & RESTORATION --- //
+  async function restoreOptions() {
+    let langCode = await storage.get('language');
+    if (!langCode) {
+      const managerData = await fetchManagerData();
+      langCode = ['en', 'it', 'es'].includes(managerData.language) ? managerData.language : 'en';
+    }
+
+    // Auto-translate using the dataset attributes attached in HTML
+    document.querySelectorAll('[data-loc-text]').forEach(el => {
+      if (language[langCode].optionsText[el.dataset.locText]) {
+        el.textContent = language[langCode].optionsText[el.dataset.locText];
       }
-    } catch (error) {console.log(error); }
+    });
+
+    document.querySelectorAll('[data-loc-tip]').forEach(el => {
+      if (language[langCode].scriptDescription[el.dataset.locTip]) {
+        el.dataset.fieldtip = language[langCode].scriptDescription[el.dataset.locTip];
+      }
+    });
+
+    // Special formatted texts
+    const raceSign = await storage.get('raceSign');
+    const overSign = await storage.get('overSign');
+    if (document.getElementById('raceSign')) document.querySelector('#raceSign .text').textContent = `${language[langCode].optionsText.RaceReport} ( ${raceSign ? '-' : '+'} )`;
+    if (document.getElementById('overSign')) document.querySelector('#overSign .text').textContent = `${language[langCode].optionsText.StartOvertakes} ( ${overSign ? '-' : '+'} )`;
+
+    // Restore text inputs
+    UI.separator.value = await storage.get('separator') || ',';
+    UI.links.link.value = await storage.get('gLink') || '';
+    UI.links.sname.value = await storage.get('gLinkName') || '';
+    UI.links.track.value = await storage.get('gTrack') || '';
+
+    // Restore Checkboxes
+    const scripts = await storage.get('script') || scriptDefaults;
+    document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]').forEach(checkbox => {
+      const id = checkbox.parentElement.id;
+      if (['raceSign', 'overSign'].includes(id)) checkbox.checked = id === 'raceSign' ? raceSign : overSign;
+      else checkbox.checked = !!scripts[id];
+    });
+
+    handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
+    setupGoogleDriveSyncStatus(scripts.gdrive);
+    setupExportDropdowns();
   }
-  exportSave.addEventListener('change',displayPreview);
+
+  // --- 2. EVENT LISTENERS SETUP --- //
+  UI.langSelect.addEventListener('change', (e) => {
+    storage.set({ language: ['it', 'es'].includes(e.target.value) ? e.target.value : 'en' });
+    restoreOptions();
+  });
+
+  UI.separator.addEventListener('input', (e) => storage.set({ separator: e.target.value }));
+  
+  Object.entries(UI.links).forEach(([key, element]) => {
+    element.addEventListener('change', (e) => {
+      const val = e.target.value;
+      if (key === 'track') storage.set({ gTrack: val.toLowerCase() });
+      if (key === 'sname') storage.set({ gLinkName: val });
+      if (key === 'link') validateAndSaveLink(val);
+    });
+  });
+
+  // Checkbox Event Delegation (Global handling)
+  document.getElementById('iGPlus').addEventListener('change', async (e) => {
+    if (e.target.type === 'checkbox') {
+      const id = e.target.parentElement.id;
+      const isChecked = e.target.checked;
+
+      if (['raceSign', 'overSign'].includes(id)) {
+        await storage.set({ [id]: isChecked });
+        restoreOptions();
+      } else if (['editS', 'sliderS'].includes(id)) {
+        handleExclusiveCheckboxes(e.target);
+      } else {
+        await storage.mergeScript(id, isChecked);
+        if (id === 'gdrive') isChecked ? checkAuth() : UI.forceSyncBtn.classList.remove('visibleSync');
+        if (id === 'strategy') handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
+      }
+    }
+  });
+
+  // Setup Fieldtip Tooltips via Delegation
+  setupTooltips();
+
+  // File Upload Logic
+  UI.fileUploads.forEach(input => input.addEventListener('change', handleFileUpload));
+
+
   restoreOptions();
 
 
-  languageSelection.addEventListener('change', saveOptions);
+  // Checkbox Event Delegation (Global handling)
+  document.getElementById('iGPlus').addEventListener('change', async (e) => {
+    if (e.target.type === 'checkbox') {
+      const id = e.target.parentElement.id;
+      const isChecked = e.target.checked;
 
-  // todo - use config to init and control flags?
-  // adding the eventlister to all the checkboxes as the function is the same
-  document.querySelectorAll('input[type="checkbox"]').forEach(addCheckEvent);
-
-  function addCheckEvent(checkbox) {
-    //add event listener to checkbox that stores the checkbox status, passing the script name (id)
-    checkbox.addEventListener('click', () => scriptCheck(checkbox.closest('div').id, checkbox.checked));
-  }
-
-  async function scriptCheck(scriptName, status) {
-    if (scriptName == 'overSign' || scriptName == 'raceSign')  {
-      chrome.storage.local.set({ [scriptName]: status });
-      restoreOptions();
-    }
-    else {
-      await mergeStorage(scriptName, status);
-      if (scriptName == 'gdrive') {
-        if (status) {
-          await checkAuth();
-        } else
-        {
-          forceSyncBtn.classList.remove('visibleSync');//forceSyncBtnDown.classList.remove('visibleSync');
-        }
-        //await chrome.storage.local.set({ [scriptName]: status });
+      if (['raceSign', 'overSign'].includes(id)) {
+        await storage.set({ [id]: isChecked });
+        restoreOptions();
+      } else if (['editS', 'sliderS'].includes(id)) {
+        // Handle mutually exclusive check
+        await handleExclusiveCheckboxes(e.target);
+      } else {
+        await storage.mergeScript(id, isChecked);
+        if (id === 'gdrive') isChecked ? checkAuth() : UI.forceSyncBtn.classList.remove('visibleSync');
+        
+        // Handle disabling sub-checkboxes when parent is toggled
+        if (id === 'strategy') handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
       }
     }
-
-  }
-
-  separator.addEventListener('beforeinput', function () { this.value = ''; });
-  separator.addEventListener('input', function () {
-    chrome.storage.local.set({ separator: this.value });
   });
-  /**
- * Enable or disable the checkboxes affiliated with the main div
- *
- * @param {HTMLCollection} checkboxList - The 3 checkbox elements .
- */
-  function subCheckboxStatus(checkboxList) {
-    if (checkboxList[0].checked) {
-      checkboxList[1].disabled = false;
-      checkboxList[2].disabled = false;
-    } else {
-      checkboxList[1].disabled = true;
-      checkboxList[2].disabled = true;
-    }
-  }
-  function mainCheckboxEvent(divId) {
-    const divNode = document.getElementById(divId);
-    const checkboxes = divNode.getElementsByTagName('input');
-    checkboxes[0].addEventListener('click', subCheckboxStatus.bind(null, checkboxes));
-  }
-
-  async function mergeStorage(scriptName, scriptValue) {
-    //console.log(scriptName,scriptValue);
-    chrome.storage.local.get({ script: '' }, async (data) => {
-      data.script[scriptName] = scriptValue;
-      await chrome.storage.local.set({ script: data.script });
-    });
-
-  }
-
-  async function onlyOne() {
-
-    const checkboxes = this.parentElement.parentElement.querySelectorAll('input[type="checkbox"]');
-    const options = Array.prototype.slice.call(checkboxes, -2); //getting only the 2 options
-    options.forEach(async checkbox => {
-      const id = checkbox.parentElement.id;
-      if (id != this.parentElement.id)
-        checkbox.checked = false;
-    });
-    chrome.storage.local.get({ script: '' }, (data) => {
-      data.script[options[0].parentElement.id] = options[0].checked;
-      data.script[options[1].parentElement.id] = options[1].checked;
-      chrome.storage.local.set({ script: data.script });
-    });
 
 
-  }
-  function onlyOneEvent(check) {
-    const checkbox = document.getElementById(check).querySelector('input');
-    checkbox.addEventListener('change', onlyOne);
-  }
+  // --- 3. HELPER FUNCTIONS (Update these 2 functions) --- //
 
-  ['strategy'].forEach(mainCheckboxEvent);
-  ['editS', 'sliderS'].forEach(onlyOneEvent);
-
-
-  //exportSave.removeEventListener('change')
-
-  link.addEventListener('change', testLink);
-  sname.addEventListener('change', sName);
-
-  trackName.addEventListener('change', sTrack);
-
-  function sName() { chrome.storage.local.set({ gLinkName: sname.value }); }
-  function sTrack() { chrome.storage.local.set({ gTrack: trackName.value.toLowerCase() }); }
-
-  function testLink() {
-    const url = link.value;
-
-    if (url == '') {
-      link.className = '';
-      chrome.storage.local.set({ gLink: url });
-    } else {
-      fetch(url)
-        .then((res) => {
-          if (res.ok) {
-            link.className = 'valid';
-            chrome.storage.local.set({ gLink: url });
-          }
-        })
-        .then((rep) => {
-          console.log(rep);
-        })
-        .catch((error) => {
-          console.log('invalid link');
-          link.className = 'invalid';
-        });
-    }
-  }
-
-  function saveOptions() {
-    let lang = languageSelection.value;
-    switch (lang) {
-    case 'it': lang = 'it';
-      break;
-    case 'es': lang = 'es';
-      break;
-    default: lang = 'en';
-      break;
-    }
-    chrome.storage.local.set({ language: lang });
-    restoreOptions();
-  }
-
-
-  async function restoreOptions() {
-
-    chrome.storage.local.get({ language: false }, async function (selected) {
-      let code = selected.language;
-      if(selected.language == false){const managerData = await fetchManagerData();
-        (managerData.language == 'en' || managerData.language == 'it') ? code = managerData.language : code = 'en'; }
-
-
-      function setTextToFieldtip(node, option) { node.querySelector('.help').attributes['data-fieldtip'].value = language[code].scriptDescription[option]; }
-      function setTextToCheckbox(node, option) { node.querySelector('.text').textContent = language[code].optionsText[option]; }
-      //languageSelection.value = code;
-
-      //document.getElementById('langTitle').childNodes[0].textContent = language[code].optionsText.languageText + ': ';
-      document.getElementById('preferences').textContent = language[code].optionsText.preferences;
-      separator.previousElementSibling.textContent = language[code].optionsText.separator;
-
-      await chrome.storage.local.get('raceSign', function (data) {
-        raceSign.querySelector('input').checked = data.raceSign;
-        raceSign.querySelector('span').textContent = language[code].optionsText.RaceReport + ((raceSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
-      });
-
-      await chrome.storage.local.get('overSign', function (data) {
-        overSign.querySelector('input').checked = data.overSign;
-        overSign.querySelector('span').textContent = language[code].optionsText.StartOvertakes + ((overSign.querySelector('input').checked) ? (' ( - )') : (' ( + )'));
-      });
-
-      //#region  Localization
-      setTextToFieldtip(gsheetCheckbox, 'gsheet');
-      setTextToFieldtip(leagueCheckbox, 'leagueHome');
-      setTextToFieldtip(researchCheckbox, 'research');
-      setTextToFieldtip(trainingCheckbox, 'training');
-      setTextToFieldtip(reviewCheckbox, 'raceReview');
-      setTextToFieldtip(marketCheckbox, 'market');
-      setTextToFieldtip(staffCheckbox, 'myStaff');
-      setTextToFieldtip(marketDriverCheckbox, 'marketDriver');
-      setTextToFieldtip(refreshCheckbox, 'academyTimer');
-      setTextToFieldtip(reportsCheckbox, 'reports');
-      //setTextToFieldtip(overviewCheckbox, 'carOverview');
-      setTextToFieldtip(advancedHisCheckbox, 'history');
-      setTextToFieldtip(sponsorCheckbox, 'sponsor');
-      setTextToFieldtip(gdrive, 'gdriveHelp');
+  function handleDependentCheckboxes(parentId, childIds) {
+    const parentInput = document.getElementById(parentId)?.querySelector('input[type="checkbox"]');
+    if (!parentInput) return;
     
-      setTextToCheckbox(reviewCheckbox, 'home');
-      setTextToCheckbox(leagueCheckbox, 'leagueHome');
-      setTextToCheckbox(researchCheckbox, 'research');
-      setTextToCheckbox(trainingCheckbox, 'training');
-      setTextToCheckbox(marketCheckbox, 'staffMarket');
-      setTextToCheckbox(staffCheckbox, 'staff');
-      setTextToCheckbox(marketDriverCheckbox, 'driverMarket');
-      setTextToCheckbox(refreshCheckbox, 'academyTimer');
-      setTextToCheckbox(reportsCheckbox, 'reports');
-      //setTextToCheckbox(overviewCheckbox, 'carOverview');
-      setTextToCheckbox(advancedHisCheckbox, 'advancedHis');
-      setTextToCheckbox(sponsorCheckbox, 'verticalSponsor');
-      setTextToCheckbox(disablebgCheckbox, 'disablebg');
-      setTextToCheckbox(document.getElementById('strategy'), 'raceStrategy');
-      setTextToCheckbox(document.getElementById('setup'), 'raceSetup');
-      setTextToCheckbox(document.getElementById('editS'), 'edit');
-     
-      document.getElementById('exportLabel').textContent = language[code].optionsText.export;
-      const field = document.getElementById('googleSheetContainer').querySelectorAll('.text');
-      field[0].textContent = language[code].optionsText.link;
-      field[1].textContent = language[code].optionsText.track;
-      field[2].textContent = language[code].optionsText.sheetName;
-
-      
-
-      [gdrive,gsheetCheckbox, leagueCheckbox, trainingCheckbox, reviewCheckbox,researchCheckbox, staffCheckbox, marketCheckbox, marketDriverCheckbox, refreshCheckbox, reportsCheckbox, advancedHisCheckbox, sponsorCheckbox]
-        .forEach(addFieldtipEvent);
-      
-    }
-    );
-
-    //#endregion
-
-    chrome.storage.local.get({ 'separator': ',' }, function (data) {
-      separator.value = data.separator;
-    });
-
-
-    chrome.storage.local.get('gLink', function (data) {
-      if (typeof data.gLink != 'undefined') link.value = data.gLink;
-    });
-
-    chrome.storage.local.get('gLinkName', function (data) {
-      if (typeof data.gLinkName != 'undefined') sname.value = data.gLinkName;
-    });
-
-    chrome.storage.local.get('gTrack', function (data) {
-      if (typeof data.gTrack != 'undefined') trackName.value = data.gTrack;
-    });
-
-    chrome.storage.local.get({ script: scriptDefaults }, function (data) {
-      Object.keys(scriptDefaults).forEach(async (item) => {
-        let checkedStatus = data.script[item];
-
-        if (item == 'gdrive' && checkedStatus){       
-          forceSyncBtn.classList.add('visibleSync');
-        }else{
-          forceSyncBtn.classList.remove('visibleSync');
-        }
-        if(forceSyncBtn.classList.contains('visibleSync'))
-        {
-          const dateOfLastSync = await chrome.storage.local.get('syncDate') ?? await browser.storage.local.get('syncDate');
-          const syncText = document.getElementById('syncDate');
-          if(!syncText){
-            const dateContainer = document.createElement('div');
-            dateContainer.id = 'syncDate';
-            dateContainer.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
-            gdrive.append(dateContainer);
-          }else{
-            syncText.textContent = `Last Synced: ${dateOfLastSync.syncDate}`;
-          }
-  
-        } 
-        try {
-           document.getElementById(item).querySelector('input[type="checkbox"]').checked = checkedStatus;
-        } catch (error) {
-          
-        }
-       
-      });
-
-      chrome.storage.local.set({ script: data.script });
-      const strategy = document.getElementById('strategy').querySelectorAll('input');
-      const setup = document.getElementById('setup').querySelectorAll('input');
-      subCheckboxStatus(strategy);
-      
-
-    });
-
-    chrome.storage.local.get('save', function (d) {
-
-  
-      //remove old values in case restore is called
-      if (document.getElementById('exportBtn')) {
-
-        document.getElementById('deleteBtn').remove();
-        document.getElementById('exportBtn').remove();
-
-        document.getElementById('exportSave').replaceChildren();
-      }
-
-      const download_button = createDownloadButton();
-      const delete_button = createDeleteButton();
-      download_button.id = 'exportBtn';
-      delete_button.id = 'deleteBtn';
-      if (typeof d.save === 'undefined') {
-
-      }
-      else {
-
-        let save_to_display = false;
-        for(const [key,value] of Object.entries(d.save))
-        {
-          if(Object.keys(value).length > 0)
-          {
-            save_to_display = true;
-            const option = document.createElement('option');
-            option.textContent = key;
-            option.value = key;
-            exportSave.append(option);
-          }
-        }
-
-        if(save_to_display){
-          const defaultOption = document.createElement('option');
-          defaultOption.textContent = 'All';
-          defaultOption.value = 0;
-          exportSave.parentElement.append(download_button,delete_button);
-          exportSave.prepend(defaultOption);
-          exportSave.selectedIndex = 0;
-        }
-
-        delete_button.addEventListener('click', async function(){
-          const track = document.getElementById('exportSave').value;
-          let token = false;
-          const isSyncEnabled = await chrome.storage.local.get({script:false});
-          if(isSyncEnabled.script.gdrive){
-            const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-            token = await getAccessToken();
-          }
-
-          if(track == 0)
-          {
-            chrome.storage.local.remove('save') ??  browser.storage.local.remove('save');
-            console.log('iGPLus| Removing all saves')
-            if(isSyncEnabled.script.gdrive)
-            {
-              chrome.runtime.sendMessage({
-                type:'deleteFile',
-                data:{type:'strategies',track:track,name:'delete_strategies'},
-                token:token.access_token});
-            }
-
-          }
-          document.getElementById('saveList')?.remove();
-          restoreOptions();
-        });
-
-        download_button.addEventListener('click', download);
-
-      }
+    // If parent is unchecked, disable the children
+    childIds.forEach(id => {
+      const childInput = document.getElementById(id)?.querySelector('input[type="checkbox"]');
+      if (childInput) childInput.disabled = !parentInput.checked;
     });
   }
 
-  async function deleteSave()
-  {
-    const saveToDelete = this.parentElement.id;
-    const code = exportSave.value;
-    const data = await chrome.storage.local.get('save');
-    delete data.save[code][saveToDelete];
-    chrome.storage.local.set({'save':data.save}) ??  browser.storage.local.set({'save':data.save});
-    document.querySelectorAll(`[id="${saveToDelete}"]`).forEach((save) => {
-      save.remove();
-    });
-
-
-    if(document.getElementById('saveList').childElementCount == 0)
-    {
-
+  async function handleExclusiveCheckboxes(targetCheckbox) {
+    const clickedId = targetCheckbox.parentElement.id;
+    // Determine who the "other" checkbox is
+    const otherId = clickedId === 'sliderS' ? 'editS' : 'sliderS';
+    const otherCheckbox = document.getElementById(otherId)?.querySelector('input[type="checkbox"]');
+    
+    // If the user checks one, uncheck the other automatically
+    if (targetCheckbox.checked && otherCheckbox) {
+      otherCheckbox.checked = false;
     }
-    const isSyncEnabled = await chrome.storage.local.get({script:false});
-    if(isSyncEnabled.script.gdrive){
-
-      const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-      const token = await getAccessToken();
-      if(token != false){
-        chrome.runtime.sendMessage({
-          type:'deleteFile',
-          data:{type:'strategies',track:code,name:saveToDelete},
-          token:token.access_token});
-      }
-
+    
+    // Save both updated states to Chrome storage
+    const scripts = await storage.get('script') || {};
+    scripts[clickedId] = targetCheckbox.checked;
+    if (otherCheckbox) {
+      scripts[otherId] = otherCheckbox.checked;
     }
-    document.getElementById('saveList')?.remove();
-    restoreOptions();
+    await storage.set({ script: scripts });
   }
+
+  function validateAndSaveLink(url) {
+    if (!url) { UI.links.link.className = ''; return storage.set({ gLink: '' }); }
+    fetch(url).then(res => {
+      UI.links.link.className = res.ok ? 'valid' : 'invalid';
+      if (res.ok) storage.set({ gLink: url });
+    }).catch(() => UI.links.link.className = 'invalid');
+  }
+
+  async function setupGoogleDriveSyncStatus(isGDriveEnabled) {
+    if (isGDriveEnabled) {
+      //UI.forceSyncBtn.classList.add('visibleSync');
+      const syncDate = (await storage.get('syncDate')) || 'Never';
+      let syncText = document.getElementById('syncDateObj');
+      if (!syncText) {
+        syncText = document.createElement('div');
+        syncText.id = 'syncDateObj';
+        UI.gdrive.append(syncText);
+      }
+      syncText.textContent = `Last Synced: ${syncDate}`;
+    } else {
+      UI.forceSyncBtn.classList.remove('visibleSync');
+    }
+  }
+
   async function checkAuth() {
     const { getFirstAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
     const token = await getFirstAccessToken();
-    if (token == false) {
-      mergeStorage('gdrive',false);
-      document.getElementById('gdrive').querySelector('input[type="checkbox"]').checked = false;
-      forceSyncBtn.classList.remove('visibleSync');
-      //forceSyncBtnDown.classList.remove('visibleSync');
+    if (!token) {
+      await storage.mergeScript('gdrive', false);
+      document.querySelector('#gdrive input').checked = false;
+      UI.forceSyncBtn.classList.remove('visibleSync');
       return false;
     }
-    const loader = addLoader(document.getElementById('forceSync'));
-    if(token != false)
-    {
-      chrome.runtime.sendMessage({type:'syncData',direction:false,token:token.access_token}, async (response) =>{
-        if(response.done)
-        {
-          try {
-            loader.remove(); forceSyncBtn.classList.add('visibleSync');
-            restoreOptions();
+    // Logic to run sync
+    chrome.runtime.sendMessage({ type: 'syncData', direction: false, token: token.access_token }, response => {
+      if (response && response.done) restoreOptions();
+    });
+  }
+function buildPseudoSelect(elementId, keys, changeCallback) {
+    const oldElement = document.getElementById(elementId);
+    if (!oldElement) return;
 
-          } catch (error) {
-            //user left the page
-          }
+    // 1. Build Custom Wrapper
+    const customSelectWrapper = el('div', { id: elementId, className: 'pseudo-select' });
+    
+    // Trigger Button
+    const trigger = el('div', { className: 'pseudo-select-trigger' }, 
+      el('span', { textContent: 'All' })
+    );
+    
+    // Options Container
+    const optionsContainer = el('div', { className: 'pseudo-options' });
 
+    // 2. Build the Options List
+    keys.forEach(track => {
+      const isAll = track === '0';
+      const label = isAll ? 'All' : track.toUpperCase();
+      
+      const option = el('div', { className: 'pseudo-option', dataset: { value: track } });
+      
+      // Inject flag if it's not "All" and not "save" (fallback edge case)
+      if (!isAll && track !== 'save') {
+        option.append(el('img', { 
+          src: 'https://static.igpmanager.com/igp/design/image/empty.gif', 
+          className: `flag f-${track.toLowerCase()} !mr-[5px]`, 
+          style: 'margin-right: 8px; vertical-align: middle;' 
+        }));
+      }
+      option.append(el('span', { textContent: label }));
+
+      // 3. Handle Option Click
+      option.addEventListener('click', (ev) => {
+        ev.stopPropagation();
+        
+        // Update trigger text/icon
+        trigger.innerHTML = '';
+        if (!isAll && track !== 'save') {
+          trigger.append(el('img', { 
+            src: 'https://static.igpmanager.com/igp/design/image/empty.gif', 
+            className: `flag f-${track.toLowerCase()} !mr-[5px]`, 
+            style: 'margin-right: 8px; vertical-align: middle;' 
+          }));
         }
+        trigger.append(el('span', { textContent: label }));
+        
+        // Close dropdown
+        optionsContainer.style.display = 'none';
+
+        // Fire the specific callback (Strategy or Setup)
+        changeCallback({ 
+          target: { value: track, parentElement: customSelectWrapper.parentElement } 
+        });
       });
 
-    }
+      optionsContainer.append(option);
+    });
 
-    return token.access_token;
+    // 4. Setup Toggle and Click-Outside Behavior
+    trigger.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      const isVisible = optionsContainer.style.display === 'block';
+      // Close any other open pseudo-selects
+      document.querySelectorAll('.pseudo-options').forEach(opt => opt.style.display = 'none'); 
+      optionsContainer.style.display = isVisible ? 'none' : 'block';
+    });
+
+    document.addEventListener('click', (ev) => {
+      if (!customSelectWrapper.contains(ev.target)) {
+        optionsContainer.style.display = 'none';
+      }
+    });
+
+    // 5. Replace Old Element and Trigger Initial Load
+    customSelectWrapper.append(trigger, optionsContainer);
+    oldElement.replaceWith(customSelectWrapper);
+
+    changeCallback({ target: { value: '0', parentElement: customSelectWrapper.parentElement } });
   }
 
-  const importSave = document.getElementById('myFile');
-  importSave.addEventListener('change', async function () {
-    document.getElementById('exportSave').replaceChildren();
-    var reader = new FileReader();
-    reader.onload = onReaderLoad;
-    reader.readAsText(this.files[0]);
-    async function onReaderLoad(event) {
+
+async function setupExportDropdowns() {
+    // --- STRATEGIES DROPDOWN ---
+    const strategiesData = await storage.get('save');
+    if (strategiesData && Object.keys(strategiesData).length > 0) {
+      const strategyKeys = ['0'];
+      
+      // Only include tracks that actually have saved data
+      Object.entries(strategiesData).forEach(([key, value]) => {
+        if (Object.keys(value).length > 0) strategyKeys.push(key);
+      });
+
+      // Build the Pseudo-Select for Strategies
+      if (strategyKeys.length > 1) {
+        buildPseudoSelect('exportSave_Strategies', strategyKeys, displayPreview);
+      }
+    }else{
+      const container = document.getElementById('exportSave_Strategies');
+
+if (container) {
+  container.innerHTML = '';
+
+  let next = container.nextElementSibling;
+  while (next) {
+    const current = next;
+    next = next.nextElementSibling;
+
+    if (
+      current.classList.contains('igplus-download') ||
+      current.classList.contains('igplus-delete')
+    ) {
+      current.remove();
+    }
+  }
+}
+    }
+
+    // --- SETUPS DROPDOWN ---
+    const [{getActiveCircuits, getActiveScale }] = await Promise.all([import(chrome.runtime.getURL('scripts/raceSetup/settings.js'))]);
+    const setupsData = await getActiveCircuits();
+    if (setupsData && setupsData["1"]) {
+      const setupKeys =['0', ...Object.keys(setupsData["1"])];
+      
+      // Build the Pseudo-Select for Setups
+      if (setupKeys.length > 1) {
+        buildPseudoSelect('exportSave_Setups', setupKeys, displaySetupPreview);
+      }
+    }
+  }
+
+  // --- STRATEGY PREVIEW HANDLER ---
+  async function displayPreview(e) {
+    const selectBox = e.target;
+    const saveKey = selectBox.value;
+    const savesData = await storage.get('save');
+    const container = selectBox.parentElement;
+
+    // Fix: Properly clear ALL old tables and buttons
+    const existingList = document.getElementById('saveList');
+    if (existingList) existingList.remove();
+    container.querySelectorAll('.download-button, .trash, .main-action-btn').forEach(btn => btn.remove());
+
+    if (saveKey !== '0' && savesData && savesData[saveKey]) {
+      const sList = await strategyPreview(savesData[saveKey], { te: 30 });
+      sList.querySelectorAll('tr').forEach(tr => {
+        const btn = createDownloadButton();
+        btn.addEventListener('click', downloadSave); // Your existing strategy download function
+        tr.append(btn);
+      });
+      sList.querySelectorAll('.trash').forEach(trsh => trsh.addEventListener('click', deleteSave)); // Your existing strategy delete
+      container.append(sList);
+    } else if (saveKey === '0' && savesData) {
+      // Append global buttons for "All"
+      const downBtn = createDownloadButton();
+      downBtn.classList.add('main-action-btn','igplus-download');
+      downBtn.addEventListener('click', downloadSave);
+      
+      const delBtn = createDeleteButton();
+      delBtn.classList.add('main-action-btn','igplus-delete');
+      delBtn.addEventListener('click', deleteSave);
+      
+      container.append(downBtn, delBtn);
+    }
+  }
+
+ // --- SETUP PREVIEW HANDLER (CARD LAYOUT) ---
+  async function displaySetupPreview(e) {
+    const selectBox = e.target;
+    const track = selectBox.value;
+    const setupsData = await storage.get('customCircuits');
+    const container = selectBox.parentElement;
+
+    // Clear old tables and buttons
+    container.querySelectorAll('.setup-modal-content, .download-button, .trash, .main-action-btn').forEach(el => el.remove());
+
+    if (!setupsData) return;
+
+    if (track === '0') {
+      // Global buttons for "All" Setups
+      const downBtn = createDownloadButton();
+      downBtn.classList.add('main-action-btn','igplus-download');
+      downBtn.addEventListener('click', () => downloadSetup('0'));
+      container.append(downBtn);
+
+
+    } else {
+      const tier = "1"; // Only interested in showing Tier 1
+      
+      if (setupsData[tier] && setupsData[tier][track]) {
+        const setup = setupsData[tier][track];
+
+        // 1. Create the Main Wrapper matching your structure
+        const modalContent = document.createElement('div');
+        modalContent.className = 'setup-modal-content';
+        modalContent.dataset.protonpassForm = "";
+
+
+        // 3. Create the Input Rows
+        const rideRow = document.createElement('div');
+        rideRow.className = 'setup-row';
+        rideRow.innerHTML = `<label>Ride Height</label><input type="number" id="edit-ride" value="${setup.ride}" min="1">`;
+
+        const suspRow = document.createElement('div');
+        suspRow.className = 'setup-row';
+        suspRow.innerHTML = `<label>Suspension</label><input type="number" id="edit-susp" value="${setup.suspension}">`;
+
+        const wingRow = document.createElement('div');
+        wingRow.className = 'setup-row';
+        wingRow.innerHTML = `<label>Wing</label><input type="number" id="edit-wing" value="${setup.wing}">`;
+
+
+        // 5. Append everything to the main card
+        modalContent.append(rideRow, suspRow, wingRow);
+
+        // 6. Setup auto-saving on value changes
+        const rideInput = rideRow.querySelector('input');
+        const suspInput = suspRow.querySelector('input');
+        const wingInput = wingRow.querySelector('input');
+
+        const updateStorage = async () => {
+          const freshData = await storage.get('customCircuits');
+          freshData[tier][track].ride = Number(rideInput.value);
+          freshData[tier][track].suspension = Number(suspInput.value);
+          freshData[tier][track].wing = Number(wingInput.value);
+          await storage.set({ customCircuits: freshData });
+        };
+
+        rideInput.addEventListener('change', updateStorage);
+        suspInput.addEventListener('change', updateStorage);
+        wingInput.addEventListener('change', updateStorage);
+
+        container.append(modalContent);
+      }
+    }
+  }
+
+  // --- DEDICATED SETUP DOWNLOAD / DELETE LOGIC ---
+  async function downloadSetup(track, tier = null) {
+    const setupsData = await storage.get('customCircuits');
+    if (!setupsData) return;
+
+    let dataToDownload = {};
+    let filename;
+
+    if (track === '0') {
+      dataToDownload = setupsData; 
+      filename = 'setups_all';
+    } else if (tier) {
+      dataToDownload = { [tier]: { [track]: setupsData[tier][track] } };
+      filename = `setup_${track}_${tier}`;
+    }
+
+    const blob = new Blob([JSON.stringify({ customCircuits: dataToDownload })], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+
+  function setupTooltips() {
+    let fieldtip = document.getElementById('fieldtip');
+    if (!fieldtip) {
+      fieldtip = el('span', { id: 'fieldtip', style: 'opacity:0; display:none;' });
+      document.getElementById('iGPlus').append(fieldtip);
+    }
+
+    document.getElementById('iGPlus').addEventListener('mouseover', (e) => {
+      if (e.target.classList.contains('help')) {
+        fieldtip.textContent = e.target.dataset.fieldtip;
+        fieldtip.style.display = 'inline-block';
+        const position = { top: e.target.offsetTop - fieldtip.offsetHeight - 16, left: e.target.offsetLeft - fieldtip.offsetWidth / 2 + 16 };
+        fieldtip.style.top = `${position.top}px`;
+        fieldtip.style.left = `${position.left}px`;
+        fieldtip.style.opacity = '1';
+      }
+    });
+
+    document.getElementById('iGPlus').addEventListener('mouseout', (e) => {
+      if (e.target.classList.contains('help')) {
+        fieldtip.style.opacity = '0';
+        fieldtip.style.display = 'none';
+      }
+    });
+  }
+
+async function handleFileUpload(event) {
+    const input = event.target;
+    const file = input.files[0]; 
+    const uploadType = input.dataset.uploadType; // Will be 'Strategies' or 'Setups'
+    const reader = new FileReader();
+    
+    reader.onload = async (e) => {
       try {
-        var obj = JSON.parse(event.target.result);
-        const track = Object.keys(obj)[0];
-        const hashID = Object.keys(obj[track])[0];
-        const validTrack = ['be', 'it', 'sg', 'my', 'jp', 'us', 'mx', 'br', 'ae', 'bh', 'eu', 'de', 'es', 'ru', 'tr', 'au', 'at', 'hu', 'gb', 'ca', 'az', 'mc', 'cn', 'fr', 'save'];
+        const obj = JSON.parse(e.target.result);
 
-        if (validTrack.includes(track)) {
-          chrome.storage.local.get('save', function (data) {
-            if (typeof data.save === 'undefined') {
-              if (track == 'save') chrome.storage.local.set({ save: obj.save });
-              else chrome.storage.local.set({ save: obj });
-            } else {
-              if (track == 'save') {
-                Object.keys(obj.save).forEach((track) => {
-                  if (data.save[track] != undefined) {
-                    Object.keys(data.save[track]).forEach((save) => {
-                      data.save[track][save] = obj.save[track][save];
-                    });
-                  } else {
-                    data.save[track] = obj.save[track];
-                  }
-                });
-              } else {
-                if (typeof data.save[track] === 'undefined') {
-                  data.save[track] = { [hashID]: obj[track][hashID] };
-                } else data.save[track][hashID] = obj[track][hashID];
-              }
+        if (uploadType === 'Setups') {
+          // --- SETUPS UPLOAD LOGIC ---
+          if (obj.customCircuits) {
+            let existingData = await storage.get('customCircuits') || { "1": {}, "2": {}, "rookie": {} };
+            
+            // Deep merge so uploading a single track doesn't erase the others
+            Object.keys(obj.customCircuits).forEach(tier => {
+              if (!existingData[tier]) existingData[tier] = {};
+              Object.keys(obj.customCircuits[tier]).forEach(track => {
+                existingData[tier][track] = obj.customCircuits[tier][track];
+              });
+            });
 
-              chrome.storage.local.set({ save: data.save });
-              importSave.className = 'valid upl';
-            }
-          });
-
+            await storage.set({ customCircuits: existingData });
+            input.className = 'valid upl';
+          } else {
+            throw new Error('Invalid setup file structure');
+          }
         } else {
-          importSave.className = 'invalid upl';
+          // --- STRATEGIES UPLOAD LOGIC ---
+          const track = Object.keys(obj)[0].toLowerCase();
+          const hashID = Object.keys(obj[track])[0];
+          const validTracks =['be', 'it', 'sg', 'my', 'jp', 'us', 'mx', 'br', 'ae', 'bh', 'eu', 'de', 'es', 'ru', 'tr', 'au', 'at', 'hu', 'gb', 'ca', 'az', 'mc', 'cn', 'fr', 'nl', 'save'];
+          
+          if (validTracks.includes(track)) {
+            let data = await storage.get('save') || {};
+            if (track === 'save') {
+               // Deep merge for full saves
+              Object.keys(obj.save).forEach(t => {
+                if (!data[t]) data[t] = obj.save[t];
+                else Object.assign(data[t], obj.save[t]);
+              });
+            } else {
+              if (!data[track]) data[track] = {};
+              data[track][hashID] = obj[track][hashID];
+            }
+            await storage.set({ save: data });
+            input.className = 'valid upl';
+          } else {
+            input.className = 'invalid upl';
+          }
         }
-        setTimeout(restoreOptions,200);
-      } catch (error) {
-        importSave.className = 'invalid upl';
+        
+        // Refresh the dropdown UI automatically after a short delay
+        setTimeout(setupExportDropdowns, 200); 
+
+      } catch (err) {
+        alert(`${file.name} is not valid JSON`);
+        input.className = 'invalid upl';
+      }
+    };
+    
+    reader.readAsText(input.files[0]);
+    event.target.value = '';
+  }
+
+
+  // --- DEDICATED STRATEGY DOWNLOAD / DELETE LOGIC ---
+  async function downloadSave(e) {
+    const savesData = await storage.get('save');
+    if (!savesData) return;
+
+    // Read the value from our custom pseudo-select
+    const track = document.getElementById('exportSave_Strategies').querySelector('span').textContent.toLocaleLowerCase();
+    let filename = 'save';
+    let dataToDownload;
+
+    if (track === 'all') {
+      // Download all strategies. Wrap in { save: ... } to maintain your import structure
+      dataToDownload = { save: savesData };
+      filename = 'save';
+    } else {
+      const saveID = e.target.closest('tr').id;
+      dataToDownload = { [track]: {[saveID]: savesData[track][saveID] } };
+      filename = `${track}_${saveID}`;
+    }
+
+    // Trigger the file download
+    const blob = new Blob([JSON.stringify(dataToDownload)], { type: 'application/json;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  async function deleteSave(e) {
+    const track = document.getElementById('exportSave_Strategies').querySelector('span').textContent.toLocaleLowerCase();
+    const scripts = await storage.get('script') || {};
+    let token = false;
+
+    // Check if Google Drive Sync is enabled to sync deletions
+    if (scripts.gdrive) {
+      const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
+      token = await getAccessToken();
+    }
+
+    if (track === 'all') {
+      // Delete ALL strategies
+      await chrome.storage.local.remove('save');
+      console.log('iGPlus | Removing all saves');
+      
+      if (token) {
+        chrome.runtime.sendMessage({
+          type: 'deleteFile',
+          data: { type: 'strategies', track: 0, name: 'delete_strategies' },
+          token: token.access_token
+        });
+      }
+    } else {
+      // Delete a specific strategy
+      const saveID = e.target.closest('tr').id;
+      const savesData = await storage.get('save');
+
+      if (savesData[track] && savesData[track][saveID]) {
+        delete savesData[track][saveID];
+        await storage.set({ save: savesData });
+      }
+
+      if (token) {
+        chrome.runtime.sendMessage({
+          type: 'deleteFile',
+          data: { type: 'strategies', track: track, name: saveID },
+          token: token.access_token
+        });
       }
     }
 
-  });
-
-
-  function addFieldTip() {
-    const span = document.createElement('span');
-    span.id = 'fieldtip';
-    span.setAttribute('style', 'opacity:0');
-    return span;
+    // Refresh the dropdown and table UI
+    setupExportDropdowns();
   }
-  function addFieldtipEvent(node) {
-    const helpnode = node.querySelector('.help');
-    let fieldtip = document.getElementById('fieldtip');
-    if (fieldtip == null) {
-      fieldtip = addFieldTip();
-      document.getElementById('iGPlus').append(fieldtip);
-    }
-    helpnode.addEventListener('mouseenter', function () {
-      fieldtip.textContent = helpnode.dataset.fieldtip;
-      fieldtip.style.display = 'inline-block';
-
-      const nodeRect = helpnode.getClientRects()[0];
-
-      var position = {
-        top: helpnode.offsetTop - fieldtip.offsetHeight - 16,
-        left: helpnode.offsetLeft - fieldtip.offsetWidth / 2 + 16
-      };
-
-      fieldtip.style.top = `${position.top}px`;
-      fieldtip.style.left = `${position.left}px`;
-      fieldtip.style.opacity = 1;
-
-    });
-
-    helpnode.addEventListener('mouseleave', function () {
-      fieldtip.style.opacity = 0;
-      fieldtip.style.display = 'none';
-    });
-  }
-  function addLoader(parent) {
-    parent.style.display = 'none';
-    const loader = document.createElement('span');
-    loader.classList.add('loader');
-    parent.parentElement.append(loader);
-    return loader;
-  }
-
-  forceSyncBtn.addEventListener('click', async function () {
-    const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-    const token = await getAccessToken();
-    forceSyncBtn.classList.remove('visibleSync');
-    const loader = addLoader(this);
-
-    if(token != false)
-    {
-      chrome.runtime.sendMessage({type:'syncData',direction:true,token:token.access_token}, (response) =>{
-        if(response.done)
-        {
-          try {
-            loader.remove();
-            forceSyncBtn.classList.add('visibleSync');
-            restoreOptions();
-          } catch (error) {
-            //user left the page
-          }
-
-        }
-      });
-
-    }
-    else{
-      //alert('user closed popup')
-      loader.remove();
-      forceSyncBtn.classList.add('visibleSync');
-    }
-
-
-  });
 
 }

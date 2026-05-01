@@ -1,201 +1,132 @@
-function create(tag) { return document.createElement(tag); }
-function appendWithDescription(a, b) {a.append(b);return a;}
-function appendSubCheks(a, b, c) {a.append(b, c); return a;}
-function addDescription(description) {
-  const descriptionSpan = create('span');
-  descriptionSpan.classList.add('help', 'gg-info');
-  descriptionSpan.setAttribute('data-fieldtip', description);
-  return descriptionSpan;
+/**
+ * Utility to easily build DOM elements
+ * Usage: el('div', { id: 'myId', className: 'text' }, el('span', { textContent: 'Hello' }))
+ */
+function el(tag, attrs = {}, ...children) {
+  const element = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs)) {
+    if (key === 'dataset') {
+      Object.entries(value).forEach(([dataKey, dataVal]) => element.dataset[dataKey] = dataVal);
+    } else if (key in element) {
+      element[key] = value;
+    } else {
+      element.setAttribute(key, value);
+    }
+  }
+  element.append(...children.filter(Boolean));
+  return element;
 }
-function createInputField(id, name) {
-  const container = create('div');
-  container.classList.add('inputField');
-  const label = create('div');
-  label.classList.add('text');
-  label.textContent = name;
-  const input = create('input');
-  input.id = id;
-  input.type = 'text';
-  label.setAttribute('for', id);
-  input.placeholder = name;
-  container.append(label, input);
-  return container;
-}
-function createScriptCheckbox(id, name) {
-  const optionContainer = create('div');
-  optionContainer.classList.add('checkbox-wrapper');
-  optionContainer.id = id;
-  const inputCheck = create('input');
-  inputCheck.type = 'checkbox';
-  inputCheck.id = id + 'check';
-  const labelCheck = create('label');
-  labelCheck.setAttribute('for', inputCheck.id);
-  const tick = create('div');
 
-  tick.classList.add('tick_mark');
-  const scriptName = create('span');
-  scriptName.textContent = name;
-  scriptName.classList.add('text');
-  scriptName.setAttribute('for', inputCheck.id);
-  labelCheck.append(tick);
-  optionContainer.append(inputCheck, labelCheck, scriptName);
-  return optionContainer;
-}
-function injectIGPlusOptions() {
-  return new Promise((res) => {
+// Reusable Components
+const createDescription = (desc, locTipKey) => el('span', { 
+  className: 'help gg-info', 
+  dataset: { fieldtip: desc, locTip: locTipKey } 
+});
+
+const createInputField = (id, name, locTextKey) => el('div', { className: 'inputField' },
+  el('div', { className: 'text', textContent: name, htmlFor: id, dataset: { locText: locTextKey } }),
+  el('input', { id, type: 'text', placeholder: name })
+);
+
+const createScriptCheckbox = ({ id, name, desc, locTextKey, locTipKey, children =[] }) => {
+  const labelText = el('span', { className: 'text', textContent: name, htmlFor: `${id}check`, dataset: { locText: locTextKey } });
+  const tickMark = el('div', { className: 'tick_mark' });
+  const labelCheck = el('label', { htmlFor: `${id}check` }, tickMark);
+  const inputCheck = el('input', { type: 'checkbox', id: `${id}check` });
+
+  const container = el('div', { className: 'checkbox-wrapper', id }, inputCheck, labelCheck, labelText);
+  if (desc) container.append(createDescription(desc, locTipKey));
+  if (children.length) container.append(...children.map(createScriptCheckbox));
+  
+  return container;
+};
+
+// Data-Driven Settings Structure
+const PREFERENCES =[
+  { id: 'darkmode', name: 'Darkmode', locTextKey: 'darkmode' },
+  { id: 'raceSign', name: 'Race Report Sign', locTextKey: 'RaceReport' },
+  { id: 'overSign', name: 'Overtakes Sign', locTextKey: 'StartOvertakes' }
+];
+
+const SCRIPTS =[
+  { id: 'review', name: 'Race Review', desc: 'Home page review button...', locTextKey: 'home', locTipKey: 'raceReview' },
+  { id: 'league', name: 'League Home', desc: 'In the league page add a full race history...', locTextKey: 'leagueHome', locTipKey: 'leagueHome' },
+  { id: 'research', name: 'Research', desc: 'Add a table with the values...', locTextKey: 'research', locTipKey: 'research' },
+  { id: 'train', name: 'Training', desc: 'Add an extra column in the training page...', locTextKey: 'training', locTipKey: 'training' },
+  { id: 'staff', name: 'My Staff', desc: 'Shows strenght of CD in the staff menus', locTextKey: 'staff', locTipKey: 'myStaff' },
+  { id: 'market', name: 'Market (strength and weakness icons)', desc: 'Shows strenght and weakness...', locTextKey: 'staffMarket', locTipKey: 'market' },
+  { id: 'marketDriver', name: 'Market (Drivers)', desc: 'Add talent column for drivers...', locTextKey: 'driverMarket', locTipKey: 'marketDriver' },
+  { id: 'strategy', name: 'Race Strategy', locTextKey: 'raceStrategy', children:[
+      { id: 'sliderS', name: 'Slider' },
+      { id: 'editS', name: 'Editable', locTextKey: 'edit' }
+  ]},
+  { id: 'setup', name: 'Race Setup', locTextKey: 'raceSetup' },
+  { id: 'hq', name: 'HQ Level Labels' },
+  { id: 'refresh', name: 'Academy Auto-Refresh', desc: 'Add youth academy countdown...', locTextKey: 'academyTimer', locTipKey: 'academyTimer' },
+  { id: 'reports', name: 'Reports', desc: 'Add option to extract all the reports...', locTextKey: 'reports', locTipKey: 'reports' },
+  { id: 'history', name: 'Advanced History', desc: 'Add track charateristics...', locTextKey: 'advancedHis', locTipKey: 'history' },
+  { id: 'sponsor', name: 'Vertical Sponsor', desc: 'Display the sponsor options vertically', locTextKey: 'verticalSponsor', locTipKey: 'sponsor' },
+  { id: 'disablebg', name: 'Disable Background image', locTextKey: 'disablebg' }
+];
+
+export function injectIGPlusOptions() {
+  return new Promise((resolve) => {
     try {
       const generalContainer = document.getElementById('general');
-      if (!generalContainer) { res(false);  return; }
+      if (!generalContainer || document.getElementById('iGPlus')) return resolve(false);
 
-      //#region --------------------------Preferences--------------------------
-      const separatorContainer = create('div');
-      const separatorInput = create('input');
-      separatorInput.placeholder = ',';
-      separatorInput.id = 'separator';
-      const separatorTitleText = create('span');
-      separatorTitleText.textContent = 'Custom Separator';
-      separatorContainer.append(separatorTitleText, separatorInput);
-
-      const preferencesContainer = create('fieldset');
-      const preferenceslegend = create('legend');
-      preferenceslegend.textContent = 'iGPlus preferences';
-      preferenceslegend.id = 'preferences';
-      preferencesContainer.append(preferenceslegend,
-        createScriptCheckbox('darkmode', 'Darkmode'),
-        createScriptCheckbox('raceSign', 'Race Report Sign'),
-        createScriptCheckbox('overSign', 'Overtakes Sign'),
-        separatorContainer
+      // 1. Preferences Section
+      const separatorContainer = el('div', {}, 
+        el('span', { textContent: 'Custom Separator', dataset: { locText: 'separator' } }),
+        el('input', { id: 'separator', placeholder: ',' })
       );
-      //#endregion
-      //#region --------------------------Scripts--------------------------
-      const scriptsContainer = create('fieldset');
-      scriptsContainer.id = 'scripts';
-      const scriptsLegend = create('legend');
-      scriptsLegend.textContent = 'Scripts';
-      //id is important. it uses the same name as the config script
-      scriptsContainer.append(scriptsLegend,
-        appendWithDescription(createScriptCheckbox('review', 'Race Review'),
-          addDescription('Home page review button. It opens https://igpmanager.com/app/d=raceReview')),
 
-        appendWithDescription(createScriptCheckbox('league', 'League Home'),
-          addDescription('In the league page add a full race history button and position finished to each track')),
+      const forceSyncBtn = el('span', { id: 'forceSync', className: 'btn', textContent: 'Sync Now', style: 'display:none;' });
+      const gDriveOpt = createScriptCheckbox({ id: 'gdrive', name: 'Cloud Sync (Google Drive)', desc: 'test', locTipKey: 'gdriveHelp' });
+      gDriveOpt.append(forceSyncBtn);
 
-        appendWithDescription(createScriptCheckbox('research', 'Research'),
-          addDescription('Add a table with the values from the bars in the research menu')),
+      const prefsLegend = el('legend', { id: 'preferences', textContent: 'iGPlus preferences', dataset: { locText: 'preferences' } });
+      const prefsContainer = el('fieldset', {}, prefsLegend, gDriveOpt, ...PREFERENCES.map(createScriptCheckbox), separatorContainer);
 
-        appendWithDescription(createScriptCheckbox('train', 'Training'),
-          addDescription('Add an extra column in the training page if driver is recovering.')),
+      // 2. Scripts Section
+      const scriptsLegend = el('legend', { textContent: 'Scripts' });
+      const scriptsContainer = el('fieldset', { id: 'scripts' }, scriptsLegend, ...SCRIPTS.map(createScriptCheckbox));
 
-        appendWithDescription(createScriptCheckbox('staff', 'My Staff'),
-          addDescription('Shows strenght of CD in the staff menus')),
-
-        appendWithDescription(createScriptCheckbox('market', 'Market (strength and weakness icons)'),
-          addDescription('Shows strenght and weakness of CD in the transfer market')),
-
-        appendWithDescription(createScriptCheckbox('marketDriver', 'Market (Drivers)'),
-          addDescription('Add talent column for drivers in the transfer market')),
-
-        appendSubCheks(createScriptCheckbox('strategy', 'Race Strategy'), createScriptCheckbox('sliderS', 'Slider'), createScriptCheckbox('editS', 'Editable')),
-        (createScriptCheckbox('setup', 'Race Setup')),
-
-        //appendWithDescription(createScriptCheckbox('overview', 'Car Overview'),
-          //addDescription('Enable review button (design research) during a live race')),
-
-        createScriptCheckbox('hq', 'HQ Level Labels'),
-
-        appendWithDescription(createScriptCheckbox('refresh', 'Academy Auto-Refresh'),
-          addDescription('Add youth academy countdown. It will be placed as a notification beside the HQ menu option')),
-
-        appendWithDescription(createScriptCheckbox('reports', 'Reports'),
-          addDescription('Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names csv')),
-
-        appendWithDescription(createScriptCheckbox('history', 'Advanced History'),
-          addDescription('Add track charateristics to the history page')),
-
-        appendWithDescription(createScriptCheckbox('sponsor', 'Vertical Sponsor'),
-          addDescription('Display the sponsor options vertically')),
-        
-        createScriptCheckbox('disablebg', 'Disable Background image')
-
-
+      // 3. Google Sheet Section
+      const sheetLegend = el('legend', { id: 'Gsheet', textContent: 'Google Sheet' }, 
+        createDescription('Import google data to strategy page', 'gsheet')
       );
-      //#endregion
-      //#region -------------------------- Sheet --------------------------
-      const googleSheetContainer = create('fieldset');
-      googleSheetContainer.id = 'googleSheetContainer';
-      const legendGoogleSheetContainer = create('legend');
-      legendGoogleSheetContainer.textContent = 'Google Sheet';
-      legendGoogleSheetContainer.append(addDescription('Import google data to be displayed in the strategy page below the advanced options'));
-      legendGoogleSheetContainer.id = 'Gsheet';
-      //legendGoogleSheetContainer.classList.add('help','fa-solid','fa-circle-info');
-      //legendGoogleSheetContainer.setAttribute('data-fieldtip','Import google data to be displayed in the strategy page below the advanced options');
+      const sheetContainer = el('fieldset', { id: 'googleSheetContainer' }, sheetLegend,
+        createInputField('link', 'Link:', 'link'),
+        createInputField('track', 'Track ID column header', 'track'),
+        createInputField('sname', 'Sheet Name:', 'sheetName')
+      );
+      
+      const exampleLink = el('a', { href: 'https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/', target: '_blank', textContent: '(Example)', className: 'avoid linkcustom' });
+      sheetContainer.querySelector('#sname').parentElement.append(el('span', { textContent: 'optional' }), exampleLink);
 
+      // 4. File Upload Utility Section (Used for Strategies and Setups)
+      const createExportBlock = (title) => {
+        return el('fieldset', {},
+          el('legend', { textContent: title }),
+          el('div', { className: 'exportContainer' },
+            el('label', { textContent: 'Upload', htmlFor: `myFile_${title}`, className: 'upload btn4 pushBtn' }),
+            el('input', { type: 'file', id: `myFile_${title}`, className: 'myFile', dataset: { uploadType: title } }),
+            el('div', { id: `exportSave_${title}`, className: 'exportSave' }) // <-- Added Unique ID here
+          )
+        );
+      };
 
+      // Main Wrapper
+      const mainContainer = el('div', { id: 'iGPlus' }, 
+        prefsContainer, scriptsContainer, createExportBlock('Strategies'), createExportBlock('Setups'), sheetContainer
+      );
 
-      const linkContainer = createInputField('link', 'Link:');
-      const trackIdContainer = createInputField('track', 'Track ID column header');
-      const sheetNameContainer = createInputField('sname', 'Sheet Name:');
-
-      const example = create('span');
-      example.textContent = 'optional';
-      const exampleLink = create('a');
-      exampleLink.textContent = '(Example)';
-      exampleLink.target = '_blank';
-      exampleLink.classList.add('avoid', 'linkcustom');
-      exampleLink.href = 'https://docs.google.com/spreadsheets/d/1_SrsrcfI9YXKKBatLef7SjmGDV8JEc7mp8AKrQxVcDc/';
-      sheetNameContainer.append(example, exampleLink);
-
-      googleSheetContainer.append(legendGoogleSheetContainer, linkContainer, trackIdContainer, sheetNameContainer);
-      //#endregion
-      //#region --------------------------Strategy----------------------------
-      const strategiesContainer = create('fieldset');
-      const strategiesLegend = create('legend');
-      strategiesLegend.textContent = 'Strategies';
-
-      const strategies = create('div');
-      strategies.classList.add('exportContainer');
-      const strategiesLabel = create('label');
-      strategiesLabel.textContent = 'Upload';
-      strategiesLabel.setAttribute('for', 'myFile');
-      const strategiesInput = create('input');
-      strategiesInput.type = 'file';
-      strategiesInput.id = 'myFile';
-      strategiesLabel.classList.add('upload', 'btn4','pushBtn');
-      const exportContainer = create('span');
-      exportContainer.textContent = 'Export:';
-      const options = create('select');
-      options.id = 'exportSave';
-      exportContainer.id = 'exportLabel';
-      strategies.append(strategiesLabel, strategiesInput, exportContainer, options);
-      strategiesContainer.append(strategiesLegend, strategies);
-      //#endregion
-      //#region --------------------------Cloud Sync--------------------------
-      const gdrive = create('fieldset');
-      const forceSync = create('span');
-      forceSync.classList.add('btn');
-      forceSync.textContent = 'Sync Now';
-      forceSync.style.display = 'none';
-      forceSync.id = 'forceSync';
-
-      preferencesContainer.prepend(appendWithDescription(appendWithDescription(createScriptCheckbox('gdrive', 'Cloud Sync (Google Drive)'),addDescription('test')),forceSync));
-      //#endregion
-
-      const mainContainer = create('div');
-      //Here the menu order
-      //preferencesContainer.append(gdrive)
-      mainContainer.append(preferencesContainer, scriptsContainer, strategiesContainer, googleSheetContainer );
-      mainContainer.id = 'iGPlus';
-      if (!document.getElementById('iGPlus')) {
-        generalContainer.append(mainContainer);
-        res((true));
-      }else
-        res(false);
+      generalContainer.append(mainContainer);
+      resolve(true);
     } catch (error) {
-      console.log(error);
-      res(false);
+      console.error('Error injecting settings UI:', error);
+      resolve(false);
     }
   });
-
-
 }
-export { injectIGPlusOptions };
