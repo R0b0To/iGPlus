@@ -6,10 +6,14 @@ export async function getActiveScale() {
 }
 
 export async function getActiveCircuits() {
-  const data = await chrome.storage.local.get('customCircuits');
-  return data.customCircuits || defaultCircuits;
-}
+  const { customCircuits } = await chrome.storage.local.get('customCircuits');
+  if (!customCircuits) {
+    await chrome.storage.local.set({ customCircuits: defaultCircuits });
+    return defaultCircuits;
+  }
 
+  return customCircuits;
+}
 export async function saveCircuitSetup(tier, circuitCode, setup) {
   const current = await getActiveCircuits();
   if (!current[tier]) current[tier] = {};
