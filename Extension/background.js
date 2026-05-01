@@ -197,6 +197,9 @@ chrome.runtime.onInstalled.addListener((details) => {
       console.log('Extension updated: customCircuits cleared to ensure compatibility.');
     });*/
   }
+  if (details.reason === 'install') {
+     chrome.storage.local.set({ script: scriptDefaults });
+  }
 });
 
 function storeReports(cloudReports){
@@ -204,8 +207,6 @@ function storeReports(cloudReports){
   if((cloudReports))
   {
     for(const [key,value] of Object.entries(cloudReports)){
-
-      console.log('restoring',value);
       addData('reports',value)
         .then((id) => {
           console.log('Data added',value);
