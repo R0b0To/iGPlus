@@ -43,12 +43,13 @@ const constPromise = import(chrome.runtime.getURL('scripts/strategy/const.js'));
 const utilityPromise = import(chrome.runtime.getURL('scripts/strategy/utility.js'));
 
 // 2. Wait for all of them to finish together
-const [fetcher, constants, utility] = await Promise.all([
+const [fetcher, constants, utility,active_scripts] = await Promise.all([
     fetcherPromise, 
     constPromise, 
-    utilityPromise
+    utilityPromise,
+    chrome.storage.local.get('script')
 ]);
-const active_scripts = await chrome.storage.local.get('script');
+//const active_scripts = await ;
 // 3. Destructure the functions/objects you need
 const { fetchCarData, fetchNextRace } = fetcher;
 const { track_info } = constants;
@@ -93,6 +94,7 @@ const { cleanHtml } = utility;
         
 
     }
+    console.log(await chrome.storage.local.get());
         if(active_scripts.script.sliderS)
           addFuelSlider();
         if(active_scripts.script.editS)
@@ -1410,7 +1412,7 @@ function createStepperHTML(id, value, step, min, max) {
       {
         try {
           const trackCode = document.querySelector('.flag').outerHTML.split("-")[1].split(" ")[0] ?? 'au';
-          const target = document.querySelector('[id=strategy] div');
+          const target = document.querySelector('[id="strategy"] div:not(.checkbox-wrapper)');
           const circuit = document.createElement('img');
           circuit.id = 'customMap';
           //document.getElementById('igplus_darkmode') ? circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}_dark.png`) : circuit.src = chrome.runtime.getURL(`images/circuits/${TRACK_CODE}.png`)
@@ -1758,6 +1760,8 @@ async function openStrategyPopup(carIndex, strategyData) {
   await populateSavedStrategies(carIndex);
 }
 async function populateSavedStrategies(carIndex) {
+  const utilityPromise = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
+  const [utility] = await Promise.all([utilityPromise]);
   const list = document.getElementById('savedStrategiesList');
   list.innerHTML = '';
 
@@ -1788,8 +1792,7 @@ async function populateSavedStrategies(carIndex) {
       document.getElementById('strategyPopup').style.display = 'none';
     };
 
-    const delBtn = document.createElement('button');
-    delBtn.textContent = '🗑';
+    const delBtn = utility.createDeleteButton();
     delBtn.onclick = async () => {
       delete save[trackCode][hash];
       await chrome.storage.local.set({ save });
@@ -1803,7 +1806,6 @@ async function populateSavedStrategies(carIndex) {
     const right = document.createElement('div');
     right.className = 'saved-right';
     right.appendChild(delBtn);
-
     item.append(left, preview, right);
 
     list.appendChild(item);
