@@ -91,6 +91,6 @@ export const circuits = {
     sg: { ride: 33, wing: 27, suspension: 15, pit: 20 }, // Singapore
     tr: { ride: 25, wing: 10, suspension: 50, pit: 18 }, // Turkey
     us: { ride: 8, wing: 7, suspension: 55, pit: 16 }, // USA
-    nl: { ride: -1, wing: -1, suspension: 40, pit: -1 } // Netherlands
+    nl: { ride: 25, wing: 5, suspension: 50, pit: -1 } // Netherlands
   }
 };
