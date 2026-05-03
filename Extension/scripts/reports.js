@@ -1,938 +1,760 @@
-manager = [];
-progress_status = 0;
-data_extracted = false;
-
 (async () => {
-  for (let i = 0; i < 3; i += 1) {
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY_MS = 200;
+ 
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      inject_button();
-      break;
+         manager = [];        // clear previous race's data
+    progressStatus = 0;
+      injectUI();
+      return;
     } catch (err) {
-      await new Promise((res) => setTimeout(inject_button, 200)); // sleep a bit, while page loads  
-      console.warn(`Retry #${i + 1}/3`);
+      console.warn(`injectUI attempt ${attempt + 1}/${MAX_RETRIES} failed:`, err.message);
+      await sleep(RETRY_DELAY_MS);
     }
   }
+ 
+  console.error('Failed to inject UI after all retries.');
 })();
 
 
-function downloadFile(data,download_name){
-  var blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
-  if (navigator.msSaveBlob) { // IE 10+
-    navigator.msSaveBlob(blob, 'test');
-  } else {
-    var link = document.createElement('a');
-    if (link.download !== undefined) { // feature detection
-      // Browsers that support HTML5 download attribute
-      var url = URL.createObjectURL(blob);
-      link.setAttribute('href', url);
-      link.setAttribute('download', download_name);
-      link.style.visibility = 'hidden';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
-  }
+
+
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
-function inject_button() {
 
-  const iconUrl = chrome.runtime.getURL('images/Sheet.svg');
-  const image = document.createElement('img');
-  const export_container = document.createElement('div');
-  export_container.classList.add('export_container');
-  image.src = iconUrl;
-  image.style.width = "1.6em";
-  button = document.createElement('button');
-  button2 = document.createElement('button');
-  button2.append(image)
-  button.setAttribute('class', 'btn3');
-  button2.id = "sheet_icon";
-  button.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
-  button2.setAttribute('style', 'position:relative; margin-right:5px;left:10px; background-color:transparent; vertical-align: middle; cursor: pointer; border-width: initial; border-style: none; border-color: initial; border-image: initial;');
-  button.innerText = 'Extract';
-  const closebutton = document.querySelector('.close');
-  closebutton.classList.add('close-fix');
-  button.id = 'extract_button';
-  const spinner = document.createElement('span');
-  spinner.classList.add('spinner');
-  button.append(spinner);
-  spinner.style.display = 'none';
-  button.classList.add('pushBtn');
-  button2.id = 'sheet_icon';
-  button2.classList.add('pushBtn');
-  button.addEventListener('click', extract_function);
-  button.addEventListener('touchstart', extract_function);
-  button2.addEventListener('click', import_to_sheets);
-  const title_location = document.getElementsByClassName('dialog-head'); //location of the button
-  
-  export_container.append(button,button2);
+function getRaceId() {
+  return window.location.href.replace(/\D/g, '');
+}
 
+function timeStringToMs(timeString) {
   try {
-    title_location[0].classList.add('inj_header');
-     if (title_location[0].childElementCount == 1) {
-    title_location[0].append(export_container);
- 
-  //p = document.querySelector('#dialogs-container > div > div > div');
-  export_button = document.querySelector('.csvExport');
-  p = title_location[0];
-  quali_button = export_button.cloneNode(true);
-  race_button = export_button.cloneNode(true);
-  podium = export_button.cloneNode(true);
-  const spinner = document.createElement('span');
-  spinner.style.display ='none';
-  spinner.classList.add('spinner');
-  
-  podium.id = 'top3';
-  podium.textContent = 'Top 3';
-  podium.append(spinner);
-  quali_button.textContent = 'Q';
-  [podium,quali_button].forEach((ele) =>{ ele.classList.add('mRight')});
-  podium.addEventListener('click', podium_copy);
-  quali_button.addEventListener('click', quali_export);
-  race_button.addEventListener('click', race_export);
-  export_button.parentNode.replaceChild(race_button, export_button);
-  export_container.append(export_button);
-  if (p.childElementCount == 2) {
-    const buttons_container = document.createElement('div');
-    const tier_container = document.createElement('div');
-    buttons_container.classList.add('inj_container','f_right');
-    tier_container.classList.add('inj_container','f_left');
-    buttons_container.append(export_button,quali_button,podium);
-
-    p.append(buttons_container);
-    //p.prepend(quali_button);
-    //p.prepend(export_button)
-
+    const [minutes, rest] = timeString.split(':');
+    const [seconds, ms] = rest.split('.');
+    return parseInt(minutes) * 60_000 + parseInt(seconds) * 1_000 + parseInt(ms);
+  } catch {
+    return null;
   }
+}
 
+function downloadCSV(data, filename) {
+  const blob = new Blob([data], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = Object.assign(document.createElement('a'), {
+    href: url,
+    download: filename,
+    style: 'visibility:hidden',
+  });
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function getTyreCode(tyreLabel) {
+    const TYRE_CODES = {
+  // English
+  'Full wet tyres':         'ts-W',
+  'Intermediate wet tyres': 'ts-I',
+  'Hard tyres':             'ts-H',
+  'Medium tyres':           'ts-M',
+  'Soft tyres':             'ts-S',
+  'Super soft tyres':       'ts-SS',
+  // Italian
+  'Pneumatici da bagnato':  'ts-W',
+  'Pneumatici intermedi':   'ts-I',
+  'Pneumatici duri':        'ts-H',
+  'Pneumatici medi':        'ts-M',
+  'Pneumatici morbidi':     'ts-S',
+  'Pneumatici super morbidi': 'ts-SS',
+  // Spanish
+  'Neumáticos de Lluvia':   'ts-W',
+  'Neumáticos Intermedios': 'ts-I',
+  'Neumáticos Duros':       'ts-H',
+  'Neumáticos Medios':      'ts-M',
+  'Neumáticos Blandos':     'ts-S',
+  'Neumáticos Súper Blandos': 'ts-SS',
+  // German
+  'Vollregen-Reifen':       'ts-W',
+  'Intermediate Reifen':    'ts-I',
+  'Hart Reifen':            'ts-H',
+  'Medium Reifen':          'ts-M',
+  'Soft Reifen':            'ts-S',
+  'Super Soft Reifen':      'ts-SS',
+  // Portuguese
+  'Pneus de chuva':         'ts-W',
+  'Pneus intermediários':   'ts-I',
+  'Pneus duros':            'ts-H',
+  'Pneus médios':           'ts-M',
+  'Pneus macios':           'ts-S',
+  'Pneus super macios':     'ts-SS',
+  // Russian
+  'Дождевые шины':          'ts-W',
+  'Промежуточные шины':     'ts-I',
+  'Твердые шины':           'ts-H',
+  'Средние шины':           'ts-M',
+  'Мягкие шины':            'ts-S',
+  'Супермягкие шины':       'ts-SS',
+  // French
+  'Pneus pluie':            'ts-W',
+  'Pneus intermédiaires humides': 'ts-I',
+  'Pneus durs':             'ts-H',
+  'Pneus moyens':           'ts-M',
+  'Pneus tendres':          'ts-S',
+  'Pneus super tendres':    'ts-SS',
+};
+  return TYRE_CODES[tyreLabel] ?? 'ts-M';
+}
+
+function getRuleActive(noticeEl, iconId) {
+  const useEl = [...noticeEl.querySelectorAll('use')]
+    .find(el => el.getAttribute('xlink:href')?.endsWith(iconId));
+  return useEl ? !useEl.closest('span')?.classList.contains('grey') : false;
+}
+
+// ─── UI Injection ─────────────────────────────────────────────────────────────
+
+function injectUI() {
+  const header = document.getElementsByClassName('dialog-head')[0];
+  if (!header) throw new Error('.dialog-head not found');
+
+  header.classList.add('inj_header');
+
+  if (header.childElementCount !== 1) return;
+
+  const extractBtn = createExtractButton();
+  const sheetIconBtn = createSheetIconButton();
+  const exportContainer = Object.assign(document.createElement('div'), {
+    className: 'export_container',
+  });
+  exportContainer.append(extractBtn, sheetIconBtn);
+  console.log(header);
+  document.querySelector('.close').classList.add('close-fix');
+  header.append(exportContainer);
   
-
-}
-} catch (error) {
-  console.log(error);
-}
+  injectCSVButtons(header);
 }
 
-async function podium_copy()
-{
-  this.childNodes[0].textContent = '';
-  this.childNodes[1].style.display = 'inline-block';
+function createExtractButton() {
+  const spinner = Object.assign(document.createElement('span'), { className: 'spinner' });
+  spinner.style.display = 'none';
+
+  const btn = Object.assign(document.createElement('button'), {
+    id: 'extract_button',
+    className: 'btn3 pushBtn',
+    innerText: 'Extract',
+  });
+  btn.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
+  btn.append(spinner);
+  btn.addEventListener('click', onExtractClick);
+  btn.addEventListener('touchstart', onExtractClick);
+  return btn;
+}
+
+function createSheetIconButton() {
+  const img = Object.assign(document.createElement('img'), {
+    src: chrome.runtime.getURL('images/Sheet.svg'),
+  });
+  img.style.width = '1.6em';
+
+  const btn = Object.assign(document.createElement('button'), {
+    id: 'sheet_icon',
+    className: 'pushBtn',
+  });
+  btn.setAttribute('style', 'position:relative; margin-right:5px; left:10px; background-color:transparent; vertical-align:middle; cursor:pointer; border:none;');
+  btn.append(img);
+  btn.addEventListener('click', openSheetImportDialog);
+  return btn;
+}
+
+function injectCSVButtons(header) {
+  const csvExportBtn = document.querySelector('.csvExport');
+  if (!csvExportBtn || header.childElementCount !== 2) return;
+
+  const raceBtn = csvExportBtn.cloneNode(true);
+  const qualiBtn = csvExportBtn.cloneNode(true);
+  const podiumBtn = csvExportBtn.cloneNode(true);
+
+  const podiumSpinner = Object.assign(document.createElement('span'), { className: 'spinner' });
+  podiumSpinner.style.display = 'none';
+
+  podiumBtn.id = 'top3';
+  podiumBtn.textContent = 'Top 3';
+  podiumBtn.append(podiumSpinner);
+  qualiBtn.textContent = 'Q';
+
+  [podiumBtn, qualiBtn].forEach(btn => btn.classList.add('mRight'));
+
+  podiumBtn.addEventListener('click', onPodiumCopy);
+  qualiBtn.addEventListener('click', () => exportQuali(true));
+  raceBtn.addEventListener('click', () => exportRace(true));
+
+  const buttonsContainer = Object.assign(document.createElement('div'), {
+    className: 'inj_container f_right',
+  });
+  buttonsContainer.append(raceBtn, qualiBtn, podiumBtn);
+  header.append(buttonsContainer);
+}
+
+// ─── Progress Bar ─────────────────────────────────────────────────────────────
+
+function createProgressBar() {
+  const bar = Object.assign(document.createElement('div'), {
+    id: 'bar',
+    style: 'background-color:#4CAF50; width:1%; height:5px; border-radius:4px;',
+  });
+  const wrapper = Object.assign(document.createElement('div'), {
+    id: 'progress',
+    className: 'progress',
+  });
+  wrapper.appendChild(bar);
+  return wrapper;
+}
+
+function updateProgressBar() {
+  progressStatus += 100 / manager.length;
+  const bar = document.getElementById('bar');
+  if (bar) bar.style.width = `${progressStatus}%`;
+}
+
+// ─── Podium Copy ──────────────────────────────────────────────────────────────
+
+async function onPodiumCopy() {
+  const btn = document.getElementById('top3');
+  btn.childNodes[0].textContent = '';
+  btn.childNodes[1].style.display = 'inline-block';
+
   const [{ fetchDriverInfo, fetchTeamInfo }, { parseAttributes }] = await Promise.all([
     import(chrome.runtime.getURL('common/fetcher.js')),
-    import(chrome.runtime.getURL('scripts/driver/driverHelpers.js'))
+    import(chrome.runtime.getURL('scripts/driver/driverHelpers.js')),
   ]);
 
-  async function getManagerName(driver){
-    const driverInfo = await fetchDriverInfo(driver);
-    const managerId =  new URLSearchParams(parseAttributes(driverInfo).tLink).get('team');
-    const managerdata = await fetchTeamInfo(managerId);
-    const managerName = managerdata.vars.manager.match(/\/>(.*)$/)[1].substring(1);
-    return managerName;
+  async function getManagerName(driverId) {
+    const driverInfo = await fetchDriverInfo(driverId);
+    const managerId = new URLSearchParams(parseAttributes(driverInfo).tLink).get('team');
+    const managerData = await fetchTeamInfo(managerId);
+    return managerData.vars.manager.match(/\/>(.*)$/)[1].substring(1);
   }
 
-  function extractStrategyPreview(strategyDiv) {
-    if (!strategyDiv) return "";
+  function buildStrategyString(strategyDiv) {
+    const TYRE_EMOJI = {
+  'ts-M':  '⚪',
+  'ts-H':  '🟠',
+  'ts-S':  '🟡',
+  'ts-SS': '🔴',
+  'ts-W':  '🔵',
+  'ts-I':  '🟢',
+};
+    if (!strategyDiv) return '';
+    return [...strategyDiv.querySelectorAll('td')]
+      .map(td => {
+        const tyreClass = Object.keys(TYRE_EMOJI).find(cls => td.classList.contains(cls));
+        return tyreClass ? TYRE_EMOJI[tyreClass] : td.textContent.trim();
+      })
+      .join('');
+  }
 
-    const tireMap = {
-        "ts-M": "⚪", // Medium
-        "ts-H": "🟠", // Hard
-        "ts-S": "🟡", // Soft
-        "ts-SS": "🔴", // Super Soft
-        "ts-W": "🔵", // Wet
-        "ts-I": "🟢"  // Intermediate
-    };
-
-    let result = "";
-
-    strategyDiv.querySelectorAll('td').forEach(td => {
-        const tireClass = Object.keys(tireMap).find(cls => td.classList.contains(cls));
-        if (tireClass) {
-            result += tireMap[tireClass]; 
-        } else {
-            result += td.textContent.trim();
-        }
-    });
-
-    return result;
-}
-
-  const raceTable = document.querySelector('#race table tbody');
+  const raceBody = document.querySelector('#race table tbody');
   const trackName = document.querySelector('.dialog-head h1').textContent.trim();
-  const medals = ["🥇", "🥈", "🥉"];
-  const advanced_podium = document.getElementsByClassName('strategy-preview');
-
-  const podium = await Promise.all(
-    Array.from(raceTable.rows).slice(0, 3).map(async (row, index) => {
+  const strategyPreviews = document.getElementsByClassName('strategy-preview');
+  const PODIUM_MEDALS = ['🥇', '🥈', '🥉'];
+  const podiumLines = await Promise.all(
+    Array.from(raceBody.rows).slice(0, 3).map(async (row, i) => {
       const teamName = row.querySelector('.teamName').childNodes[0].textContent;
       const driverId = new URLSearchParams(row.querySelector('a').href).get('id');
       const managerName = await getManagerName(driverId);
       const finish = row.cells[2].textContent;
 
-      let podium_string = `${medals[index]} ${teamName} - ${managerName}`
-
-      if(advanced_podium.length>0)
-        podium_string += `\n${" ".repeat("🥇".length + 1)}${extractStrategyPreview(advanced_podium[index])} (${finish})` ;
-
-      return podium_string;
+      let line = `${PODIUM_MEDALS[i]} ${teamName} - ${managerName}`;
+      if (strategyPreviews.length > 0) {
+        line += `\n${' '.repeat(PODIUM_MEDALS[0].length + 1)}${buildStrategyString(strategyPreviews[i])} (${finish})`;
+      }
+      return line;
     })
   );
-  const fastLap = document.getElementsByClassName('mOpt bgFastest robotoBold')[0];
-  const teamFastLap = fastLap.parentElement.childNodes[1].childNodes[4].childNodes[0].textContent;
-  const driverFastLap = fastLap.parentElement.childNodes[1].childNodes[0].href.match(/\d+/)[0];
-  const managerFastLap = await getManagerName(driverFastLap);
 
-  const bestLapString = raceTable.parentElement.childNodes[1].childNodes[0].childNodes[3].textContent;
-  const resultString = `🚦 🏁 ${trackName} 🚦\n${podium.join('\n')}\n🏎️💨 ${bestLapString}: ${teamFastLap} - ${managerFastLap}\n👇 🎤..... 👇`;
+  const fastLapRow = raceBody.querySelector('.font-heading').parentElement;
+  const fastLapTeam = fastLapRow.querySelector('.teamName').textContent;
+  const fastLapDriverId = fastLapRow.querySelector('a').getAttribute('href').split('id=')[1];
+  const fastLapManager = await getManagerName(fastLapDriverId);
 
-  navigator.clipboard.writeText(resultString).then(() => {
-    var button = document.getElementById('top3');
-    button.childNodes[0].textContent = "Copied!";
-    button.childNodes[1].style.display = 'none';
-    button.classList.add('podium-off');
-  }, () => {
-    alert('failed to copy top 3');
-  });
+  const bestLapLabel = raceBody.parentElement.childNodes[1].childNodes[0].childNodes[3].textContent;
+  const resultText = `🚦 🏁 ${trackName} 🚦\n${podiumLines.join('\n')}\n🏎️💨 ${bestLapLabel}: ${fastLapTeam} - ${fastLapManager}\n👇 🎤..... 👇`;
 
+  try {
+    await navigator.clipboard.writeText(resultText);
+    btn.childNodes[0].textContent = 'Copied!';
+    btn.childNodes[1].style.display = 'none';
+    btn.classList.add('podium-off');
+  } catch {
+    alert('Failed to copy top 3');
+  }
 }
-async function import_to_sheets(){
 
-  pickFiles();
+// ─── Google Sheets Import ─────────────────────────────────────────────────────
 
-async function pickFiles(){
-  if(!document.getElementById('sheetDialog'))
-  createSheetDialog();
+async function openSheetImportDialog() {
+  if (!document.getElementById('sheetDialog')) createSheetDialog();
+
   const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
   const token = await getAccessToken();
-  if(token != false){
-    const { get_sheets } = await import(chrome.runtime.getURL('auth/gDriveHandler.js'));
-    get_sheets(token.access_token).then(sheets => {
-      const sheetListContainer = document.getElementById('sheetList');
-      const selectSheetBtn = document.getElementById('selectSheetBtn');
-      // Clear existing content
-      sheetListContainer.innerHTML = '';
-    
-      sheets.forEach(sheet => {
-          const sheetItem = document.createElement('div');
-          sheetItem.className = 'sheetStyle';
-          sheetItem.innerHTML = `
-              <input type="radio" name="sheetRadio" id="${sheet.id}">
-              <label for="${sheet.id}">${sheet.name}</label>
-          `;
-          sheetItem.addEventListener('click', () => {
-            sheetItem.append(selectSheetBtn);
-            selectSheetBtn.style.display= "flex";
-            const div_sheets = document.getElementsByClassName('sheetStyle');
-            for (const element of div_sheets) element.classList.remove('selected_radio');
-            sheetItem.classList.add('selected_radio');
-              selectSheetBtn.removeAttribute('disabled');
-          });
-          sheetListContainer.appendChild(sheetItem);
-      });
-    
-      // Show the modal
-      document.getElementById('sheetDialog').showModal();
+  if (!token) return;
+
+  const { get_sheets } = await import(chrome.runtime.getURL('auth/gDriveHandler.js'));
+  const sheets = await get_sheets(token.access_token);
+
+  const listContainer = document.getElementById('sheetList');
+  const selectBtn = document.getElementById('selectSheetBtn');
+  listContainer.innerHTML = '';
+
+  sheets.forEach(sheet => {
+    const item = document.createElement('div');
+    item.className = 'sheetStyle';
+    item.innerHTML = `<input type="radio" name="sheetRadio" id="${sheet.id}"><label for="${sheet.id}">${sheet.name}</label>`;
+    item.addEventListener('click', () => {
+      item.append(selectBtn);
+      selectBtn.style.display = 'flex';
+      document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
+      item.classList.add('selected_radio');
+      selectBtn.removeAttribute('disabled');
     });
+    listContainer.appendChild(item);
+  });
+
+  document.getElementById('sheetDialog').showModal();
+
+  async function handleSheetSelection() {
+    const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
+    const { access_gSheet } = await import(chrome.runtime.getURL('auth/gSheetsHandler.js'));
+    const raceId = getRaceId();
+
+    const qualiRows = exportQuali(false).split('\n').map(row => [raceId, 'Q', ...row.split(',')]);
+    let raceRows = exportRace(false).split('\n').map(row => [raceId, 'R', ...row.split(',')]);
+
+    const noticeEls = document.getElementsByClassName('notice');
+    const raceDate = noticeEls[1]?.textContent ?? 'error';
+    const trackCode = document.querySelector('.flag').classList[1].substring(2);
+    const rules = [
+      `⛽${getRuleActive(noticeEls[0], '#igp-fuel')}`,
+      `🛞${getRuleActive(noticeEls[0], '#igp-tyre')}`,
+      `⏱️${getRuleActive(noticeEls[0], '#md-stopwatch')}`,
+    ].join(',');
+
+    if (document.getElementById('alldrivers')) {
+      manager.sort((a, b) => a.race_finish - b.race_finish);
+      raceRows[0].push('Strategy', 'Pit Stops Time', 'Time Lost', 'Rank');
+      raceRows = [
+        raceRows[0],
+        ...raceRows.slice(1).map((row, i) => [
+          ...row,
+          manager[i].pit_stop,
+          manager[i].pitStopTimes.join(','),
+          manager[i].pitTimeLoss.join(','),
+          manager[i].rank.join(','),
+        ]),
+      ];
+    }
+
+    access_gSheet(selectedId, token.access_token, [...qualiRows, ...raceRows], {
+      race_date: raceDate,
+      track_code: trackCode,
+      rules,
+    });
+    closeSheetDialog();
   }
-  function createSheetDialog() {
-    const dialog = document.createElement('dialog');
-    dialog.id = 'sheetDialog';
 
-
-    const mainDiv = document.createElement("div");
-    const close_dialog = document.createElement("span");
-    close_dialog.textContent = "×";
-    close_dialog.id = "close_dialog";
-    const heading = document.createElement("h2");
-    heading.textContent = "Select a Sheet";
-    const sheetListDiv = document.createElement("div");
-    sheetListDiv.id = "sheetList";
-    const selectSheetBtn = document.createElement("button");
-    selectSheetBtn.id = "selectSheetBtn";
-    selectSheetBtn.style.display = "none";
-    selectSheetBtn.textContent = "Export the results to this sheet";
-    dialog.append(close_dialog,heading,sheetListDiv,selectSheetBtn);
-    document.body.appendChild(dialog);
-    selectSheetBtn.addEventListener('click',handleSheetSelection);
-    close_dialog.addEventListener('click',closeSheetDialog);
+  document.getElementById('selectSheetBtn').addEventListener('click', handleSheetSelection);
 }
+
+function createSheetDialog() {
+  const dialog = document.createElement('dialog');
+  dialog.id = 'sheetDialog';
+
+  const closeSpan = Object.assign(document.createElement('span'), {
+    id: 'close_dialog',
+    textContent: '×',
+  });
+  const heading = Object.assign(document.createElement('h2'), { textContent: 'Select a Sheet' });
+  const list = Object.assign(document.createElement('div'), { id: 'sheetList' });
+  const selectBtn = Object.assign(document.createElement('button'), {
+    id: 'selectSheetBtn',
+    textContent: 'Export the results to this sheet',
+  });
+  selectBtn.style.display = 'none';
+
+  dialog.append(closeSpan, heading, list, selectBtn);
+  document.body.appendChild(dialog);
+  closeSpan.addEventListener('click', closeSheetDialog);
+}
+
 function closeSheetDialog() {
   const dialog = document.getElementById('sheetDialog');
-  const selectSheetBtn = document.getElementById('selectSheetBtn');
-  selectSheetBtn.style.display= "none";
-  dialog.append(selectSheetBtn);
+  const btn = document.getElementById('selectSheetBtn');
+  btn.style.display = 'none';
+  dialog.append(btn);
   dialog.close();
 }
-  async function handleSheetSelection() {
-  const selectedSheetId = document.querySelector('input[name="sheetRadio"]:checked').id;
-  //alert(`Selected Sheet ID: ${selectedSheetId}`);
-  const {access_gSheet } = await import(chrome.runtime.getURL('auth/gSheetsHandler.js'));
-  const race_id = window.location.href.replace(/\D/g, '');
-  //const data_to_export = [[race_id,"Qualifying"]];
-  const quali_to_export = quali_export(false).split('\n').map(row =>[race_id,"Q",... row.split(',')]);
-  const race_to_export_pre = race_export(false).split('\n').map(row =>[race_id,"R",... row.split(',')]);
-  var race_to_export = race_to_export_pre;
-  const  race_info = document.getElementsByClassName('notice') ?? "error";
-  
-  const race_date = race_info[1].textContent ?? "error";
- 
-  const track_code = document.querySelector('.flag').classList[1].substring(2);
-  
-  
-  const fuel_rule = (race_info[0].children[0].className == 'grey') ? false : true;
-  const tyre_rule = (race_info[0].children[1].className == 'grey') ? false : true;
-  const fast_rule = (race_info[0].children[2].className == 'grey') ? false : true;
 
-  if(document.getElementById('alldrivers')){
-    manager.sort((a, b) => { return a.race_finish - b.race_finish; });
-    race_to_export_pre[0].push("Strategy","Pit Stops Time","Time Lost","Rank")
-     race_to_export = race_to_export_pre.slice(1).map((innerArray, index) => {
-      innerArray.push(manager[index].pit_stop, manager[index].pitStopTimes.join(','),manager[index].pitTimeLoss.join(','),  manager[index].rank.join(','));
-      return innerArray;
-    });
-    race_to_export.unshift(race_to_export_pre[0]);
-    
-  }
-  const combinedValues = quali_to_export.concat(race_to_export);
-  
-  access_gSheet(selectedSheetId,token.access_token,combinedValues,{race_date:race_date,track_code:track_code,rules:`⛽${fuel_rule},🛞${tyre_rule},⏱️${fast_rule}`});
-  closeSheetDialog();
-}
+// ─── CSV Export ───────────────────────────────────────────────────────────────
 
-}
+function exportRace(download) {
+  const table = document.getElementById('csvRace');
+  const head = table.tHead.rows[0];
 
-}
+  const headers = [
+    head.cells[0].textContent,  // pos
+    head.cells[1].textContent,  // driver
+    'Team',
+    head.cells[2].textContent,  // finish
+    head.cells[3].textContent,  // best lap
+    head.cells[4].textContent,  // top speed
+    head.cells[5].textContent,  // pit
+    head.cells[6].textContent,  // points
+  ];
 
-function race_export(download)
-{
-  let csv = '';
-  const r = document.getElementById('csvRace');//document.querySelector('#race').childNodes[0];
-  
-  csv += r.tHead.rows[0].cells[0].textContent;//pos
-  csv += ',' + r.tHead.rows[0].cells[1].textContent;//driver
-  csv += ',Team';
-  csv += ',' + r.tHead.rows[0].cells[2].textContent;//finish
-  csv += ',' + r.tHead.rows[0].cells[3].textContent;//bestlap
-  csv += ',' + r.tHead.rows[0].cells[4].textContent;//top
-  csv += ',' + r.tHead.rows[0].cells[5].textContent;//pit
-  csv += ',' + r.tHead.rows[0].cells[6].textContent;//pnt
-
-   race_table = r.tBodies[0];
-  for (let i = 0; i < race_table.childElementCount; i++) {
-    const  rank = i+1;
-    const driver_name = race_table.rows[i].cells[1].childNodes[2].textContent.trim();
-    const team_name = race_table.rows[i].cells[1].querySelector('.teamName').childNodes[0].textContent.trim();
-    const original_finish = race_table.rows[i].cells[2].textContent;
-    const finish = (!download && original_finish.charAt(0) === '+') ? "'" + original_finish : original_finish;
-    const best_lap = race_table.rows[i].cells[3].textContent;
-    const top_speed = race_table.rows[i].cells[4].textContent;
-    const pits = race_table.rows[i].cells[5].textContent;
-    const points = race_table.rows[i].cells[6].textContent;
-
-    csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + finish + ',' + best_lap + ',' + top_speed + ',' + pits + ',' + points;
-  }
-  const race_id = window.location.href.replace(/\D/g, '');
-  if(download)
-  downloadFile(csv,race_id + '_Race');
-  else
-  return csv
-
-}
-function quali_export(download)
-{
-  let csv = '';
-  const q = document.querySelector('#qualifying table');
-
-  csv += q.tHead.rows[0].cells[0].textContent;
-  csv += ',' + q.tHead.rows[0].cells[1].textContent;
-  csv += ',Team';
-  csv += ',' + q.tHead.rows[0].cells[2].textContent;
-  csv += ',' + q.tHead.rows[0].cells[3].textContent;
-  csv += ',' + q.tHead.rows[0].cells[4].textContent;
-
-  const quali_table = q.tBodies[0];
-  for (let i = 0; i < quali_table.childElementCount; i++) {
-    const rank = i+1;
-    const driver_name = quali_table.rows[i].cells[1].childNodes[2].textContent.trim();
-    const team_name = quali_table.rows[i].cells[1].querySelector('.teamName').childNodes[0].textContent.trim();
-    const lap = quali_table.rows[i].cells[2].textContent;
-    const original_gap = quali_table.rows[i].cells[3].textContent;
-    const gap = (!download && original_gap.charAt(0) === '+') ? "'" + original_gap : original_gap;
-    const tyre = quali_table.rows[i].cells[4].textContent;//quali_table.rows[0].cells[4].className.replace('ts-','');
-    csv += '\n' + rank + ',' + driver_name + ',' + team_name + ',' + lap + ',' + gap + ',' + tyre;
-  }
-  const race_id = window.location.href.replace(/\D/g, '');
-  if(download)
-  downloadFile(csv,race_id + '_Qualifying');
-  else
-  return csv
-
-}
-function all_export()
-{
-  const export_button = document.querySelector('.csvExport');
-  const p = export_button.parentElement;
-  const all_button = export_button.cloneNode(true);
-  all_button.id = 'alldrivers';
-  all_button.textContent = 'Full CSV';
-  
-  if (p.childElementCount == 3) {
-    p.prepend(all_button);
-    p.prepend(export_button);
-  }
-  all_button.addEventListener('click', function(){
-
-    chrome.storage.local.get('active',async function(data){
-      const race_id = window.location.href.replace(/\D/g, '');
-      downloadFile(csvRaceResults(data.active),race_id + '_Drivers_CSV');
-    });
-
+  const rows = [...table.tBodies[0].rows].map((row, i) => {
+    const finish = row.cells[2].textContent;
+    return [
+      i + 1,
+      row.cells[1].childNodes[2].textContent.trim(),
+      row.cells[1].querySelector('.teamName').childNodes[0].textContent.trim(),
+      !download && finish.startsWith('+') ? `'${finish}` : finish,
+      row.cells[3].textContent,
+      row.cells[4].textContent,
+      row.cells[5].textContent,
+      row.cells[6].textContent,
+    ].join(',');
   });
 
-  data_extracted = true;
-
+  const csv = [headers.join(','), ...rows].join('\n');
+  if (download) downloadCSV(csv, `${getRaceId()}_Race`);
+  else return csv;
 }
-function progress() {
 
-  const progress_div = document.createElement('div');
-  
-  progress_div.id = 'progress';
-  progress_div.classList.add('progress')
-  const bar_div = document.createElement('div');
-  bar_div.setAttribute('style', 'background-color:#4CAF50; width:1%; height:5px; border-radius:4px;');
-  bar_div.id = 'bar';
-  progress_div.appendChild(bar_div);
-  return progress_div;
+function exportQuali(download) {
+  const table = document.querySelector('#qualifying table');
+  const head = table.tHead.rows[0];
+
+  const headers = [
+    head.cells[0].textContent,
+    head.cells[1].textContent,
+    'Team',
+    head.cells[2].textContent,
+    head.cells[3].textContent,
+    head.cells[4].textContent,
+  ];
+
+  const rows = [...table.tBodies[0].rows].map((row, i) => {
+    const gap = row.cells[3].textContent;
+    return [
+      i + 1,
+      row.cells[1].childNodes[2].textContent.trim(),
+      row.cells[1].querySelector('.teamName').childNodes[0].textContent.trim(),
+      row.cells[2].textContent,
+      !download && gap.startsWith('+') ? `'${gap}` : gap,
+      row.cells[4].textContent,
+    ].join(',');
+  });
+
+  const csv = [headers.join(','), ...rows].join('\n');
+  if (download) downloadCSV(csv, `${getRaceId()}_Qualifying`);
+  else return csv;
 }
-function get_quali()
-{
-  manager = [];
-  const  race_info = document.getElementsByClassName('notice') ?? "error";
-  // get quali results
-  for (let i = 0; i < quali_results.childElementCount; i++) {
-    const driver_quali = quali_results.rows[i].getElementsByClassName('linkParent');
-    const driver_id = driver_quali[0].href.replace(/\D/g, '');
-    const driver_name = quali_results.rows[i].childNodes[1].childNodes[2].textContent.substring(1);
-    const team_name = quali_results.rows[i].childNodes[1].childNodes[4].innerText;
-    const race_id = window.location.href.replace(/\D/g, '');
-    const manager_template = {
-      race_info:
-      {
-        rules:{fuel:(race_info[0].children[0].className == 'grey') ? false : true,
-        tyre:(race_info[0].children[1].className == 'grey') ? false : true},
-        date:race_info[1].textContent,
-        track:document.querySelector('.flag').classList[1].substring(2)
+
+function buildFullDriverCSV(raceData) {
+  return raceData.flatMap(driver =>
+    driver.driver_result.lap.map((lap, i) =>
+      [
+        driver.name,
+        driver.team,
+        lap,
+        driver.driver_result.time[i],
+        driver.driver_result.gap_to_lead[i],
+        driver.driver_result.average[i],
+        driver.driver_result.rank[i],
+      ].join(',')
+    )
+  ).join('\n');
+}
+
+function injectFullCSVButton() {
+  const csvExportBtn = document.querySelector('.csvExport');
+  const parent = csvExportBtn?.parentElement;
+  if (!parent || parent.childElementCount !== 3) return;
+
+  const fullBtn = csvExportBtn.cloneNode(true);
+  fullBtn.id = 'alldrivers';
+  fullBtn.textContent = 'Full CSV';
+  parent.prepend(fullBtn);
+  parent.prepend(csvExportBtn);
+
+  fullBtn.addEventListener('click', () => {
+    chrome.storage.local.get('active', ({ active }) => {
+      downloadCSV(buildFullDriverCSV(active), `${getRaceId()}_Drivers_CSV`);
+    });
+  });
+}
+
+// ─── Extraction ───────────────────────────────────────────────────────────────
+
+function buildManagerTemplate(row, index, raceId, noticeEls) {
+  const driverLink = row.getElementsByClassName('linkParent')[0];
+  return {
+    race_info: {
+      rules: {
+        fuel: noticeEls[0].children[0].className !== 'grey',
+        tyre: noticeEls[0].children[1].className !== 'grey',
       },
-      'id': driver_id,
-      'name': driver_name,
-      'team': team_name,
-      'quali': i+1,
-      'race': 'NotFound',
-      'race_finish': '',
-      'race_id': race_id,
-      'report_id': '',
-      'rank': [],
-      'race_time': [],
-      'lap_time': [],
-      'pit_stop': '',
-      'pitTimeLoss':[],
-      'pitStopTimes':[],
-      'driver_result':{
-        'lap':[],
-        'time':[],
-        'gap_to_lead':[],
-        'average':[],
-        'rank':[]
-      }
+      date: noticeEls[1].textContent,
+      track: document.querySelector('.flag').classList[1].substring(2),
+    },
+    id: driverLink.href.replace(/\D/g, ''),
+    name: row.childNodes[1].childNodes[2].textContent.substring(1),
+    team: row.childNodes[1].childNodes[4].innerText,
+    quali: index + 1,
+    race: 'NotFound',
+    race_finish: '',
+    race_id: raceId,
+    report_id: '',
+    rank: [],
+    race_time: [],
+    lap_time: [],
+    pit_stop: '',
+    pitTimeLoss: [],
+    pitStopTimes: [],
+    driver_result: { lap: [], time: [], gap_to_lead: [], average: [], rank: [] },
+  };
+}
 
-    };
-    manager.push(manager_template);
+function collectQualiData() {
+  manager = [];
+  const qualiBody = document.querySelector('#qualifying table').tBodies[0];
+  const noticeEls = document.getElementsByClassName('notice');
+  const raceId = getRaceId();
+  for (let i = 0; i < qualiBody.childElementCount; i++) {
+    manager.push(buildManagerTemplate(qualiBody.rows[i], i, raceId, noticeEls));
   }
 }
-function extract_function() {
 
-  b_parent = document.getElementsByClassName('dialog')[0];
-  const extract_button = document.getElementById('extract_button');
-  if(extract_button.disabled)
-    return
-  //this.remove();
-  var button = document.getElementById('top3');
-  button.classList.remove('podium-off');
-  button.childNodes[0].textContent = 'Top 3';
-  extract_button.disabled = true;
-  extract_button.classList.add('disabled','podium-off');
-  extract_button.childNodes[0].textContent = '';
-  extract_button.childNodes[1].style.display = 'inline-block';
-  b_parent.prepend(progress());
-  race_results = document.querySelector('#race table').tBodies[0];
-  quali_results = document.querySelector('#qualifying table').tBodies[0];
-
-  get_quali();
-
-  //get race results
-  for (let i = 0; i < race_results.childElementCount; i++) {
-
-    //driver id and name
-    driver_race_result = race_results.rows[i].childNodes[1].getElementsByClassName('linkParent');
-
+function linkRaceResults() {
+  const raceBody = document.querySelector('#race table').tBodies[0];
+  for (let i = 0; i < raceBody.childElementCount; i++) {
+    const row = raceBody.rows[i];
+    const driverId = row.childNodes[1].getElementsByClassName('linkParent')[0].href.replace(/\D/g, '');
+    let reportUrl = 'no_race';
     try {
-      driver_race_report = race_results.rows[i].childNodes[2].getElementsByClassName('linkParent')[0].href;
-
-    }
-    catch (err) {
-      console.log('failed to get one or more reports. most likely DNFs');
-      driver_race_report = 'no_race';
-
+      reportUrl = row.childNodes[2].getElementsByClassName('linkParent')[0].href;
+    } catch {
+      console.log('No report URL (likely a DNF)');
     }
 
-
-    // extract driver id from reports url
-    driver_id = driver_race_result[0].href.replace(/\D/g, '');
-
-
-    finish_position = i;
-    //assingn race report to correct driver from quali
-    j = 0;
-    looking_for_id = true;
-    while (looking_for_id) {
-      if (manager[j].id == driver_id) {
-        looking_for_id = false;
-        manager[j].race = driver_race_report;
-        //console.log(driver_race_report,driver_race_report.replace(/\D/g, ''))
-        manager[j].report_id = driver_race_report.replace(/\D/g, '');
-        manager[j].race_finish = finish_position;
-      }
-      j++;
+    const entry = manager.find(m => m.id === driverId);
+    if (entry) {
+      entry.race = reportUrl;
+      entry.report_id = reportUrl.replace(/\D/g, '');
+      entry.race_finish = i;
     }
-
   }
-
-  //start extraction
-  race_report();
-
 }
-//send requests for each driver report
-async function race_report() {
+
+function onExtractClick() {
+  const extractBtn = document.getElementById('extract_button');
+  if (extractBtn.disabled) return;
+
+  const podiumBtn = document.getElementById('top3');
+  podiumBtn.classList.remove('podium-off');
+  podiumBtn.childNodes[0].textContent = 'Top 3';
+
+  extractBtn.disabled = true;
+  extractBtn.classList.add('disabled', 'podium-off');
+  extractBtn.childNodes[0].textContent = '';
+  extractBtn.childNodes[1].style.display = 'inline-block';
+
+  document.getElementsByClassName('dialog')[0].prepend(createProgressBar());
+  progressStatus = 0;
+
+  collectQualiData();
+  linkRaceResults();
+  fetchAllReports();
+}
+
+// ─── Report Fetching ──────────────────────────────────────────────────────────
+
+async function fetchAllReports() {
   const { fetchRaceReportInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
-  for (let number = 0; number < manager.length; number++) {
-    if (manager[number].report_id != '') {
-      const result = await fetchRaceReportInfo(manager[number].report_id);
-      const table = decode_result(result);
-      update_managers(table, number);
-    }
+
+  for (let i = 0; i < manager.length; i++) {
+    if (!manager[i].report_id) continue;
+    const result = await fetchRaceReportInfo(manager[i].report_id);
+    const table = parseReportHTML(result);
+    parseReportData(table, i);
   }
-  
-  await storeCopyOfActive();
-  formatTable();
-  document.getElementById('progress').remove();
-  const extract_button = document.getElementById('extract_button');
-  extract_button.childNodes[0].textContent = "Extract";
-  extract_button.childNodes[1].style.display = 'none';
-  all_export();
+
+  await persistAndSyncReports();
+  renderStrategyPreviews();
+
+  document.getElementById('progress')?.remove();
+  const extractBtn = document.getElementById('extract_button');
+  extractBtn.childNodes[0].textContent = 'Extract';
+  extractBtn.childNodes[1].style.display = 'none';
+  injectFullCSVButton();
 }
 
-async function storeCopyOfActive(){
+function parseReportHTML(data) {
+  const rawTable = /<table.*<\/table>/gms.exec(data.vars.results)[0];
+  const table = document.createElement('table');
+  table.innerHTML = DOMPurify.sanitize(rawTable);
+  return table;
+}
 
-  const report = await chrome.storage.local.get({'active_option':'Default ReportLRID'});
-  chrome.storage.local.get('active', async function(data) {
+async function persistAndSyncReports() {
+  const { active_option: reportLabel = 'Default ReportLRID' } =
+    await chrome.storage.local.get('active_option');
 
-    //console.log('storing',report.active_option,data.active)
+  chrome.storage.local.get('active', async ({ active }) => {
+    chrome.runtime.sendMessage({ type: 'addRaceReportToDB', data: { id: reportLabel, data: active } });
+
+    const { script: syncSettings = false } = await chrome.storage.local.get('script');
+    if (!syncSettings?.gdrive) return;
+
+    const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
+    const token = await getAccessToken();
+    if (!token) return;
+
     chrome.runtime.sendMessage({
-      type:'addRaceReportToDB',
-      data:{id:report.active_option,data:data.active}
+      type: 'saveReport',
+      data: JSON.stringify(active),
+      token: token.access_token,
     });
-
-    const isSyncEnabled = await chrome.storage.local.get({script:false});
-    if(isSyncEnabled.script?.gdrive ?? false){
-      const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-      const token = await getAccessToken();
-
-      if(token != false){
-        chrome.runtime.sendMessage({
-          type:'saveReport',
-          data:JSON.stringify(data.active),
-          token:token.access_token}); //TO DO, make single saves, instead of saving all reports
-      }
-    }
-
-
   });
 }
 
-//get only the table from the response
-function decode_result(data) {
-  const results = data.vars.results;
-  const table = /<table.*<\/table>/gms.exec(results)[0];
-  const t = document.createElement('table');
-  //sanitizing the data
-  let cleanHTML = DOMPurify.sanitize(table);
-  t.innerHTML = cleanHTML;
+// ─── Report Parsing ───────────────────────────────────────────────────────────
 
-  return t;
+function parseReportData(table, index) {
+  const rows = table.tBodies[0].rows;
+  const totalRows = rows.length;
 
-}
-//complete the manager_template info
-async function update_managers(table, index) {
-  function toMs(timeString)
-  {
-    try {
-      time = timeString.split(':');
-      m = parseInt(time[0]) * 60000;
-      secondAndMs = time[1].split('.');
-      return m + (parseInt(secondAndMs[0]) * 1000) + (parseInt(secondAndMs[1]));
-    } catch (error) {
-      console.log('----');
-      return false;
-    }
+  manager[index].pit_stop = table.rows[1].cells[1].childNodes[0].textContent;
+  manager[index].driver_result.lap.push(table.rows[1].cells[0].textContent);
+  manager[index].driver_result.rank.push(manager[index].quali);
+  manager[index].driver_result.time.push(table.rows[1].cells[1].textContent);
+  ['gap_to_lead', 'average'].forEach(key => manager[index].driver_result[key].push(''));
 
-  }
-  function pushLapData(average,gap,lap,rank,time){
+  let lastPitLap = 0;
+  const pitTimes = [];
 
-    manager[index].driver_result.average.push(average);
-    manager[index].driver_result.gap_to_lead.push(gap);
-    manager[index].driver_result.lap.push(lap);
+  for (let i = 2; i <= totalRows; i++) {
+    const row = table.rows[i];
+    const lapCell = row.childNodes[0].textContent;
+    const isNonLap = isNaN(lapCell);
+
+    const rank = row.cells[4]?.textContent ?? '';
+    manager[index].driver_result.lap.push(row.cells[0].textContent);
+    manager[index].driver_result.time.push(row.cells[1].textContent);
+    manager[index].driver_result.gap_to_lead.push(row.cells[2].textContent);
+    manager[index].driver_result.average.push(row.cells[3].textContent);
     manager[index].driver_result.rank.push(rank);
-    manager[index].driver_result.time.push(time);
-  }
-  try {
 
-    const race_table = table;
-    const laps_done = race_table.tBodies[0].rows.length; // getting last lap
-    const startTyre = race_table.rows[1].cells[1].childNodes[0].textContent;
-    manager[index].pit_stop = startTyre;
-    let last_pit_lap = 0;
+    if (isNonLap) {
+      const pitTime = parseFloat(row.childNodes[1].textContent.split('/')[0]);
+      manager[index].pitStopTimes.push(pitTime);
 
-    /*pushLapData(
-      table.rows[0].cells[3].textContent,//average
-      table.rows[0].cells[2].textContent,//gap
-      table.rows[0].cells[0].textContent,//lap
-      table.rows[0].cells[4].textContent,//lap/
-      table.rows[0].cells[1].textContent);//time*/
-    pushLapData('','',table.rows[1].cells[0].textContent,manager[index].quali,table.rows[1].cells[1].textContent);
+      const pitLap = parseInt(table.rows[i - 1].childNodes[0].textContent);
+      const tyreName = row.childNodes[1].childNodes[2].textContent;
+      manager[index].pit_stop += `,${pitLap - lastPitLap},${tyreName}`;
+      lastPitLap = pitLap;
 
+      if (i + 2 < totalRows) {
+        const a = timeStringToMs(table.rows[i - 1].childNodes[1].textContent);
+        const b = timeStringToMs(table.rows[i + 1].childNodes[1].textContent);
+        const c = timeStringToMs(table.rows[i - 2].childNodes[1].textContent);
+        const d = timeStringToMs(table.rows[i + 2].childNodes[1].textContent);
 
-    pitTimes = [];
-    for (i = 2; i <= laps_done; i++) {
-
-      try {
-        var rank = table.rows[i].cells[4].textContent;
-      } catch (error) {
-        rank = '';
-      }
-
-
-      pushLapData(
-        table.rows[i].cells[3].textContent,//average
-        table.rows[i].cells[2].textContent,//gap
-        table.rows[i].cells[0].textContent,//lap
-        rank,//rank
-        table.rows[i].cells[1].textContent);//time
-
-
-
-      if (isNaN(race_table.rows[i].childNodes[0].textContent)) {
-
-        const pitstop = parseFloat(race_table.rows[i].childNodes[1].textContent.split('/')[0]);
-        manager[index].pitStopTimes.push(pitstop);
-        pit_lap = race_table.rows[i - 1].childNodes[0].textContent;
-
-        pit_tyre = race_table.rows[i].childNodes[1].childNodes[2].textContent;
-        var stintLaps = (pit_lap - last_pit_lap);
-        manager[index].pit_stop += ',' + stintLaps + ',' + pit_tyre;
-
-        last_pit_lap = pit_lap;
-
-        if((i + 2) < laps_done){
-          a = toMs(race_table.rows[i - 1].childNodes[1].textContent);
-          b = toMs(race_table.rows[i + 1].childNodes[1].textContent);
-          c = toMs(race_table.rows[i - 2].childNodes[1].textContent);
-          d = toMs(race_table.rows[i + 2].childNodes[1].textContent);
-        }
-
-        if(a * b * c * d != false)
-        {
-          pitTime = a + b - c - d;
-          pitTimes.push(pitTime / 1000);
-          manager[index].pitTimeLoss.push(pitTime / 1000);
-        }
-        else
+        if (a && b && c && d) {
+          const loss = (a + b - c - d) / 1000;
+          pitTimes.push(loss);
+          manager[index].pitTimeLoss.push(loss);
+        } else {
           manager[index].pitTimeLoss.push('');
-      }
-      else {
-        manager[index].rank.push(race_table.rows[i].childNodes[4].innerHTML); //track position
-        manager[index].lap_time.push(race_table.rows[i].childNodes[1].innerHTML);
-
-        if (race_table.rows[i].childNodes[2].innerHTML == '-')
-          manager[index].race_time.push('0'); // leading car lead by 0
-        else {
-          string = race_table.rows[i].childNodes[2].innerHTML;
-          manager[index].race_time.push(string); //time from leading car
         }
       }
-
+    } else {
+      manager[index].rank.push(row.childNodes[4].innerHTML);
+      manager[index].lap_time.push(row.childNodes[1].innerHTML);
+      manager[index].race_time.push(
+        row.childNodes[2].innerHTML === '-' ? '0' : row.childNodes[2].innerHTML
+      );
     }
-    //console.log(pitTimes);
-    sum = pitTimes.reduce((a, b) => a + b, 0);
-    avg = (sum / pitTimes.length) || 0;
-    manager[index].pitTimeLoss.push(avg);
-    //console.log("average is: "+avg);
-    last_lap_completed = race_table.rows[race_table.tBodies[0].rows.length].childNodes[0].innerHTML;
+  }
 
-    var lastStintLaps = (last_lap_completed - last_pit_lap);
+  const lastLap = parseInt(table.rows[table.tBodies[0].rows.length].childNodes[0].innerHTML);
+  manager[index].pit_stop += `,${lastLap - lastPitLap}`;
 
-    manager[index].pit_stop += ',' + lastStintLaps;
+  const avgPitLoss = pitTimes.length
+    ? pitTimes.reduce((a, b) => a + b, 0) / pitTimes.length
+    : 0;
+  manager[index].pitTimeLoss.push(avgPitLoss);
 
-    bar = document.getElementById('bar');
-    progress_status += (100 / manager.length);
-    bar.style.width = progress_status + '%';
+  updateProgressBar();
+  chrome.storage.local.set({ active: manager });
+}
 
+// ─── Strategy Preview Rendering ───────────────────────────────────────────────
 
-    //save managers
-    chrome.storage.local.set({ 'active': manager }, function () {
-      //console.log('saved ' + manager[index].name);
+function renderStrategyPreviews() {
+  if (document.getElementsByClassName('strategy-preview').length > 0) return;
+
+  chrome.storage.local.get('active', ({ active }) => {
+    const sorted = [...active].sort((a, b) => a.race_finish - b.race_finish);
+
+    const raceBody = document.querySelector('#race table').tBodies[0];
+    document.querySelector('#race table').tHead.classList.add('tyre_preview');
+
+    sorted.forEach((driver, i) => {
+      const preview = document.createElement('div');
+      preview.classList.add('strategy-preview');
+
+      driver.pit_stop.split(',').forEach(token => {
+        preview.appendChild(
+          isNaN(token) ? createTyreCell(token) : createLapCountCell(token)
+        );
+      });
+
+      raceBody.rows[i].childNodes[1].lastChild.appendChild(preview);
     });
 
-
-  }
-  catch (err) {
-    console.log(err);
-
-  }
-
-}
-function formatTable(){
-
-  if(document.getElementsByClassName('strategy-preview').length > 0)
-    return;
-
-  chrome.storage.local.get('active', function(data) {
-    var manager = data.active;
-    manager.sort((a, b) => { return a.race_finish - b.race_finish; });
-
-
-    var valid = 0;
-    let total = 0;
-    for (let i = 0; i < data.active.length; i++) {
-
-      time = data.active[i].pitTimeLoss[data.active[i].pitTimeLoss.length - 1];
-      //check if driver did same number of laps as the winner and has a valid pit time
-      if (manager[0].rank.length == manager[i].rank.length && time > 0) {
-        //console.log("doing pit of: "+manager[i].name);
-        if (time != null) {
-          total += time;
-
-          valid++;
-        }
-      }
-    }
-
-    //document.querySelector('#race table').tBodies[0].rows[0].append(document.createTextNode('Average pit time loss: ' + (total / valid).toFixed(2)));
-
-    const table = document.querySelector('#race table');
-    const t_head = table.tHead;
-    t_head.classList.add('tyre_preview');
-    //t_head.rows[0].cells[0].style.width ="29px";
-    //t_head.rows[0].cells[1].style.width ="60%";
-    const t_body = table.tBodies[0];
-
-    
-
-
-    for(var i = 0 ; i < t_body.rows.length ; i++){
-
-      var history = document.createElement('div');
-      history.classList.add('strategy-preview');
-      stops = manager[i].pit_stop.split(',');
-      stops.forEach(item =>{
-        var ele;
-        if(isNaN(item))
-          ele = createTyreElement(item);
-        else
-          ele = createTextElement(item);
-
-        history.appendChild(ele);
-      });
-      t_body.rows[i].childNodes[1].lastChild.appendChild(history);
-
-    }
-
-
-
-
+    renderAveragePitInfo(sorted);
   });
-  function createTextElement(laps)
-  {
-    var laptext = document.createElement('td');
-    laptext.setAttribute('style','height:10px; width:10px;');
-    laptext.textContent = laps;
-    return laptext;
-  }
-  function createTyreElement(code){
-    //console.log(code);
-    var tyre = 'ts-M';
-
-    switch (code) {
-    case 'Full wet tyres':
-      tyre = 'ts-W';
-      break;
-    case 'Intermediate wet tyres':
-      tyre = 'ts-I';
-      break;
-    case 'Hard tyres':
-      tyre = 'ts-H';
-      break;
-    case 'Medium tyres':
-      tyre = 'ts-M';
-      break;
-    case 'Soft tyres':
-      tyre = 'ts-S';
-      break;
-    case 'Super soft tyres':
-      tyre = 'ts-SS';
-      break;
-
-    case 'Pneumatici da bagnato':
-      tyre = 'ts-W';
-      break;
-    case 'Pneumatici intermedi':
-      tyre = 'ts-I';
-      break;
-    case 'Pneumatici duri':
-      tyre = 'ts-H';
-      break;
-    case 'Pneumatici medi':
-      tyre = 'ts-M';
-      break;
-    case 'Pneumatici morbidi':
-      tyre = 'ts-S';
-      break;
-    case 'Pneumatici super morbidi':
-      tyre = 'ts-SS';
-      break;
-
-    case 'Neumáticos de Lluvia':
-      tyre = 'ts-W';
-      break;
-    case 'Neumáticos Intermedios':
-      tyre = 'ts-I';
-      break;
-    case 'Neumáticos Duros':
-      tyre = 'ts-H';
-      break;
-    case 'Neumáticos Medios':
-      tyre = 'ts-M';
-      break;
-    case 'Neumáticos Blandos':
-      tyre = 'ts-S';
-      break;
-    case 'Neumáticos Súper Blandos':
-      tyre = 'ts-SS';
-      break;
-
-    case 'Vollregen-Reifen':
-      tyre = 'ts-W';
-      break;
-    case 'Intermediate Reifen':
-      tyre = 'ts-I';
-      break;
-    case 'Hart Reifen':
-      tyre = 'ts-H';
-      break;
-    case 'Medium Reifen':
-      tyre = 'ts-M';
-      break;
-    case 'Soft Reifen':
-      tyre = 'ts-S';
-      break;
-    case 'Super Soft Reifen':
-      tyre = 'ts-SS';
-      break;
-
-    case 'Pneus de chuva':
-      tyre = 'ts-W';
-      break;
-    case 'Pneus intermediários':
-      tyre = 'ts-I';
-      break;
-    case 'Pneus duros':
-      tyre = 'ts-H';
-      break;
-    case 'Pneus médios':
-      tyre = 'ts-M';
-      break;
-    case 'Pneus macios':
-      tyre = 'ts-S';
-      break;
-    case 'Pneus super macios':
-      tyre = 'ts-SS';
-      break;
-
-    case 'Дождевые шины':
-      tyre = 'ts-W';
-      break;
-    case 'Промежуточные шины':
-      tyre = 'ts-I';
-      break;
-    case 'Твердые шины':
-      tyre = 'ts-H';
-      break;
-    case 'Средние шины':
-      tyre = 'ts-M';
-      break;
-    case 'Мягкие шины':
-      tyre = 'ts-S';
-      break;
-    case 'Супермягкие шины':
-      tyre = 'ts-SS';
-      break;
-
-    default:tyre = 'ts-M';
-      break;
-      case 'Pneus pluie':
-        tyre = 'ts-W';
-        break;
-      case 'Pneus intermédiaires humides':
-        tyre = 'ts-I';
-        break;
-      case 'Pneus durs':
-        tyre = 'ts-H';
-        break;
-      case 'Pneus moyens':
-        tyre = 'ts-M';
-        break;
-      case 'Pneus tendres':
-        tyre = 'ts-S';
-        break;
-      case 'Pneus super tendres':
-        tyre = 'ts-SS';
-        break;
-    }
-
-    var  tyreEle = document.createElement('td');
-    tyreEle.setAttribute('style','height:10px; width:20px;background-color: transparent;');
-    tyreEle.className = tyre;
-
-    return tyreEle;
-  }
-
 }
 
-function csvRaceResults(race)
-{
-  let csv = '';
-  race.forEach(driver=>{
-    for(var i = 0 ; i < driver.driver_result.lap.length; i++)
-    {
+function renderAveragePitInfo(sorted) {
+  const leaderLaps = sorted[0].rank.length;
+  let total = 0, count = 0;
 
-      csv += `${driver.name},${driver.team},${driver.driver_result.lap[i]},${driver.driver_result.time[i]},${driver.driver_result.gap_to_lead[i]},${driver.driver_result.average[i]},${driver.driver_result.rank[i]}\n`;
+  sorted.forEach(driver => {
+    const avgLoss = driver.pitTimeLoss[driver.pitTimeLoss.length - 1];
+    if (driver.rank.length === leaderLaps && avgLoss > 0) {
+      total += avgLoss;
+      count++;
     }
   });
-
-  return csv;
 }
 
+function createLapCountCell(laps) {
+  const td = document.createElement('td');
+  td.setAttribute('style', 'height:10px; width:10px;');
+  td.textContent = laps;
+  return td;
+}
 
-
-
-
-
-
+function createTyreCell(tyreLabel) {
+  const td = document.createElement('td');
+  td.setAttribute('style', 'height:10px; width:20px; background-color:transparent;');
+  td.className = getTyreCode(tyreLabel);
+  return td;
+}
 
