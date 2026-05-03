@@ -1,28 +1,27 @@
 const ext = globalThis.browser || globalThis.chrome;
-const isChrome = typeof ext?.identity?.getAuthToken === 'function';
 
-// The Client ID you originally used (Web Application Type)
+// 1. Improved Detection: Only use native login if it's actually Google Chrome
+const isRealChrome = (() => {
+  const ua = navigator.userAgent.toLowerCase();
+  // Ensure it's Chrome, but NOT Edge and NOT Brave
+  return ua.includes('chrome') && !ua.includes('edg/') && !ua.includes('brave');
+})();
+
+const isNativeSupported = isRealChrome && typeof ext?.identity?.getAuthToken === 'function';
+
 const WEB_CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets';
-
-async function getAccessToken() {
-  return requestNativeToken({ interactive: false });
-}
-
-async function getFirstAccessToken() {
-  return requestNativeToken({ interactive: true });
-}
+const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly';
 
 async function requestNativeToken(options) {
-  if (isChrome) {
+  // 2. Only attempt the native popup if we are on Google Chrome
+  if (isNativeSupported) {
     return new Promise((resolve, reject) => {
       ext.identity.getAuthToken({ interactive: options.interactive }, async (token) => {
         if (ext.runtime.lastError) {
           const errMsg = ext.runtime.lastError.message;
           
-          // Fallback condition: User is not signed into the browser itself
-          if (errMsg.includes('turned off browser signin') || errMsg.includes('not signed in')) {
-            console.warn("Browser sign-in is disabled. Falling back to Web Auth Flow...");
+          // Fallback if browser sign-in is off
+          if (errMsg.includes('turned off') || errMsg.includes('not signed in')) {
             try {
               const fallbackToken = await launchWebFlow(options.interactive);
               resolve(fallbackToken);
@@ -33,14 +32,22 @@ async function requestNativeToken(options) {
             reject(errMsg);
           }
         } else {
-          resolve({ access_token: token }); // Successfully got native Chrome token
+          resolve({ access_token: token });
         }
       });
     });
   } else {
-    // Firefox uses web flow directly
+    // 3. For Edge, Brave, Vivaldi, and Firefox: Go straight to the Web Flow
+    console.log("Non-Chrome browser detected, using Web Auth Flow.");
     return launchWebFlow(options.interactive);
   }
+}
+async function getAccessToken() {
+  return requestNativeToken({ interactive: false });
+}
+
+async function getFirstAccessToken() {
+  return requestNativeToken({ interactive: true });
 }
 
 /**
