@@ -131,7 +131,6 @@ function injectUI() {
     className: 'export_container',
   });
   exportContainer.append(extractBtn, sheetIconBtn);
-  console.log(header);
   document.querySelector('.close').classList.add('close-fix');
   header.append(exportContainer);
   
@@ -149,8 +148,8 @@ function createExtractButton() {
   });
   btn.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
   btn.append(spinner);
-  btn.addEventListener('click', onExtractClick);
-  btn.addEventListener('touchstart', onExtractClick);
+  btn.onclick =  onExtractClick;
+  btn.onclick = onExtractClick;
   return btn;
 }
 
@@ -166,7 +165,7 @@ function createSheetIconButton() {
   });
   btn.setAttribute('style', 'position:relative; margin-right:5px; left:10px; background-color:transparent; vertical-align:middle; cursor:pointer; border:none;');
   btn.append(img);
-  btn.addEventListener('click', openSheetImportDialog);
+  btn.onclick = openSheetImportDialog ;
   return btn;
 }
 
@@ -188,7 +187,7 @@ function injectCSVButtons(header) {
 
   [podiumBtn, qualiBtn].forEach(btn => btn.classList.add('mRight'));
 
-  podiumBtn.addEventListener('click', onPodiumCopy);
+  podiumBtn.onclick = onPodiumCopy;
   qualiBtn.addEventListener('click', () => exportQuali(true));
   raceBtn.addEventListener('click', () => exportRace(true));
 
@@ -365,8 +364,7 @@ async function openSheetImportDialog() {
     });
     closeSheetDialog();
   }
-
-  document.getElementById('selectSheetBtn').addEventListener('click', handleSheetSelection);
+  document.getElementById('selectSheetBtn').onclick = handleSheetSelection;
 }
 
 function createSheetDialog() {
@@ -387,7 +385,7 @@ function createSheetDialog() {
 
   dialog.append(closeSpan, heading, list, selectBtn);
   document.body.appendChild(dialog);
-  closeSpan.addEventListener('click', closeSheetDialog);
+  closeSpan.onclick = closeSheetDialog;
 }
 
 function closeSheetDialog() {
