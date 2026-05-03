@@ -57,80 +57,67 @@ fetch(apiUrl, {
         });   
 }
 
-function access_gSheet(id,access_token,values,race_info){
-    const RANGE = 'imported_data!A1:D150';
-    const API_ENDPOINT = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${RANGE}`;
-    const API_SPREADSHEET_ENDPOINT  = `https://sheets.googleapis.com/v4/spreadsheets/${id}`;
-    let sheetId = 0;
-    // Fetch the data from the Google Sheets API with the access token in the headers.
-    fetch(API_SPREADSHEET_ENDPOINT, {
+async function access_gSheet(id, access_token, values, race_info) {
+  const RANGE_NAME = 'imported_data';
+  const RANGE = `${RANGE_NAME}!A1:D150`;
+  const API_ENDPOINT = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${RANGE}`;
+  const API_SPREADSHEET_ENDPOINT = `https://sheets.googleapis.com/v4/spreadsheets/${id}`;
+
+  try {
+    // 1. Get Spreadsheet Metadata
+    const response = await fetch(API_SPREADSHEET_ENDPOINT, {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${access_token}`,
-      },
-    })
-      .then(response => {
-        if (response.status === 200) {          
-            return response.json();
-          }else {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-        })
-        .then(async spreadsheetData => {
-            // Check if the specified sheet exists in the spreadsheet.
-            const sheet = spreadsheetData.sheets.find(sheet => sheet.properties.title === RANGE.split('!')[0]);
-            if (sheet) {
-                // Extract the sheetId
-                sheetId = sheet.properties.sheetId;
-              // If the sheet exists, proceed to fetch its values.
-              return fetch(API_ENDPOINT, {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer ${access_token}`,
-                },
-              });
-            } else {
+      headers: { 'Authorization': `Bearer ${access_token}` },
+    });
 
-              //console.log('Sheet does not exist. You might want to create a new sheet.');
+    if (!response.ok) throw new Error(`Failed to fetch spreadsheet info: ${response.status}`);
+    const spreadsheetData = await response.json();
 
-              sheetId = await addSheet(id,access_token);
-              //add new sheet then call funcion again
-              if(sheetId == -1)
-              return -1
-              access_gSheet(id,access_token,values,race_info)
-              return 1
-              
-            }
-          }).then(response => {
-            if (response?.status === 200) {
-              return response.json();
-            }else
-            return 1
-          })
-          .then(data => {
-            // Process the data if the sheet exists.
-            if(data == 1)
-            return
+    // 2. Check if the sheet exists
+    let sheet = spreadsheetData.sheets.find(s => s.properties.title === RANGE_NAME);
+    let sheetId;
 
-            const id_list = data.values ?? [];
-            const race_id = values[0][0];
-            let isValuePresent = false;
-            if(id_list.length > 0){
-               isValuePresent = data.values.some(function(subArray) {return subArray.includes(race_id);});
-            }
-              
-            //import the race if it's not present in the sheet and there are less than 150 races saved
-            if(!isValuePresent && id_list.length < 151){
-                id_list.push([race_id,race_info.track_code,race_info.race_date,race_info.rules]);
-                 import_to_sheet(id,access_token,values,id_list,sheetId)
-            }else{
-                alert("Race report already stored")
-            }
-            
-          })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
+    if (!sheet) {
+      // Sheet doesn't exist, create it and wait for it to finish
+      sheetId = await addSheet(id, access_token);
+      if (sheetId === -1) throw new Error("Failed to create new sheet.");
+    } else {
+      sheetId = sheet.properties.sheetId;
+    }
+
+    // 3. Fetch existing values to check for duplicates
+    const dataResponse = await fetch(API_ENDPOINT, {
+      method: 'GET',
+      headers: { 'Authorization': `Bearer ${access_token}` },
+    });
+
+    // If the sheet was JUST created, it might return 404/400 or just empty
+    let id_list = [];
+    if (dataResponse.ok) {
+      const data = await dataResponse.json();
+      id_list = data.values ?? [];
+    }
+
+    // 4. Check for duplicates
+    const race_id = values[0][0];
+    const isValuePresent = id_list.some(row => row.includes(race_id));
+
+    if (!isValuePresent && id_list.length < 151) {
+      id_list.push([race_id, race_info.track_code, race_info.race_date, race_info.rules]);
+      
+      // 5. IMPORTANT: Await the final import call
+      // Ensure import_to_sheet is also an async function or returns a promise!
+      await import_to_sheet(id, access_token, values, id_list, sheetId);
+      return true; 
+    } else {
+      const msg = isValuePresent ? "Race report already stored." : "Sheet limit (150) reached.";
+      alert(msg);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error in access_gSheet:', error);
+    throw error; // Re-throw so the Dialog UI can catch it and stop the spinner
+  }
 }
 
 

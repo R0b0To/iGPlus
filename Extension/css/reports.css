@@ -41,7 +41,9 @@
 /* =========================
    HEADER
 ========================= */
-
+.inj_container{
+display: flex;
+}
 .sheetHeader {
     display: flex;
     justify-content: space-between;
@@ -225,11 +227,13 @@
 ========================= */
 
 .spinner {
+    display: inline-block; /* Ensure it is visible */
     width: 16px;
     height: 16px;
-    border: 2px solid rgba(255,255,255,0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
     border-top: 2px solid #ffffff;
     border-radius: 50%;
+    margin-right: 10px; /* Space between spinner and text */
     animation: spin 0.8s linear infinite;
 }
 
@@ -238,4 +242,19 @@
     to { transform: rotate(360deg); }
 }
 
-/* ... keep your existing helpers/responsive queries intact ... */
+/* Ensure the button content stays centered when the spinner appears */
+#selectSheetBtn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 
+   Native Dialog behavior: 
+   If your dialog is still showing after .close(), 
+   it's because a generic CSS rule is likely setting it to 'display: block'.
+   Native dialogs use 'display: none' by default when closed. 
+*/
+dialog:not([open]) {
+    display: none !important;
+}

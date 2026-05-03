@@ -194,7 +194,7 @@ function injectCSVButtons(header) {
   const buttonsContainer = Object.assign(document.createElement('div'), {
     className: 'inj_container f_right',
   });
-  buttonsContainer.append(raceBtn, qualiBtn, podiumBtn);
+  buttonsContainer.append(podiumBtn,qualiBtn,raceBtn);
   header.append(buttonsContainer);
 }
 
@@ -296,6 +296,7 @@ async function onPodiumCopy() {
 // ─── Google Sheets Import ─────────────────────────────────────────────────────
 
 async function openSheetImportDialog() {
+  // Always create fresh or check existence
   if (!document.getElementById('sheetDialog')) createSheetDialog();
 
   const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
@@ -308,26 +309,21 @@ async function openSheetImportDialog() {
   const listContainer = document.getElementById('sheetList');
   const selectBtn = document.getElementById('selectSheetBtn');
   
-  // Reset list and button state
   listContainer.innerHTML = '';
   selectBtn.disabled = true;
 
   sheets.forEach(sheet => {
-    // Using a label makes the entire row clickable natively
     const item = document.createElement('label');
     item.className = 'sheetStyle';
-    item.htmlFor = sheet.id;
-    
     item.innerHTML = `
       <input type="radio" name="sheetRadio" id="${sheet.id}" value="${sheet.id}">
       <span class="sheet-name">${sheet.name}</span>
     `;
     
-    // Listen to the radio input change
     item.querySelector('input').addEventListener('change', () => {
       document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
       item.classList.add('selected_radio');
-      selectBtn.removeAttribute('disabled');
+      selectBtn.disabled = false;
     });
     
     listContainer.appendChild(item);
@@ -335,19 +331,21 @@ async function openSheetImportDialog() {
 
   document.getElementById('sheetDialog').showModal();
 
-  async function handleSheetSelection() {
-    // Show spinner / loading state on button (Optional but good UX)
-    const btnText = selectBtn.textContent;
-    selectBtn.innerHTML = '<div class="spinner" style="display:inline-block; margin-right:8px;"></div> Exporting...';
+  // The logic inside the click handler
+  selectBtn.onclick = async () => {
+    const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
+    
+    // 1. UI: Show loading state
+    const originalText = selectBtn.textContent;
     selectBtn.disabled = true;
+    selectBtn.innerHTML = `<div class="spinner"></div> <span>Exporting...</span>`;
 
     try {
-      const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
       const { access_gSheet } = await import(chrome.runtime.getURL('auth/gSheetsHandler.js'));
       const raceId = getRaceId();
 
       const qualiRows = exportQuali(false).split('\n').map(row => [raceId, 'Q', ...row.split(',')]);
-      let raceRows = exportRace(false).split('\n').map(row =>[raceId, 'R', ...row.split(',')]);
+      let raceRows = exportRace(false).split('\n').map(row => [raceId, 'R', ...row.split(',')]);
 
       const noticeEls = document.getElementsByClassName('notice');
       const raceDate = noticeEls[1]?.textContent ?? 'error';
@@ -373,65 +371,59 @@ async function openSheetImportDialog() {
         ];
       }
 
+      // 2. IMPORTANT: We must AWAIT this so the spinner stays visible while working
       await access_gSheet(selectedId, token.access_token, [...qualiRows, ...raceRows], {
         race_date: raceDate,
         track_code: trackCode,
         rules,
       });
+
+      // 3. Close only AFTER the await is finished
       closeSheetDialog();
-    } catch (error) {
-      console.error(error);
-    } finally {
-      // Restore button state
-      selectBtn.textContent = btnText;
+      
+    } catch (err) {
+      console.error("Export failed", err);
+      alert("Failed to export. Check console.");
       selectBtn.disabled = false;
+      selectBtn.textContent = originalText;
     }
-  }
-  
-  // Clean up old listeners to prevent multi-fires
-  selectBtn.onclick = handleSheetSelection;
+  };
 }
 
 function createSheetDialog() {
+  // Clean up any existing one just in case
+  const old = document.getElementById('sheetDialog');
+  if (old) old.remove();
+
   const dialog = document.createElement('dialog');
   dialog.id = 'sheetDialog';
 
-  // --- HEADER ---
-  const header = document.createElement('div');
-  header.className = 'sheetHeader';
-  
-  const heading = document.createElement('h2');
-  heading.textContent = 'Select a Sheet';
-  
-  const closeSpan = document.createElement('span');
-  closeSpan.id = 'close_dialog';
-  closeSpan.innerHTML = '&times;'; // Looks better than an 'x'
-  closeSpan.onclick = closeSheetDialog;
-  
-  header.append(heading, closeSpan);
+  dialog.innerHTML = `
+    <div class="sheetHeader">
+      <h2>Select a Sheet</h2>
+      <span id="close_dialog">&times;</span>
+    </div>
+    <div id="sheetList"></div>
+    <div class="sheetFooter">
+      <button id="selectSheetBtn" disabled>Export results</button>
+    </div>
+  `;
 
-  // --- BODY (List) ---
-  const list = document.createElement('div');
-  list.id = 'sheetList';
-
-  // --- FOOTER ---
-  const footer = document.createElement('div');
-  footer.className = 'sheetFooter';
-  
-  const selectBtn = document.createElement('button');
-  selectBtn.id = 'selectSheetBtn';
-  selectBtn.textContent = 'Export results';
-  
-  footer.append(selectBtn);
-
-  // --- ASSEMBLE ---
-  dialog.append(header, list, footer);
   document.body.appendChild(dialog);
+  document.getElementById('close_dialog').onclick = closeSheetDialog;
+  
+  // Close when clicking outside the dialog (on the backdrop)
+  dialog.addEventListener('click', (e) => {
+    if (e.target === dialog) closeSheetDialog();
+  });
 }
 
 function closeSheetDialog() {
   const dialog = document.getElementById('sheetDialog');
-  if(dialog) dialog.close();
+  if (dialog) {
+    dialog.close();
+    dialog.remove(); // This removes it from the DOM entirely
+  }
 }
 
 // ─── CSV Export ───────────────────────────────────────────────────────────────
@@ -517,7 +509,7 @@ function buildFullDriverCSV(raceData) {
 }
 
 function injectFullCSVButton() {
-  const csvExportBtn = document.querySelector('.csvExport');
+  const csvExportBtn = document.querySelector('.inj_container .csvExport');
   const parent = csvExportBtn?.parentElement;
   if (!parent || parent.childElementCount !== 3) return;
 
