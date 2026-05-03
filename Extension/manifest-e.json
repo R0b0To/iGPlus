@@ -1,13 +1,21 @@
 {
   "manifest_version": 3,
   "name": "iGPlus",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "description": "Enhance your iGPmanager experience",
   "permissions": [
     "tabs",
     "storage",
-    "scripting"
+    "scripting",
+    "identity"
   ],
+    "oauth2": {
+    "client_id": "771547073964-l5tomkr9gm6eqh54avrn147g9eu6va83.apps.googleusercontent.com",
+    "scopes":[
+      "https://www.googleapis.com/auth/drive.file",
+      "https://www.googleapis.com/auth/spreadsheets"
+    ]
+  },
   "action": {
     "default_icons": {
       "128": "images/Icon128.png"
