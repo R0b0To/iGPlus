@@ -1,156 +1,241 @@
-.sheetStyle{
-    border-radius: 12px;
-    font-family: "RobotoCondensed", "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-.progress{
-    display: flex;
-    background-color:#ddd; 
-    height:5px; 
-    border-radius:4px;
+/* =========================
+   BASE / SHELL
+========================= */
 
+#sheetDialog {
+    border-radius: 14px;
+    background-color: #1a2235; /* Slightly deeper dark for modern feel */
+    color: #e2e8f0;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); /* Depth */
+
+    padding: 0;
+    min-width: 320px;
+    width: min(420px, 92vw);
+
+    display: flex;
+    flex-direction: column;
+
+    max-height: 80vh;
+    overflow: hidden;
+    font-family: "Inter", "RobotoCondensed", "Open Sans", Helvetica, sans-serif;
 }
-.close-fix{
-    float: right;
-  position: relative!important;
+
+/* Beautiful backdrop when the dialog is open */
+#sheetDialog::backdrop {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
 }
-.spinner {
-    display: none;
-    
-    width: 14px;
-    height: 14px;
-    border: 2px solid white;
-    border-top: 2px solid transparent;
+
+/* Smooth opening animation */
+#sheetDialog[open] {
+    animation: dialogAppear 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes dialogAppear {
+    from { opacity: 0; transform: translateY(20px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.sheetHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.sheetHeader h2 {
+    font-size: 18px;
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #ffffff;
+}
+
+/* Close button */
+#close_dialog {
+    user-select: none;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    color: #94a3b8;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+#close_dialog:hover {
+    color: #ef4444; /* Subtle red on hover to indicate close */
+    transform: scale(1.1);
+}
+
+/* =========================
+   LIST AREA
+========================= */
+
+#sheetList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Consistent spacing */
+}
+
+/* Custom Scrollbar for list */
+#sheetList::-webkit-scrollbar {
+    width: 6px;
+}
+#sheetList::-webkit-scrollbar-track {
+    background: transparent;
+}
+#sheetList::-webkit-scrollbar-thumb {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+}
+#sheetList::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* =========================
+   SHEET ITEM
+========================= */
+
+.sheetStyle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.sheetStyle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.sheetStyle input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    animation: spin 0.7s linear infinite;
+    border: 2px solid #64748b;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
 }
+
+.sheetStyle input[type="radio"]:checked {
+    border-color: #4ade80; /* Brighter green */
+}
+
+.sheetStyle input[type="radio"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #4ade80;
+}
+
+.sheetStyle .sheet-name {
+    flex: 1;
+    font-size: 15px;
+    user-select: none;
+}
+
+/* Selected state */
+.selected_radio {
+    background: rgba(74, 222, 128, 0.1);
+    border: 1px solid rgba(74, 222, 128, 0.4);
+}
+.selected_radio .sheet-name {
+    color: #ffffff;
+    font-weight: 500;
+}
+
+/* =========================
+   FOOTER BUTTON
+========================= */
+
+.sheetFooter {
+    padding: 16px 20px;
+    background: rgba(0, 0, 0, 0.15);
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+#selectSheetBtn {
+    width: 100%;
+    height: 44px;
+    font-size: 15px;
+    font-weight: 600;
+
+    border: none;
+    border-radius: 8px;
+
+    background-color: #3b82f6; /* Modern Blue */
+    color: #ffffff;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: all 0.2s ease;
+}
+
+#selectSheetBtn:hover:not(:disabled) {
+    background-color: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+}
+
+#selectSheetBtn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+#selectSheetBtn:disabled {
+    background-color: #475569;
+    color: #94a3b8;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* =========================
+   SPINNER
+========================= */
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
 @keyframes spin {
     from { transform: rotate(0deg); }
     to { transform: rotate(360deg); }
 }
-.podium-off{
-    pointer-events:none;
-    opacity: 50%;
-}
-.myTeam{
-    background: #1a2235!important;
-}
-.selected_radio{
-    background-color: rgb(104, 153, 84);
-}
-.sheetStyle input[type="radio"]+label {
-    display: flex;
-    align-content: center;
-    flex-wrap: wrap;
-    border-radius: 8px;
-    padding-left: 3px;
-}
-.sheetStyle:hover {
-    background-color: #a8a8a8; 
-    color: black;
-  }
-#sheetDialog{
-    border-radius: 9px;
-    background-color: #26334e;
-    color: #adadad;
-    border: none;
-}
-#sheet_icon{
-    vertical-align: middle;
-    border: none;
-    padding-right: 10px;
 
-    background-color: transparent;
-    cursor: pointer;
-
-}
-#sheet_icon:hover {
-    opacity: 0.8; 
-  }
-#close_dialog{
-    user-select: none;
-    top: -20px;
-    font-size: 38px;
-    float: right;
-    position: relative;
-    cursor: pointer;
-}
-#selectSheetBtn{
-    height: 35px;
-    user-select: none;
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-    align-items: center;
-    border: none;
-    padding-left: 3px;
-    display: flex;
-    justify-content: center;
-    cursor: pointer;
-    background-color: rgb(70, 123, 177);
-    transition: transform 0.3s ease;
-    color: white;
-    width: 100%;
-
-}
-#alldrivers{
-    margin-right: 3px;
-    height: 42px;
-}
-#extract_button{
-    border: none;
-}
-#selectSheetBtn:hover{
-    transform: scale(1.05)
-}
-.inj_container{
-    display: flex;
-    width: 50%;
-    
-}
-.inj_header{
-    display: flex;
-    flex-wrap: wrap;
-    background: none;
-}
-.export_container{
-    display: flex;
-    align-items: center;
-}
-.f_right{
-    float: right;
-    flex-direction: row-reverse
-}
-.f_left{
-    float: left;
-}
-@media only screen and (max-width: 501px) {
-    .f_right {
-        float: none;
-    }
-  }
-@media only screen and (max-width: 343px) {
-    .f_right {
-        flex-direction: column-reverse;
-    }
-    .f_left {
-        flex-direction: column;
-    }
-  }
-  @media only screen and (max-width: 767px) {
-    .tyre_preview th:nth-child(6){
-        width: 5%!important;
-    }
-    .tyre_preview th:nth-child(3){
-        width: 30%!important;
-    }
-    .tyre_preview th:nth-child(2){
-        width: 60%!important;
-    }
-    .tyre_preview th:nth-child(1){
-        width: 5%!important;
-    }
-    table.acp td {
-        padding: 0!important;
-    }
-  }
-  
-  
+/* ... keep your existing helpers/responsive queries intact ... */

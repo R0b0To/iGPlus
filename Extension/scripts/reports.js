@@ -131,7 +131,7 @@ function injectUI() {
     className: 'export_container',
   });
   exportContainer.append(extractBtn, sheetIconBtn);
-  document.querySelector('.close').classList.add('close-fix');
+  //.classList.add('close-fix');
   header.append(exportContainer);
   
   injectCSVButtons(header);
@@ -163,7 +163,7 @@ function createSheetIconButton() {
     id: 'sheet_icon',
     className: 'pushBtn',
   });
-  btn.setAttribute('style', 'position:relative; margin-right:5px; left:10px; background-color:transparent; vertical-align:middle; cursor:pointer; border:none;');
+  btn.setAttribute('style', 'position:relative;margin-left:10px; background-color:transparent; vertical-align:middle; cursor:pointer; border:none;');
   btn.append(img);
   btn.onclick = openSheetImportDialog ;
   return btn;
@@ -307,93 +307,131 @@ async function openSheetImportDialog() {
 
   const listContainer = document.getElementById('sheetList');
   const selectBtn = document.getElementById('selectSheetBtn');
+  
+  // Reset list and button state
   listContainer.innerHTML = '';
+  selectBtn.disabled = true;
 
   sheets.forEach(sheet => {
-    const item = document.createElement('div');
+    // Using a label makes the entire row clickable natively
+    const item = document.createElement('label');
     item.className = 'sheetStyle';
-    item.innerHTML = `<input type="radio" name="sheetRadio" id="${sheet.id}"><label for="${sheet.id}">${sheet.name}</label>`;
-    item.addEventListener('click', () => {
-      item.append(selectBtn);
-      selectBtn.style.display = 'flex';
+    item.htmlFor = sheet.id;
+    
+    item.innerHTML = `
+      <input type="radio" name="sheetRadio" id="${sheet.id}" value="${sheet.id}">
+      <span class="sheet-name">${sheet.name}</span>
+    `;
+    
+    // Listen to the radio input change
+    item.querySelector('input').addEventListener('change', () => {
       document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
       item.classList.add('selected_radio');
       selectBtn.removeAttribute('disabled');
     });
+    
     listContainer.appendChild(item);
   });
 
   document.getElementById('sheetDialog').showModal();
 
   async function handleSheetSelection() {
-    const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
-    const { access_gSheet } = await import(chrome.runtime.getURL('auth/gSheetsHandler.js'));
-    const raceId = getRaceId();
+    // Show spinner / loading state on button (Optional but good UX)
+    const btnText = selectBtn.textContent;
+    selectBtn.innerHTML = '<div class="spinner" style="display:inline-block; margin-right:8px;"></div> Exporting...';
+    selectBtn.disabled = true;
 
-    const qualiRows = exportQuali(false).split('\n').map(row => [raceId, 'Q', ...row.split(',')]);
-    let raceRows = exportRace(false).split('\n').map(row => [raceId, 'R', ...row.split(',')]);
+    try {
+      const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
+      const { access_gSheet } = await import(chrome.runtime.getURL('auth/gSheetsHandler.js'));
+      const raceId = getRaceId();
 
-    const noticeEls = document.getElementsByClassName('notice');
-    const raceDate = noticeEls[1]?.textContent ?? 'error';
-    const trackCode = document.querySelector('.flag').classList[1].substring(2);
-    const rules = [
-      `⛽${getRuleActive(noticeEls[0], '#igp-fuel')}`,
-      `🛞${getRuleActive(noticeEls[0], '#igp-tyre')}`,
-      `⏱️${getRuleActive(noticeEls[0], '#md-stopwatch')}`,
-    ].join(',');
+      const qualiRows = exportQuali(false).split('\n').map(row => [raceId, 'Q', ...row.split(',')]);
+      let raceRows = exportRace(false).split('\n').map(row =>[raceId, 'R', ...row.split(',')]);
 
-    if (document.getElementById('alldrivers')) {
-      manager.sort((a, b) => a.race_finish - b.race_finish);
-      raceRows[0].push('Strategy', 'Pit Stops Time', 'Time Lost', 'Rank');
-      raceRows = [
-        raceRows[0],
-        ...raceRows.slice(1).map((row, i) => [
-          ...row,
-          manager[i].pit_stop,
-          manager[i].pitStopTimes.join(','),
-          manager[i].pitTimeLoss.join(','),
-          manager[i].rank.join(','),
-        ]),
-      ];
+      const noticeEls = document.getElementsByClassName('notice');
+      const raceDate = noticeEls[1]?.textContent ?? 'error';
+      const trackCode = document.querySelector('.flag').classList[1].substring(2);
+      const rules = [
+        `⛽${getRuleActive(noticeEls[0], '#igp-fuel')}`,
+        `🛞${getRuleActive(noticeEls[0], '#igp-tyre')}`,
+        `⏱️${getRuleActive(noticeEls[0], '#md-stopwatch')}`,
+      ].join(',');
+
+      if (document.getElementById('alldrivers')) {
+        manager.sort((a, b) => a.race_finish - b.race_finish);
+        raceRows[0].push('Strategy', 'Pit Stops Time', 'Time Lost', 'Rank');
+        raceRows = [
+          raceRows[0],
+          ...raceRows.slice(1).map((row, i) => [
+            ...row,
+            manager[i].pit_stop,
+            manager[i].pitStopTimes.join(','),
+            manager[i].pitTimeLoss.join(','),
+            manager[i].rank.join(','),
+          ]),
+        ];
+      }
+
+      await access_gSheet(selectedId, token.access_token, [...qualiRows, ...raceRows], {
+        race_date: raceDate,
+        track_code: trackCode,
+        rules,
+      });
+      closeSheetDialog();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      // Restore button state
+      selectBtn.textContent = btnText;
+      selectBtn.disabled = false;
     }
-
-    access_gSheet(selectedId, token.access_token, [...qualiRows, ...raceRows], {
-      race_date: raceDate,
-      track_code: trackCode,
-      rules,
-    });
-    closeSheetDialog();
   }
-  document.getElementById('selectSheetBtn').onclick = handleSheetSelection;
+  
+  // Clean up old listeners to prevent multi-fires
+  selectBtn.onclick = handleSheetSelection;
 }
 
 function createSheetDialog() {
   const dialog = document.createElement('dialog');
   dialog.id = 'sheetDialog';
 
-  const closeSpan = Object.assign(document.createElement('span'), {
-    id: 'close_dialog',
-    textContent: '×',
-  });
-  const heading = Object.assign(document.createElement('h2'), { textContent: 'Select a Sheet' });
-  const list = Object.assign(document.createElement('div'), { id: 'sheetList' });
-  const selectBtn = Object.assign(document.createElement('button'), {
-    id: 'selectSheetBtn',
-    textContent: 'Export the results to this sheet',
-  });
-  selectBtn.style.display = 'none';
-
-  dialog.append(closeSpan, heading, list, selectBtn);
-  document.body.appendChild(dialog);
+  // --- HEADER ---
+  const header = document.createElement('div');
+  header.className = 'sheetHeader';
+  
+  const heading = document.createElement('h2');
+  heading.textContent = 'Select a Sheet';
+  
+  const closeSpan = document.createElement('span');
+  closeSpan.id = 'close_dialog';
+  closeSpan.innerHTML = '&times;'; // Looks better than an 'x'
   closeSpan.onclick = closeSheetDialog;
+  
+  header.append(heading, closeSpan);
+
+  // --- BODY (List) ---
+  const list = document.createElement('div');
+  list.id = 'sheetList';
+
+  // --- FOOTER ---
+  const footer = document.createElement('div');
+  footer.className = 'sheetFooter';
+  
+  const selectBtn = document.createElement('button');
+  selectBtn.id = 'selectSheetBtn';
+  selectBtn.textContent = 'Export results';
+  
+  footer.append(selectBtn);
+
+  // --- ASSEMBLE ---
+  dialog.append(header, list, footer);
+  document.body.appendChild(dialog);
 }
 
 function closeSheetDialog() {
   const dialog = document.getElementById('sheetDialog');
-  const btn = document.getElementById('selectSheetBtn');
-  btn.style.display = 'none';
-  dialog.append(btn);
-  dialog.close();
+  if(dialog) dialog.close();
 }
 
 // ─── CSV Export ───────────────────────────────────────────────────────────────
