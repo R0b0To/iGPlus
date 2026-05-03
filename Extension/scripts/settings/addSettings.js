@@ -111,24 +111,6 @@ async function initializeSettingsLogic() {
     });
   });
 
-  // Checkbox Event Delegation (Global handling)
-  document.getElementById('iGPlus').addEventListener('change', async (e) => {
-    if (e.target.type === 'checkbox') {
-      const id = e.target.parentElement.id;
-      const isChecked = e.target.checked;
-
-      if (['raceSign', 'overSign'].includes(id)) {
-        await storage.set({ [id]: isChecked });
-        restoreOptions();
-      } else if (['editS', 'sliderS'].includes(id)) {
-        handleExclusiveCheckboxes(e.target);
-      } else {
-        await storage.mergeScript(id, isChecked);
-        if (id === 'gdrive') isChecked ? checkAuth() : UI.forceSyncBtn.classList.remove('visibleSync');
-        if (id === 'strategy') handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
-      }
-    }
-  });
 
   // Setup Fieldtip Tooltips via Delegation
   setupTooltips();
@@ -150,13 +132,10 @@ async function initializeSettingsLogic() {
         await storage.set({ [id]: isChecked });
         restoreOptions();
       } else if (['editS', 'sliderS'].includes(id)) {
-        // Handle mutually exclusive check
         await handleExclusiveCheckboxes(e.target);
       } else {
         await storage.mergeScript(id, isChecked);
         if (id === 'gdrive') isChecked ? checkAuth() : UI.forceSyncBtn.classList.remove('visibleSync');
-        
-        // Handle disabling sub-checkboxes when parent is toggled
         if (id === 'strategy') handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
       }
     }
@@ -220,20 +199,58 @@ async function initializeSettingsLogic() {
     }
   }
 
-  async function checkAuth() {
-    const { getFirstAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-    const token = await getFirstAccessToken();
-    if (!token) {
-      await storage.mergeScript('gdrive', false);
-      document.querySelector('#gdrive input').checked = false;
-      UI.forceSyncBtn.classList.remove('visibleSync');
-      return false;
-    }
-    // Logic to run sync
-    chrome.runtime.sendMessage({ type: 'syncData', direction: false, token: token.access_token }, response => {
-      if (response && response.done) restoreOptions();
-    });
+async function checkAuth() {
+  const checkbox = document.querySelector('#gdrive input');
+  
+  // 1. Disable the checkbox so they can't click it again quickly
+  checkbox.disabled = true; 
+
+  // 2. Create or find the loader element
+  let loader = document.getElementById('gdrive-loader');
+  if (!loader) {
+    loader = document.createElement('span');
+    loader.id = 'gdrive-loader';
+    loader.className = 'gdrive-loader';
+    // Insert it right after the checkbox in the DOM
+    checkbox.parentNode.append(loader);
   }
+  
+  // 3. Show the loader
+  loader.style.display = 'inline-block';
+
+  try {
+    // Request the token (Loader is spinning during this)
+    const response = await chrome.runtime.sendMessage({ action: 'getFirstToken' });
+    
+    if (!response || response.error || !response.token) {
+      // Revert if failed or canceled
+      checkbox.checked = false;
+    } else {
+      // Success! Got the token.
+      const token = response.token;
+      
+      // 4. Wrap the sync message in a Promise! 
+      // This forces the 'try' block to pause here until the background script responds.
+      await new Promise((resolve) => {
+        chrome.runtime.sendMessage({ type: 'syncData', direction: false, token: token.access_token }, syncResponse => {
+          if (syncResponse && syncResponse.done) {
+            restoreOptions();
+          }
+          resolve(); // Tell the Promise the sync is officially finished
+        });
+      });
+    }
+  } catch (err) {
+    console.error("Auth or Sync failed:", err);
+    checkbox.checked = false;
+  } finally {
+    // 5. Clean up: Hide the loader and re-enable the checkbox
+    // Because we 'await'ed the Promise above, this ONLY runs after syncData is completely done!
+    if (loader) loader.style.display = 'none';
+    checkbox.disabled = false; 
+  }
+}
+
 function buildPseudoSelect(elementId, keys, changeCallback) {
     const oldElement = document.getElementById(elementId);
     if (!oldElement) return;
@@ -621,50 +638,60 @@ async function handleFileUpload(event) {
     document.body.removeChild(link);
   }
 
-  async function deleteSave(e) {
-    const track = document.getElementById('exportSave_Strategies').querySelector('span').textContent.toLocaleLowerCase();
-    const scripts = await storage.get('script') || {};
-    let token = false;
+async function deleteSave(e) {
+  const track = document.getElementById('exportSave_Strategies').querySelector('span').textContent.toLocaleLowerCase();
+  const scripts = await storage.get('script') || {};
+  let token = false;
 
-    // Check if Google Drive Sync is enabled to sync deletions
-    if (scripts.gdrive) {
-      const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-      token = await getAccessToken();
-    }
-
-    if (track === 'all') {
-      // Delete ALL strategies
-      await chrome.storage.local.remove('save');
-      console.log('iGPlus | Removing all saves');
+  // Check if Google Drive Sync is enabled to sync deletions
+  if (scripts.gdrive) {
+    try {
+      // Send message to background script to get the token silently
+      const response = await chrome.runtime.sendMessage({ action: 'getTokenSilent' });
       
-      if (token) {
-        chrome.runtime.sendMessage({
-          type: 'deleteFile',
-          data: { type: 'strategies', track: 0, name: 'delete_strategies' },
-          token: token.access_token
-        });
+      if (response && response.token) {
+        token = response.token; // This is the { access_token: "..." } object
+      } else {
+        console.warn('Could not get token for deletion sync:', response?.error);
       }
-    } else {
-      // Delete a specific strategy
-      const saveID = e.target.closest('tr').id;
-      const savesData = await storage.get('save');
+    } catch (err) {
+      console.error('Messaging error while getting token:', err);
+    }
+  }
 
-      if (savesData[track] && savesData[track][saveID]) {
-        delete savesData[track][saveID];
-        await storage.set({ save: savesData });
-      }
+  if (track === 'all') {
+    // Delete ALL strategies
+    await chrome.storage.local.remove('save');
+    console.log('iGPlus | Removing all saves');
+    
+    if (token) {
+      chrome.runtime.sendMessage({
+        type: 'deleteFile',
+        data: { type: 'strategies', track: 0, name: 'delete_strategies' },
+        token: token.access_token
+      });
+    }
+  } else {
+    // Delete a specific strategy
+    const saveID = e.target.closest('tr').id;
+    const savesData = await storage.get('save');
 
-      if (token) {
-        chrome.runtime.sendMessage({
-          type: 'deleteFile',
-          data: { type: 'strategies', track: track, name: saveID },
-          token: token.access_token
-        });
-      }
+    if (savesData && savesData[track] && savesData[track][saveID]) {
+      delete savesData[track][saveID];
+      await storage.set({ save: savesData });
     }
 
-    // Refresh the dropdown and table UI
-    setupExportDropdowns();
+    if (token) {
+      chrome.runtime.sendMessage({
+        type: 'deleteFile',
+        data: { type: 'strategies', track: track, name: saveID },
+        token: token.access_token
+      });
+    }
   }
+
+  // Refresh the dropdown and table UI
+  setupExportDropdowns();
+}
 
 }

@@ -77,11 +77,11 @@ const tabScripts = {
     styles: ['css/transfers.css']
   },
   '/app/p=race': {
-    scripts: ['lib/highcharts.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js'],
+    scripts: ['lib/highcharts.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/purify.js'],
     styles: ['css/race.css']
   },
   '/app/p=settings': {
-    scripts: ['scripts/settings/addSettings.js','lib/gsi.js'],
+    scripts: ['scripts/settings/addSettings.js'],
     styles: ['css/settings.css','css/strategyPreview.css']
   },
   '/app/p=transfers&tab=staff': {
@@ -98,7 +98,7 @@ const tabScripts = {
   },
   '/app/p=race&tab=strategy': {
     key: 'strategy',
-    scripts: ['scripts/strategy/strategy.js','lib/gsi.js','lib/purify.js']
+    scripts: ['scripts/strategy/strategy.js','lib/purify.js']
   },
   '/app/p=league&id=': {
     key: 'league',
@@ -107,7 +107,7 @@ const tabScripts = {
   },
   '/app/d=result&id=': {
     key: 'reports',
-    scripts: ['scripts/reports.js', 'lib/purify.js','lib/gsi.js'],
+    scripts: ['scripts/reports.js', 'lib/purify.js'],
     styles: ['css/reports.css']
   },
   // main Staff page
@@ -145,7 +145,7 @@ const tabScripts = {
   },
   gdrive: {
     key: 'gdrive',
-    scripts: ['scripts/autoSync.js','lib/gsi.js']
+    scripts: ['scripts/autoSync.js']
   },
   disablebg: {
     key: 'disablebg',

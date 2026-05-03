@@ -1,12 +1,13 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
 import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud, cloudToLocal } from './auth/gDriveHandler.js';
 import { addData, getAllData, getElementById } from './common/database.js';
+import {  getFirstAccessToken, getAccessToken, revokeConsent } from './auth/googleAuth.js';
 
 // Use an object to track the last path executed per tabId
 // This prevents cross-tab interference and double-triggering
 const tabState = {};
 
-// Helper to determine if we are in Firefox or Chrome
+
 const api = typeof browser !== 'undefined' ? browser : chrome;
 
 api.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -103,6 +104,38 @@ async function sendDeleteRequest(request){
 chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
   //console.log('sent request',request);
   (async function () {
+    // Listen for the request from the content script
+  if (request.action === 'getFirstToken') {
+    
+    // Run the auth function
+    getFirstAccessToken()
+      .then(token => {
+        if (token) {
+          sendResponse({ token: token }); 
+        } else {
+          sendResponse({ error: "No token returned" });
+        }
+      })
+      .catch(err => {
+        // Send the error message back to the content script
+        sendResponse({ error: err.message || err });
+      });
+
+    // IMPORTANT: Return true tells Chrome we will send the response asynchronously.
+    // If you forget this, the content script's 'await' will instantly fail.
+    return true; 
+  }
+
+  // (Optional) You can also add listeners for getAccessToken and revokeConsent
+  if (request.action === 'getTokenSilent') {
+    getAccessToken().then(token => sendResponse({ token })).catch(error => sendResponse({ error }));
+    return true;
+  }
+  
+  if (request.action === 'revokeToken') {
+    revokeConsent().then(() => sendResponse({ success: true }));
+    return true;
+  }
     if (request.type === 'deleteFile')
     {
       sendDeleteRequest(request);
