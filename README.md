@@ -6,4 +6,4 @@ Inject HTML elements into the game website, adding useful shortcuts and quality 
 
 
 # Privacy Policy for iGPlus
-[GitHub Repository]([https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPO_NAME](https://r0b0to.github.io/iGPlus/privacy)).
+[Privacy Policy](https://r0b0to.github.io/iGPlus/privacy).
