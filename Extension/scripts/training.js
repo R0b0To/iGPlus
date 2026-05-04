@@ -57,8 +57,10 @@ async function startHealthMonitor() {
   resetHealthColors(pitCrew);
 
   const healthObserver = new MutationObserver(function (_mutations) {
-    checkTimeToFullHealthForElements(staff);
-    checkTimeToFullHealthForElements(pitCrew);
+     const regenerationRateDrivers = Number(document.getElementById('drivers').querySelector('.notice').textContent.match(/\+?(\d+)%/)[1]);
+     const regenerationRateCrew = Number(document.getElementById('pitcrew').querySelector('.notice').textContent.match(/\+?(\d+)%/)[1]);
+    checkTimeToFullHealthForElements(staff,regenerationRateDrivers);
+    checkTimeToFullHealthForElements(pitCrew,regenerationRateCrew);
   });
 
   /**
@@ -73,17 +75,18 @@ async function startHealthMonitor() {
   /**
    * Health regenerates 5% each time new hour starts (first minute of the next hour)
    */
-  function checkTimeToFullHealthForElements(elements) {
+  function checkTimeToFullHealthForElements(elements,regenerationRate) {
+
     elements.forEach((element) => {
       const health = parseInt(element.style.width);
 
-      const hoursToFull = Math.ceil((100 - health) / 5);
+      const hoursToFull = Math.ceil((100 - health) / regenerationRate);
       const fullDate = new Date(Date.now() + 3600_000 * hoursToFull);
 
       // highlight healthbar depending on the next race time & estimated health to that moment
       
       const dateString = `~${padValue(fullDate.getHours())}:01`;
-      const health_at_race_time = Math.max(0, Math.min(100, Math.floor(100 - (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000 * 5)));
+      const health_at_race_time = Math.max(0, Math.min(100, Math.floor(100 - (fullDate - nextRaceData.nextLeagueRaceTime * 1000) / 3600_000 * regenerationRate)));
       const healthText = health < 100  ? `${dateString} ${health_at_race_time > 0 ? `(${health_at_race_time}%)` : ''}`
     : '100%';
       const healthBarCell = element.closest('td');
