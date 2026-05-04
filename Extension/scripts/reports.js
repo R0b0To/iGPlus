@@ -146,7 +146,7 @@ function createExtractButton() {
     className: 'btn3 pushBtn',
     innerText: 'Extract',
   });
-  btn.setAttribute('style', 'position:relative; left:10px; cursor:pointer;');
+  btn.setAttribute('style', 'position:relative; left:10px; cursor:pointer;border: none;');
   btn.append(spinner);
   btn.onclick =  onExtractClick;
   btn.onclick = onExtractClick;
