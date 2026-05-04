@@ -6,9 +6,10 @@ try {
     sycedStatus.id = 'syncedStatus';
     document.body.append(sycedStatus);
     const sync = async function(){
-      console.log('iGPlus| Syncing...');
-      const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-      const token = await getAccessToken();
+
+        const token =
+        (await chrome.runtime.sendMessage({ action: 'getTokenSilent' }))?.token ||
+        (await chrome.runtime.sendMessage({ action: 'getFirstToken' }))?.token;
 
       if(token != false)
       {
