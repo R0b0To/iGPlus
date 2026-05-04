@@ -585,43 +585,52 @@ opacity: 0.8;
 }
 
 
-.add-stint {
-display: flex;
-align-items: center;
-justify-content: center;
-width: 60px;
-min-width: 60px;
-height: 50%;
-border-radius: 12px;
-border: 2px dashed #555;
-color: #aaa;
-font-size: 32px;
-cursor: pointer;
+/* Shared button style */
+.add-stint,
+.trash-zone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 36px;
+  height: 36px;
+
+  font-size: 20px;
+  font-weight: bold;
+
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+
+  transition: all 0.2s ease;
 }
 
+/* Plus button */
+.add-stint {
+  background-color: #1283423d;
+  color: white;
+}
 
 .add-stint:hover {
-color: #fff;
-border-color: #777;
+  background-color: #14b6593d;
+  transform: scale(1.1);
 }
 
-
+/* Minus button */
 .trash-zone {
-display: flex;
-align-items: center;
-justify-content: center;
-width: 60px;
-height: 50%;
-background: #5a2a2a;
-border-radius: 12px;
-font-weight: 700;
-font-size: 32px;
-cursor: pointer;
+  background-color: #b94d4d59;
+  color: white;
 }
-
 
 .trash-zone:hover {
-background: #7a3a3a;
+  background-color: #ff696959;
+  transform: scale(1.1);
+}
+
+/* Click effect */
+.add-stint:active,
+.trash-zone:active {
+  transform: scale(0.95);
 }
 
 
@@ -644,11 +653,10 @@ background: #4a90e2;
 outline: 2px dashed #4a90e2;}
 
 .controlCol{
+  width: 90px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    height: stretch;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .customTyre{
@@ -862,12 +870,12 @@ outline: 2px dashed #4a90e2;}
 }
 
 .editor-btn.confirm,.modal-confirm {
-  background: #689954;
+  background: #1283423d;
   color: #e9e9e9;
 }
 
 .editor-btn.cancel, .modal-cancel {
-  background: #d66e67;
+  background: #ff696959;
   color: #e9e9e9;
 }
 

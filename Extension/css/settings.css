@@ -354,7 +354,8 @@ input[type="file"] {
   margin-left: 5px;
   cursor: pointer;
   border-radius: 8px;
-  background-color: rgb(104, 153, 84);
+  background: #9f0b634f;
+    filter: invert(1);
   display: flex;
   justify-content: center;
   align-items: center;  
