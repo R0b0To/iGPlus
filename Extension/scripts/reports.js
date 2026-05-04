@@ -299,10 +299,10 @@ async function openSheetImportDialog() {
   // Always create fresh or check existence
   if (!document.getElementById('sheetDialog')) createSheetDialog();
 
-  const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-  const token = await getAccessToken();
-  if (!token) return;
-
+  const token =
+  (await chrome.runtime.sendMessage({ action: 'getTokenSilent' }))?.token ||
+  (await chrome.runtime.sendMessage({ action: 'getFirstToken' }))?.token;
+ 
   const { get_sheets } = await import(chrome.runtime.getURL('auth/gDriveHandler.js'));
   const sheets = await get_sheets(token.access_token);
 
