@@ -1,66 +1,70 @@
-function import_to_sheet(id,access_token,values,id_list,sheetId){
-    const spreadsheetId = id;
-    const accessToken = access_token; 
-    const range = 'imported_data!A151';
-    
+/**
+ * Cleanly appends data and updates the index list at the top of the sheet
+ */
+async function import_to_sheet(spreadsheetId, accessToken, values, id_list, sheetId) {
+  const appendRange = 'imported_data!A151';
+  const appendUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${appendRange}:append?valueInputOption=USER_ENTERED`;
 
-const apiUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}:append?valueInputOption=USER_ENTERED`;
-fetch(apiUrl, {
-    method: 'POST',
-    headers: {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json',},
-    body: JSON.stringify({values: values,}),})
-    .then(response => response.json())
-    .then(data => {
-    })
-    .catch(error => {
-      console.error('Error appending data:', error);
+  try {
+    // 1. Append the new data rows
+    await fetch(appendUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ values: values }),
     });
-    
-    const batchUpdateRequest = {
-        requests: [
-          {
-            updateCells: {
-              range: {
-                sheetId: sheetId, 
-                startRowIndex: 0,
-                startColumnIndex: 0,
-                endRowIndex: 150, 
-                endColumnIndex: 4, 
-              },
-              rows: id_list.map((id, index) => {
-                return {  
-                  values: [
-                    {userEnteredValue: {numberValue: id[0]}},//race id
-                    {userEnteredValue: {stringValue: id[1]}},//race track 
-                    {userEnteredValue: {stringValue: id[2]}}, //race timestamp
-                    {userEnteredValue: {stringValue: id[3]}} //race rules
-                  ]                
-                };
 
-              }),
-              fields: 'userEnteredValue',
-            },
+    // 2. Prepare the batch update for the index (rows 1-150)
+    const batchUpdateRequest = {
+      requests: [{
+        updateCells: {
+          range: {
+            sheetId: sheetId,
+            startRowIndex: 0,
+            startColumnIndex: 0,
+            endRowIndex: 150,
+            endColumnIndex: 4,
           },
-        ],
-      };
-    fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
-        method: 'POST',
-        headers: {'Authorization': `Bearer ${accessToken}`,'Content-Type': 'application/json',},
-        body: JSON.stringify(batchUpdateRequest),
-      })
-        .then(response => response.json())
-        .then(data => {
-            alert('Race exported successfully:');
-        })
-        .catch(error => {
-          console.error('Error appending data:', error);
-        });   
+          rows: id_list.map((row) => {
+            return {
+              values: [
+                { userEnteredValue: { numberValue: Number(row[0]) || 0 } }, // race id
+                { userEnteredValue: { stringValue: String(row[1]) } },     // track
+                { userEnteredValue: { stringValue: String(row[2]) } },     // timestamp
+                { userEnteredValue: { stringValue: String(row[3]) } }      // rules
+              ]
+            };
+          }),
+          fields: 'userEnteredValue',
+        },
+      }],
+    };
+
+    const updateUrl = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`;
+    const response = await fetch(updateUrl, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(batchUpdateRequest),
+    });
+
+    if (!response.ok) throw new Error("Batch update failed");
+
+    alert('Race exported successfully!');
+    return true;
+  } catch (error) {
+    console.error('Error in import_to_sheet:', error);
+    throw error;
+  }
 }
 
 async function access_gSheet(id, access_token, values, race_info) {
   const RANGE_NAME = 'imported_data';
   const RANGE = `${RANGE_NAME}!A1:D150`;
-  const API_ENDPOINT = `https://sheets.googleapis.com/v4/spreadsheets/${id}/values/${RANGE}`;
   const API_SPREADSHEET_ENDPOINT = `https://sheets.googleapis.com/v4/spreadsheets/${id}`;
 
   try {
@@ -78,91 +82,78 @@ async function access_gSheet(id, access_token, values, race_info) {
     let sheetId;
 
     if (!sheet) {
-      // Sheet doesn't exist, create it and wait for it to finish
       sheetId = await addSheet(id, access_token);
-      if (sheetId === -1) throw new Error("Failed to create new sheet.");
+      if (sheetId === -1) return false;
     } else {
       sheetId = sheet.properties.sheetId;
     }
 
-    // 3. Fetch existing values to check for duplicates
-    const dataResponse = await fetch(API_ENDPOINT, {
+    // 3. Fetch existing values
+    const dataResponse = await fetch(`${API_SPREADSHEET_ENDPOINT}/values/${RANGE}`, {
       method: 'GET',
       headers: { 'Authorization': `Bearer ${access_token}` },
     });
 
-    // If the sheet was JUST created, it might return 404/400 or just empty
     let id_list = [];
     if (dataResponse.ok) {
       const data = await dataResponse.json();
-      id_list = data.values ?? [];
+      // FIX: Deep clone the data to bypass Firefox XrayWrapper
+      id_list = data.values ? JSON.parse(JSON.stringify(data.values)) : [];
     }
 
     // 4. Check for duplicates
-    const race_id = values[0][0];
-    const isValuePresent = id_list.some(row => row.includes(race_id));
+    const race_id = String(values[0][0]);
+    const isValuePresent = id_list.some(row => String(row[0]) === race_id);
 
-    if (!isValuePresent && id_list.length < 151) {
-      id_list.push([race_id, race_info.track_code, race_info.race_date, race_info.rules]);
+    if (!isValuePresent && id_list.length < 150) {
+      // Clean data before pushing
+      id_list.push([
+        race_id, 
+        String(race_info.track_code), 
+        String(race_info.race_date), 
+        String(race_info.rules)
+      ]);
       
-      // 5. IMPORTANT: Await the final import call
-      // Ensure import_to_sheet is also an async function or returns a promise!
       await import_to_sheet(id, access_token, values, id_list, sheetId);
-      return true; 
+      return true;
     } else {
-      const msg = isValuePresent ? "Race report already stored." : "Sheet limit (150) reached.";
-      alert(msg);
+      alert(isValuePresent ? "Race report already stored." : "Sheet limit (150) reached.");
       return false;
     }
   } catch (error) {
     console.error('Error in access_gSheet:', error);
-    throw error; // Re-throw so the Dialog UI can catch it and stop the spinner
+    throw error;
   }
 }
 
-
-export{
-    import_to_sheet,
-    access_gSheet
-  };
-
-  async function addSheet(id,access_token){
-    //to do return id of the created sheet
-    const API_SPREADSHEET_ENDPOINT  = `https://sheets.googleapis.com/v4/spreadsheets/${id}:batchUpdate`;
-    return fetch(API_SPREADSHEET_ENDPOINT, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${access_token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      requests: 
-      {
-          addSheet: 
-          {
-            properties: 
-            {
-              title: "imported_data",
-            },
-          },
-      },
-    }),
-  }).then(response => {
-    if (response.status === 200) {
-      return response.json();
-    }
-    if (response.status === 403) {
-      alert('You do not have edit permissions for the selected sheet')
-      return -1
-    }
-  }).then(data => {
-    if (data == -1){
-      return -1
-    }else
-    return data.replies[0].addSheet.properties.sheetId
-  })
-.catch(error => {
-console.error('Error fetching data:', error);
-});
-  }
+async function addSheet(id, access_token) {
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${id}:batchUpdate`;
   
+  try {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requests: [{
+          addSheet: { properties: { title: "imported_data" } }
+        }]
+      }),
+    });
+
+    if (response.status === 403) {
+      alert('You do not have edit permissions for the selected sheet');
+      return -1;
+    }
+
+    const data = await response.json();
+    return data.replies[0].addSheet.properties.sheetId;
+  } catch (error) {
+    console.error('Error adding sheet:', error);
+    return -1;
+  }
+}
+
+export { import_to_sheet, access_gSheet };
