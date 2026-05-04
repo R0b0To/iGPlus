@@ -563,16 +563,36 @@
     return { 20: pushLevels[0], 40: pushLevels[1], 60: pushLevels[2], 80: pushLevels[3], 100: pushLevels[4] };
   }
 
-  function injectCircuitMap() {
-    if (document.getElementById('customMap')) return;
-    try {
-      const code = document.querySelector('.flag')?.outerHTML.split("-")[1].split(" ")[0] ?? 'au';
-      const target = document.querySelector('[id="strategy"] div:not(.checkbox-wrapper)');
-      if(target) {
-        target.insertAdjacentHTML('beforeend', `<a href="d=circuit&id=1&tab=history"><img id="customMap" src="${chrome.runtime.getURL(`images/circuits/${code}_dark.png`)}" style="width:100%;"></a>`);
-      }
-    } catch(e) {}
+async function injectCircuitMap() {
+  if (document.getElementById('customMap')) return;
+
+  try {
+    const code =
+      document.querySelector('.flag')?.outerHTML.split("-")[1].split(" ")[0] ?? 'au';
+
+    const { trackDictionary } = await import(
+      chrome.runtime.getURL('scripts/strategy/const.js')
+    );
+
+    const trackId = trackDictionary?.[code]?.[2];
+    if (!trackId) return;
+
+    const target = document.querySelector('[id="strategy"] div:not(.checkbox-wrapper)');
+
+    if (target) {
+      target.insertAdjacentHTML(
+        'beforeend',
+        `<a href="d=circuit&id=${trackId}&tab=history">
+          <img id="customMap"
+               src="${chrome.runtime.getURL(`images/circuits/${code}_dark.png`)}"
+               style="width:100%;">
+        </a>`
+      );
+    }
+  } catch (e) {
+    // optional: console.error(e);
   }
+}
 
   // 7. DRAG & DROP LOGIC
   function attachDragLogic(stintEl, carIndex, strategyData) {
