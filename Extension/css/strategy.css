@@ -1011,7 +1011,9 @@ outline: 2px dashed #4a90e2;}
 }
 
 #strategyPopup {
+  align-items: center;
   position: fixed;
+  background: #1515157b;
   inset: 0;
   display: none;
   z-index: 9999;
