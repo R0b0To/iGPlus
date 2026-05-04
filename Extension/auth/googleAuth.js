@@ -1,79 +1,75 @@
 const ext = globalThis.browser || globalThis.chrome;
 
-// 1. Improved Detection: Only use native login if it's actually Google Chrome
+// 1. Improved Detection
 const isRealChrome = (() => {
   const ua = navigator.userAgent.toLowerCase();
-  // Ensure it's Chrome, but NOT Edge and NOT Brave
   return ua.includes('chrome') && !ua.includes('edg/') && !ua.includes('brave');
 })();
 
+const isFirefoxAndroid = (() => {
+  const ua = navigator.userAgent.toLowerCase();
+  return ua.includes('firefox') && ua.includes('android');
+})();
+
 const isNativeSupported = isRealChrome && typeof ext?.identity?.getAuthToken === 'function';
+const hasIdentityAPI = typeof ext?.identity !== 'undefined';
 
 const WEB_CLIENT_ID = '771547073964-71rvhnkrborst6bmolc0amfcvbfh5lki.apps.googleusercontent.com';
 const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.readonly';
 
 async function requestNativeToken(options) {
-  // 2. Only attempt the native popup if we are on Google Chrome
+  // Path A: Google Chrome Native (Fastest)
   if (isNativeSupported) {
     return new Promise((resolve, reject) => {
       ext.identity.getAuthToken({ interactive: options.interactive }, async (token) => {
         if (ext.runtime.lastError) {
           const errMsg = ext.runtime.lastError.message;
-          
-          // Fallback if browser sign-in is off
           if (errMsg.includes('turned off') || errMsg.includes('not signed in')) {
             try {
               const fallbackToken = await launchWebFlow(options.interactive);
               resolve(fallbackToken);
-            } catch (err) {
-              reject(err);
-            }
-          } else {
-            reject(errMsg);
-          }
+            } catch (err) { reject(err); }
+          } else { reject(errMsg); }
         } else {
           resolve({ access_token: token });
         }
       });
     });
-  } else {
-    // 3. For Edge, Brave, Vivaldi, and Firefox: Go straight to the Web Flow
-    console.log("Non-Chrome browser detected, using Web Auth Flow.");
+  } 
+  
+  // Path B: Desktop Firefox / Edge / Brave (Identity API exists)
+  if (hasIdentityAPI) {
     return launchWebFlow(options.interactive);
-  }
-}
-async function getAccessToken() {
-   console.log('test1');
-  // 1. For Web Flow browsers, check our manual cache first
-  if (!isNativeSupported) {
-    const local = await isLocalTokenValid();
-    if (local) return local;
-  }
+  } 
 
-  // 2. Attempt to get a token silently
+  // Path C: Firefox Android Fallback (No Identity API)
+  console.log("iGPlus | Identity API missing (Android). Using Tab flow.");
+  return launchAndroidTabFlow(options.interactive);
+}
+
+async function getAccessToken() {
+  const local = await isLocalTokenValid();
+  if (local) return local;
+
   try {
     return await requestNativeToken({ interactive: false });
   } catch (err) {
     console.warn("Silent token request failed:", err);
-    return null; // Return null so the UI knows to show the login button
+    return null;
   }
 }
 
 async function getFirstAccessToken() {
-  console.log('test2');
   return requestNativeToken({ interactive: true });
 }
 
 /**
- * Shared generic OAuth Web Flow (Used by Firefox natively, and Chrome as a fallback)
+ * Standard Identity Web Flow (Desktop)
  */
 async function launchWebFlow(interactive) {
-  // 1. Check if we have a valid cached token first
   const localToken = await isLocalTokenValid();
   if (localToken && !interactive) return localToken;
 
-  // 2. Build the Google OAuth URL
-  console.log(ext);
   const redirectUri = ext.identity.getRedirectURL(); 
   const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${WEB_CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(SCOPES)}`;
 
@@ -86,76 +82,117 @@ async function launchWebFlow(interactive) {
         reject(ext.runtime.lastError.message);
         return;
       }
-      
       if (!responseUrl) {
         reject("Authorization was canceled.");
         return;
       }
-
-      // Extract the token from the URL hash: #access_token=...&expires_in=...
-      const url = new URL(responseUrl);
-      const params = new URLSearchParams(url.hash.substring(1));
-      const token = params.get('access_token');
-      const expiresIn = parseInt(params.get('expires_in'), 10) || 3600;
-
-      if (token) {
-        const tokenObj = { access_token: token };
-        saveAccessTokenWebFlow(tokenObj, expiresIn);
-        resolve(tokenObj);
-      } else {
-        reject("No token found in response.");
-      }
+      resolve(parseTokenFromUrl(responseUrl));
     });
   });
 }
 
+/**
+ * Android Fallback: Uses tabs.create instead of identity API
+ */
+async function launchAndroidTabFlow(interactive) {
+  if (!interactive) return null;
+
+  // 1. Clean the Extension ID (Google Console doesn't like { } braces)
+  const cleanId = ext.runtime.id.replace(/{|}/g, "");
+  
+  // 2. Construct the URI manually to match the one you found
+  const redirectUri = `https://${cleanId}.extensions.allizom.org/flowName=GeneralOauthFlow`;
+  
+  const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${WEB_CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(SCOPES)}`;
+
+  return new Promise((resolve, reject) => {
+    // Open the login page in a new tab
+    ext.tabs.create({ url: authUrl }, (tab) => {
+      
+      const listener = (tabId, changeInfo) => {
+        // We check if the URL starts with our clean redirect URI
+        if (tabId === tab.id && changeInfo.url && changeInfo.url.startsWith(redirectUri)) {
+          try {
+            const tokenObj = parseTokenFromUrl(changeInfo.url);
+            
+            // Success: Clean up
+            ext.tabs.onUpdated.removeListener(listener);
+            ext.tabs.remove(tabId); 
+            resolve(tokenObj);
+          } catch (e) {
+            reject("Failed to parse token from Android redirect");
+          }
+        }
+      };
+
+      ext.tabs.onUpdated.addListener(listener);
+      
+      // Cleanup if user closes tab manually
+      ext.tabs.onRemoved.addListener((tabId) => {
+        if (tabId === tab.id) {
+          ext.tabs.onUpdated.removeListener(listener);
+          reject("Login tab closed");
+        }
+      });
+    });
+  });
+}
+
+/**
+ * Shared Helper to parse tokens from Google's redirect URL
+ */
+function parseTokenFromUrl(responseUrl) {
+  const url = new URL(responseUrl);
+  const params = new URLSearchParams(url.hash.substring(1));
+  const token = params.get('access_token');
+  const expiresIn = parseInt(params.get('expires_in'), 10) || 3600;
+
+  if (token) {
+    const tokenObj = { access_token: token };
+    saveAccessTokenWebFlow(tokenObj, expiresIn);
+    return tokenObj;
+  }
+  throw new Error("No token found in response.");
+}
+
 async function revokeConsent() {
-  // 1. Clear Web Flow token
   const localToken = await isLocalTokenValid();
   if (localToken) {
     fetch(`https://accounts.google.com/o/oauth2/revoke?token=${localToken.access_token}`);
     await ext.storage.local.remove('gAuth');
   }
   
-  // 2. Clear Chrome Native token (if exists)
-  if (isChrome) {
-    return new Promise((resolve) => {
-      ext.identity.getAuthToken({ interactive: false }, (token) => {
-        if (token) {
-          ext.identity.removeCachedAuthToken({ token: token }, () => {
-            fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`);
-            resolve();
-          });
-        } else {
-          resolve();
-        }
-      });
+  if (isNativeSupported) {
+    ext.identity.getAuthToken({ interactive: false }, (token) => {
+      if (token) {
+        ext.identity.removeCachedAuthToken({ token: token }, () => {
+          fetch(`https://accounts.google.com/o/oauth2/revoke?token=${token}`);
+        });
+      }
     });
   }
 }
 
-// ==========================================
-// CACHING UTILITIES (For the Web Flow)
-// ==========================================
 function saveAccessTokenWebFlow(token, expiresInSec) {
   const expireDate = Date.now() + (expiresInSec * 1000); 
   ext.storage.local.set({ 
     'gAuth': { access_token: token.access_token, expire_date: expireDate } 
   });
 }
+
 async function invalidateToken(token) {
   if (isNativeSupported) {
     return new Promise((resolve) => {
       ext.identity.removeCachedAuthToken({ token: token }, resolve);
     });
   } else {
-    // For Web Flow, just remove it from our manual storage
     await ext.storage.local.remove('gAuth');
   }
 }
+
 async function isLocalTokenValid() {
   const d = await ext.storage.local.get({ 'gAuth': false });
-  if (d.gAuth) {
+  if (d && d.gAuth) {
     const remainingMs = d.gAuth.expire_date - Date.now();
     if (remainingMs > (3 * 60 * 1000)) { 
       return d.gAuth;
