@@ -23,7 +23,7 @@ iGPlus is a **local-first extension**.
 
 ## 2. Google Drive Integration (Optional Feature)
 
-iGPlus provides optional cloud features using Google OAuth 2.0. These features are **only فعال when the user explicitly connects their Google account**.
+iGPlus provides optional cloud features using Google OAuth 2.0. These features are **only used when the user explicitly connects their Google account**.
 
 ### Authentication
 - Secure authentication is handled via Google OAuth 2.0.
