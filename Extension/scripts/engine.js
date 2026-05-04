@@ -30,8 +30,11 @@ function engineHandler(){
 
 function swapMap()
 {
-circuit_code = document.querySelector('[id=editTrack] .flag').classList[1].split('-')[1];
+const circuit_code = document.querySelector('[id=editTrack] .flag').classList[1].split('-')[1];
 const image = document.querySelector('[id=editTrack] img:last-child:not(.flag)');
+//hiding huge engine img
+document.querySelector('[id=editTrack] div.text-center >img').style.display = 'none'
+document.querySelectorAll('[id=editTrack] div.text-center >img')
 image.id = "customMap";
 //document.getElementById('igplus_darkmode') ? image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}_dark.png`) : image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}.png`);
 image.src = chrome.runtime.getURL(`images/circuits/${circuit_code}_dark.png`)
@@ -47,10 +50,10 @@ function showBarValues() {
   }
 
   if (document.getElementsByClassName('showStat').length == 0) {
-    const parameterBars = document.querySelectorAll('[id=editTrack] .ratingBar');
+    const parameterBars = document.querySelectorAll('[id=editTrack] .ratingBar > div');
     parameterBars.forEach((bar) => {
       bar.classList.add('statBarWithValue');
-      bar.appendChild(createValueSpan(bar.childNodes[0].style.width));
+      bar.parentElement.append(createValueSpan(bar.style.width));
     });
   }
 }
