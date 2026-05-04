@@ -127,7 +127,7 @@
       root.innerHTML = `
         <div class="strategy-header">
           <div class="header-left"><div class="header-btn customSave popup-save-btn"></div></div>
-          <div class="strategy-middle-container"></div>
+          <div class="strategy-middle-container"><div class="controlCol"><div class="trash-zone">−</div><div class="add-stint">+</div></div></div>
           <div class="header-right"><div class="header-btn settings-btn">⚙</div></div>
         </div>
         <div class="stints-wrapper"></div>
@@ -139,7 +139,7 @@
       if (weatherSource) {
         const clonedWeather = weatherSource.cloneNode(true);
         clonedWeather.classList.add('strategy-middle');
-        root.querySelector('.strategy-middle-container').appendChild(clonedWeather);
+        //root.querySelector('.strategy-middle-container').appendChild(clonedWeather);
       }
     }
   }
@@ -159,10 +159,14 @@
     const frag = document.createDocumentFragment();
     strategyData.stints.forEach((stint, index) => frag.appendChild(createStint(stint, index, carIndex, strategyData)));
 
-    const controlCol = document.createElement('div');
+    const controlCol = root.getElementsByClassName('controlCol')[0];
     controlCol.className = 'controlCol';
-    controlCol.append(createAddStintButton(carIndex, strategyData), createTrashButton(carIndex, strategyData));
-    frag.appendChild(controlCol);
+    controlCol.replaceChildren(
+      createTrashButton(carIndex, strategyData),
+  createAddStintButton(carIndex, strategyData)
+  
+);
+    //root.querySelector('.strategy-header').appendChild(controlCol);
     
     wrapper.appendChild(frag);
 
@@ -258,7 +262,7 @@
       }
 
       // Stint Push Dropdowns
-      if (target.closest('.customPush')) {
+      if (target.closest('.push.customPush')) {
         const options = target.nextElementSibling;
         options.style.display = options.style.display === 'flex' ? 'none' : 'flex';
         options.style.flexDirection = 'column';
@@ -356,6 +360,7 @@
 
   // 5. GOOGLE SHEETS FETCHING
   async function readGSheets() {
+    console.log('reading');
     if (document.getElementById('importedTable')) return;
 
     const storage = await chrome.storage.local.get({ gLink: '', gTrack: 'track', gLinkName: 'Sheet1' });
@@ -449,6 +454,7 @@
     table.appendChild(thead);
     
     renderTableBody();
+    if (document.getElementById('importedTable')) return;
     document.querySelector('[id=strategy] div.aStrat')?.append(table);
   }
 
