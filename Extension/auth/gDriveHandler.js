@@ -4,12 +4,46 @@ const ext = globalThis.browser || globalThis.chrome;
  * Universal Fetch Helper
  */
 async function fetchDriveAPI(url, options) {
-  const response = await fetch(url, options);
+  
+  let response = await fetch(url, options);
+
+  // If unauthorized, the token is likely expired
+  if (response.status === 401) {
+    console.warn("iGPlus | Token expired, attempting background refresh...");
+    
+    const oldToken = options.headers['Authorization'].replace('Bearer ', '');
+
+    try {
+      // Ask background to clear the old token and get a fresh one
+      const refreshResponse = await chrome.runtime.sendMessage({ 
+        action: 'refreshToken', 
+        oldToken: oldToken 
+      });
+
+      if (refreshResponse && refreshResponse.token) {
+        const newToken = refreshResponse.token.access_token;
+        
+        // Retry the original request with the NEW token
+        options.headers['Authorization'] = `Bearer ${newToken}`;
+        response = await fetch(url, options);
+        
+        console.log("iGPlus | Refresh successful, request retried.");
+      } else {
+        throw new Error("Silent refresh failed");
+      }
+    } catch (err) {
+      console.error("iGPlus | Could not refresh token:", err);
+      // Optional: You could trigger a UI message here telling the user to re-login
+      throw new Error("Unauthorized: Please re-connect Google Drive.");
+    }
+  }
+
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(`Drive API Error (${response.status}): ${errorText}`);
   }
-  return (response.status === 204 || response.headers.get('content-length') === '0') ? null : response.json();
+
+  return (response.status === 204) ? null : response.json();
 }
 
 /**

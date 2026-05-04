@@ -43,10 +43,24 @@ async function requestNativeToken(options) {
   }
 }
 async function getAccessToken() {
-  return requestNativeToken({ interactive: false });
+   console.log('test1');
+  // 1. For Web Flow browsers, check our manual cache first
+  if (!isNativeSupported) {
+    const local = await isLocalTokenValid();
+    if (local) return local;
+  }
+
+  // 2. Attempt to get a token silently
+  try {
+    return await requestNativeToken({ interactive: false });
+  } catch (err) {
+    console.warn("Silent token request failed:", err);
+    return null; // Return null so the UI knows to show the login button
+  }
 }
 
 async function getFirstAccessToken() {
+  console.log('test2');
   return requestNativeToken({ interactive: true });
 }
 
@@ -59,6 +73,7 @@ async function launchWebFlow(interactive) {
   if (localToken && !interactive) return localToken;
 
   // 2. Build the Google OAuth URL
+  console.log(ext);
   const redirectUri = ext.identity.getRedirectURL(); 
   const authUrl = `https://accounts.google.com/o/oauth2/auth?client_id=${WEB_CLIENT_ID}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(SCOPES)}`;
 
@@ -128,7 +143,16 @@ function saveAccessTokenWebFlow(token, expiresInSec) {
     'gAuth': { access_token: token.access_token, expire_date: expireDate } 
   });
 }
-
+async function invalidateToken(token) {
+  if (isNativeSupported) {
+    return new Promise((resolve) => {
+      ext.identity.removeCachedAuthToken({ token: token }, resolve);
+    });
+  } else {
+    // For Web Flow, just remove it from our manual storage
+    await ext.storage.local.remove('gAuth');
+  }
+}
 async function isLocalTokenValid() {
   const d = await ext.storage.local.get({ 'gAuth': false });
   if (d.gAuth) {
@@ -143,5 +167,6 @@ async function isLocalTokenValid() {
 export {
   getAccessToken,
   getFirstAccessToken,
-  revokeConsent
+  revokeConsent,
+  invalidateToken
 };
