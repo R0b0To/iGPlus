@@ -167,13 +167,11 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
       {
         await localToCloud(request.token,{reports:local_reports});
         const res = await cloudToLocal(request.token);
-        console.log(res);
         storeReports(res.cloudReports);
       }
       else
       {
         const res = await cloudToLocal(request.token);
-        console.log(res);
         storeReports(res.cloudReports);
         await localToCloud(request.token,{reports:local_reports});
       }
