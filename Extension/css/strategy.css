@@ -20,42 +20,7 @@
 .visible {
   visibility: visible;
 }
-.sliderX {
-  position: relative;
-  top:-3px;
-  z-index: 1;
-  height: 1px;
-  border: 0px;
-  margin:0;
-  width: 100%;
-  -webkit-appearance: none;
-  padding: 0;
-  background: #646464;
-  outline: none;
-  -webkit-transition: .2s;
-  transition: opacity .2s;
-}
-.sliderX::-webkit-slider-thumb {
-  box-shadow: none;
-        border: 0px solid #ffffff;
-        box-shadow: 0px 10px 10px rgba(0,0,0,0.25);
-        height: 32px;
-        width: 18px;
-        border-radius: 22px;
-        background: #467bb1;
-        cursor: pointer;
-        -webkit-appearance: none;     
-}
-.sliderX::-moz-range-thumb {
-  box-shadow: none;
-        border: 0px solid #ffffff;
-        box-shadow: 0px 10px 10px rgba(0,0,0,0.25);
-        height: 32px;
-        width: 18px;
-        border-radius: 22px;
-        background: #467bb1;
-        cursor: pointer;      
-}
+
 .slider-label{
   transform: scale(1.2);
   position: absolute;
@@ -1316,4 +1281,107 @@ outline: 2px dashed #4a90e2;}
 
 .fuel-model-section .customTyre {
   font-size: 7pt;
+}
+
+
+.igplus-td{
+  background-color: #1e1e1e; 
+}
+
+#importedTable {
+  width: 100%;
+  table-layout: auto;
+  text-align: center;
+}
+
+.igplus-col-controls {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 6px;
+}
+
+.igplus-col-controls-toggle {
+  background: #3a3a3a;
+  color: #eee;
+  border-radius: 8px;
+  padding: 6px 12px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: opacity 0.2s;
+}
+
+.igplus-col-controls-toggle:hover {
+  opacity: 1;
+}
+
+.igplus-col-controls-panel {
+  display: none;
+  position: absolute;
+  top: -1px;
+  left: 50px;
+  z-index: 999;
+  border-radius: 8px;
+  gap: 5px;
+  align-items: center;
+  width: max-content;
+}
+.igplus-col-btn.is-dragging {
+  opacity: 0.3;
+  transform: scale(0.95);
+}
+
+.igplus-col-controls-panel.is-open {
+  display: flex;
+}
+
+.igplus-col-controls-label {
+  font-weight: bold;
+  font-size: 11px;
+  color: #888;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+.igplus-col-btn {
+  padding: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  color: white;
+  border: 1px solid #545353c7;
+  border-radius: 8px;
+  background: #00000047;
+  user-select: none;
+}
+
+.igplus-col-btn.is-hidden {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+.igplus-col-btn.is-dragging {
+  opacity: 0.3;
+}
+
+.igplus-col-btn.is-dragover {
+  outline: 2px solid #0077cc;
+}
+
+.igplus-th {
+  position: relative;
+  font-family: "RobotoCondensed"sans-serif; 
+  cursor: pointer; 
+  background-color: #2a2a2a; 
+  color: #ffffff; 
+  border-radius: 5px;
+}
+
+.igplus-col-resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  user-select: none;
 }
