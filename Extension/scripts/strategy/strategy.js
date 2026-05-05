@@ -138,7 +138,10 @@
       const weatherSource = document.getElementById('d1SetupWrap')?.querySelector('a');
       if (weatherSource) {
         const clonedWeather = weatherSource.cloneNode(true);
-        clonedWeather.classList.add('strategy-middle');
+        clonedWeather.classList.add('igplus-weather-text');
+        clonedWeather.classList.remove('raceWeatherBadge','hoverUp','cursor-pointer');
+        clonedWeather.removeAttribute("href");
+        root.querySelector('.strategy-header').insertBefore(clonedWeather,root.querySelector('.strategy-middle-container'));
         //root.querySelector('.strategy-middle-container').appendChild(clonedWeather);
       }
     }

@@ -557,8 +557,8 @@ opacity: 0.8;
   align-items: center;
   justify-content: center;
 
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
 
   font-size: 20px;
   font-weight: bold;
@@ -1287,8 +1287,12 @@ outline: 2px dashed #4a90e2;}
 .igplus-td{
   background-color: #1e1e1e; 
 }
+.igplus-weather-text{
+  pointer-events: none;
+}
 
 #importedTable {
+  background: #2a2a2a;
   width: 100%;
   table-layout: auto;
   text-align: center;
