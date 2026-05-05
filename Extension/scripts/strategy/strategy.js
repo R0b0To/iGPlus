@@ -359,85 +359,164 @@
   }
 
   // 5. GOOGLE SHEETS FETCHING
-  async function readGSheets() {
-    console.log('reading');
-    if (document.getElementById('importedTable')) return;
+async function readGSheets() {
+  if (document.getElementById('importedTable')) return;
 
-    const storage = await chrome.storage.local.get({ gLink: '', gTrack: 'track', gLinkName: 'Sheet1' });
-    if (!storage.gLink) return;
+  const storage = await chrome.storage.local.get({ gLink: '', gTrack: 'track', gLinkName: 'Sheet1' });
+  if (!storage.gLink) return;
 
-    const match = /spreadsheets\/d\/(.*)\/edit/.exec(storage.gLink);
-    if (!match) return;
-    
-    const url = `https://docs.google.com/spreadsheets/d/${match[1]}/gviz/tq?sheet=${storage.gLinkName}&tq=${encodeURIComponent('Select *')}&headers=1`;
+  const match = /spreadsheets\/d\/(.*)\/edit/.exec(storage.gLink);
+  if (!match) return;
 
-    let data =[];
-    let attempts = 3;
+  const url = `https://docs.google.com/spreadsheets/d/${match[1]}/gviz/tq?sheet=${storage.gLinkName}&tq=${encodeURIComponent('Select *')}&headers=1`;
 
-    while (attempts > 0) {
-      try {
-        const res = await fetch(url);
-        const text = await res.text();
-        const json = JSON.parse(text.substring(47).slice(0, -2));
+  let data = [];
+  let attempts = 3;
 
-        const cols = json.table.cols.map((c, i) => c.label || json.table.rows[0]?.c[i]?.v || `Col${i}`);
-        
-        data = json.table.rows.map(row => {
-          const obj = {};
-          cols.forEach((col, i) => obj[col] = row.c[i]?.v ?? '');
-          return obj;
-        });
+  while (attempts > 0) {
+    try {
+      const res = await fetch(url);
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47).slice(0, -2));
+      const cols = json.table.cols
+        .map((c, i) => ({ col: c, index: i }))
+        .filter(({ col }) => col.label)
+        .map(({ col, index }) => col.label || json.table.rows[0]?.c[index]?.v || `Col${index}`);
 
-        const { trackDictionary } = await import(chrome.runtime.getURL('scripts/strategy/const.js'));
-        const trackCode = STATE.TRACK_INFO.code;
-        const validNames = trackDictionary[trackCode] ||[];
-
-        data = data.filter(r => {
-          const tVal = r[storage.gTrack];
-          return tVal && validNames.includes(isNaN(tVal) ? tVal.toLowerCase() : tVal);
-        });
-
-        if (data.length > 0) break;
-      } catch (err) {
-        console.warn("GSheets read error:", err);
-      }
-      attempts--;
-      await new Promise(res => setTimeout(res, 2000));
-    }
-
-    if (data.length === 0) return;
-
-    const table = document.createElement('table');
-    table.id = 'importedTable';
-    table.style.cssText = 'width: 100%; table-layout: auto; text-align: center;';
-
-    let sortCol = null;
-    let sortAsc = true;
-    const colKeys = Object.keys(data[0]).filter(k => k.toLowerCase() !== storage.gTrack.toLowerCase());
-
-    function renderTableBody() {
-      const tbody = table.querySelector('tbody') || document.createElement('tbody');
-      tbody.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      data.forEach(row => {
-        const tr = document.createElement('tr');
-        colKeys.forEach(k => {
-          const td = document.createElement('td');
-          td.textContent = row[k];
-          tr.appendChild(td);
-        });
-        frag.appendChild(tr);
+      data = json.table.rows.map(row => {
+        const obj = {};
+        cols.forEach((col, i) => obj[col] = row.c[i]?.v ?? '');
+        return obj;
       });
-      tbody.appendChild(frag);
-      if (!table.contains(tbody)) table.appendChild(tbody);
-    }
 
-    const thead = document.createElement('thead');
+      const { trackDictionary } = await import(chrome.runtime.getURL('scripts/strategy/const.js'));
+      const trackCode = STATE.TRACK_INFO.code;
+      const validNames = trackDictionary[trackCode] || [];
+
+      data = data.filter(r => {
+        const tVal = r[storage.gTrack];
+        return tVal && validNames.includes(isNaN(tVal) ? tVal.toLowerCase() : tVal);
+      });
+
+      if (data.length > 0) break;
+    } catch (err) {
+      console.warn("GSheets read error:", err);
+    }
+    attempts--;
+    await new Promise(res => setTimeout(res, 2000));
+  }
+
+  if (data.length === 0) return;
+  if (document.getElementById('importedTable')) return;
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let sortCol = null;
+  let sortAsc = true;
+  const colKeys    = Object.keys(data[0]).filter(k => k.toLowerCase() !== storage.gTrack.toLowerCase());
+  let colOrder     = [...colKeys];
+  const hiddenCols = new Set();
+  const colWidths  = {};
+
+  // ── Persistence ───────────────────────────────────────────────────────────
+  const storageKey = `igplus_tableConfig_${match[1]}_${storage.gLinkName}`;
+
+  async function saveConfig() {
+    await chrome.storage.local.set({
+      [storageKey]: { colOrder, hiddenCols: [...hiddenCols], colWidths }
+    });
+  }
+
+  async function loadConfig() {
+    const saved = await chrome.storage.local.get(storageKey);
+    const cfg = saved[storageKey];
+    if (!cfg) return;
+
+    if (Array.isArray(cfg.colOrder)) {
+      const valid = cfg.colOrder.filter(k => colKeys.includes(k));
+      const newCols = colKeys.filter(k => !valid.includes(k));
+      colOrder = [...valid, ...newCols];
+    }
+    if (Array.isArray(cfg.hiddenCols)) {
+      cfg.hiddenCols.forEach(k => { if (colKeys.includes(k)) hiddenCols.add(k); });
+    }
+    if (cfg.colWidths && typeof cfg.colWidths === 'object') {
+      Object.assign(colWidths, cfg.colWidths);
+    }
+  }
+
+  // ── Table element ──────────────────────────────────────────────────────────
+  const table = document.createElement('table');
+  table.id = 'importedTable';
+
+  // ── Colgroup (drives resize) ───────────────────────────────────────────────
+  function applyColgroup() {
+    let cg = table.querySelector('colgroup');
+    if (!cg) { cg = document.createElement('colgroup'); table.prepend(cg); }
+    cg.innerHTML = '';
+    colOrder.filter(k => !hiddenCols.has(k)).forEach(k => {
+      const col = document.createElement('col');
+      if (colWidths[k]) col.style.width = colWidths[k] + 'px'; // kept inline: dynamic value
+      cg.appendChild(col);
+    });
+  }
+
+function addResizeHandle(th, key) {
+  const handle = document.createElement('span');
+  handle.classList.add('igplus-col-resize-handle');
+
+  // --- Resize (mouse) ---
+  handle.onmousedown = e => {
+    e.stopPropagation();
+    const startX = e.clientX;
+    const startW = th.offsetWidth;
+    const onMove = e => {
+      colWidths[key] = Math.max(40, startW + (e.clientX - startX));
+      applyColgroup();
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      saveConfig();
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  };
+
+  // --- Resize (touch) ---
+  handle.addEventListener('touchstart', e => {
+    e.stopPropagation();
+    const startX = e.touches[0].clientX;
+    const startW = th.offsetWidth;
+    const onMove = e => {
+      e.preventDefault();
+      colWidths[key] = Math.max(40, startW + (e.touches[0].clientX - startX));
+      applyColgroup();
+    };
+    const onEnd = () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      saveConfig();
+    };
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  }, { passive: true });
+
+  th.appendChild(handle);
+}
+
+  // ── Full table rebuild ─────────────────────────────────────────────────────
+  function rebuildTable() {
+    const visible = colOrder.filter(k => !hiddenCols.has(k));
+
+    // thead
+    let thead = table.querySelector('thead');
+    if (!thead) { thead = document.createElement('thead'); table.appendChild(thead); }
+    thead.innerHTML = '';
     const headTr = document.createElement('tr');
-    colKeys.forEach(k => {
+    visible.forEach(k => {
       const th = document.createElement('th');
       th.textContent = k;
-      th.style.cssText = 'font-family: "RobotoCondensed",sans-serif; cursor: pointer; background-color: #8f8f8f; color: #ffffff; border-radius: 5px;';
+      th.classList.add('igplus-th');
       th.onclick = () => {
         sortAsc = sortCol === k ? !sortAsc : true;
         sortCol = k;
@@ -446,17 +525,170 @@
           if (!isNaN(vA) && !isNaN(vB)) { vA = +vA; vB = +vB; }
           return (vA > vB ? 1 : vA < vB ? -1 : 0) * (sortAsc ? 1 : -1);
         });
-        renderTableBody();
+        rebuildTable();
       };
+      addResizeHandle(th, k);
       headTr.appendChild(th);
     });
     thead.appendChild(headTr);
-    table.appendChild(thead);
-    
-    renderTableBody();
-    if (document.getElementById('importedTable')) return;
-    document.querySelector('[id=strategy] div.aStrat')?.append(table);
+
+    // tbody
+    let tbody = table.querySelector('tbody');
+    if (!tbody) { tbody = document.createElement('tbody'); table.appendChild(tbody); }
+    tbody.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    data.forEach(row => {
+      const tr = document.createElement('tr');
+      visible.forEach(k => {
+        const td = document.createElement('td');
+        td.classList.add('igplus-td');
+        td.textContent = row[k];
+        tr.appendChild(td);
+      });
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+
+    applyColgroup();
   }
+
+  // ── Column control panel ───────────────────────────────────────────────────
+function buildColControls(container) {
+  const wrapper = document.createElement('div');
+  wrapper.classList.add('igplus-col-controls');
+
+  // Gear toggle button
+  const toggle = document.createElement('button');
+  toggle.classList.add('igplus-col-controls-toggle');
+  toggle.textContent = '⚙';
+  toggle.title = 'Customize columns';
+  wrapper.appendChild(toggle);
+
+  // Dropdown panel (hidden by default)
+  const panel = document.createElement('div');
+  panel.classList.add('igplus-col-controls-panel');
+
+  // Close panel when clicking outside
+  function onOutsideClick(e) {
+    if (!wrapper.contains(e.target)) {
+      panel.classList.remove('is-open');
+      document.removeEventListener('click', onOutsideClick);
+    }
+  }
+
+  toggle.onclick = e => {
+    e.stopPropagation();
+    const isOpen = panel.classList.toggle('is-open');
+    if (isOpen) document.addEventListener('click', onOutsideClick);
+    else document.removeEventListener('click', onOutsideClick);
+  };
+
+ function renderButtons() {
+  [...panel.querySelectorAll('button')].forEach(b => b.remove());
+
+  colOrder.forEach(k => {
+    const btn = document.createElement('button');
+    btn.dataset.col = k;
+    btn.textContent = k;
+    btn.classList.add('igplus-col-btn');
+    btn.classList.toggle('is-hidden', hiddenCols.has(k));
+    btn.title = 'Click to hide/show • Drag to reorder';
+
+    // --- Toggle visibility ---
+    btn.onclick = e => {
+      e.stopPropagation();
+      hiddenCols.has(k) ? hiddenCols.delete(k) : hiddenCols.add(k);
+      rebuildTable();
+      renderButtons();
+      saveConfig();
+    };
+
+    // --- Drag to reorder (mouse) ---
+    btn.draggable = true;
+    btn.ondragstart = e => {
+      e.dataTransfer.setData('text/plain', k);
+      btn.classList.add('is-dragging');
+    };
+    btn.ondragend = () => {
+      btn.classList.remove('is-dragging');
+    };
+    btn.ondragover = e => {
+      e.preventDefault();
+      btn.classList.add('is-dragover');
+    };
+    btn.ondragleave = () => {
+      btn.classList.remove('is-dragover');
+    };
+    btn.ondrop = e => {
+      e.preventDefault();
+      btn.classList.remove('is-dragover');
+      const from = e.dataTransfer.getData('text/plain');
+      const fromIdx = colOrder.indexOf(from);
+      const toIdx   = colOrder.indexOf(k);
+      if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+        colOrder.splice(fromIdx, 1);
+        colOrder.splice(toIdx, 0, from);
+        rebuildTable();
+        renderButtons();
+        saveConfig();
+      }
+    };
+
+    // --- Drag to reorder (touch) ---
+    btn.addEventListener('touchstart', () => {
+      btn.classList.add('is-dragging');
+    }, { passive: true });
+
+    btn.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const target = el?.closest?.('[data-col]');
+      [...panel.querySelectorAll('.igplus-col-btn')].forEach(b => {
+        b.classList.toggle('is-dragover', b === target && b !== btn);
+      });
+    }, { passive: false });
+
+    btn.addEventListener('touchend', e => {
+      btn.classList.remove('is-dragging');
+      const touch = e.changedTouches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      const target = el?.closest?.('[data-col]');
+      [...panel.querySelectorAll('.igplus-col-btn')].forEach(b => b.classList.remove('is-dragover'));
+      if (target && target !== btn) {
+        const fromIdx = colOrder.indexOf(k);
+        const toIdx   = colOrder.indexOf(target.dataset.col);
+        if (fromIdx !== -1 && toIdx !== -1 && fromIdx !== toIdx) {
+          colOrder.splice(fromIdx, 1);
+          colOrder.splice(toIdx, 0, k);
+          rebuildTable();
+          renderButtons();
+          saveConfig();
+        }
+      }
+    });
+
+    panel.appendChild(btn);
+  });
+}
+
+  renderButtons();
+  wrapper.appendChild(panel);
+
+  const existing = container.querySelector('.igplus-col-controls');
+  if (existing) existing.replaceWith(wrapper);
+  else container.insertBefore(wrapper, container.querySelector('#importedTable'));
+}
+
+  // ── Mount ──────────────────────────────────────────────────────────────────
+  const container = document.querySelector('[id=strategy] div.aStrat');
+  if (!container) return;
+
+  await loadConfig();
+  rebuildTable();
+  container.appendChild(table);
+  buildColControls(container);
+}
 
   // 6. UTILITY FUNCTIONS
   function getLeagueLength(code, laps) {
