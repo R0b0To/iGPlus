@@ -7,7 +7,7 @@ async function whenLockedSetup(){
   //const raceID = document.getElementById('mRace').href.replace(/^\D+/g, '');
   await delay(500);
   //const is_live = document.getElementsByClassName('pulse').length > 0;
-  const countdown = document.getElementsByClassName('countdown')[1].textContent;
+  const countdown = document.getElementsByClassName('countdown')[0].textContent;
   const timeLeft = convertToSeconds(countdown);
 
   if (timeLeft < 600)
