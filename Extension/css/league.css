@@ -31,13 +31,16 @@
     line-height: 5px; 
       overflow: visible; /* allow pseudo-elements to show */
 }
-.arrow_container{
-    flex-wrap: wrap;
-    justify-content: space-evenly;
+.change_div{
     display: flex;
+    justify-content: center;
     align-items: center;
-    padding: 18px 0!important;
-    border-right: solid rgba(112, 112, 112, 0.247) 1px;
+}
+.arrow_container{
+    display: table-cell;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
     
 }
 .changes_th{
@@ -49,4 +52,10 @@
 }
 .manager_th{
     border: none!important;
+}
+table.acp th{
+        height: 18px;
+}
+table.acp tr{
+        height: 34px;
 }
