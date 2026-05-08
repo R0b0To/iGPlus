@@ -12,7 +12,7 @@ function parseAttributes(personData) {
   const dName = createHTMLElement('dName').textContent.slice(1); //removing extra space
   const favTrack = createHTMLElement('favTrack').textContent.slice(1);
   const sTalent = createHTMLElement('sTalent').textContent;
-  const sHeight = toCentimeters(extractHeight(personData.vars.sWeightHeight));
+  const sHeight = toCentimeters(extractHeight(personData.vars.sHeight));
   const starRating = /\d+/.exec(personData.vars.starRating);
   const sBMI = createHTMLElement('sBMI').textContent;
   const tName = createHTMLElement('tName').textContent;
