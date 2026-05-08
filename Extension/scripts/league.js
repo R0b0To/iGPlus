@@ -3,7 +3,8 @@ async function inject_history()
   try {
     if(document.getElementById('fullHistoryShortcut') == null)
     {
-      const scheduleTable = document.getElementById('leagueScheduleColumn').getElementsByTagName('table')[0];
+      const scheduleTable = document.getElementById('leagueScheduleColumn')?.getElementsByTagName('table')[0];
+      if(!scheduleTable) return
       const fullHistoryShortcut = document.createElement('a');
       fullHistoryShortcut.href = 'd=history';
       fullHistoryShortcut.id = "fullHistoryShortcut";
@@ -35,40 +36,55 @@ try {
 
 }
 
-async function advancedExtract(){
-  const {fetchRaceResultInfo} = await import(chrome.runtime.getURL('common/fetcher.js'));
-  const scheduleTable = document.getElementById('leagueScheduleColumn').getElementsByTagName('table')[0];
-  const racesCompleted = scheduleTable.querySelectorAll('a[href*="d=result"]');
-  
-  racesCompleted.forEach(async link => {
-    const id = new URLSearchParams(link.href).get('id');
-    let result_info = await chrome.runtime.sendMessage({
-      type:'getDataFromDB',
-      data:{id:id,store:'race_result'}
-    });
-   // let result_info = await getElementById(id,'race_result') ?? false;
-    if(result_info == false){
-      console.log('need to request?');
-      const result = await fetchRaceResultInfo(id);
-      result_info = parseData(result);
-      saveRaceResultsHistory(id,result_info);
-    }//else{console.log('data already stored')}
-    if(result_info.quali_pos!='none')// only if the player has raced
-      link.parentElement.append(`  [${result_info.quali_pos}]-->[${result_info.race_finish}]`);
+async function advancedExtract() {
+  const { fetchRaceResultInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
 
+  const scheduleTable = document.getElementById('leagueScheduleColumn')?.getElementsByTagName('table')[0];
 
-  });
-
-  async function saveRaceResultsHistory(raceId,data)
-  {
-    chrome.runtime.sendMessage({
-      type:'addRaceResultsToDB',
-      data:{id:raceId,...data}
-    });
-      
-   
+  if (!scheduleTable) {
+    console.warn('iGPlus | advancedExtract: schedule table not found.');
+    return;
   }
 
+  const raceLinks = [...scheduleTable.querySelectorAll('a[href*="d=result"]')];
+
+  const results = await Promise.allSettled(
+    raceLinks.map(link => extractSingleRace(link, fetchRaceResultInfo))
+  );
+
+  // Report any failures without blocking the rest
+  results.forEach((result, i) => {
+    if (result.status === 'rejected') {
+      console.error(`iGPlus | Failed to process race ${i}:`, result.reason);
+    }
+  });
+}
+
+async function extractSingleRace(link, fetchRaceResultInfo) {
+  const id = new URLSearchParams(link.href).get('id');
+  if (!id) throw new Error(`Could not parse race ID from: ${link.href}`);
+
+  let result_info = await chrome.runtime.sendMessage({
+    type: 'getDataFromDB',
+    data: { id, store: 'race_result' }
+  });
+
+  if (!result_info) {
+    const raw = await fetchRaceResultInfo(id);
+    result_info = parseData(raw);
+    saveRaceResultsHistory(id, result_info);
+  }
+
+  if (result_info.quali_pos !== 'none') {
+    link.parentElement.append(`  [${result_info.quali_pos}]-->[${result_info.race_finish}]`);
+  }
+}
+
+async function saveRaceResultsHistory(raceId, data) {
+  return chrome.runtime.sendMessage({
+    type: 'addRaceResultsToDB',
+    data: { id: raceId, ...data }
+  });
 }
 
 function parseData(data){
@@ -83,7 +99,6 @@ function parseData(data){
   const track = getHtmlFragment(data.vars.raceName).querySelector('.flag').classList[1].slice(2);
   const last_race_points = {};
   const rows = getHtmlFragment(data.vars.rResult).querySelectorAll('tr');
-  console.log(data.vars.rResult);
   rows.forEach(row => {
     
     last_race_points[row.querySelector('.teamName').textContent] = parseInt(row.lastChild.textContent);
