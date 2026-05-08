@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const startOvertakes = document.getElementById('start');
   const deleteButton = document.getElementById('delete');
   const select = document.getElementById('select');
-  const newButton = document.getElementById('new');
+  //const newButton = document.getElementById('new');
   const recapButton = document.getElementById('recap');
   const averageButton = document.getElementById('average');
   const pitButton = document.getElementById('pit');
@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   const csv = document.getElementById('CSV');
   const pitstops = document.getElementById('PitStops');
   let saveName = "report";
+  //const syncToggle = document.getElementById('sync-cloud');
 
 
   let driver = 0;
@@ -36,7 +37,7 @@ document.addEventListener('DOMContentLoaded', async function() {
       recapButton.textContent = language[code].popupText.raceRecap;
       startOvertakes.textContent = language[code].popupText.startOvertakes;
       deleteButton.textContent = language[code].popupText.delete;
-      newButton.textContent = language[code].popupText.newRace;
+      //newButton.textContent = language[code].popupText.newRace;
       pitLossButton.textContent = language[code].popupText.pitStopTimeLoss;
       averageButton.textContent = language[code].popupText.heatMap;
       pitButton.textContent = language[code].popupText.PitReport;
@@ -75,37 +76,48 @@ document.addEventListener('DOMContentLoaded', async function() {
     toggleText(true);
     text.textContent = string;
   }
-  function toggleText(b)
-  {
-    if(b)
-    {
-      text.style.display = 'block';
-      copyButton.style.display = 'block';
-      downloadButton.style.display = 'block';
-    }
-    else
-    {
-      text.style.display = 'none';
-      copyButton.style.display = 'none';
-      downloadButton.style.display = 'none';
-    }
-
+  function toggleText(b) {
+    // Setting display to an empty string '' lets it fall back to the CSS definition (like CSS Grid)
+    // Setting it to 'none' hides it.
+    const displayMode = b ? 'flex' : 'none';
+    
+    text.style.display = displayMode;
+    copyButton.style.display = displayMode;
+    downloadButton.style.display = displayMode;
   }
 
 
   //-------------------------------------------------------------------------------Popup initialization-------------------------------------------
+// --- TAB NAVIGATION LOGIC ---
+  const tabLinks = document.querySelectorAll('.tab-link');
+  const tabContents = document.querySelectorAll('.tab-content');
 
-  const valid_saves = await (getAllData('reports'));
-  if(valid_saves.length > 0) {
+  tabLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      // Remove active class from all tabs
+      tabLinks.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+
+      // Add active class to clicked tab and its content
+      link.classList.add('active');
+      const targetTab = document.getElementById(link.getAttribute('data-tab'));
+      targetTab.classList.add('active');
+    });
+  });
+  // ----------------------------
+  try {
+     const valid_saves = await (getAllData('reports'));
+  
+  if(valid_saves.length > 0) 
+  {
 
     const option_data = await chrome.storage.local.get({'active_option':valid_saves[0].id}) ?? await browser.storage.local.get({'active_option':valid_saves[0].id});
-
     let active;
     //generate selection menu with stored data
     for(let i = 0; i < valid_saves.length; i++)
     {
       const option = document.createElement('option');
-      option.textContent = valid_saves[i].id.replace('LRID','');
+      option.textContent = valid_saves[i].id;
       if(option_data.active_option == valid_saves[i].id)
       {
         option.selected = true;
@@ -122,9 +134,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
     (active.length == 0) ? disableButton(true) : disableButton(false);
     // await chrome.storage.local.set({'active_option':option_data.active_option});
-  }else disableButton(true);
+  }
+  else 
+  {
+    disableButton(true);
+  }
+  } catch (error) {
+    console.warn(error);
+  }
+ 
 
-
+  //syncToggle.addEventListener('change', (e) => chrome.storage.local.set({ script: { gdrive: e.target.checked } }));
 
   //-------------------------------------------------------------------------------copy button-------------------------------------------
   copyButton.addEventListener('click',function(){
@@ -265,7 +285,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     toggleText(false);
 
     //new option of the select
-    const opt = select[select.selectedIndex].text + 'LRID';
+    const opt = select[select.selectedIndex].text;
     const report = await getElementById(opt,'reports');
     chrome.storage.local.set({'active_option':report.id,'active':report.data});
     if(report.data == 0)
@@ -432,16 +452,16 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
 
   //------------------------------------------------------------------------------new race----------------------------------------------
-  newButton.addEventListener('click', function(){
+ /* newButton.addEventListener('click', function(){
 
-    const reportName = prompt('enter league name');
+    const reportName = prompt('enter report name');
 
     if(reportName == null || reportName == '')
     {
       return;
     }
 
-    const leagueNameId = reportName + 'LRID'; //LRID is to avoid naming conflicts
+    const leagueNameId = reportName; //LRID is to avoid naming conflicts
 
     toggleText(false);
     //save before creating new data
@@ -463,7 +483,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     chrome.storage.local.set({'active_option':leagueNameId,'active':[]});
 
 
-  });
+  });*/
 
   //------------------------------------------------------------------------------delete----------------------------------------------
   deleteButton.addEventListener('click', function(){
@@ -471,52 +491,33 @@ document.addEventListener('DOMContentLoaded', async function() {
     toggleText(false);
     chrome.storage.local.remove('active');
     chrome.storage.local.remove('active_option');
-
-    let opt = 'RaceLRID';
-    if(select.length > 0)  opt = select.selectedOptions[0].textContent + 'LRID';
+    const opt = select.selectedOptions[0].textContent;
+    select.remove(select.selectedIndex);
+    deleteElementById(opt,'reports');
+    chrome.storage.local.remove(opt, async function() {
+      if(!is_report_to_be_deleted_empty)
+        if(isSyncEnabled.script?.gdrive ?? false)
+          {
+           //can't get request on extension domain. This works only if the token is already stored locally
+           const { getAccessToken } = await import(chrome.runtime.getURL('auth/dropboxAuth.js'));
+           const token = await getAccessToken() ?? false;
+           if(token != false)
+              chrome.runtime.sendMessage({
+              type:'deleteFile',
+              data:{type:'reports',name:opt},
+              token:token.access_token});
+           }
+    });
+    if(select.options.length > 0) {
+      select.selectedIndex = select.options.length - 1;
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+    } 
     else {
       disableButton(true);
       return;
     }  //alert('nothing to delete');
 
-    console.log(opt);
-    deleteElementById(opt,'reports');
-
-    chrome.storage.local.remove(opt, async function() {
-      select.remove(select.selectedIndex);
-      if(!is_report_to_be_deleted_empty)
-        if(isSyncEnabled.script?.gdrive ?? false){
-        //can't get request on extension domain. This works only if the token is already stored locally
-          const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
-          const token = await getAccessToken() ?? false;
-          if(token != false)
-            chrome.runtime.sendMessage({
-              type:'deleteFile',
-              data:{type:'reports',name:opt},
-              token:token.access_token});
-        }
-      let newOption = 'RaceLRID';
-      if(select.length > 0)
-        newOption = select.selectedOptions[0].textContent + 'LRID';
-      else{
-        disableButton(true);
-        return;
-      }
-
-
-      chrome.storage.local.get(newOption, function(reportData) {
-        let is_save_empty = true;
-        (reportData[newOption] == 0 || reportData[newOption] == 'undefined') ? is_save_empty = true : is_save_empty = false;
-
-        chrome.storage.local.set({'active_option':newOption,'active':reportData[newOption]},function(){
-          disableButton(is_save_empty);
-        });
-
-      });
-
-
-
-    });
+    
 
 
   });

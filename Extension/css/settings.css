@@ -321,7 +321,7 @@ input[type="file"] {
   height: 37px;
   width: 37px;
 }#exportBtn >svg {top: 4px;}
-#syncDate{
+#syncDateObj{
   font-size: x-small;
   margin-left: 5px;
 }
@@ -487,4 +487,9 @@ input[type="file"] {
 }
 #exportSave_Setups{
  grid-column: 1;
+}
+.logoff-igplus{
+  display: none;
+  border: none;
+  margin: 0 10px 0 10px;
 }

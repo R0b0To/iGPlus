@@ -44,8 +44,11 @@
 .inj_container{
 display: flex;
 }
+.race-csv-igplus{
+    margin-right: 30px!important;
+}
 .inj_header{
-    overflow: scroll!important;
+    flex-wrap: wrap;
 }
 .sheetHeader {
     display: flex;
@@ -261,3 +264,12 @@ display: flex;
 dialog:not([open]) {
     display: none !important;
 }
+
+.trash{
+  border: none;
+  cursor: pointer;
+  padding: 7px!important; 
+  }
+  .createNewSheetBtn{
+border: none;
+  }

@@ -1,36 +1,69 @@
 <!DOCTYPE html>
-<html lang="eng">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Race Reports Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <!-- Navigation Tabs -->
+    <nav class="tab-navigation">
+        <button class="tab-link active" data-tab="reports-page">Reports</button>
+        <!-- <button class="tab-link" data-tab="settings-page">Settings</button>-->
+    </nav>
 
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       
-       
-    </head>
+    <!-- TAB 1: REPORTS PAGE -->
+    <div class="tab-content active" id="reports-page">
+        <div class="container">
+            <header class="management-section">
+                <select class="select-box" id="select"></select>
+                <div class="manage-buttons">
+                    
+                    <button class="button btn-danger" id="delete">Delete</button>
+                </div>
+            </header>
 
-    <body class="grid-container">
-        
-        <select class="select-box grid_row1" id= "select"></select>
-        <button class="button grid_row2 grid_column1"id="recap">Race Report</button>
-        <button class="button grid_row2 grid_column2" id="start" >Start Overtake Report</button>
-        <button class="button grid_row3 grid_column1" id="pit">Pit History</button>
-        <button class="button grid_row3 grid_column2" id="averagePit">Pit Time Loss</button>
-        <button class="button grid_row3 grid_column3" id="PitStops">Pit Stops</button>
-        <button class="button grid_row2 grid_column3" id="average">Average Report</button>
-        <button class="button grid_row4" id="CSV">All Race Reports</button>
-        <button class="button" id="delete">Delete</button>
-        <button class="button" id="new" >New race</button>
-        <button class="button" id="down" >Download</button>
-        <button class="button" id="copy" >Copy</button>
-        <textarea class= "textarea" id="text" rows="10" cols="50" readonly="readonly">
-    	example text
-		</textarea>
+            <main class="reports-grid">
+                <button class="button" id="recap">Race Report</button>
+                <button class="button" id="start">Start Overtake Report</button>
+                <button class="button" id="pit">Pit History</button>
+                <button class="button" id="averagePit">Pit Time Loss</button>
+                <button class="button" id="PitStops">Pit Stops</button>
+                <button class="button" id="average">Average Report</button>
+                <button class="button btn-full-width" id="CSV">All Race Reports</button>
+            </main>
 
-        </body>
-      
+            <footer class="output-section">
+                <textarea class="textarea" id="text" rows="8" readonly="readonly" placeholder="Report data will appear here..."></textarea>
+                <div class="action-grid">
+                    <button class="button btn-outline" id="copy" style="display:none">Copy</button>
+                    <button class="button btn-primary" id="down" style="display:none">Download</button>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- TAB 2: SETTINGS PAGE -->
+    <!--<div class="tab-content" id="settings-page">
+        <div class="container">
+            <div class="settings-list">
+                
+                <div class="setting-item">
+                    <label for="sync-cloud">Sync with DropBox</label>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="sync-cloud">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+
+            </div>
+        </div>
+    </div>-->
+
     <script src="popup.js"></script>
-    <script src="/lib/gsi.js"></script>
-
+</body>
 </html>
