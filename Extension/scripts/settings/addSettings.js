@@ -83,14 +83,30 @@ async function initializeSettingsLogic() {
 
     // Restore Checkboxes
     const scripts = await storage.get('script') || scriptDefaults;
-    document.querySelectorAll('.checkbox-wrapper input[type="checkbox"]').forEach(checkbox => {
-      const id = checkbox.parentElement.id;
-      if (['raceSign', 'overSign'].includes(id)) checkbox.checked = id === 'raceSign' ? raceSign : overSign;
-      else checkbox.checked = !!scripts[id];
-    });
+  
+  const checkboxes = document.querySelectorAll(
+  '.checkbox-wrapper input[type="checkbox"]'
+);
 
+//const logoffBtn = document.getElementById('gdrive-logoff');
+
+for (const checkbox of checkboxes) {
+  const id = checkbox.parentElement.id;
+
+  checkbox.checked =
+    id === 'raceSign'
+      ? raceSign
+      : id === 'overSign'
+        ? overSign
+        : !!scripts[id];
+
+  // only touch DOM once if needed
+  /*if (id === 'gdrive' && logoffBtn) {
+    logoffBtn.hidden = !checkbox.checked;
+  }*/
+}
     handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
-    setupGoogleDriveSyncStatus(scripts.gdrive);
+    updateLastSyncTime(scripts.gdrive);
     setupExportDropdowns();
   }
 
@@ -183,7 +199,7 @@ async function initializeSettingsLogic() {
     }).catch(() => UI.links.link.className = 'invalid');
   }
 
-  async function setupGoogleDriveSyncStatus(isGDriveEnabled) {
+  async function updateLastSyncTime(isGDriveEnabled) {
     if (isGDriveEnabled) {
       //UI.forceSyncBtn.classList.add('visibleSync');
       const syncDate = (await storage.get('syncDate')) || 'Never';
@@ -201,7 +217,14 @@ async function initializeSettingsLogic() {
 
 async function checkAuth() {
   const checkbox = document.querySelector('#gdrive input');
+  //const logoffBtn = document.getElementById('gdrive-logoff'); // Get our new button
   
+  // If the user is unchecking the box to simply PAUSE sync, 
+  // we just return early. (They aren't logging out, just pausing).
+  if (!checkbox.checked) {
+    return; 
+  }
+
   // 1. Disable the checkbox so they can't click it again quickly
   checkbox.disabled = true; 
 
@@ -211,7 +234,6 @@ async function checkAuth() {
     loader = document.createElement('span');
     loader.id = 'gdrive-loader';
     loader.className = 'gdrive-loader';
-    // Insert it right after the checkbox in the DOM
     checkbox.parentNode.append(loader);
   }
   
@@ -219,24 +241,26 @@ async function checkAuth() {
   loader.style.display = 'inline-block';
 
   try {
-    // Request the token (Loader is spinning during this)
-    const response = await chrome.runtime.sendMessage({ action: 'getFirstToken' });
+    const response = await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove:true });
     
     if (!response || response.error || !response.token) {
       // Revert if failed or canceled
       checkbox.checked = false;
     } else {
-      // Success! Got the token.
+      // SUCCESS! 
+      // Show the Log off button now that they are authenticated
+      //if (logoffBtn) logoffBtn.style.display = 'inline-block'; 
+      
       const token = response.token;
       
-      // 4. Wrap the sync message in a Promise! 
-      // This forces the 'try' block to pause here until the background script responds.
+      // 4. Wrap the sync message in a Promise
       await new Promise((resolve) => {
         chrome.runtime.sendMessage({ type: 'syncData', direction: false, token: token.access_token }, syncResponse => {
           if (syncResponse && syncResponse.done) {
-            restoreOptions();
+            // Assuming restoreOptions is defined elsewhere
+            if (typeof restoreOptions === 'function') restoreOptions();
           }
-          resolve(); // Tell the Promise the sync is officially finished
+          resolve(); 
         });
       });
     }
@@ -244,8 +268,7 @@ async function checkAuth() {
     console.error("Auth or Sync failed:", err);
     checkbox.checked = false;
   } finally {
-    // 5. Clean up: Hide the loader and re-enable the checkbox
-    // Because we 'await'ed the Promise above, this ONLY runs after syncData is completely done!
+    // 5. Clean up
     if (loader) loader.style.display = 'none';
     checkbox.disabled = false; 
   }

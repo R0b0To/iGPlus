@@ -82,11 +82,53 @@ export function injectIGPlusOptions() {
       );
 
       const forceSyncBtn = el('span', { id: 'forceSync', className: 'btn', textContent: 'Sync Now', style: 'display:none;' });
-      const gDriveOpt = createScriptCheckbox({ id: 'gdrive', name: 'Cloud Sync (Google Drive)', desc: 'test', locTipKey: 'gdriveHelp' });
-      gDriveOpt.append(forceSyncBtn);
+      const cloudStorage = createScriptCheckbox({ id: 'gdrive', name: 'Cloud Sync (Dropbox)', desc: 'test', locTipKey: 'gdriveHelp' });
+      cloudStorage.append(forceSyncBtn);
+      const logoffBtn = document.createElement('button');
+      logoffBtn.classList.add('btn2','logoff-igplus');
+      logoffBtn.id = 'gdrive-logoff';
+      logoffBtn.textContent = 'Logout';
+
+
+// 3. Append the button inside the gdrive container
+//cloudStorage.appendChild(logoffBtn);
+
+// 4. Handle the Logoff Click
+/*logoffBtn.addEventListener('click', async (e) => {
+  e.preventDefault();
+  
+  // UX: Show that it's processing
+  logoffBtn.disabled = true;
+  logoffBtn.textContent = 'Logging off...';
+
+  try {
+    // Send message to background.js to revoke the token
+    const response = await chrome.runtime.sendMessage({ action: 'revokeToken' });
+    
+    if (response && response.success) {
+      // Uncheck the checkbox and hide the logoff button
+      const checkbox = document.querySelector('#gdrive input');
+      if (checkbox) checkbox.checked = false;
+      logoffBtn.style.display = 'none';
+      
+      // OPTIONAL: Update your chrome.storage so the extension remembers it's turned off
+      chrome.storage.local.get(['script'], function(data) {
+         const scriptSettings = data.script || {};
+         scriptSettings.gdrive = false;
+         chrome.storage.local.set({ script: scriptSettings });
+      });
+    }
+  } catch (err) {
+    console.error("Failed to revoke token:", err);
+  } finally {
+    // Reset button state
+    logoffBtn.disabled = false;
+    logoffBtn.textContent = 'Log out account';
+  }
+});*/
 
       const prefsLegend = el('legend', { id: 'preferences', textContent: 'iGPlus preferences', dataset: { locText: 'preferences' } });
-      const prefsContainer = el('fieldset', {}, prefsLegend, gDriveOpt, ...PREFERENCES.map(createScriptCheckbox), separatorContainer);
+      const prefsContainer = el('fieldset', {}, prefsLegend, cloudStorage, ...PREFERENCES.map(createScriptCheckbox), separatorContainer);
 
       // 2. Scripts Section
       const scriptsLegend = el('legend', { textContent: 'Scripts' });
