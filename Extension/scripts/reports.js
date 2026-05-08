@@ -21,7 +21,10 @@
 
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-
+function getTrackCode()
+{
+    return document.querySelector('.flag').classList[1].substring(2);
+}
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -149,7 +152,6 @@ function createExtractButton() {
   btn.setAttribute('style', 'position:relative; left:10px; cursor:pointer;border: none;');
   btn.append(spinner);
   btn.onclick =  onExtractClick;
-  btn.onclick = onExtractClick;
   return btn;
 }
 
@@ -177,6 +179,7 @@ function injectCSVButtons(header) {
   const qualiBtn = csvExportBtn.cloneNode(true);
   const podiumBtn = csvExportBtn.cloneNode(true);
 
+  raceBtn.classList.add('race-csv-igplus');
   const podiumSpinner = Object.assign(document.createElement('span'), { className: 'spinner' });
   podiumSpinner.style.display = 'none';
 
@@ -296,42 +299,112 @@ async function onPodiumCopy() {
 // ─── Google Sheets Import ─────────────────────────────────────────────────────
 
 async function openSheetImportDialog() {
+  const { createDeleteButton } = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
   // Always create fresh or check existence
   if (!document.getElementById('sheetDialog')) createSheetDialog();
 
   const token =
-  (await chrome.runtime.sendMessage({ action: 'getTokenSilent' }))?.token ||
-  (await chrome.runtime.sendMessage({ action: 'getFirstToken' }))?.token;
+    (await chrome.runtime.sendMessage({ action: 'getTokenSilent' }))?.token ||
+    (await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove:false }))?.token;
  
-  const { get_sheets } = await import(chrome.runtime.getURL('auth/gDriveHandler.js'));
+  const { get_sheets } = await import(chrome.runtime.getURL('auth/dropbox_handler.js'));
+  const { access_gSheet, create_new_csv, delete_csv } = await import(chrome.runtime.getURL('auth/csv_handler.js'));
+  
   const sheets = await get_sheets(token.access_token);
 
   const listContainer = document.getElementById('sheetList');
   const selectBtn = document.getElementById('selectSheetBtn');
+  const createBtn = document.getElementById('createNewSheetBtn');
+  const newSheetInput = document.getElementById('newSheetName');
   
   listContainer.innerHTML = '';
   selectBtn.disabled = true;
 
-  sheets.forEach(sheet => {
-    const item = document.createElement('label');
-    item.className = 'sheetStyle';
-    item.innerHTML = `
-      <input type="radio" name="sheetRadio" id="${sheet.id}" value="${sheet.id}">
-      <span class="sheet-name">${sheet.name}</span>
-    `;
-    
-    item.querySelector('input').addEventListener('change', () => {
-      document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
-      item.classList.add('selected_radio');
-      selectBtn.disabled = false;
-    });
-    
-    listContainer.appendChild(item);
+  // Helper function to dynamically add a sheet to the list
+  function appendSheetItem(sheet, autoSelect = false) {
+  const item = document.createElement('label');
+  item.className = 'sheetStyle';
+  item.innerHTML = `
+    <input type="radio" name="sheetRadio" id="${sheet.id}" value="${sheet.id}">
+    <span class="sheet-name">${sheet.name}</span>
+    <button class="deleteSheetBtn trash btn3" title="Delete file" data-path="${sheet.id}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path fill-rule="evenodd" clip-rule="evenodd" d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z" fill="currentColor"/>
+    <path d="M9 9H11V17H9V9Z" fill="currentColor"/>
+    <path d="M13 9H15V17H13V9Z" fill="currentColor"/>
+  </svg></button>
+  `;
+
+  const radio = item.querySelector('input');
+  radio.addEventListener('change', () => {
+    document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
+    item.classList.add('selected_radio');
+    selectBtn.disabled = false;
   });
+
+  // Delete button — stop propagation so it doesn't select the radio
+  const deleteBtn = item.querySelector('.deleteSheetBtn');
+  deleteBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!confirm(`Delete "${sheet.name}"? This cannot be undone.`)) return;
+
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = '⏳';
+
+    try {
+      await delete_csv(sheet.id, token.access_token);
+      item.remove();
+
+      // If the deleted item was selected, disable the export button
+      if (!document.querySelector('input[name="sheetRadio"]:checked')) {
+        selectBtn.disabled = true;
+      }
+    } catch (err) {
+      console.error("Failed to delete file", err);
+      alert("Failed to delete file. Check console.");
+      deleteBtn.disabled = false;
+      deleteBtn.textContent = '🗑️';
+    }
+  });
+
+  if (autoSelect) {
+    listContainer.prepend(item);
+    radio.checked = true;
+    radio.dispatchEvent(new Event('change'));
+  } else {
+    listContainer.appendChild(item);
+  }
+}
+
+  // Populate existing sheets
+  sheets.forEach(sheet => appendSheetItem(sheet));
+
+  // Logic for creating a new file
+  createBtn.onclick = async () => {
+    const fileName = newSheetInput.value.trim();
+    if (!fileName) return;
+
+    const originalText = createBtn.textContent;
+    createBtn.disabled = true;
+    createBtn.textContent = "Creating...";
+
+    try {
+      const newSheet = await create_new_csv(fileName, token.access_token);
+      appendSheetItem(newSheet, true); // Add to list and select it automatically
+      newSheetInput.value = ''; // clear input
+    } catch (err) {
+      console.error("Failed to create file", err);
+      alert("Failed to create new file. Check console.");
+    } finally {
+      createBtn.disabled = false;
+      createBtn.textContent = originalText;
+    }
+  };
 
   document.getElementById('sheetDialog').showModal();
 
-  // The logic inside the click handler
+  // The logic inside the export click handler
   selectBtn.onclick = async () => {
     const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
     
@@ -341,16 +414,15 @@ async function openSheetImportDialog() {
     selectBtn.innerHTML = `<div class="spinner"></div> <span>Exporting...</span>`;
 
     try {
-      const { access_gSheet } = await import(chrome.runtime.getURL('auth/gSheetsHandler.js'));
       const raceId = getRaceId();
 
-      const qualiRows = exportQuali(false).split('\n').map(row => [raceId, 'Q', ...row.split(',')]);
-      let raceRows = exportRace(false).split('\n').map(row => [raceId, 'R', ...row.split(',')]);
+      const qualiRows = exportQuali(false).split('\n').map(row =>[raceId, 'Q', ...row.split(',')]);
+      let raceRows = exportRace(false).split('\n').map(row =>[raceId, 'R', ...row.split(',')]);
 
       const noticeEls = document.getElementsByClassName('notice');
       const raceDate = noticeEls[1]?.textContent ?? 'error';
-      const trackCode = document.querySelector('.flag').classList[1].substring(2);
-      const rules = [
+      const trackCode = getTrackCode();
+      const rules =[
         `⛽${getRuleActive(noticeEls[0], '#igp-fuel')}`,
         `🛞${getRuleActive(noticeEls[0], '#igp-tyre')}`,
         `⏱️${getRuleActive(noticeEls[0], '#md-stopwatch')}`,
@@ -371,7 +443,7 @@ async function openSheetImportDialog() {
         ];
       }
 
-      // 2. IMPORTANT: We must AWAIT this so the spinner stays visible while working
+      // 2. IMPORTANT: AWAIT the handler
       await access_gSheet(selectedId, token.access_token, [...qualiRows, ...raceRows], {
         race_date: raceDate,
         track_code: trackCode,
@@ -391,17 +463,21 @@ async function openSheetImportDialog() {
 }
 
 function createSheetDialog() {
-  // Clean up any existing one just in case
   const old = document.getElementById('sheetDialog');
   if (old) old.remove();
 
   const dialog = document.createElement('dialog');
   dialog.id = 'sheetDialog';
 
+  // Added a '.newFileContainer' bar between the Header and Sheet List
   dialog.innerHTML = `
     <div class="sheetHeader">
       <h2>Select a Sheet</h2>
       <span id="close_dialog">&times;</span>
+    </div>
+    <div class="newFileContainer" style="display: flex; gap: 10px; padding: 16px;">
+      <input type="text" id="newSheetName" placeholder="New file name (e.g. Season 5)" style="flex: 1; padding: 6px;" />
+      <button id="createNewSheetBtn" class="btn4 createNewSheetBtn" style="padding: 6px 12px; cursor: pointer;">Create</button>
     </div>
     <div id="sheetList"></div>
     <div class="sheetFooter">
@@ -412,7 +488,6 @@ function createSheetDialog() {
   document.body.appendChild(dialog);
   document.getElementById('close_dialog').onclick = closeSheetDialog;
   
-  // Close when clicking outside the dialog (on the backdrop)
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) closeSheetDialog();
   });
@@ -422,7 +497,7 @@ function closeSheetDialog() {
   const dialog = document.getElementById('sheetDialog');
   if (dialog) {
     dialog.close();
-    dialog.remove(); // This removes it from the DOM entirely
+    dialog.remove(); 
   }
 }
 
@@ -537,7 +612,7 @@ function buildManagerTemplate(row, index, raceId, noticeEls) {
         tyre: noticeEls[0].children[1].className !== 'grey',
       },
       date: noticeEls[1].textContent,
-      track: document.querySelector('.flag').classList[1].substring(2),
+      track: getTrackCode(),
     },
     id: driverLink.href.replace(/\D/g, ''),
     name: row.childNodes[1].childNodes[2].textContent.substring(1),
@@ -580,6 +655,8 @@ function linkRaceResults() {
     }
 
     const entry = manager.find(m => m.id === driverId);
+
+    
     if (entry) {
       entry.race = reportUrl;
       entry.report_id = reportUrl.replace(/\D/g, '');
@@ -589,7 +666,7 @@ function linkRaceResults() {
 }
 
 function onExtractClick() {
-  const extractBtn = document.getElementById('extract_button');
+  const extractBtn = this;
   if (extractBtn.disabled) return;
 
   const podiumBtn = document.getElementById('top3');
@@ -597,7 +674,7 @@ function onExtractClick() {
   podiumBtn.childNodes[0].textContent = 'Top 3';
 
   extractBtn.disabled = true;
-  extractBtn.classList.add('disabled', 'podium-off');
+  extractBtn.classList.add('disabled');
   extractBtn.childNodes[0].textContent = '';
   extractBtn.childNodes[1].style.display = 'inline-block';
 
@@ -639,16 +716,18 @@ function parseReportHTML(data) {
 }
 
 async function persistAndSyncReports() {
-  const { active_option: reportLabel = 'Default ReportLRID' } =
-    await chrome.storage.local.get('active_option');
+  const trackCode = getTrackCode();
+  const race_id = document.getElementsByClassName('race-csv-igplus')[0].attributes['data-csvname'].value;
+
+  const active_option = `${race_id}_${trackCode}`;
 
   chrome.storage.local.get('active', async ({ active }) => {
-    chrome.runtime.sendMessage({ type: 'addRaceReportToDB', data: { id: reportLabel, data: active } });
+    chrome.runtime.sendMessage({ type: 'addRaceReportToDB', data: { id:active_option , data: active } });
 
     const { script: syncSettings = false } = await chrome.storage.local.get('script');
     if (!syncSettings?.gdrive) return;
 
-    const { getAccessToken } = await import(chrome.runtime.getURL('auth/googleAuth.js'));
+    const { getAccessToken } = await import(chrome.runtime.getURL('auth/dropboxAuth.js')); //send to background? not needed in popup
     const token = await getAccessToken();
     if (!token) return;
 
@@ -658,6 +737,9 @@ async function persistAndSyncReports() {
       token: token.access_token,
     });
   });
+
+  chrome.storage.local.set({'active_option':active_option});
+
 }
 
 // ─── Report Parsing ───────────────────────────────────────────────────────────
