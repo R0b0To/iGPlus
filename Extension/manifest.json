@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "iGPlus",
-  "version": "1.7.4",
+  "version": "1.8.0",
   "description": "Enhance your iGPmanager experience",
   "key":"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnUe8HeNjRMPeZa7maP/SFuVuN9d8Zi/76LVeI5lv5ycUwvz6vATphN42paO61NNzxcuGKWFhq59yIwS145zbUTEuErt4g6shq10rn62pkagkmQc3JnVz/ZiB95N81ljsuyXwI5HUtYkeHdMdduhYnQNE0ZPF24+ybcEDfDASnfMOqgxnajKNEAk4DKp33yX5Qb0xPfOd8p40cm1esMMwtIlO3GAf4QCRFirXqPqvgjkMLFwnFivIKAHywTKLnn9+ELhLXvDIoi4ZmdWgRhyqaFoDJtkef/YWbk4XIt30efdSejzViviLcfK6O+I1/+zIhEFpYthj5GqAhuwxdelROQIDAQAB",
   "permissions": [
@@ -10,13 +10,6 @@
     "storage",
     "scripting"
   ],
-  "oauth2": {
-    "client_id": "771547073964-l5tomkr9gm6eqh54avrn147g9eu6va83.apps.googleusercontent.com",
-    "scopes":[
-      "https://www.googleapis.com/auth/drive.file",
-      "https://www.googleapis.com/auth/spreadsheets"
-    ]
-  },
   "action": {
     "default_icon": {
       "128": "images/Icon128.png"
