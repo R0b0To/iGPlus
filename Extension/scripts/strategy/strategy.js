@@ -135,7 +135,7 @@
       `;
       originalStints.parentElement.appendChild(root);
 
-      const weatherSource = document.getElementById('d1SetupWrap')?.querySelector('a');
+      const weatherSource = document.getElementById('d1SetupWrap')?.querySelector('a:not(.idealSetupBtn)');
       if (weatherSource) {
         const clonedWeather = weatherSource.cloneNode(true);
         clonedWeather.classList.add('igplus-weather-text');
