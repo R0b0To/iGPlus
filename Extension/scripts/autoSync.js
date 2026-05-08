@@ -9,7 +9,7 @@ try {
 
         const token =
         (await chrome.runtime.sendMessage({ action: 'getTokenSilent' }))?.token ||
-        (await chrome.runtime.sendMessage({ action: 'getFirstToken' }))?.token;
+        (await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove:false }))?.token;
 
       if(token != false)
       {
