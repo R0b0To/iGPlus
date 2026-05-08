@@ -1,218 +1,287 @@
 const language = {
   en: {
-    optionsText:{
+    optionsText: {
       preferences: 'iGPlus Settings',
       languageText: 'Language',
-      RaceReport: 'Race Report Sign',
-      StartOvertakes: 'End lap2 Overtakes Sign',
+      RaceReport: 'Race Report Indicator',
+      StartOvertakes: 'Lap 2 Overtakes Indicator',
       separator: 'Custom Separator',
       home: 'Home Shortcuts',
       leagueHome: 'League',
-      research:'Cars design',
-      training:'Training',
-      staff:'My Staff',
-      staffMarket:'Staff Transfer Market',
-      driverMarket:'Driver Transfer Market',
-      raceStrategy:'Race Strategy',
-      slider:'Slider',
-      edit:'Editable',
-      raceSetup:'Race Setup',
-      carOverview:'Car Overview',
-      hqLevel:'HQ Level Labels',
-      academyTimer:'Driver\'s Academy Auto-Refresh',
-      reports:'Reports',
-      advancedHis:'Advanced History',
-      verticalSponsor:'Vertical Sponsor',
-      strategies:'Strategies',
-      export:'Export',
-      link:'Link:',
-      track:'Track ID column header',
-      sheetName:'Sheet Name',
-      cloudSync:'Cloud Sync',
-      disablebg:'Disable background image'
-
+      research: 'Car Design',
+      training: 'Training',
+      staff: 'My Staff',
+      staffMarket: 'Staff Transfer Market',
+      driverMarket: 'Driver Transfer Market',
+      raceStrategy: 'Race Strategy',
+      slider: 'Slider',
+      edit: 'Editable',
+      raceSetup: 'Race Setup',
+      carOverview: 'Car Overview',
+      hqLevel: 'HQ Level Labels',
+      academyTimer: 'Driver Academy Auto Refresh',
+      reports: 'Reports',
+      advancedHis: 'Advanced History',
+      verticalSponsor: 'Vertical Sponsor Layout',
+      strategies: 'Strategies',
+      export: 'Export',
+      link: 'Link:',
+      track: 'Track ID Column Header',
+      sheetName: 'Sheet Name',
+      cloudSync: 'Cloud Sync',
+      disablebg: 'Disable Background Image'
     },
-    popupText:{
+    popupText: {
       saveText: 'Save',
       PitReport: 'Pit Report',
-      pitStopTimeLoss:'Time lost in the pits',
+      pitStopTimeLoss: 'Time Lost in the Pits',
       heatMap: 'Lap Heatmap',
       delete: 'Delete',
       newRace: 'New Race',
       downloadText: 'Download',
       copyText: 'Copy',
       raceRecap: 'Race Recap',
-      startOvertakes:'End lap 2 Overtakes',
-      fullRaceReport:'All reports and race info.'
+      startOvertakes: 'Lap 2 Overtakes',
+      fullRaceReport: 'All reports and race information.'
     },
-    shortcuts:{research:'Research', design: 'Upgrade', qualifying: 'Qualifying', strategy: 'Strategy'},
+    shortcuts: {
+      research: 'Research',
+      design: 'Upgrade',
+      qualifying: 'Qualifying',
+      strategy: 'Strategy'
+    },
     fuelText: 'Fuel',
     lapText: 'Lap',
     pushText: 'Push',
-    pitAlert: 'Stints after the fourth pit stop are only visual and will not be saved for the race',
-    pushDescriptionPart1: 'Each push level indicates the fuel amount (in liters) that will be added to the fuel consumption. Your fuel consuption is ',
-    pushDescriptionPart2: 'L/km (Fuel per lap/track length). The push options are only to help set the strategy and will not be used in the race.',
-    commentText: 'Any thoughts ',
-    researchHelp: 'The highlighted row denotes the recommended research, determined through a weighted system.',
+    pitAlert: 'Stints after the fourth pit stop are visual only and will not be saved for the race.',
+    pushDescriptionPart1:
+      'Each push level indicates the amount of fuel (in liters) added to fuel consumption. Your current fuel consumption is ',
+    pushDescriptionPart2:
+      'L/km (fuel per lap / track length). Push settings are only intended to help plan your strategy and will not be applied during the race.',
+    commentText: 'Comments',
+    researchHelp:
+      'The highlighted row indicates the recommended research, calculated through a weighted system.',
     scriptDescription: {
-      gsheet: 'Import google data to be displayed in the strategy page below the advanced options',
-      raceReview: 'Home page shortcuts during live race.',
-      leagueHome: 'In the league page add a full race history button and position finished to each track',
-      research: 'Add a table with the values from the bars in the research menu.',
-      training: 'Add an extra column in the training page if driver is recovering.',
-      myStaff: 'Shows strenght of CD in the staff menus',
-      market: 'Shows CD\'s strenght and weakness in the transfer market',
-      marketDriver: 'Adds a talent column in the driver transfer market',
-      carOverview: 'Enable review button (design research) during a live race',
-      academyTimer: 'Add youth academy countdown. It will be placed as a notification beside the HQ menu option',
-      reports: 'Add option to extract all the reports lap by lap of the drivers. Qualifying and race reports with team names cvs',
-      history: 'Add track characteristics to the race history page',
-      sponsor: 'Display sponsor options vertically',
-      gdriveHelp: 'Save extension data to Google Drive. Warning: a popup may appear asking for the user\'s consent. Adblocks can interfere'
+      gsheet:
+        'Import cloud spreadsheet data to display on the strategy page below the advanced options.',
+      raceReview:
+        'Adds shortcut buttons to the home page during live races.',
+      leagueHome:
+        'Adds a complete race history button and finishing positions for each track on the league page.',
+      research:
+        'Adds a table with the numeric values shown in the research bars, along with additional useful information.',
+      training:
+        'Adds an extra column showing whether the driver is recovering.',
+      myStaff:
+        'Displays the strength of the Chief Designer in the staff menus.',
+      market:
+        'Displays the Chief Designer strengths and weaknesses in the transfer market.',
+      marketDriver:
+        'Adds a talent column to the driver transfer market.',
+      carOverview:
+        'Enables the review button (design research) during live races.',
+      academyTimer:
+        'Adds a youth academy countdown notification beside the HQ menu.',
+      reports:
+        'Adds an option to export all lap-by-lap driver reports, including qualifying and race CSV reports with team names.',
+      history:
+        'Adds track characteristics to the race history page.',
+      sponsor:
+        'Displays sponsor options vertically.',
+      gdriveHelp:
+        'Save extension data to cloud storage. Note: a consent popup may appear. Ad blockers may interfere.'
     }
   },
+
   it: {
-    optionsText:{
+    optionsText: {
       preferences: 'Impostazioni iGPlus',
       languageText: 'Lingua',
-      RaceReport: 'Segno Resoconto gara',
-      StartOvertakes: 'Segno Sorpassi fine 2° giro',
-      separator: 'Separatore di elenco',
-      home: 'Scorciatoie nella home page durante le gare live',
+      RaceReport: 'Indicatore Resoconto Gara',
+      StartOvertakes: 'Indicatore Sorpassi Fine 2° Giro',
+      separator: 'Separatore Personalizzato',
+      home: 'Scorciatoie Home',
       leagueHome: 'Campionato',
-      research:'Sviluppo Auto',
-      training:'Allenamento',
-      staff:'Staff',
-      staffMarket:'Trasferimenti Staff',
-      driverMarket:'Trasferimenti Piloti',
-      raceStrategy:'Strategia Gara',
-      slider:'Slider',
-      edit:'Editabile',
-      raceSetup:'Setup Gara',
-      carOverview:'Recensione Auto',
-      hqLevel:'Livello Strutture Nella Sede Centrale',
-      academyTimer:'Aggiornamento Automatico Dell\'Accademia',
-      reports:'Resoconti',
-      advancedHis:'Caratteristiche Del Circuito Nello Storico Gare',
-      verticalSponsor:'Visualizza Sponsors in Verticale',
-      strategies:'Strategie',
-      export:'Esporta',
-      link:'Link:',
-      track:'Nome colonna dei circuiti',
-      sheetName:'Nome Foglio',
-      cloudSync:'Cloud Sync',
-      disablebg:"Disabilita l'immagine di sfondo"
+      research: 'Sviluppo Auto',
+      training: 'Allenamento',
+      staff: 'Il Mio Staff',
+      staffMarket: 'Mercato Staff',
+      driverMarket: 'Mercato Piloti',
+      raceStrategy: 'Strategia Gara',
+      slider: 'Slider',
+      edit: 'Modificabile',
+      raceSetup: 'Setup Gara',
+      carOverview: 'Panoramica Auto',
+      hqLevel: 'Etichette Livello Sede Centrale',
+      academyTimer: 'Aggiornamento Automatico Accademia Piloti',
+      reports: 'Resoconti',
+      advancedHis: 'Storico Avanzato',
+      verticalSponsor: 'Sponsor Verticali',
+      strategies: 'Strategie',
+      export: 'Esporta',
+      link: 'Link:',
+      track: 'Intestazione Colonna ID Circuito',
+      sheetName: 'Nome Foglio',
+      cloudSync: 'Sincronizzazione Cloud',
+      disablebg: 'Disattiva Immagine di Sfondo'
     },
-    shortcuts:{research:'Ricerca', design: 'Aggiorna', qualifying: 'Qualifica', strategy: 'Strategia'},
-    popupText:{
+    shortcuts: {
+      research: 'Ricerca',
+      design: 'Aggiorna',
+      qualifying: 'Qualifica',
+      strategy: 'Strategia'
+    },
+    popupText: {
       saveText: 'Salva',
-      PitReport: 'Storia Pit',
-      pitStopTimeLoss:'Tempo perso nei box',
-      heatMap: 'Giri per Posizione',
+      PitReport: 'Resoconto Pit',
+      pitStopTimeLoss: 'Tempo Perso ai Box',
+      heatMap: 'Mappa Posizioni Giri',
       delete: 'Elimina',
-      newRace: 'Nuova gara',
+      newRace: 'Nuova Gara',
       downloadText: 'Scarica',
       copyText: 'Copia',
       raceRecap: 'Resoconto Gara',
-      startOvertakes:'Sorpassi a fine 2° giro',
-      fullRaceReport:'Tutti i resoconti'
+      startOvertakes: 'Sorpassi Fine 2° Giro',
+      fullRaceReport: 'Tutti i resoconti e dati della gara.'
     },
     fuelText: 'Carburante',
     lapText: 'Giri',
     pushText: 'Spinta',
-    pitAlert:'Gli stint dopo il quarto pit stop sono solo visivi e non saranno salvati per la gara.',
-    pushDescriptionPart1: 'Ogni spinta equivale alla quantità di carburante (in litri) da aggiungere al consumo di carburante. Il tuo consumo attuale è: ',
-    pushDescriptionPart2: 'L/km (Litri per giro/ lunghezza circuito). La scelta della spinta non verrà salvata per la gara.',
+    pitAlert:
+      'Gli stint dopo il quarto pit stop sono solo visivi e non verranno salvati per la gara.',
+    pushDescriptionPart1:
+      'Ogni livello di spinta indica la quantità di carburante (in litri) aggiunta al consumo. Il tuo consumo attuale è ',
+    pushDescriptionPart2:
+      'L/km (litri per giro / lunghezza circuito). Le impostazioni di spinta servono solo come supporto strategico e non verranno applicate in gara.',
     commentText: 'Commenti',
-    researchHelp: 'Il campo evidenziato indica la ricerca consigliata basata su un sistema poderato',
+    researchHelp:
+      'La riga evidenziata indica la ricerca consigliata, calcolata tramite un sistema ponderato.',
     scriptDescription: {
-      gsheet: 'Importa dati da google sheets da essere visualizzati al di sotto della strategia avanzata',
-      raceReview: 'Pulsanti scorciatoie nella home page,',
-      leagueHome: 'Aggiunge nella pagina del campionato un pulsante per la storia completa dei circuiti e la posizione finale delle gare',
-      research: 'Aggiuge una tabella con i valori numerici della barra di ricerca. Più altre informazioni utili',
-      training: 'Aggiunge una colonna con l\'orario in cui il pilota raggiungerà il 100% di salute.',
-      myStaff: 'Rivela la forza del capo designer nei vari menu',
-      market: 'Aggiunge una colonna con il talento del pilota nel mercato trasferimenti',
-      marketDriver: 'Rivela forza e debolezza del CD nel mercato trasferimenti',
-      carOverview: 'Il pulsante di ricerca diventa disponibile anche durante una gara in corso',
-      academyTimer: 'Aggiunge il timer dell\'accademia piloti nel menu laterale oltre ad aggiornare il timer in automatico',
-      reports: 'Aggiunge il pulsante per estrarre i dati delle gare di ogni pilota, il CVS della qualifica e gara con i nomi delle squadre',
-      history: 'Aggiunge caratteristiche del circuito nella pagina storico gare',
-      sponsor: 'Visualizzare la scelta degli sponsor in senso verticale',
-      gdriveHelp: 'Salva i dati dell\'estensione su Google Drive. Attenzione: potrebbe apparire un popup che chiede il consenso dell\'utente. Gli adblock possono interferire'
+      gsheet:
+        'Importa dati da fogli cloud da visualizzare nella pagina strategia sotto le opzioni avanzate.',
+      raceReview:
+        'Aggiunge pulsanti scorciatoia nella home durante le gare live.',
+      leagueHome:
+        'Aggiunge nella pagina campionato un pulsante per lo storico completo delle gare e le posizioni finali per ogni circuito.',
+      research:
+        'Aggiunge una tabella con i valori numerici delle barre di ricerca e altre informazioni utili.',
+      training:
+        'Aggiunge una colonna extra che mostra se il pilota è in fase di recupero.',
+      myStaff:
+        'Mostra la forza del Capo Designer nei menu dello staff.',
+      market:
+        'Mostra punti di forza e debolezza del Capo Designer nel mercato trasferimenti.',
+      marketDriver:
+        'Aggiunge una colonna talento nel mercato piloti.',
+      carOverview:
+        'Abilita il pulsante recensione (ricerca design) durante una gara live.',
+      academyTimer:
+        'Aggiunge un conto alla rovescia dell’accademia piloti accanto al menu HQ.',
+      reports:
+        'Aggiunge l’opzione per esportare tutti i resoconti giro per giro dei piloti, inclusi CSV di qualifiche e gare con i nomi dei team.',
+      history:
+        'Aggiunge le caratteristiche del circuito nella pagina storico gare.',
+      sponsor:
+        'Visualizza le opzioni sponsor in verticale.',
+      gdriveHelp:
+        'Salva i dati dell’estensione nel cloud. Nota: potrebbe apparire un popup di autorizzazione. Gli ad blocker potrebbero interferire.'
     }
   },
+
   es: {
-     optionsText: {
-        preferences: 'Configuraciones de iGPlus',
-        languageText: 'Idioma',
-        RaceReport: 'Informe de Carrera',
-        StartOvertakes: 'Señal de Adelantamientos al Final de la Vuelta 2',
-        separator: 'Separador Personalizado',
-        home: 'Atajos de Inicio',
-        leagueHome: 'Liga',
-        research: 'Diseño de Coches',
-        training: 'Entrenamiento',
-        staff: 'Mi Personal',
-        staffMarket: 'Mercado de Transferencia de Personal',
-        driverMarket: 'Mercado de Transferencia de Pilotos',
-        raceStrategy: 'Estrategia de Carrera',
-        slider: 'Deslizador',
-        edit: 'Editable',
-        raceSetup: 'Configuración de Carrera',
-        carOverview: 'Resumen del Coche',
-        hqLevel: 'Etiquetas de Nivel de HQ',
-        academyTimer: 'Auto-actualización de la Academia de Pilotos',
-        reports: 'Informes',
-        advancedHis: 'Historial Avanzado',
-        verticalSponsor: 'Patrocinador Vertical',
-        strategies: 'Estrategias',
-        export: 'Exportar',
-        link: 'Enlace:',
-        track: 'Encabezado de la Columna de ID de la Pista',
-        sheetName: 'Nombre de la Hoja',
-        cloudSync: 'Sincronización en la Nube',
-        disablebg:'Desactivar imagen de fondo'
-      },
-      shortcuts:{research:'investigación', design: 'Mejorar', qualifying: 'Clasificación', strategy: 'Estrategia'},
-      popupText: {
-        saveText: 'Guardar',
-        PitReport: 'Informe de Pits',
-        pitStopTimeLoss: 'Tiempo Perdido en los Pits',
-        heatMap: 'Mapa de Calor de Vuelta',
-        delete: 'Eliminar',
-        newRace: 'Nueva Carrera',
-        downloadText: 'Descargar',
-        copyText: 'Copiar',
-        raceRecap: 'Resumen de la Carrera',
-        startOvertakes: 'Adelantamientos al Final de la Vuelta 2',
-        fullRaceReport: 'Todos los informes e información de la carrera.'
-      },
-      fuelText: 'Combustible',
-      lapText: 'Vuelta',
-      pushText: 'Empujar',
-      pitAlert: 'Las paradas en boxes después de la cuarta parada son solo visuales y no se guardarán para la carrera',
-      pushDescriptionPart1: 'Cada nivel de empuje indica la cantidad de combustible (en litros) que se agregará al consumo de combustible. Su consumo de combustible es ',
-      pushDescriptionPart2: 'L/km (Combustible por vuelta/longitud de la pista). Las opciones de empuje son solo para ayudar a establecer la estrategia y no se utilizarán en la carrera.',
-      commentText: 'Cualquier pensamiento ',
-      researchHelp: 'La fila resaltada denota la investigación recomendada, determinada a través de un sistema ponderado.',
-      scriptDescription: {
-        gsheet: 'Importar datos de Google para mostrarlos en la página de estrategia debajo de las opciones avanzadas',
-        raceReview: 'Atajos de la página de inicio.',
-        leagueHome: 'En la página de la liga, agregar un botón de historial completo de carrera y la posición finalizada en cada pista',
-        research: 'Agregar una tabla con los valores de las barras en el menú de investigación.',
-        training: 'Agregar una columna extra en la página de entrenamiento si el piloto se está recuperando.',
-        myStaff: 'Muestra la fortaleza del CD en los menús de personal',
-        market: 'Muestra las fortalezas y debilidades del CD en el mercado de transferencias',
-        marketDriver: 'Agrega una columna de talento en el mercado de transferencias de pilotos',
-        carOverview: 'Habilitar botón de revisión (investigación de diseño) durante una carrera en vivo',
-        academyTimer: 'Agregar cuenta regresiva de la academia juvenil. Se colocará como una notificación junto a la opción del menú de HQ',
-        reports: 'Agregar opción para extraer todos los informes vuelta por vuelta de los pilotos. Informes de clasificación y carrera con nombres de equipo cvs',
-        history: 'Agregar características de la pista a la página de historial de carreras',
-        sponsor: 'Mostrar opciones de patrocinadores verticalmente',
-        gdriveHelp: 'Guardar datos de la extensión en Google Drive. Advertencia: puede aparecer una ventana emergente pidiendo el consentimiento del usuario. Los bloqueadores de anuncios pueden interferir'
-      }
+    optionsText: {
+      preferences: 'Configuración de iGPlus',
+      languageText: 'Idioma',
+      RaceReport: 'Indicador de Informe de Carrera',
+      StartOvertakes: 'Indicador de Adelantamientos Vuelta 2',
+      separator: 'Separador Personalizado',
+      home: 'Atajos de Inicio',
+      leagueHome: 'Liga',
+      research: 'Diseño del Coche',
+      training: 'Entrenamiento',
+      staff: 'Mi Personal',
+      staffMarket: 'Mercado de Personal',
+      driverMarket: 'Mercado de Pilotos',
+      raceStrategy: 'Estrategia de Carrera',
+      slider: 'Deslizador',
+      edit: 'Editable',
+      raceSetup: 'Configuración de Carrera',
+      carOverview: 'Resumen del Coche',
+      hqLevel: 'Etiquetas de Nivel HQ',
+      academyTimer: 'Actualización Automática de la Academia',
+      reports: 'Informes',
+      advancedHis: 'Historial Avanzado',
+      verticalSponsor: 'Patrocinadores Verticales',
+      strategies: 'Estrategias',
+      export: 'Exportar',
+      link: 'Enlace:',
+      track: 'Encabezado de Columna ID del Circuito',
+      sheetName: 'Nombre de la Hoja',
+      cloudSync: 'Sincronización en la Nube',
+      disablebg: 'Desactivar Imagen de Fondo'
+    },
+    shortcuts: {
+      research: 'Investigación',
+      design: 'Mejorar',
+      qualifying: 'Clasificación',
+      strategy: 'Estrategia'
+    },
+    popupText: {
+      saveText: 'Guardar',
+      PitReport: 'Informe de Boxes',
+      pitStopTimeLoss: 'Tiempo Perdido en Boxes',
+      heatMap: 'Mapa de Calor de Vueltas',
+      delete: 'Eliminar',
+      newRace: 'Nueva Carrera',
+      downloadText: 'Descargar',
+      copyText: 'Copiar',
+      raceRecap: 'Resumen de Carrera',
+      startOvertakes: 'Adelantamientos Vuelta 2',
+      fullRaceReport: 'Todos los informes e información de la carrera.'
+    },
+    fuelText: 'Combustible',
+    lapText: 'Vuelta',
+    pushText: 'Empuje',
+    pitAlert:
+      'Los stints después de la cuarta parada son solo visuales y no se guardarán para la carrera.',
+    pushDescriptionPart1:
+      'Cada nivel de empuje indica la cantidad de combustible (en litros) añadida al consumo. Tu consumo actual es ',
+    pushDescriptionPart2:
+      'L/km (combustible por vuelta / longitud del circuito). Las opciones de empuje solo sirven para ayudar a planificar la estrategia y no se aplicarán durante la carrera.',
+    commentText: 'Comentarios',
+    researchHelp:
+      'La fila resaltada indica la investigación recomendada, calculada mediante un sistema ponderado.',
+    scriptDescription: {
+      gsheet:
+        'Importa datos desde hojas en la nube para mostrarlos en la página de estrategia debajo de las opciones avanzadas.',
+      raceReview:
+        'Añade accesos directos en la página principal durante carreras en vivo.',
+      leagueHome:
+        'Añade un botón de historial completo de carreras y posiciones finales para cada circuito en la página de liga.',
+      research:
+        'Añade una tabla con los valores numéricos de las barras de investigación y otra información útil.',
+      training:
+        'Añade una columna extra mostrando si el piloto está recuperándose.',
+      myStaff:
+        'Muestra la fuerza del Director Técnico en los menús de personal.',
+      market:
+        'Muestra fortalezas y debilidades del Director Técnico en el mercado de transferencias.',
+      marketDriver:
+        'Añade una columna de talento en el mercado de pilotos.',
+      carOverview:
+        'Habilita el botón de revisión (investigación de diseño) durante carreras en vivo.',
+      academyTimer:
+        'Añade una cuenta regresiva de la academia juvenil junto al menú HQ.',
+      reports:
+        'Añade una opción para exportar todos los informes vuelta por vuelta, incluyendo CSV de clasificación y carrera con nombres de equipos.',
+      history:
+        'Añade características del circuito a la página de historial de carreras.',
+      sponsor:
+        'Muestra las opciones de patrocinadores en vertical.',
+      gdriveHelp:
+        'Guarda los datos de la extensión en almacenamiento en la nube. Nota: puede aparecer una ventana emergente solicitando autorización. Los bloqueadores de anuncios pueden interferir.'
     }
+  }
 };
 
 export {
