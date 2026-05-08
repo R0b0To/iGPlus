@@ -273,3 +273,84 @@ dialog:not([open]) {
   .createNewSheetBtn{
 border: none;
   }
+
+  /* Tooltip */
+.tooltip-anchor {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  cursor: default;
+  position: relative;
+}
+
+.tooltip-icon {
+  stroke: #888;
+}
+
+.tooltip-box {
+  display: none;
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  background: #222;
+  color: #fff;
+  font-size: 13px;
+  font-weight: normal;
+  padding: 10px 14px;
+  border-radius: 8px;
+  width: 300px;
+  line-height: 1.5;
+  z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  white-space: normal;
+}
+
+.tooltip-box code {
+  background: #333;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.tooltip-box .url-old {
+  color: #aaa;
+  word-break: break-all;
+}
+
+.tooltip-box .url-new {
+  color: #90ee90;
+  word-break: break-all;
+}
+
+.tooltip-anchor:hover .tooltip-box {
+  display: block;
+}
+
+/* New file bar */
+.newFileContainer {
+  display: flex;
+  gap: 10px;
+  padding: 16px;
+}
+
+.newFileContainer input {
+  flex: 1;
+  padding: 6px;
+}
+
+.createNewSheetBtn {
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.importHelpLink {
+  font-size: 10px;
+  font-weight: normal;
+  color: #91bc7e!important;
+  margin-left: 8px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.importHelpLink:hover {
+  color: #ccc;
+}

@@ -469,15 +469,24 @@ function createSheetDialog() {
   const dialog = document.createElement('dialog');
   dialog.id = 'sheetDialog';
 
-  // Added a '.newFileContainer' bar between the Header and Sheet List
   dialog.innerHTML = `
     <div class="sheetHeader">
-      <h2>Select a Sheet</h2>
+      <h2>
+        <a href="https://www.dropbox.com/home/Apps/iGPlus" target="_blank" rel="noopener noreferrer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#0061FF">
+            <path d="M6 2L0 6l6 4-6 4 6 4 6-4-6-4 6-4L6 2zm12 0l-6 4 6 4-6 4 6 4 6-4-6-4 6-4-6-4z"/>
+          </svg>
+        </a>
+        Select sheet
+        <a href="https://docs.google.com/spreadsheets/d/1_4CfNu8IQmnUIwvMe0SiLt-onlTOhuD64oXOTzXBR04/edit?usp=sharing" target="_blank" rel="noopener noreferrer" class="importHelpLink">
+  Use in Google Sheets ↗
+</a>
+      </h2>
       <span id="close_dialog">&times;</span>
     </div>
-    <div class="newFileContainer" style="display: flex; gap: 10px; padding: 16px;">
-      <input type="text" id="newSheetName" placeholder="New file name (e.g. Season 5)" style="flex: 1; padding: 6px;" />
-      <button id="createNewSheetBtn" class="btn4 createNewSheetBtn" style="padding: 6px 12px; cursor: pointer;">Create</button>
+    <div class="newFileContainer">
+      <input type="text" id="newSheetName" placeholder="New file name (e.g. Season 5)" />
+      <button id="createNewSheetBtn" class="btn4 createNewSheetBtn">Create</button>
     </div>
     <div id="sheetList"></div>
     <div class="sheetFooter">
@@ -487,7 +496,7 @@ function createSheetDialog() {
 
   document.body.appendChild(dialog);
   document.getElementById('close_dialog').onclick = closeSheetDialog;
-  
+
   dialog.addEventListener('click', (e) => {
     if (e.target === dialog) closeSheetDialog();
   });

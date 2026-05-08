@@ -104,7 +104,7 @@ async function enhanceResearchTable() {
   
   //const tier = await findCurrentTier();
 
-  const maxResearch = document.getElementById('researchMaxEffect').value;
+  const maxResearch = document.getElementById('researchMaxEffect')?.value;
   const bestTeam = JSON.parse(document.getElementById('leagueDesignData').textContent);
   const currentResearchPower = getCurrentResearchPower(maxResearch);
   
