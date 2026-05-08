@@ -1,7 +1,7 @@
 import { scriptDefaults, tabScripts } from './common/config.js';
-import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud, cloudToLocal } from './auth/gDriveHandler.js';
+import { deleteElement, localStrategiesToCloud, localReportsToCloud, localToCloud, cloudToLocal } from './auth/dropbox_handler.js';
 import { addData, getAllData, getElementById } from './common/database.js';
-import {  getFirstAccessToken, getAccessToken, revokeConsent,invalidateToken } from './auth/googleAuth.js';
+import {  getFirstAccessToken, getAccessToken, revokeConsent,invalidateToken } from './auth/dropboxAuth.js';
 
 // Use an object to track the last path executed per tabId
 // This prevents cross-tab interference and double-triggering
@@ -110,7 +110,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
     // 1. Invalidate the old token
     invalidateToken(request.oldToken).then(() => {
       // 2. Try to get a new one silently
-      return getFirstAccessToken();
+      return getFirstAccessToken(false);
     }).then(newTokenObj => {
       sendResponse({ token: newTokenObj });
     }).catch(err => {
@@ -121,7 +121,7 @@ chrome.runtime.onMessage.addListener((request,sender,sendResponse) => {
   if (request.action === 'getFirstToken') {
     
     // Run the auth function
-    getFirstAccessToken()
+    getFirstAccessToken(request.forceReapprove)
       .then(token => {
         if (token) {
           sendResponse({ token: token }); 
