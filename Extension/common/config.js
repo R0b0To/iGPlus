@@ -91,7 +91,8 @@ const tabScripts = {
   },
   '/app/p=headquarters': {
     key: 'hq',
-    scripts: ['scripts/headquarters.js']
+    scripts: ['scripts/headquarters.js'],
+    styles: ['css/hq.css']
   },
   '/app/d=shortlist&tab=drivers': {
     scripts: ['scripts/shortlist.js']

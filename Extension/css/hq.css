@@ -1,0 +1,636 @@
+#hq-boost-container{
+  z-index: 4;
+}
+#repair-all-bar{
+ top:87%!important;
+}
+
+/* ── Tabs Styling ── */
+#hq-tab-switcher {
+  z-index: 5;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-top: 10px;
+}
+
+.hq-tab-btn {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  color: #888;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+.hq-tab-btn:hover {
+  background: #252525;
+  color: #ccc;
+}
+
+.hq-tab-btn.active {
+  background: #2a4a6e;
+  border-color: #4a85c5;
+  color: #fff;
+  cursor: default;
+}
+
+/* ── Card layout ── */
+.fac-card {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  color: #e0e0e0;
+}
+
+.fac-header {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fac-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fac-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f0f0f0;
+}
+
+.fac-cond {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Level button ── */
+.fac-level {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  background: none;
+  border: 1px solid #2e2e2e;
+  border-radius: 5px;
+  padding: 2px 8px;
+  cursor: default;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.fac-level.can-upgrade {
+  color: #7eb8f7;
+  border-color: #2a4a6e;
+  cursor: pointer;
+}
+
+.fac-level.can-upgrade:hover {
+  background: #162840;
+  border-color: #4a85c5;
+}
+
+.upgrade-cost {
+  color: #5a9e5a;
+  font-size: 10px;
+}
+
+/* ── Condition bar ── */
+.cond-bar {
+  width: 100px; /* Fixed width instead of flex: 1 */
+  flex-shrink: 0; /* Prevents the bar from squeezing if the space gets tight */
+  height: 3px;
+  background: #2e2e2e;
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.cond-fill {
+  height: 100%;
+  border-radius: 99px;
+}
+
+.cond-fill.green { background: #1D9E75; }
+.cond-fill.amber { background: #d4890a; }
+.cond-fill.red   { background: #c0392b; }
+
+.cond-pct {
+  font-size: 11px;
+  font-weight: 600;
+  min-width: 30px;
+  text-align: right;
+}
+
+.cond-pct.green { color: #2ecc9a; }
+.cond-pct.amber { color: #f0a830; }
+.cond-pct.red   { color: #e05c5c; }
+
+/* ── Maintain button ── */
+.btn-maintain {
+  margin-left: auto; /* Pushes this button and any trailing buttons to the far right */
+  
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  border: 1px solid #2e2e2e;
+  background: transparent;
+  color: #aaa;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-maintain:hover:not(:disabled) {
+  background: #252525;
+  color: #e0e0e0;
+}
+
+.btn-maintain:disabled {
+  display: none;
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.maintain-cost {
+  color: #5a9e5a;
+  font-size: 10px;
+}
+
+/* ── Options area ── */
+.fac-options {
+  margin-top: 8px;
+  border-top: 1px solid #2a2a2a;
+  padding-top: 8px;
+}
+
+.fac-options:empty {
+  display: none;
+}
+
+/* stat line (Design, Simulator) */
+.opts-stat {
+  font-size: 12px;
+  color: #888;
+}
+
+/* manufacturing */
+.opts-manufacturing {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opts-stat-line {
+  font-size: 12px;
+  color: #888;
+}
+
+.opts-kv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.opts-kv {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #666;
+}
+
+.opts-kv-value {
+  color: #999;
+}
+
+/* technology */
+.opts-tech-list {
+  justify-content: space-around;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-tech {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #2a4a2a;
+  background: transparent;
+  color: #6abf6a;
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.btn-tech:hover:not(:disabled) {
+  background: #162816;
+  border-color: #4a8a4a;
+}
+
+.btn-tech:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  color: #888;
+  border-color: #2e2e2e;
+}
+
+.tech-name {
+  font-weight: 600;
+}
+
+.tech-meta {
+  font-size: 10px;
+  color: #5a9e5a;
+}
+
+.btn-tech:disabled .tech-meta {
+  color: #555;
+}
+
+/* recruits (YDA / Offices) */
+.opts-recruits {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.opts-deadline {
+  font-size: 11px;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.opts-deadline span {
+  color: #f0a830;
+}
+
+.recruit-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.recruit-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #ccc;
+}
+
+.recruit-role {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888;
+  background: #2a2a2a;
+  border-radius: 3px;
+  padding: 1px 4px;
+  margin-right: 3px;
+}
+
+.recruit-talent {
+  font-size: 11px;
+  font-weight: 600;
+  color: #7eb8f7;
+  min-width: 32px;
+  text-align: right;
+}
+.opts-recruit-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 11px;
+  color: #666;
+  text-align: left;
+}
+
+.opts-recruit-toggle:hover {
+  color: #999;
+}
+
+.opts-deadline-time {
+  color: #f0a830;
+}
+
+.opts-recruit-chevron {
+  font-size: 10px;
+  color: #555;
+  transition: transform 0.15s;
+}
+
+.opts-recruit-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  max-height: 400px;
+  margin-top: 6px;
+  transition: max-height 0.2s ease, margin-top 0.2s ease;
+}
+
+.opts-recruit-list.collapsed {
+  max-height: 0;
+  margin-top: 0;
+}
+
+.btn-hire {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid #2a4a2a;
+  background: transparent;
+  color: #6abf6a;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-hire:hover {
+  background: #162816;
+  border-color: #4a8a4a;
+}
+
+.hire-tokens {
+  color: #f0a830;
+  font-size: 10px;
+}
+/* ── Collect button ── */
+.btn-collect {
+  font-size: 11px;
+  padding: 3px 9px;
+  border-radius: 5px;
+  border: 1px solid #1D9E75;
+  background: rgba(29, 158, 117, 0.1);
+  color: #2ecc9a;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-collect:hover:not(:disabled) {
+  background: rgba(29, 158, 117, 0.25);
+  color: #fff;
+}
+
+.btn-collect:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-collect.collected-success {
+  border-color: #444;
+  background: transparent;
+  color: #888;
+}
+
+.btn-collect icon {
+  display: inline-block;
+  transform: scale(0.9);
+  margin-top: -1px;
+}
+
+/* ── Main Panel Layout constraints ── */
+#condensed-hq-igplus {
+  flex-direction: column;
+  width: 100%;
+  max-width: 600px; /* Looks fantastic on ultrawides, prevents stretching */
+  margin: 0 auto; 
+  padding-bottom: 30px;
+}
+
+/* Ensure children are clickable despite the invisible parent wrapper */
+#condensed-hq-igplus > * {
+  pointer-events: auto;
+}
+
+/* ── Panel Header & Settings Menu ── */
+.hq-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #1a1a1a;
+  padding: 8px 12px;
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  margin-bottom: 6px;
+  color: #ccc;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+
+.btn-panel-settings {
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+
+.btn-panel-settings:hover {
+  color: #fff;
+  transform: rotate(45deg);
+}
+
+.hq-settings-menu {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hq-settings-menu.hidden {
+  display: none;
+}
+
+.hq-setting-label {
+  font-size: 13px;
+  color: #ccc;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+.hq-setting-label:hover {
+  background: #252525;
+}
+
+/* ── Scrollable Cards Container ── */
+.hq-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+/* The circle inside the toggle */
+.hq-setting-label input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: #888;
+  border-radius: 50%;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+/* Toggle ON (Visible) State */
+.hq-setting-label input[type="checkbox"]:checked {
+  background: #2a4a6e; /* Matches your active tab color */
+}
+
+.hq-setting-label input[type="checkbox"]:checked::after {
+  transform: translateX(16px);
+  background: #fff;
+}
+
+/* ── Text Visual Feedback ── */
+.hq-setting-label span {
+  transition: color 0.3s, opacity 0.3s;
+}
+
+/* Dim text when toggled OFF (Hidden) */
+.hq-setting-label input[type="checkbox"]:not(:checked) + span {
+  opacity: 0.4;
+  text-decoration: line-through;
+}
+
+/* Bright text when toggled ON (Visible) */
+.hq-setting-label input[type="checkbox"]:checked + span {
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Scrollbar styling */
+.hq-cards-container::-webkit-scrollbar {
+  width: 6px;
+}
+.hq-cards-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+.hq-cards-container::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+
+.hq-setting-label {
+  cursor: grab; /* Shows user the item is draggable */
+}
+
+.hq-setting-label:active {
+  cursor: grabbing;
+}
+
+.hq-setting-label.dragging {
+  opacity: 0.5;
+  background: #333;
+}
+
+.drag-handle {
+  color: #666;
+  font-size: 16px;
+  line-height: 1;
+  user-select: none;
+  cursor: grab;
+}
+
+/* Ensure the text fills the remaining space */
+.hq-setting-label .label-text {
+  flex: 1;
+}
+/* ── Header Actions Area ── */
+.hq-panel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Bulk Repair Button ── */
+.btn-fix-selected {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 5px;
+  border: 1px solid #1D9E75;
+  background: rgba(29, 158, 117, 0.1);
+  color: #2ecc9a;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.btn-fix-selected:hover:not(:disabled) {
+  background: rgba(29, 158, 117, 0.25);
+  color: #fff;
+}
+
+.btn-fix-selected:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #444;
+  color: #888;
+}
+
+.btn-fix-selected.hidden {
+  display: none;
+}
+
+/* ── Card Checkbox Layout ── */
+.fac-title-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cb-fix-select {
+  display: block!important;
+  margin: 0;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  accent-color: #1D9E75; /* Native styling hint to browsers */
+}
+
+.cb-fix-select:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
