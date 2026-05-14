@@ -78,6 +78,7 @@
 
 /* ── Level button ── */
 .fac-level {
+  padding: 3px 9px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
@@ -87,7 +88,6 @@
   background: none;
   border: 1px solid #2e2e2e;
   border-radius: 5px;
-  padding: 2px 8px;
   cursor: default;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -106,6 +106,9 @@
 }
 
 .upgrade-cost {
+  height: 26px;
+  display: flex;
+  align-items: center;
   color: #5a9e5a;
   font-size: 10px;
 }
@@ -142,8 +145,6 @@
 
 /* ── Maintain button ── */
 .btn-maintain {
-  margin-left: auto; /* Pushes this button and any trailing buttons to the far right */
-  
   font-size: 11px;
   padding: 3px 9px;
   border-radius: 5px;
@@ -167,8 +168,14 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
-
+.btn-fix-selected >.maintain-cost{
+  height: 26px;
+  margin-left: 4px;
+}
 .maintain-cost {
+  height: 26px;
+    display: flex;
+    align-items: center;
   color: #5a9e5a;
   font-size: 10px;
 }
@@ -385,6 +392,7 @@
 }
 /* ── Collect button ── */
 .btn-collect {
+  margin-left: auto;
   font-size: 11px;
   padding: 3px 9px;
   border-radius: 5px;
@@ -494,50 +502,52 @@
   background: #252525;
 }
 
+/* ── Settings Item Container ── */
+.hq-setting-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: background 0.15s, transform 0.15s ease;
+}
+
+.hq-setting-item:hover {
+  background: #252525;
+}
+
+.hq-setting-item.is-dragging {
+  opacity: 0.5;
+  background: #1a3a5a;
+  cursor: grabbing;
+}
+
+.hq-setting-item.is-dragover {
+  background: #2a5a8e;
+  border-top: 2px solid #4a85c5;
+}
+
+.hq-setting-label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+}
+
+.hq-setting-label:hover {
+  background: transparent;
+}
+
 /* ── Scrollable Cards Container ── */
 .hq-cards-container {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-/* The circle inside the toggle */
-.hq-setting-label input[type="checkbox"]::after {
-  content: '';
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  background: #888;
-  border-radius: 50%;
-  transition: transform 0.3s ease, background 0.3s ease;
-}
-
-/* Toggle ON (Visible) State */
-.hq-setting-label input[type="checkbox"]:checked {
-  background: #2a4a6e; /* Matches your active tab color */
-}
-
-.hq-setting-label input[type="checkbox"]:checked::after {
-  transform: translateX(16px);
-  background: #fff;
-}
-
-/* ── Text Visual Feedback ── */
-.hq-setting-label span {
-  transition: color 0.3s, opacity 0.3s;
-}
-
-/* Dim text when toggled OFF (Hidden) */
-.hq-setting-label input[type="checkbox"]:not(:checked) + span {
-  opacity: 0.4;
-  text-decoration: line-through;
-}
-
-/* Bright text when toggled ON (Visible) */
-.hq-setting-label input[type="checkbox"]:checked + span {
-  color: #fff;
-  font-weight: 600;
 }
 
 /* Scrollbar styling */
@@ -553,16 +563,19 @@
 }
 
 .hq-setting-label {
-  cursor: grab; /* Shows user the item is draggable */
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: grab;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
 }
 
 .hq-setting-label:active {
   cursor: grabbing;
-}
-
-.hq-setting-label.dragging {
-  opacity: 0.5;
-  background: #333;
 }
 
 .drag-handle {
@@ -571,11 +584,37 @@
   line-height: 1;
   user-select: none;
   cursor: grab;
+  flex-shrink: 0;
 }
 
 /* Ensure the text fills the remaining space */
 .hq-setting-label .label-text {
   flex: 1;
+  transition: color 0.2s, opacity 0.2s;
+}
+
+.btn-visibility {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+  opacity: 0.6;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.btn-visibility:hover {
+  opacity: 1;
+}
+
+.btn-visibility:active {
+  transform: scale(0.9);
 }
 /* ── Header Actions Area ── */
 .hq-panel-actions {
@@ -586,8 +625,10 @@
 
 /* ── Bulk Repair Button ── */
 .btn-fix-selected {
+  display: flex;
+  align-items: center;
   font-size: 11px;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 5px;
   border: 1px solid #1D9E75;
   background: rgba(29, 158, 117, 0.1);
@@ -621,13 +662,122 @@
   gap: 6px;
 }
 
-.cb-fix-select {
-  display: block!important;
-  margin: 0;
+/* Checkbox Wrapper Styling (from settings.css) */
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.checkbox-wrapper * {
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-wrapper label {
+  --size: 18px;
+  --shadow: calc(var(--size) * .07) calc(var(--size) * .1);
+
+  position: relative;
+  display: block;
+  width: var(--size);
+  height: var(--size);
+  margin-right: 3px;
+  margin-left: 3px;
+  background-color: #838383;
+  border-radius: 3px;
+  box-shadow: 0 var(--shadow) #5f5f5f;
   cursor: pointer;
-  width: 14px;
-  height: 14px;
-  accent-color: #1D9E75; /* Native styling hint to browsers */
+  transition: 0.2s ease transform, 0.2s ease background-color,
+    0.2s ease box-shadow;
+  overflow: hidden;
+  z-index: 1;
+}
+
+.checkbox-wrapper label:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  width: calc(var(--size) * .7);
+  height: calc(var(--size) * .7);
+  margin: 0 auto;
+  background-color: #fff;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  box-shadow: inset 0 var(--shadow) #ffffff;
+  transition: 0.2s ease width, 0.2s ease height;
+}
+
+.checkbox-wrapper label:hover:before {
+  width: calc(var(--size) * .55);
+  height: calc(var(--size) * .55);
+  box-shadow: inset 0 var(--shadow) #ffffff;
+}
+
+.checkbox-wrapper label:active {
+  transform: scale(0.9);
+}
+
+.checkbox-wrapper .tick_mark {
+  top: 2px;
+  position: absolute;
+  right: 0;
+  left: calc(var(--size) * .05);
+  width: calc(var(--size) * 1);
+  height: calc(var(--size) * 1);
+  margin: 0 auto;
+  margin-left: calc(var(--size) * .14);
+  transform: rotateZ(-45deg);
+}
+
+.checkbox-wrapper .tick_mark:before,
+.checkbox-wrapper .tick_mark:after {
+  content: "";
+  position: absolute;
+  background-color: #fff;
+  border-radius: 2px;
+  opacity: 0;
+  transition: 0.2s ease transform, 0.2s ease opacity;
+}
+
+.checkbox-wrapper .tick_mark:before {
+  left: 0;
+  bottom: 0;
+  width: calc(var(--size) * .25);
+  height: calc(var(--size) * .5);
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.23);
+  transform: translateY(calc(var(--size) * -.68));
+}
+
+.checkbox-wrapper .tick_mark:after {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: calc(var(--size) * .2);
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.23);
+  transform: translateX(calc(var(--size) * .78));
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked+label {
+  background-color: #689954;
+  box-shadow: 0 var(--shadow) #96bf86;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked+label:before {
+  width: 0;
+  height: 0;
+}
+
+.checkbox-wrapper input[type="checkbox"]:checked+label .tick_mark:before,
+.checkbox-wrapper input[type="checkbox"]:checked+label .tick_mark:after {
+  transform: translate(0);
+  opacity: 1;
 }
 
 .cb-fix-select:disabled {

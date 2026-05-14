@@ -27,6 +27,7 @@
     });
   });
 
+  
   // 2. Create the Tab Switcher
   const tabSwitcher = document.createElement('div');
   tabSwitcher.id = 'hq-tab-switcher';
@@ -35,8 +36,11 @@
     <button class="hq-tab-btn" data-target="condensed-hq-igplus">Condensed View</button>
   `;
 
+  // safe append
+  if(!document.getElementById('hq-tab-switcher')){
   // 3. Insert Tabs above the 3D map
   parent.insertBefore(tabSwitcher, hqContainer);
+}else return
 
   // 4. Build and insert the Condensed Panel as a sibling
   const facilityNames = Object.keys(facility_map);
@@ -141,15 +145,46 @@
     let collectUrl = null;
     let collectContent = "";
     if (data.collectBubbleHtml) {
-      const matchUrl = data.collectBubbleHtml.match(/data-href=['"]([^'"]+)['"]/);
-      if (matchUrl) collectUrl = matchUrl[1];
-      
-      const valMatch = data.collectBubbleHtml.match(/<\/icon>\s*(\d+)/);
-      const descMatch = data.collectBubbleHtml.match(/>([^<]+)<\/div>/);
-      if(valMatch && descMatch) {
-        collectContent = { value: Number(valMatch[1]), description: descMatch[1].trim() };
-      }
-    }
+  const matchUrl = data.collectBubbleHtml.match(/data-href=['"]([^'"]+)['"]/);
+  if (matchUrl) collectUrl = matchUrl[1];
+  console.log(data.collectBubbleHtml);
+  const valMatch = data.collectBubbleHtml.match(
+  /<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+)(?:\s*<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+))?/
+);
+
+  const descMatch = data.collectBubbleHtml.match(/>([^<]+)<\/div>/);
+  console.log(valMatch);
+  if (valMatch && descMatch) {
+    const firstIcon = valMatch[1];
+    const firstValue = valMatch[2];
+
+    const secondIcon = valMatch[3];
+    const secondValue = valMatch[4];
+
+    const renderIcon = (iconName) => `
+      <svg class="inline-block pointer-events-none align-middle h-[26px] w-[26px]">
+        <use xlink:href="design/icon/symbol-defs.svg#${iconName}"></use>
+      </svg>
+    `;
+
+    collectContent = {
+      value: `
+        ${renderIcon(firstIcon)}
+        ${firstValue}
+
+        ${
+          secondIcon
+            ? `
+              ${renderIcon(secondIcon)}
+              ${secondValue}
+            `
+            : ''
+        }
+      `,
+      description: descMatch[1].trim()
+    };
+  }
+}
 
     if (!name && data.dialogSubhead) {
       const subDoc = new DOMParser().parseFromString(data.dialogSubhead, "text/html");
@@ -215,13 +250,18 @@
       <div class="fac-header">
         <div class="fac-title-row">
           <div class="fac-title-left">
-            <!-- Persistent checkbox: NEVER disabled, represents user preference -->
-            <input type="checkbox" 
-       class="cb-fix-select" 
-       title="Include in Bulk Fix" 
-       data-fid="${fId}" 
-       data-cost="${repairCost || ''}" 
-       ${isAutoFix ? 'checked' : ''}>
+            <div class="checkbox-wrapper">
+              <input type="checkbox"
+                id="cb-fix-${rawName}"
+                class="cb-fix-select"
+                title="Include in Bulk Fix"
+                data-fid="${fId}"
+                data-cost="${repairCost || ''}"
+                ${isAutoFix ? 'checked' : ''}>
+              <label for="cb-fix-${rawName}">
+                <div class="tick_mark"></div>
+              </label>
+            </div>
             <span class="fac-name">${name}</span>
           </div>
           <button class="fac-level ${canUpgrade ? "can-upgrade" : ""}" ${canUpgrade ? "" : "disabled"}>
@@ -780,35 +820,49 @@ function updateBulkRepair() {
       settingsMenu.classList.toggle('hidden');
     });
 
-    // Replace the old cardsContainer drag event listeners with these for settingsMenu
-  settingsMenu.addEventListener('dragover', e => {
-    e.preventDefault();
-    const afterElement = getDragAfterElement(settingsMenu, e.clientY);
-    const dragging = document.querySelector('.hq-setting-label.dragging');
-    if (dragging) {
-      if (afterElement == null) {
-        settingsMenu.appendChild(dragging);
-      } else {
-        settingsMenu.insertBefore(dragging, afterElement);
-      }
-    }
+    let draggedLabel = null;
+    let draggedItem = null;
+
+
+    document.addEventListener('pointermove', (e) => {
+      if (!draggedItem) return;
+
+      const el = document.elementFromPoint(e.clientX, e.clientY);
+      const target = el?.closest?.('.hq-setting-item');
+
+      // Update is-dragover on all items
+      [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
+        item.classList.toggle('is-dragover', item === target && item !== draggedItem);
+      });
+    });
+
+document.addEventListener('pointerup', (e) => {
+  if (!draggedItem) return;
+
+  const el = document.elementFromPoint(e.clientX, e.clientY);
+  const target = el?.closest?.('.hq-setting-item');
+
+  draggedItem.classList.remove('is-dragging'); // ← was itemContainer
+  [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
+    item.classList.remove('is-dragover');
   });
 
-  settingsMenu.addEventListener('drop', e => {
-    e.preventDefault();
-    // Save new order to storage when dropped
-    const newOrder = [...settingsMenu.querySelectorAll('.hq-setting-label')].map(c => c.dataset.facName);
+  if (target && target !== draggedItem && target.parentElement === settingsMenu) {
+    settingsMenu.insertBefore(draggedItem, target);
+
+    const newOrder = [...settingsMenu.querySelectorAll('.hq-setting-item')].map(c => c.dataset.facName);
     prefs.order = newOrder;
     chrome.storage.local.set({ igp_hq_prefs: prefs });
 
-    // Instantly reorder the actual cards in the UI
     newOrder.forEach(name => {
       const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
-      if (card) {
-        cardsContainer.appendChild(card); // Appending an existing child moves it to the end
-      }
+      if (card) cardsContainer.appendChild(card);
     });
-  });
+  }
+
+  draggedLabel = null;
+  draggedItem = null;
+});
 
   const sortedNames = [...facilityNames].sort((a, b) => {
     const indexA = prefs.order.indexOf(a);
@@ -826,35 +880,57 @@ function updateBulkRepair() {
     const hqObj = hqMap[String(facilityId)];
 
     const isHidden = prefs.hidden[name];
+    const itemContainer = document.createElement("div");
+    itemContainer.className = "hq-setting-item";
+    itemContainer.dataset.facName = name;
+
     const label = document.createElement("label");
     label.className = "hq-setting-label";
-    
+
     // NEW: Make the label draggable and store the name in the dataset
-    label.draggable = true;
-    label.dataset.facName = name; 
-    
+    label.dataset.facName = name;
+
     // NEW: Added a drag handle (☰) icon
     label.innerHTML = `
       <span class="drag-handle">☰</span>
-      <input type="checkbox" value="${name}" ${isHidden ? "" : "checked"}> 
       <span class="label-text" style="text-transform: capitalize;">${name}</span>
     `;
-    
-    // NEW: Drag events for the label
-    label.addEventListener('dragstart', () => {
-      setTimeout(() => label.classList.add('dragging'), 0);
-    });
-    label.addEventListener('dragend', () => {
-      label.classList.remove('dragging');
+
+    // Create visibility button separately
+    const visibilityBtn = document.createElement('button');
+    visibilityBtn.className = 'btn-visibility';
+    visibilityBtn.type = 'button';
+    visibilityBtn.title = 'Toggle visibility';
+    visibilityBtn.textContent = isHidden ? '🚫' : '👁️';
+
+    // Pointer events for touch-compatible dragging
+    label.addEventListener('pointerdown', (e) => {
+      draggedLabel = label;
+      draggedItem = itemContainer;
+      itemContainer.classList.add('is-dragging');
     });
 
-    label.querySelector("input").addEventListener("change", (e) => {
+    visibilityBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const isNowHidden = !prefs.hidden[name];
+      prefs.hidden[name] = isNowHidden;
+      chrome.storage.local.set({ igp_hq_prefs: prefs });
+      const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
+      if (card) card.style.display = isNowHidden ? "none" : "block";
+      visibilityBtn.textContent = isNowHidden ? '🚫' : '👁️';
+    });
+
+    itemContainer.appendChild(label);
+    itemContainer.appendChild(visibilityBtn);
+
+    label.querySelector("input")?.addEventListener("change", (e) => {
       prefs.hidden[name] = !e.target.checked;
       chrome.storage.local.set({ igp_hq_prefs: prefs });
       const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
       if (card) card.style.display = e.target.checked ? "block" : "none";
     });
-    settingsMenu.appendChild(label);
+    settingsMenu.appendChild(itemContainer);
 
     if (hqObj && hqObj.state === 0) continue; 
 
@@ -872,19 +948,6 @@ function updateBulkRepair() {
     return panel;
   }
 
- function getDragAfterElement(container, y) {
-    // Look for setting labels instead of fac-cards
-    const draggableElements = [...container.querySelectorAll('.hq-setting-label:not(.dragging)')];
-    return draggableElements.reduce((closest, child) => {
-      const box = child.getBoundingClientRect();
-      const offset = y - box.top - box.height / 2;
-      if (offset < 0 && offset > closest.offset) {
-        return { offset: offset, element: child };
-      } else {
-        return closest;
-      }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-  }
 
   // Parses "1.9m" to 1900000, "100k" to 100000
 function parseCostVal(costStr) {
