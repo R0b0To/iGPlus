@@ -90,46 +90,55 @@ async function getWeather() {
  */
 async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const { weatherStats } = await import(chrome.runtime.getURL('scripts/race/const.js'));
-  const { makeChartConfig } = await import(chrome.runtime.getURL('scripts/race/chartConfig.js'));
+  const { makePlotlyConfig } = await import(chrome.runtime.getURL('scripts/race/chartConfig.js'));
 
-  const pointStart = new Date(data.list[0].dt*1000).getTime();
-  const secondPointTime = new Date(data.list[1].dt*1000).getTime();
-  const pointInterval = secondPointTime - pointStart;
   function getForecastData(data) {
     const forecastData = data.list.map(entry => (
       {
-      date: entry.dt,
+      date: new Date(entry.dt * 1000),
       temperature: entry.main.temp,
-      precipitation: entry.rain?.['3h'] ?? entry.snow?.['3h'] ?? entry.rain?.['1h'] ?? entry.snow?.['1h'] ?? 0, // Extract precipitation data, default to 0 if not available
-      // humidity: entry.main.humidity
-      // You can extract more information as needed
+      precipitation: entry.rain?.['3h'] ?? entry.snow?.['3h'] ?? entry.rain?.['1h'] ?? entry.snow?.['1h'] ?? 0,
     }));
 
     return forecastData;
   }
-  const forecastData =getForecastData(data);
+  const forecastData = getForecastData(data);
   const darkmode = document.getElementById('igplus_darkmode') ? true : false;
-  const series = Object.entries(forecastData[0]).filter(([key, value]) => key !== 'date')
-  .map(([key, value]) => {
-    return{
-    name: key,
-    yAxis: key === 'precipitation' ? 1 : 0,
-    data: forecastData.map(entry => entry[key]),
-    color: darkmode? weatherStats[key].darkcolor :weatherStats[key].color,
-    type: weatherStats[key].type,
-    pointStart,
-    pointInterval,
-    tooltip: {
-      valueSuffix: ` ${weatherStats[key].unit}`,
-    },}
-  });
-  let plotBands = [];
+
+  const traces = Object.entries(forecastData[0]).filter(([key]) => key !== 'date')
+    .map(([key]) => {
+      const stat = weatherStats[key];
+      const color = darkmode ? stat.darkcolor : stat.color;
+      const isBar = stat.type === 'bar';
+
+      const trace = {
+        name: key,
+        x: forecastData.map(entry => entry.date),
+        y: forecastData.map(entry => entry[key]),
+        type: isBar ? 'bar' : 'scatter',
+        yaxis: key === 'precipitation' ? 'y2' : 'y',
+        hovertemplate: `<b>${key}</b><br>%{x}<br>%{y} ${stat.unit}<extra></extra>`,
+      };
+
+      if (isBar) {
+        trace.marker = { color };
+      } else {
+        trace.mode = 'lines';
+        trace.line = { color, shape: 'spline' };
+      }
+
+      return trace;
+    });
 
   const { city } = data;
-  let title = `${data.list[0].main.temp}° ${data.list[0].weather[0].main} - ${city.name} ${city.coord.lat.toFixed(2)}°N ${city.coord.lon.toFixed(2)}°E`;
-  const chartConfig = makeChartConfig({ title, nextLeagueRaceTime, plotBands, series, darkmode});
+  const title = `${data.list[0].main.temp}° ${data.list[0].weather[0].main} - ${city.name} ${city.coord.lat.toFixed(2)}°N ${city.coord.lon.toFixed(2)}°E`;
+  const { plotlyData, plotlyLayout } = makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode });
+
   if (document.getElementById('container')) {
-    Highcharts.chart('container', chartConfig);
+    Plotly.newPlot('container', plotlyData, plotlyLayout, {
+      responsive: true,
+      modeBarButtonsToRemove: ['lasso2d', 'select2d']
+    });
   }
 }
 

@@ -1,122 +1,90 @@
 /**
- * Generates Highcharts config based on given data.
- * All incoming date strings are expected in GMT.
- * Chart is configured to show everything in local user timezone
+ * Generates Plotly config based on given data.
  *
  * @param {Object} params
  * @param {string} params.title chart title
  * @param {number} params.nextLeagueRaceTime timestamp of next race, epoch seconds
- * @param {Object[]} params.plotBands daylight data
- * @param {Object[]} params.series chart lines data
- * @param {Boolean} params.darkmode true dark mode is on
- * @returns {Object}
+ * @param {Object[]} params.traces chart line data for Plotly
+ * @param {Boolean} params.darkmode true if dark mode is on
+ * @returns {Object} { plotlyData, plotlyLayout }
  */
-function makeChartConfig({ title, nextLeagueRaceTime, plotBands, series, darkmode }) {
-
+function makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode }) {
   const colorMap = {
-    false: {backgroundColor:"#e3e4e5",textColor:"black"},
-    true : {backgroundColor:"#202020",textColor:"#ffffffe0"},
-  }
-  const setup = {
-    accessibility: {
-      enabled: false
-    },
-    title: {
-      text: ''
-    },
-    subtitle: {
-      text: title
-    },
-    chart: {
-      type: 'spline',
-      zoomType: 'x',
-      panning: true,
-      panKey: 'shift',
-      backgroundColor: colorMap[darkmode].backgroundColor
-    },
-    yAxis: new Array(4).fill({ visible: false }, 0, 4),
-    xAxis: {
-      type: 'datetime',
-      labels:{
-        style: {
-          color: colorMap[darkmode].textColor
-      }
-      },
-      plotLines: [
-        {
-          value: new Date(),
-          color: 'rgba(200, 10, 0, .7)',
-          width: 2,
-          label: {
-            text: 'Now',
-            rotation: 0,
-            y: 20
-          },
-          zIndex: 500
-        },
-        {
-          value: new Date(nextLeagueRaceTime * 1000),
-          color: 'rgba(71, 115, 55, .6)',
-          width: 2,
-          label: {
-            text: 'Race Time',
-            rotation: 0
-          },
-          zIndex: 500
-        }
-      ],
-      plotBands
-    },
-    legend: {
-      itemStyle: {
-        color: colorMap[darkmode].textColor
-    },
-      layout: 'vertical',
-      align: 'right',
-      verticalAlign: 'middle'
-    },
-    plotOptions: {
-      series: {
-        marker: {
-          enabled: false
-        },
-        label: {
-          connectorAllowed: false
-        }
-      }
-    },
-    series,
-    responsive: {
-      rules: [
-        {
-          condition: {
-            maxWidth: 800
-          },
-          chartOptions: {
-            legend: {
-              layout: 'horizontal',
-              align: 'center',
-              verticalAlign: 'bottom'
-            }
-          }
-        }
-      ]
-    },
-    time: {
-      timezoneOffset: new Date().getTimezoneOffset()
-    },
-    tooltip: {
-      shared: true,
-      crosshairs: true
-    },
-    caption: {
-      text: '<b> Click and drag in the chart to zoom in and inspect the data.</b>'
-    }
+    false: { backgroundColor: "#1c3456", textColor: "#ffffffe0" },
+    true: { backgroundColor: "#202020", textColor: "#ffffffe0" },
   };
 
-  return setup;
+  const now = new Date();
+  const raceTime = new Date(nextLeagueRaceTime * 1000);
+
+  const layout = {
+    title: {
+      text: title,
+      font: { color: colorMap[darkmode].textColor }
+    },
+    xaxis: {
+      type: 'date',
+      gridcolor: darkmode ? '#404040' : '#2b4062',
+      zeroline: false,
+    },
+    yaxis: {
+      title: 'Temperature',
+      gridcolor: darkmode ? '#404040' : '#2b4062',
+      tickfont: { color: colorMap[darkmode].textColor },
+      titlefont: { color: colorMap[darkmode].textColor },
+    },
+    yaxis2: {
+      title: 'Precipitation',
+      overlaying: 'y',
+      side: 'right',
+      tickfont: { color: colorMap[darkmode].textColor },
+      titlefont: { color: colorMap[darkmode].textColor },
+    },
+    plot_bgcolor: colorMap[darkmode].backgroundColor,
+    paper_bgcolor: colorMap[darkmode].backgroundColor,
+    font: { color: colorMap[darkmode].textColor },
+    hovermode: 'x unified',
+    legend: {
+      x: 0.98,
+      y: 0.98,
+      xanchor: 'right',
+      yanchor: 'top',
+      bgcolor: colorMap[darkmode].backgroundColor,
+      bordercolor: colorMap[darkmode].textColor,
+      borderwidth: 1,
+    },
+    shapes: [
+      {
+        type: 'line',
+        x0: now,
+        x1: now,
+        y0: 0,
+        y1: 1,
+        yref: 'paper',
+        line: { color: 'rgba(200, 10, 0, .7)', width: 2 },
+        name: 'Now',
+      },
+      {
+        type: 'line',
+        x0: raceTime,
+        x1: raceTime,
+        y0: 0,
+        y1: 1,
+        yref: 'paper',
+        line: { color: 'rgba(71, 115, 55, .6)', width: 2 },
+        name: 'Race Time',
+      },
+    ],
+    margin: { l: 50, r: 60, t: 35, b: 40 },
+    dragmode: 'zoom',
+  };
+
+  return {
+    plotlyData: traces,
+    plotlyLayout: layout,
+  };
 }
 
 export {
-  makeChartConfig
+  makePlotlyConfig
 };
