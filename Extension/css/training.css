@@ -9,14 +9,14 @@
 }
 
 .healthAlert {
-  background: #ae6562 !important;
+  background: #ae6562 ;
 }
 
 .healthWarn  {
-  background: #b0a858 !important;
+  background: #b0a858 ;
 }
 .healthGood  {
-  background: #7ca66c!important;
+  background: #7ca66c;
 }
 
 #trainingForm div.notice {
@@ -45,4 +45,26 @@
   background: #517593;;
   padding: 3px;
   border-radius: 8px;
+}
+
+.trainingProjectionBar {
+  left: 3px;
+  position: relative;
+  height: 5px;
+  background: rgba(124, 166, 108, 0.4);
+  width: 0;
+  transition: width 0.3s ease;
+  margin-top: 3px;
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+.trainingProjectionLabel {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: rgba(124, 166, 108, 0.8);
+  padding-left: 4px;
+  white-space: nowrap;
 }
