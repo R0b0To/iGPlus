@@ -147,13 +147,11 @@
     if (data.collectBubbleHtml) {
   const matchUrl = data.collectBubbleHtml.match(/data-href=['"]([^'"]+)['"]/);
   if (matchUrl) collectUrl = matchUrl[1];
-  console.log(data.collectBubbleHtml);
   const valMatch = data.collectBubbleHtml.match(
   /<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+)(?:\s*<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+))?/
 );
 
   const descMatch = data.collectBubbleHtml.match(/>([^<]+)<\/div>/);
-  console.log(valMatch);
   if (valMatch && descMatch) {
     const firstIcon = valMatch[1];
     const firstValue = valMatch[2];
@@ -743,7 +741,6 @@ function updateBulkRepair() {
        validCount++;
     }
   });
-  console.log(totalCost);
   if (validCount > 0) {
     btn.classList.remove('hidden');
     btn.disabled = false;
@@ -830,9 +827,16 @@ function updateBulkRepair() {
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const target = el?.closest?.('.hq-setting-item');
 
-      // Update is-dragover on all items
       [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
-        item.classList.toggle('is-dragover', item === target && item !== draggedItem);
+        if (item === target && item !== draggedItem) {
+          const rect = item.getBoundingClientRect();
+          const isLowerHalf = e.clientY > rect.top + rect.height / 2;
+          item.classList.add('is-dragover');
+          item.classList.toggle('is-dragover-top', !isLowerHalf);
+          item.classList.toggle('is-dragover-bottom', isLowerHalf);
+        } else {
+          item.classList.remove('is-dragover', 'is-dragover-top', 'is-dragover-bottom');
+        }
       });
     });
 
@@ -842,13 +846,21 @@ document.addEventListener('pointerup', (e) => {
   const el = document.elementFromPoint(e.clientX, e.clientY);
   const target = el?.closest?.('.hq-setting-item');
 
-  draggedItem.classList.remove('is-dragging'); // ← was itemContainer
+  draggedItem.classList.remove('is-dragging');
   [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
-    item.classList.remove('is-dragover');
+    item.classList.remove('is-dragover', 'is-dragover-top', 'is-dragover-bottom');
   });
 
   if (target && target !== draggedItem && target.parentElement === settingsMenu) {
-    settingsMenu.insertBefore(draggedItem, target);
+    const rect = target.getBoundingClientRect();
+    const isLowerHalf = e.clientY > rect.top + rect.height / 2;
+    const insertRef = isLowerHalf ? target.nextElementSibling : target;
+
+    if (insertRef) {
+      settingsMenu.insertBefore(draggedItem, insertRef);
+    } else {
+      settingsMenu.appendChild(draggedItem);
+    }
 
     const newOrder = [...settingsMenu.querySelectorAll('.hq-setting-item')].map(c => c.dataset.facName);
     prefs.order = newOrder;

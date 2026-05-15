@@ -524,7 +524,14 @@
 
 .hq-setting-item.is-dragover {
   background: #2a5a8e;
-  border-top: 2px solid #4a85c5;
+}
+
+.hq-setting-item.is-dragover-top {
+  border-top: 3px solid #4a85c5;
+}
+
+.hq-setting-item.is-dragover-bottom {
+  border-bottom: 3px solid #4a85c5;
 }
 
 .hq-setting-label {
