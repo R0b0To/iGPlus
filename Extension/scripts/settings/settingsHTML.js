@@ -61,7 +61,7 @@ const SCRIPTS =[
       { id: 'editS', name: 'Editable', locTextKey: 'edit' }
   ]},
   { id: 'setup', name: 'Race Setup', locTextKey: 'raceSetup' },
-  { id: 'hq', name: 'HQ Level Labels' },
+  { id: 'hq', name: 'HQ Focused View',locTextKey: 'hqLevel' },
   { id: 'refresh', name: 'Academy Auto-Refresh', desc: 'Add youth academy countdown...', locTextKey: 'academyTimer', locTipKey: 'academyTimer' },
   { id: 'reports', name: 'Reports', desc: 'Add option to extract all the reports...', locTextKey: 'reports', locTipKey: 'reports' },
   { id: 'history', name: 'Advanced History', desc: 'Add track charateristics...', locTextKey: 'advancedHis', locTipKey: 'history' },

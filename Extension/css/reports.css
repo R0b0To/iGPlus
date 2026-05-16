@@ -1,7 +1,9 @@
 /* =========================
    BASE / SHELL
 ========================= */
-
+#race tr.myTeam,#qualifying tr.myTeam,#practice tr.myTeam {
+  background: linear-gradient(90deg,hsla(345.9, 100%, 50%, 0.28),#090073cf)!important;
+}
 #sheetDialog {
     border-radius: 14px;
     background-color: #1a2235; /* Slightly deeper dark for modern feel */

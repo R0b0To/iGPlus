@@ -135,7 +135,9 @@
       `;
       originalStints.parentElement.appendChild(root);
 
-      const weatherSource = document.getElementById('d1SetupWrap')?.querySelector('a:not(.idealSetupBtn)');
+      const weatherSource = document
+  .getElementById('d1SetupWrap')
+  ?.querySelector('a:not(.idealSetupBtn):not(.tyre-selection-current)');
       if (weatherSource) {
         const clonedWeather = weatherSource.cloneNode(true);
         clonedWeather.classList.add('igplus-weather-text');
@@ -1322,6 +1324,7 @@ async function injectCircuitMap() {
 
     sliderContainer.append(slider);
     settingValueDiv.classList.add('withSlider');
+    settingValueDiv.parentElement.classList.add("slider-enabled-igplus");
     node.previousElementSibling.prepend(sliderContainer);
   }
 

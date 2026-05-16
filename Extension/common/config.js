@@ -77,7 +77,11 @@ const tabScripts = {
     styles: ['css/transfers.css']
   },
   '/app/p=race': {
-    scripts: ['lib/highcharts.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/purify.js'],
+    scripts: ['scripts/race/race.js','lib/plotly-3.5.1.min.js'],
+    styles: ['css/race.css']
+  },
+  '/app/p=race&tab=race': {
+    scripts: ['scripts/race/race.js','lib/plotly-3.5.1.min.js'],
     styles: ['css/race.css']
   },
   '/app/p=settings': {
@@ -91,7 +95,8 @@ const tabScripts = {
   },
   '/app/p=headquarters': {
     key: 'hq',
-    scripts: ['scripts/headquarters.js']
+    scripts: ['scripts/headquarters.js'],
+    styles: ['css/hq.css']
   },
   '/app/d=shortlist&tab=drivers': {
     scripts: ['scripts/shortlist.js']
@@ -126,7 +131,8 @@ const tabScripts = {
     styles: ['css/team_settings.css']
   },
   '/app/d=resultDetail&id=': {
-    scripts: ['scripts/raceResult.js']
+    scripts: ['scripts/raceResult.js','lib/plotly-3.5.1.min.js'],
+    styles: ['css/raceResult.css']
   },
   '/app/d=history': {
     key: 'history',
