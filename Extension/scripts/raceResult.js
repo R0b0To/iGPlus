@@ -65,8 +65,8 @@ function initTabSwitcher() {
   tabContainer.className = 'race-tabs-container';
   tabContainer.id = 'race-tabs-initialized';
   tabContainer.innerHTML = `
-    <button class="race-tab-btn active" data-tab="table">Table</button>
-    <button class="race-tab-btn" data-tab="chart">Visualizer</button>
+    <button class="race-tab-btn active" data-tab="table"><span class="tab-icon">⊞</span></button>
+    <button class="race-tab-btn" data-tab="chart"> <span class="tab-icon">📊</span></button>
   `;
   dialogHead.appendChild(tabContainer);
 
