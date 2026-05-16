@@ -1,3 +1,9 @@
+
+/**
+ * INITIALIZATION
+ */
+(async () => {
+  try {
 /**
  * SHARED HELPERS
  */
@@ -32,7 +38,15 @@ async function addSetupSuggestionsForDrivers() {
     import(chrome.runtime.getURL('scripts/strategy/utility.js'))
   ]);
 
-  // 2. Fetch Data Once
+  // 2. Create placeholders immediately for all existing setup forms
+  const setupForms = document.querySelectorAll('[id*="setup"] .igpForm');
+  setupForms.forEach((setupForm) => {
+    if (!setupForm.classList.contains('withSuggestion')) {
+      createSetupPlaceholder(setupForm);
+    }
+  });
+
+  // 3. Fetch data in parallel
   const [allInfo, circuits, scale, circuitCode] = await Promise.all([
     fetchManagerData(1),
     getActiveCircuits(),
@@ -41,30 +55,56 @@ async function addSetupSuggestionsForDrivers() {
   ]);
 
   const leagueTier = allInfo.team._tier;
-  const driversHtml = cleanHtml(allInfo.vars.drivers ?? allInfo.preCache["p=staff"].vars.drivers);
-  const driversData = driversHtml.querySelectorAll('.hoverData');
-  
+  const driversData = cleanHtml(allInfo.vars.drivers ?? allInfo.preCache["p=staff"].vars.drivers)
+    .querySelectorAll('.hoverData');
+
   // Get the base setup for this track
   const baseTrackSetup = circuits[leagueTier][circuitCode];
   if (!baseTrackSetup) return;
 
-  // 3. Process Drivers
- driversData.forEach((node, index) => {
-  const driverIndex = index + 1;
-  const driverHeight = node.dataset.driver.split(',')[13];
-  const heightAdjustment = calculateHeightAdjustment(driverHeight, scale, leagueTier);
+  // 4. Update placeholders with actual data
+  driversData.forEach((node, index) => {
+    const driverIndex = index + 1;
+    const driverHeight = node.dataset.driver.split(',')[13];
+    const heightAdjustment = calculateHeightAdjustment(driverHeight, scale, leagueTier);
 
-  injectSetupUI({
-    baseTrackSetup,
-    heightAdjustment,
-    driverHeight, 
-    driverIndex,
-    circuitCode,
-    leagueTier,
-    circuits
+    updateSetupUI({
+      baseTrackSetup,
+      heightAdjustment,
+      driverHeight,
+      driverIndex,
+      circuitCode,
+      leagueTier,
+      circuits
+    });
   });
-});
+}
 
+function createSetupPlaceholder(setupForm) {
+  if (setupForm.classList.contains('withSuggestion')) return;
+
+  // Add loading gear icon
+  const editBtn = document.createElement('div');
+  editBtn.className = 'setup-edit-icon setup-edit-icon--loading';
+  editBtn.innerHTML = '⚙️';
+  if(!setupForm.querySelector('.setup-edit-icon'))
+  setupForm.prepend(editBtn);
+
+  // Add skeleton suggestions
+  const driverId = setupForm.id.match(/d(\d+)setup/)?.[1];
+  if (!driverId) return;
+
+  ['Suspension', 'Ride', 'Aerodynamics'].forEach((field) => {
+    const container = setupForm.querySelector(`#d${driverId}${field}`)?.firstChild;
+    if (container && !container.querySelector('.suggestedSetup')) {
+      const span = document.createElement('span');
+      span.className = 'suggestedSetup suggestedSetup--loading';
+      span.textContent = '...';
+      container.append(span);
+    }
+  });
+
+  setupForm.classList.add('withSuggestion');
 }
 
 function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitCode, leagueTier, circuits, driverHeight }) {
@@ -101,7 +141,6 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   const editBtn = document.createElement('div');
   editBtn.className = 'setup-edit-icon';
   editBtn.innerHTML = '⚙️';
-  editBtn.title = "Personalize Base Setup";
   editBtn.onclick = () => openPersonalizeModal({
     baseTrackSetup,
     heightAdjustment,
@@ -110,9 +149,62 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
     leagueTier,
     circuits
   });
-  
-  setupForm.prepend(editBtn);
+
+  //setupForm.prepend(editBtn);
   setupForm.classList.add('withSuggestion');
+}
+
+function updateSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitCode, leagueTier, circuits, driverHeight }) {
+  const setupForm = document.querySelector(`#d${driverIndex}setup`);
+  if (!setupForm) return;
+
+  const finalRide = Math.max(1, baseTrackSetup.ride + heightAdjustment);
+  const finalWing = Math.max(1, baseTrackSetup.wing);
+
+  const updateOrCreateSuggestion = (parentId, value, isSuspension = false) => {
+    const container = setupForm.querySelector(`#d${driverIndex}${parentId}`)?.firstChild;
+    if (!container) return;
+
+    if (isSuspension) container.id = 'suggestedSetup';
+
+    let span = container.querySelector('.suggestedSetup');
+    if (span) {
+      span.textContent = value;
+      span.classList.remove('suggestedSetup--loading');
+    } else {
+      span = document.createElement('span');
+      span.className = 'suggestedSetup';
+      span.textContent = value;
+      container.append(span);
+    }
+
+    span.style.cursor = 'pointer';
+    span.onclick = () => {
+      const input = container.querySelector('.setupSlider-input');
+      if (input) {
+        input.value = value;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    };
+  };
+
+  updateOrCreateSuggestion('Suspension', baseTrackSetup.suspension, true);
+  updateOrCreateSuggestion('Ride', finalRide);
+  updateOrCreateSuggestion('Aerodynamics', finalWing);
+
+  const editBtn = setupForm.querySelector('.setup-edit-icon');
+  if (editBtn) {
+    editBtn.classList.remove('setup-edit-icon--loading');
+    editBtn.onclick = () => openPersonalizeModal({
+      baseTrackSetup,
+      heightAdjustment,
+      driverHeight,
+      circuitCode,
+      leagueTier,
+      circuits
+    });
+  }
 }
 
 function openPersonalizeModal({ baseTrackSetup, heightAdjustment, driverHeight, circuitCode, leagueTier, circuits }) {
@@ -236,14 +328,6 @@ function makePracticeTableCopiable() {
     table.tHead.addEventListener('mouseleave', () => table.classList.remove('highlighted'));
   });
 }
-
-/**
- * INITIALIZATION
- */
-(async () => {
-  try {
-    // Small delay for dynamic content loading
-    await new Promise(res => setTimeout(res, 200));
     
     if (!document.getElementById('suggestedSetup')) {
       await addSetupSuggestionsForDrivers();

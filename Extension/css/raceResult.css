@@ -1,0 +1,118 @@
+/* ── Race Result Tabs ── */
+.race-tabs-container {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+}
+
+.race-tab-btn {
+  background: #1a1a1a;
+  border: 1px solid #2e2e2e;
+  color: #888;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.race-tab-btn:hover {
+  background: #252525;
+  color: #ccc;
+}
+
+.race-tab-btn.active {
+  background: #2a4a6e;
+  border-color: #4a85c5;
+  color: #fff;
+}
+
+.race-chart-view {
+  padding: 16px;
+  background: #0a0e27;
+  border-radius: 8px;
+  margin-top: 12px;
+  border: 1px solid #1a2a3a;
+}
+
+.chart-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.metric-toggles {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.metric-toggles label,
+.chart-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ccc;
+  font-size: 13px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.chart-controls input[type="checkbox"] {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: #4a85c5;
+}
+
+.plotly-container {
+  border-radius: 6px;
+  background: #050810;
+  overflow: hidden;
+}
+
+.plotly-container .plotly {
+  background-color: #0a0e27 !important;
+}
+
+.plotly-container .plotly-graph-div .xaxislayer-above .xaxis text,
+.plotly-container .plotly-graph-div .yaxislayer-above .yaxis text {
+  fill: #ccc !important;
+}
+
+.plotly-container .plotly-graph-div .xaxislayer-above .xaxis path,
+.plotly-container .plotly-graph-div .yaxislayer-above .yaxis path {
+  stroke: #444 !important;
+}
+
+.plotly-container .plotly-graph-div .xaxislayer-above .xaxis line,
+.plotly-container .plotly-graph-div .yaxislayer-above .yaxis line {
+  stroke: #444 !important;
+}
+
+.plotly-container .plotly-graph-div text {
+  fill: #ccc !important;
+}
+
+.plotly-container .plotly-graph-div .gridlayer line {
+  stroke: #333 !important;
+}
+
+.plotly-container .modebar {
+  background-color: rgba(26, 26, 26, 0.8) !important;
+}
+
+.plotly-container .modebar-btn {
+  color: #888 !important;
+}
+
+.plotly-container .modebar-btn:hover {
+  color: #ccc !important;
+}
+
+
+

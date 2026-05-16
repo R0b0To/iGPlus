@@ -133,3 +133,13 @@
         scale: 2;
         margin-right: 15px!important;
       }
+      .suggestedSetup--loading {
+  opacity: 0.5;
+  font-style: italic;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
