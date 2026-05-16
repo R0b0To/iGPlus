@@ -1,4 +1,6 @@
-function addCustomWeatherLink() {
+(async () => {
+  try {
+    function addCustomWeatherLink() {
   const weatherBtn = document.querySelector('.raceWeatherBadge');
   const weatherLocation = document.querySelector('.raceLeagueBar');
   weatherBtn.parentElement.className = 'three-btn';
@@ -63,6 +65,15 @@ async function getWeather() {
     return
   }
   else weatherContainer.style.visibility = 'visible';
+
+  if (!document.getElementById('weather-spinner-style')) {
+    const style = document.createElement('style');
+    style.id = 'weather-spinner-style';
+    style.textContent = '@keyframes weather-spin { to { transform: rotate(360deg); } }';
+    document.head.appendChild(style);
+  }
+
+  weatherContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:300px;"><div style="text-align:center;"><div style="display:inline-block;width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top:4px solid #fff;border-radius:50%;animation:weather-spin 1s linear infinite;margin-bottom:10px;"></div><p style="margin:10px 0 0 0;opacity:.7;">Loading weather data...</p></div></div>';
 
   const { fetchNextRace, fetchManagerData, fetchIGPRaceWeather,fetchIGPRaceWeatherNow } = await import(
     chrome.runtime.getURL('common/fetcher.js')
@@ -134,7 +145,9 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   const title = `${data.list[0].main.temp}° ${data.list[0].weather[0].main} - ${city.name} ${city.coord.lat.toFixed(2)}°N ${city.coord.lon.toFixed(2)}°E`;
   const { plotlyData, plotlyLayout } = makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode });
 
-  if (document.getElementById('container')) {
+  const container = document.getElementById('container');
+  if (container) {
+    container.innerHTML = '';
     Plotly.newPlot('container', plotlyData, plotlyLayout, {
       responsive: true,
       modeBarButtonsToRemove: ['lasso2d', 'select2d']
@@ -142,12 +155,8 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
   }
 }
 
-// TODO move to separate retry module?
-(async () => {
-  try {
-    await new Promise((res) => setTimeout(res, 200)); // sleep a bit, while page loads
+  
     if (document.getElementById('chartWeather') == null) {
-      //swapMap();
       addCustomWeatherLink();
       showBarValues();
     }

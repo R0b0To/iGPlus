@@ -77,7 +77,11 @@ const tabScripts = {
     styles: ['css/transfers.css']
   },
   '/app/p=race': {
-    scripts: ['lib/plotly-3.5.1.min.js', 'scripts/race/race.js','scripts/strategy/strategy.js','lib/purify.js'],
+    scripts: ['scripts/race/race.js','lib/plotly-3.5.1.min.js'],
+    styles: ['css/race.css']
+  },
+  '/app/p=race&tab=race': {
+    scripts: ['scripts/race/race.js','lib/plotly-3.5.1.min.js'],
     styles: ['css/race.css']
   },
   '/app/p=settings': {

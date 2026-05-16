@@ -32,6 +32,7 @@ function makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode }) {
       gridcolor: darkmode ? '#404040' : '#2b4062',
       tickfont: { color: colorMap[darkmode].textColor },
       titlefont: { color: colorMap[darkmode].textColor },
+      showticklabels: false,
     },
     yaxis2: {
       title: 'Precipitation',
@@ -39,6 +40,7 @@ function makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode }) {
       side: 'right',
       tickfont: { color: colorMap[darkmode].textColor },
       titlefont: { color: colorMap[darkmode].textColor },
+      showticklabels: false,
     },
     plot_bgcolor: colorMap[darkmode].backgroundColor,
     paper_bgcolor: colorMap[darkmode].backgroundColor,
