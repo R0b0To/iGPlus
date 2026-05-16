@@ -9,8 +9,9 @@
     design: 8,
     yda: 11,
   };
-  
+
   const { delay } = await import(chrome.runtime.getURL('common/utility.js'));
+  const { iconsSVG } = await import(chrome.runtime.getURL('common/config.js'));
   await delay(200); // sleep a bit, while page loads
    
   if (document.getElementById('condensed-hq-igplus')) return; // Already initialized
@@ -32,8 +33,12 @@
   const tabSwitcher = document.createElement('div');
   tabSwitcher.id = 'hq-tab-switcher';
   tabSwitcher.innerHTML = `
-    <button class="hq-tab-btn" data-target="hq-container">Original View</button>
-    <button class="hq-tab-btn" data-target="condensed-hq-igplus">Condensed View</button>
+    <button class="hq-tab-btn" data-target="hq-container" title="3D Facility View">
+      <span class="tab-icon">⊞</span>
+    </button>
+    <button class="hq-tab-btn" data-target="condensed-hq-igplus" title="Card View">
+      <span class="tab-icon">≡</span>
+    </button>
   `;
 
   // safe append
@@ -600,6 +605,48 @@
     return el;
   }
 
+  function extractSkillIcons(infoCell) {
+    const strengthSpan = infoCell.querySelector(".block-green");
+    const weaknessSpan = infoCell.querySelector(".block-red");
+
+    const strength = strengthSpan?.querySelector("icon")?.textContent.trim() ?? null;
+    const weakness = weaknessSpan?.querySelector("icon")?.textContent.trim() ?? null;
+
+    return { strength, weakness };
+  }
+
+  function createSkillLabelSmall(skill, type) {
+    if (!skill || !iconsSVG[skill]) return null;
+
+    const span = document.createElement('span');
+    span.className = `skill-label ${type === 'strength' ? 'strength-label' : 'weakness-label'}`;
+    Object.assign(span.style, {
+      display: 'inline-flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: '14px',
+      width: '14px',
+      marginLeft: '4px',
+      borderRadius: '3px',
+      padding: '2px',
+      backgroundColor: type === 'strength' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)',
+      flexShrink: 0
+    });
+
+    const svg = document.createElement('svg');
+    svg.innerHTML = iconsSVG[skill];
+    svg.style.width = '14px';
+    svg.style.height = '14px';
+    svg.style.display = 'inline-flex';
+
+    if (svg.firstChild) {
+      svg.firstChild.style.fill = type === 'strength' ? '#4caf50' : '#f44336';
+      span.appendChild(svg.firstChild);
+    }
+
+    return span;
+  }
+
   function parseOptionsRecruits(data) {
     const doc = new DOMParser().parseFromString(data.options, "text/html");
     const rows = doc.querySelectorAll("#youthTable tbody tr");
@@ -624,8 +671,26 @@
       if (type === 11) {
         const nameRaw = infoCell.textContent.replace(/\s+/g, " ").trim();
         const name = nameRaw.split(/\d+yrs/)[0].trim();
-        const talent = row.querySelector("td:nth-child(2)")?.textContent.replace(/\s+/g, "").trim() ?? "";
-        return { kind: "driver", name, talent, cash, tokens, hireHref };
+
+        const statsMatch = nameRaw.match(/(\d+)yrs\s+(\d+)cm\s+(\d+)kg/);
+        const age = statsMatch ? statsMatch[1] : null;
+        const height = statsMatch ? `${statsMatch[2]}cm` : null;
+        const weight = statsMatch ? `${statsMatch[3]}kg` : null;
+
+        const talentCell = row.querySelector("td:nth-child(2)");
+        const talent = talentCell?.textContent.replace(/\s+/g, " ").trim() ?? "";
+
+        return {
+          kind: "driver",
+          name,
+          talent,
+          age,
+          height,
+          weight,
+          cash,
+          tokens,
+          hireHref
+        };
       } else {
         const role = infoCell.querySelector("span.block-grey")?.textContent.trim() ?? "";
         const rawText = infoCell.textContent.replace(/\s+/g, " ").trim();
@@ -633,7 +698,8 @@
         const talent = talentMatch ? talentMatch[1] : "";
         const nameMatch = rawText.replace(role, "").trim().match(/^([A-Z]\s[\w]+)/);
         const name = nameMatch ? nameMatch[1] : rawText.split("(")[0].replace(role, "").trim();
-        return { kind: "staff", role, name, talent, cash, tokens, hireHref };
+        const { strength, weakness } = extractSkillIcons(infoCell);
+        return { kind: "staff", role, name, talent, cash, tokens, hireHref, strength, weakness };
       }
     }).filter(Boolean);
 
@@ -653,18 +719,39 @@
     recruits.forEach(r => {
       const row = document.createElement("div");
       row.className = "recruit-row";
-      const label = r.kind === "staff"
-        ? `<span class="recruit-role">${r.role}</span> ${r.name}`
-        : r.name;
 
-      row.innerHTML = `
-        <span class="recruit-name">${label}</span>
-        <span class="recruit-talent">${r.talent}</span>
-        <button class="btn-hire" title="Hire ${r.name}">
-          ${r.cash ? `<span>${r.cash}</span>` : ""}
-          ${r.tokens ? `<span class="hire-tokens">🪙${r.tokens}</span>` : ""}
-        </button>
-      `;
+      if (r.kind === "driver") {
+        const statsLine = `<span class="recruit-stats">${r.age}yrs • ${r.height} • ${r.weight}</span>`;
+        row.innerHTML = `
+          <span class="recruit-name">${r.name}<br/>${statsLine}</span>
+          <span class="recruit-talent">${r.talent}</span>
+          <button class="btn-hire">
+            ${r.cash ? `<span>${r.cash}</span>` : ""}
+            ${r.tokens ? `<span class="hire-tokens">🪙${r.tokens}</span>` : ""}
+          </button>
+        `;
+      } else {
+        const label = `<span class="recruit-role">${r.role}</span> ${r.name}`;
+        row.innerHTML = `
+          <span class="recruit-name">${label}</span>
+          <span class="recruit-talent">${r.talent}</span>
+          <button class="btn-hire">
+            ${r.cash ? `<span>${r.cash}</span>` : ""}
+            ${r.tokens ? `<span class="hire-tokens">🪙${r.tokens}</span>` : ""}
+          </button>
+        `;
+
+        const nameSpan = row.querySelector(".recruit-name");
+        if (r.strength) {
+          const strengthLabel = createSkillLabelSmall(r.strength, 'strength');
+          if (strengthLabel) nameSpan.appendChild(strengthLabel);
+        }
+        if (r.weakness) {
+          const weaknessLabel = createSkillLabelSmall(r.weakness, 'weakness');
+          if (weaknessLabel) nameSpan.appendChild(weaknessLabel);
+        }
+      }
+
       row.querySelector(".btn-hire").addEventListener("click", e => {
         e.stopPropagation();
         console.log("hire", r.name, r.hireHref);

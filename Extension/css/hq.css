@@ -299,6 +299,8 @@
 }
 
 .recruit-name {
+  display: flex;
+    align-items: flex-start;
   flex: 1;
   min-width: 0;
   overflow: hidden;
@@ -307,7 +309,7 @@
   color: #ccc;
 }
 
-.recruit-role {
+.recruit-role,.recruit-stats {
   font-size: 10px;
   font-weight: 700;
   color: #888;
@@ -316,6 +318,7 @@
   padding: 1px 4px;
   margin-right: 3px;
 }
+
 
 .recruit-talent {
   font-size: 11px;
