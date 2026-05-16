@@ -20,10 +20,11 @@ function makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode }) {
   const layout = {
     title: {
       text: title,
-      font: { color: colorMap[darkmode].textColor }
+      font: { color: colorMap[darkmode].textColor },
     },
     xaxis: {
       type: 'date',
+      tickformat: '%d (%H:%M)',
       gridcolor: darkmode ? '#404040' : '#2b4062',
       zeroline: false,
     },
@@ -77,7 +78,7 @@ function makePlotlyConfig({ title, nextLeagueRaceTime, traces, darkmode }) {
         name: 'Race Time',
       },
     ],
-    margin: { l: 50, r: 60, t: 35, b: 40 },
+    margin: { l: 10, r: 10, t: 85, b: 100 },
     dragmode: 'zoom',
   };
 

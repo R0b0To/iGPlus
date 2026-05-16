@@ -150,8 +150,9 @@ async function buildWeatherCharts(data, nextLeagueRaceTime) {
     container.innerHTML = '';
     Plotly.newPlot('container', plotlyData, plotlyLayout, {
       responsive: true,
-      modeBarButtonsToRemove: ['lasso2d', 'select2d']
+      modeBarButtonsToRemove: ['lasso2d', 'select2d', 'plotly-notifier']
     });
+
   }
 }
 

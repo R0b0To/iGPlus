@@ -11,12 +11,10 @@
 
 #container {
   position: absolute;
-      padding-bottom: 100px;
   left: 0;
   right: 0;
   display: block;
-  z-index: 1;
-  height: 400px;
+  z-index: 2;
   background-color: inherit;
 }
 
@@ -52,4 +50,3 @@
 .raceTabLeagueLogo{
   height: 100%;
 }
-
