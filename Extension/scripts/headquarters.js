@@ -1,4 +1,46 @@
 (async () => {
+  // Safe DOM Element builder to replace innerHTML assignments
+  function el(tag, attrs = {}, ...children) {
+    const element = document.createElement(tag);
+    for (const [key, value] of Object.entries(attrs)) {
+      if (value === null || value === undefined) continue;
+
+      if (key === 'className') {
+        element.className = value;
+      } else if (key === 'dataset') {
+        for (const [dKey, dVal] of Object.entries(value)) {
+          element.dataset[dKey] = dVal;
+        }
+      } else if (key === 'style') {
+        if (typeof value === 'object') {
+          Object.assign(element.style, value);
+        } else {
+          element.style.cssText = value;
+        }
+      } else if (key === 'htmlFor') {
+        element.htmlFor = value;
+      } else if (['textContent', 'id', 'type', 'title', 'checked', 'disabled', 'value'].includes(key)) {
+        element[key] = value;
+      } else {
+        element.setAttribute(key, value);
+      }
+    }
+
+    for (const child of children) {
+      if (child === null || child === undefined) continue;
+      if (typeof child === 'string' || typeof child === 'number') {
+        element.appendChild(document.createTextNode(String(child)));
+      } else if (Array.isArray(child)) {
+        child.forEach(c => {
+          if (c) element.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
+        });
+      } else if (child instanceof Node) {
+        element.appendChild(child);
+      }
+    }
+    return element;
+  }
+
   let cachedCsrfName = null;
   let cachedCsrfToken = null;
   const facility_map = {
@@ -28,24 +70,21 @@
     });
   });
 
-  
-  // 2. Create the Tab Switcher
-  const tabSwitcher = document.createElement('div');
-  tabSwitcher.id = 'hq-tab-switcher';
-  tabSwitcher.innerHTML = `
-    <button class="hq-tab-btn" data-target="hq-container" title="3D Facility View">
-      <span class="tab-icon">⊞</span>
-    </button>
-    <button class="hq-tab-btn" data-target="condensed-hq-igplus" title="Card View">
-      <span class="tab-icon">≡</span>
-    </button>
-  `;
+  // 2. Create the Tab Switcher safely
+  const tabSwitcher = el('div', { id: 'hq-tab-switcher' },
+    el('button', { className: 'hq-tab-btn', dataset: { target: 'hq-container' }, title: '3D Facility View' },
+      el('span', { className: 'tab-icon', textContent: '⊞' })
+    ),
+    el('button', { className: 'hq-tab-btn', dataset: { target: 'condensed-hq-igplus' }, title: 'Card View' },
+      el('span', { className: 'tab-icon', textContent: '≡' })
+    )
+  );
 
   // safe append
   if(!document.getElementById('hq-tab-switcher')){
-  // 3. Insert Tabs above the 3D map
-  parent.insertBefore(tabSwitcher, hqContainer);
-}else return
+    // 3. Insert Tabs above the 3D map
+    parent.insertBefore(tabSwitcher, hqContainer);
+  } else return
 
   // 4. Build and insert the Condensed Panel as a sibling
   const facilityNames = Object.keys(facility_map);
@@ -114,7 +153,7 @@
       }
 
       const { vars = {} } = data;
-      levelDiv.innerHTML = `Level: ${vars?.level || ''}`;
+      levelDiv.textContent = `Level: ${vars?.level || ''}`;
 
       const label = building.nextSibling.querySelector('.building-name-overlay');
       if (label.querySelectorAll('.levelSpan').length == 0)
@@ -127,7 +166,7 @@
     return match ? match[1] : null;
   }
 
-  function makeFacilityCard(data, rawName,isAutoFix) {
+  function makeFacilityCard(data, rawName, isAutoFix) {
     let name = data.name;
     let level = data.level;
     let condition = data.condition;
@@ -141,53 +180,39 @@
     let repairCost = null;
     let fId = null;
 
-    const card = document.createElement("div");
-    card.className = "fac-card";
-
-    card.dataset.facName = rawName; // Used for reordering and hiding
-
-
     let collectUrl = null;
-    let collectContent = "";
+    let collectContentDesc = "";
+    let collectContentNodes = [];
+
     if (data.collectBubbleHtml) {
-  const matchUrl = data.collectBubbleHtml.match(/data-href=['"]([^'"]+)['"]/);
-  if (matchUrl) collectUrl = matchUrl[1];
-  const valMatch = data.collectBubbleHtml.match(
-  /<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+)(?:\s*<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+))?/
-);
+      const matchUrl = data.collectBubbleHtml.match(/data-href=['"]([^'"]+)['"]/);
+      if (matchUrl) collectUrl = matchUrl[1];
+      
+      const valMatch = data.collectBubbleHtml.match(
+        /<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+)(?:\s*<icon(?:\s+[^>]*)?>([^<]+)<\/icon>\s*(\d+))?/
+      );
+      const descMatch = data.collectBubbleHtml.match(/>([^<]+)<\/div>/);
 
-  const descMatch = data.collectBubbleHtml.match(/>([^<]+)<\/div>/);
-  if (valMatch && descMatch) {
-    const firstIcon = valMatch[1];
-    const firstValue = valMatch[2];
+      if (valMatch && descMatch) {
+        const firstIcon = valMatch[1];
+        const firstValue = valMatch[2];
+        const secondIcon = valMatch[3];
+        const secondValue = valMatch[4];
 
-    const secondIcon = valMatch[3];
-    const secondValue = valMatch[4];
+        const renderIcon = (iconName) => {
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("class", "inline-block pointer-events-none align-middle h-[26px] w-[26px]");
+          const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+          use.setAttributeNS("http://www.w3.org/1999/xlink", "href", `design/icon/symbol-defs.svg#${iconName}`);
+          svg.appendChild(use);
+          return svg;
+        };
 
-    const renderIcon = (iconName) => `
-      <svg class="inline-block pointer-events-none align-middle h-[26px] w-[26px]">
-        <use xlink:href="design/icon/symbol-defs.svg#${iconName}"></use>
-      </svg>
-    `;
-
-    collectContent = {
-      value: `
-        ${renderIcon(firstIcon)}
-        ${firstValue}
-
-        ${
-          secondIcon
-            ? `
-              ${renderIcon(secondIcon)}
-              ${secondValue}
-            `
-            : ''
-        }
-      `,
-      description: descMatch[1].trim()
-    };
-  }
-}
+        collectContentDesc = descMatch[1].trim();
+        collectContentNodes.push(renderIcon(firstIcon), ` ${firstValue} `);
+        if (secondIcon) collectContentNodes.push(renderIcon(secondIcon), ` ${secondValue}`);
+      }
+    }
 
     if (!name && data.dialogSubhead) {
       const subDoc = new DOMParser().parseFromString(data.dialogSubhead, "text/html");
@@ -238,91 +263,93 @@
     const condClass = condition >= 80 ? "green" : condition >= 40 ? "amber" : "red";
     const optionsEl = (isConstructing || level === "0") ? null : parseOptions(data);
     
-    let levelButtonHtml;
-    if (isConstructing && endTime) {
-      levelButtonHtml = `Upgrading until ${formatUpgradeTime(endTime)}`;
-    } else if (isConstructing) {
-      levelButtonHtml = `Upgrading...`;
-    } else if (level === "0") {
-      levelButtonHtml = `Build${canUpgrade && upgradeCost ? ` <span class="upgrade-cost">↑ ${upgradeCost}</span>` : ""}`;
-    } else {
-      levelButtonHtml = `Lv ${level}${canUpgrade && upgradeCost ? ` <span class="upgrade-cost">↑ ${upgradeCost}</span>` : ""}`;
-    }
+    // Build controls safely
+    const cbFix = el('input', {
+      type: 'checkbox',
+      id: `cb-fix-${rawName}`,
+      className: 'cb-fix-select',
+      title: 'Include in Bulk Fix',
+      dataset: { fid: fId || '', cost: repairCost || '' },
+      checked: isAutoFix
+    });
 
-    card.innerHTML = `
-      <div class="fac-header">
-        <div class="fac-title-row">
-          <div class="fac-title-left">
-            <div class="checkbox-wrapper">
-              <input type="checkbox"
-                id="cb-fix-${rawName}"
-                class="cb-fix-select"
-                title="Include in Bulk Fix"
-                data-fid="${fId}"
-                data-cost="${repairCost || ''}"
-                ${isAutoFix ? 'checked' : ''}>
-              <label for="cb-fix-${rawName}">
-                <div class="tick_mark"></div>
-              </label>
-            </div>
-            <span class="fac-name">${name}</span>
-          </div>
-          <button class="fac-level ${canUpgrade ? "can-upgrade" : ""}" ${canUpgrade ? "" : "disabled"}>
-            ${levelButtonHtml}
-          </button>
-        </div>
-        <div class="fac-cond">
-          <div class="cond-bar">
-            <div class="cond-fill ${condClass}" style="width: ${condition}%"></div>
-          </div>
-          <span class="cond-pct ${condClass}">${condition}%</span>
-          <button class="btn-maintain" ${canMaintain ? "" : "disabled"}>
-            Fix${repairCost ? ` <span class="maintain-cost">${repairCost}</span>` : ""}
-          </button>
-          ${collectUrl && collectContent ? `<button class="btn-collect">${collectContent.description}: ${collectContent.value}</button>` : ""}
-        </div>
-      </div>
-      <div class="fac-options"></div>
-    `;
-    const fixCb = card.querySelector('.cb-fix-select');
-    if (fixCb) {
-      fixCb.addEventListener('change', (e) => {
-        // Save preference directly to chrome.storage
-        chrome.storage.local.get(['igp_hq_prefs'], res => {
-          const p = res.igp_hq_prefs || { autoFix: {} };
-          if (!p.autoFix) p.autoFix = {};
-          p.autoFix[rawName] = e.target.checked;
-          chrome.storage.local.set({ igp_hq_prefs: p });
-        });
-        // Recalculate total cost
-        updateBulkRepair();
+    cbFix.addEventListener('change', (e) => {
+      chrome.storage.local.get(['igp_hq_prefs'], res => {
+        const p = res.igp_hq_prefs || { autoFix: {} };
+        if (!p.autoFix) p.autoFix = {};
+        p.autoFix[rawName] = e.target.checked;
+        chrome.storage.local.set({ igp_hq_prefs: p });
       });
-    }
+      updateBulkRepair();
+    });
 
-    const optionsContainer = card.querySelector(".fac-options");
-    if (optionsEl) {
-      optionsContainer.appendChild(optionsEl);
-    } else if (isConstructing) {
-      optionsContainer.innerHTML = `<div class="opts-stat-line" style="color:#d4890a;">Actions unavailable while under construction</div>`;
-    } else if (level === "0") {
-      optionsContainer.innerHTML = `<div class="opts-stat-line" style="color:#888;">Facility not built yet</div>`;
-    }
+    const card = el('div', { className: 'fac-card', dataset: { facName: rawName } });
 
-    card.querySelector(".fac-level").addEventListener("click", () => {
+    const facLevelBtn = el('button', {
+        className: `fac-level ${canUpgrade ? "can-upgrade" : ""}`,
+        disabled: !canUpgrade
+      },
+      ...(() => {
+        if (isConstructing && endTime) return [`Upgrading until ${formatUpgradeTime(endTime)}`];
+        if (isConstructing) return [`Upgrading...`];
+        const baseTxt = level === "0" ? "Build" : `Lv ${level}`;
+        if (canUpgrade && upgradeCost) return [`${baseTxt} `, el('span', { className: 'upgrade-cost', textContent: `↑ ${upgradeCost}` })];
+        return [baseTxt];
+      })()
+    );
+    facLevelBtn.addEventListener("click", () => {
       if (canUpgrade && fType) doUpgrade(fType, name, card);
     });
 
-    card.querySelector(".btn-maintain").addEventListener("click", () => {
+    const btnMaintain = el('button', { className: 'btn-maintain', disabled: !canMaintain },
+      "Fix",
+      repairCost ? el('span', { className: 'maintain-cost', textContent: ` ${repairCost}` }) : null
+    );
+    btnMaintain.addEventListener("click", () => {
      if (canMaintain && fId) doMaintain(fId, name, card);
     });
 
-    const collectBtn = card.querySelector(".btn-collect");
-    if (collectBtn && collectUrl) {
+    const collectBtn = (collectUrl && collectContentDesc) ? el('button', { className: 'btn-collect' },
+      `${collectContentDesc}: `, ...collectContentNodes
+    ) : null;
+    if (collectBtn) {
       collectBtn.addEventListener("click", () => {
         doCollect(collectUrl, name, card);
       });
     }
 
+    const facHeader = el('div', { className: 'fac-header' },
+      el('div', { className: 'fac-title-row' },
+        el('div', { className: 'fac-title-left' },
+          el('div', { className: 'checkbox-wrapper' },
+            cbFix,
+            el('label', { htmlFor: `cb-fix-${rawName}` }, el('div', { className: 'tick_mark' }))
+          ),
+          el('span', { className: 'fac-name', textContent: name })
+        ),
+        facLevelBtn
+      ),
+      el('div', { className: 'fac-cond' },
+        el('div', { className: 'cond-bar' },
+          el('div', { className: `cond-fill ${condClass}`, style: { width: `${condition}%` } })
+        ),
+        el('span', { className: `cond-pct ${condClass}`, textContent: `${condition}%` }),
+        btnMaintain,
+        collectBtn
+      )
+    );
+
+    const optionsContainer = el('div', { className: 'fac-options' });
+    if (optionsEl) {
+      optionsContainer.appendChild(optionsEl);
+    } else if (isConstructing) {
+      optionsContainer.appendChild(el('div', { className: 'opts-stat-line', style: { color: '#d4890a' }, textContent: 'Actions unavailable while under construction' }));
+    } else if (level === "0") {
+      optionsContainer.appendChild(el('div', { className: 'opts-stat-line', style: { color: '#888' }, textContent: 'Facility not built yet' }));
+    }
+
+    card.appendChild(facHeader);
+    card.appendChild(optionsContainer);
     return card;
   }
 
@@ -371,11 +398,7 @@
         if (levelBtn) {
           levelBtn.classList.remove("can-upgrade");
           const endEcma = data.hqFacilityPatch.endEcma;
-          if (endEcma) {
-            levelBtn.innerHTML = `Upgrading until ${formatUpgradeTime(endEcma)}`;
-          } else {
-            levelBtn.innerHTML = `Upgrading...`;
-          }
+          levelBtn.textContent = endEcma ? `Upgrading until ${formatUpgradeTime(endEcma)}` : `Upgrading...`;
         }
 
         const panel = document.getElementById("condensed-hq-igplus");
@@ -429,7 +452,7 @@
       }
 
       if (btn) {
-        btn.innerHTML = "Collected!";
+        btn.textContent = "Collected!";
         btn.classList.add("collected-success");
         setTimeout(() => {
           btn.style.transition = "opacity 0.5s ease";
@@ -494,16 +517,12 @@
           condPct.classList.remove("amber", "red");
           condPct.classList.add("green");
         }
-
-        
       
         if (maintainBtn) {
-          maintainBtn.innerHTML = "Fix"; 
-          // Native logic disables the button automatically upon success, but we force it here just in case:
+          maintainBtn.textContent = "Fix"; 
           maintainBtn.disabled = true; 
         }
 
-        // Refresh the bulk total
         updateBulkRepair();
       } else {
         if (maintainBtn) maintainBtn.disabled = false;
@@ -536,31 +555,22 @@
       return { label, value };
     });
 
-    const el = document.createElement("div");
-    el.className = "opts-manufacturing";
-    el.innerHTML = `
-      <span class="opts-stat-line">${storage}</span>
-      <div class="opts-kv-list">
-        ${stats.map(s => `
-          <div class="opts-kv">
-            <span class="opts-kv-label">${s.label}</span>
-            <span class="opts-kv-value">${s.value}</span>
-          </div>
-        `).join("")}
-      </div>
-    `;
-    return el;
+    return el('div', { className: 'opts-manufacturing' },
+      el('span', { className: 'opts-stat-line', textContent: storage }),
+      el('div', { className: 'opts-kv-list' },
+        ...stats.map(s => el('div', { className: 'opts-kv' },
+          el('span', { className: 'opts-kv-label', textContent: s.label }),
+          el('span', { className: 'opts-kv-value', textContent: s.value })
+        ))
+      )
+    );
   }
 
   function parseOptionsStat(data) {
     const doc  = new DOMParser().parseFromString(data.options, "text/html");
     const text = doc.querySelector(".notice")?.textContent.trim() ?? "";
     if (!text) return null;
-
-    const el = document.createElement("div");
-    el.className = "opts-stat";
-    el.textContent = text;
-    return el;
+    return el('div', { className: 'opts-stat', textContent: text });
   }
 
   function parseOptionsTechnology(data) {
@@ -588,21 +598,20 @@
 
     if (!items.length) return null;
 
-    const el = document.createElement("div");
-    el.className = "opts-tech-list";
+    const elContainer = el('div', { className: 'opts-tech-list' });
     items.forEach(item => {
-      const btn = document.createElement("button");
-      btn.className = `btn-tech${item.disabled ? " disabled" : ""}`;
-      btn.disabled  = item.disabled;
-      btn.title     = item.tooltip;
-      btn.innerHTML = `
-        <span class="tech-name">${item.name}</span>
-        <span class="tech-meta">Lv ${item.nextLevel} · ${item.cost}</span>
-      `;
+      const btn = el('button', {
+        className: `btn-tech${item.disabled ? " disabled" : ""}`,
+        disabled: item.disabled,
+        title: item.tooltip
+      },
+        el('span', { className: 'tech-name', textContent: item.name }),
+        el('span', { className: 'tech-meta', textContent: `Lv ${item.nextLevel} · ${item.cost}` })
+      );
       btn.addEventListener("click", () => console.log("tech upgrade", item.href));
-      el.appendChild(btn);
+      elContainer.appendChild(btn);
     });
-    return el;
+    return elContainer;
   }
 
   function extractSkillIcons(infoCell) {
@@ -618,32 +627,30 @@
   function createSkillLabelSmall(skill, type) {
     if (!skill || !iconsSVG[skill]) return null;
 
-    const span = document.createElement('span');
-    span.className = `skill-label ${type === 'strength' ? 'strength-label' : 'weakness-label'}`;
+    const span = el('span', { className: `skill-label ${type === 'strength' ? 'strength-label' : 'weakness-label'}` });
     Object.assign(span.style, {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '14px',
-      width: '14px',
-      marginLeft: '4px',
-      borderRadius: '3px',
-      padding: '2px',
+      display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+      height: '14px', width: '14px', marginLeft: '4px', borderRadius: '3px', padding: '2px',
       backgroundColor: type === 'strength' ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)',
       flexShrink: 0
     });
 
-    const svg = document.createElement('svg');
-    svg.innerHTML = iconsSVG[skill];
-    svg.style.width = '14px';
-    svg.style.height = '14px';
-    svg.style.display = 'inline-flex';
-
-    if (svg.firstChild) {
-      svg.firstChild.style.fill = type === 'strength' ? '#4caf50' : '#f44336';
-      span.appendChild(svg.firstChild);
+    // Safely parse SVG string
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(iconsSVG[skill], 'image/svg+xml');
+    const innerSvg = doc.documentElement;
+    
+    if (innerSvg && innerSvg.tagName.toLowerCase() === 'svg') {
+      innerSvg.style.width = '14px';
+      innerSvg.style.height = '14px';
+      innerSvg.style.display = 'inline-flex';
+      
+      const firstChild = innerSvg.firstElementChild;
+      if (firstChild) {
+        firstChild.style.fill = type === 'strength' ? '#4caf50' : '#f44336';
+      }
+      span.appendChild(innerSvg);
     }
-
     return span;
   }
 
@@ -679,17 +686,7 @@
         const talentCell = row.querySelector("td:nth-child(2)");
         const talent = talentCell?.textContent.replace(/\s+/g, " ").trim() ?? "";
 
-        return {
-          kind: "driver",
-          name,
-          talent,
-          age,
-          height,
-          weight,
-          cash,
-          tokens,
-          hireHref
-        };
+        return { kind: "driver", name, talent, age, height, weight, cash, tokens, hireHref };
       } else {
         const role = infoCell.querySelector("span.block-grey")?.textContent.trim() ?? "";
         const rawText = infoCell.textContent.replace(/\s+/g, " ").trim();
@@ -702,45 +699,28 @@
       }
     }).filter(Boolean);
 
-    const el = document.createElement("div");
-    el.className = "opts-recruits";
+    const elContainer = el('div', { className: 'opts-recruits' });
 
-    const header = document.createElement("button");
-    header.className = "opts-recruit-toggle";
-    header.innerHTML = `
-      <span>Deadline: <span class="opts-deadline-time">${deadlineStr}</span></span>
-      <span class="opts-recruit-chevron">▸</span>
-    `;
+    const header = el('button', { className: 'opts-recruit-toggle' },
+      el('span', {}, "Deadline: ", el('span', { className: 'opts-deadline-time', textContent: deadlineStr })),
+      el('span', { className: 'opts-recruit-chevron', textContent: '▸' })
+    );
 
-    const list = document.createElement("div");
-    list.className = "opts-recruit-list collapsed";
+    const list = el('div', { className: 'opts-recruit-list collapsed' });
 
     recruits.forEach(r => {
-      const row = document.createElement("div");
-      row.className = "recruit-row";
+      const row = el('div', { className: 'recruit-row' });
 
       if (r.kind === "driver") {
-        const statsLine = `<span class="recruit-stats">${r.age}yrs • ${r.height} • ${r.weight}</span>`;
-        row.innerHTML = `
-          <span class="recruit-name">${r.name}<br/>${statsLine}</span>
-          <span class="recruit-talent">${r.talent}</span>
-          <button class="btn-hire">
-            ${r.cash ? `<span>${r.cash}</span>` : ""}
-            ${r.tokens ? `<span class="hire-tokens">🪙${r.tokens}</span>` : ""}
-          </button>
-        `;
+        row.appendChild(el('span', { className: 'recruit-name' },
+          r.name, document.createElement('br'),
+          el('span', { className: 'recruit-stats', textContent: `${r.age}yrs • ${r.height} • ${r.weight}` })
+        ));
       } else {
-        const label = `<span class="recruit-role">${r.role}</span> ${r.name}`;
-        row.innerHTML = `
-          <span class="recruit-name">${label}</span>
-          <span class="recruit-talent">${r.talent}</span>
-          <button class="btn-hire">
-            ${r.cash ? `<span>${r.cash}</span>` : ""}
-            ${r.tokens ? `<span class="hire-tokens">🪙${r.tokens}</span>` : ""}
-          </button>
-        `;
-
-        const nameSpan = row.querySelector(".recruit-name");
+        const nameSpan = el('span', { className: 'recruit-name' },
+          el('span', { className: 'recruit-role', textContent: r.role }),
+          ` ${r.name}`
+        );
         if (r.strength) {
           const strengthLabel = createSkillLabelSmall(r.strength, 'strength');
           if (strengthLabel) nameSpan.appendChild(strengthLabel);
@@ -749,12 +729,21 @@
           const weaknessLabel = createSkillLabelSmall(r.weakness, 'weakness');
           if (weaknessLabel) nameSpan.appendChild(weaknessLabel);
         }
+        row.appendChild(nameSpan);
       }
 
-      row.querySelector(".btn-hire").addEventListener("click", e => {
+      row.appendChild(el('span', { className: 'recruit-talent', textContent: r.talent }));
+
+      const btnHire = el('button', { className: 'btn-hire' });
+      if (r.cash) btnHire.appendChild(el('span', { textContent: r.cash }));
+      if (r.tokens) btnHire.appendChild(el('span', { className: 'hire-tokens', textContent: `🪙${r.tokens}` }));
+      
+      btnHire.addEventListener("click", e => {
         e.stopPropagation();
         console.log("hire", r.name, r.hireHref);
       });
+      row.appendChild(btnHire);
+
       list.appendChild(row);
     });
 
@@ -763,9 +752,9 @@
       header.querySelector(".opts-recruit-chevron").textContent = open ? "▸" : "▾";
     });
 
-    el.appendChild(header);
-    el.appendChild(list);
-    return el;
+    elContainer.appendChild(header);
+    elContainer.appendChild(list);
+    return elContainer;
   }
 
   function parseRepairCost(repairBtn) {
@@ -790,52 +779,57 @@
     const m = Math.floor((diff % 3600000) / 60000);
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
-// Parses "1.9m" to 1900000, "100k" to 100000
-function parseCostVal(costStr) {
-  if (!costStr) return 0;
-  const str = costStr.toLowerCase().replace(/[^0-9.km]/g, '');
-  let val = parseFloat(str);
-  if (str.includes('m')) val *= 1000000;
-  else if (str.includes('k')) val *= 1000;
-  return isNaN(val) ? 0 : val;
-}
-
-// Formats 1900000 to "1.9m"
-function formatCostVal(val) {
-  if (val === 0) return '';
-  if (val >= 1000000) return (val / 1000000).toFixed(1).replace('.0', '') + 'm';
-  if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
-  return val.toString();
-}
-
-// Scans all cards, sums the valid repairs, and updates the header button
-function updateBulkRepair() {
-  const btn = document.querySelector('.btn-fix-selected');
-  if (!btn) return;
   
-  const cards = document.querySelectorAll('.fac-card');
-  let totalCost = 0;
-  let validCount = 0;
-  
-  cards.forEach(card => {
-    const cb = card.querySelector('.cb-fix-select');
-    const maintainBtn = card.querySelector('.btn-maintain');
-    
-    // Sum it UP ONLY if it is both checked AND needs fixing
-    if (cb && cb.checked && maintainBtn && !maintainBtn.disabled) {
-       totalCost += parseCostVal(cb.dataset.cost);
-       validCount++;
-    }
-  });
-  if (validCount > 0) {
-    btn.classList.remove('hidden');
-    btn.disabled = false;
-    btn.innerHTML = `Fix Selected <span class="maintain-cost">${formatCostVal(totalCost)}</span>`;
-  } else {
-    btn.classList.add('hidden');
-    btn.disabled = true;
+  // Parses "1.9m" to 1900000, "100k" to 100000
+  function parseCostVal(costStr) {
+    if (!costStr) return 0;
+    const str = costStr.toLowerCase().replace(/[^0-9.km]/g, '');
+    let val = parseFloat(str);
+    if (str.includes('m')) val *= 1000000;
+    else if (str.includes('k')) val *= 1000;
+    return isNaN(val) ? 0 : val;
   }
-}
+
+  // Formats 1900000 to "1.9m"
+  function formatCostVal(val) {
+    if (val === 0) return '';
+    if (val >= 1000000) return (val / 1000000).toFixed(1).replace('.0', '') + 'm';
+    if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
+    return val.toString();
+  }
+
+  function updateBulkRepair() {
+    const btn = document.querySelector('.btn-fix-selected');
+    if (!btn) return;
+    
+    const cards = document.querySelectorAll('.fac-card');
+    let totalCost = 0;
+    let repairableCount = 0;
+    
+    cards.forEach(card => {
+      const cb = card.querySelector('.cb-fix-select');
+      const maintainBtn = card.querySelector('.btn-maintain');
+      
+      if (cb && cb.checked && maintainBtn && !maintainBtn.disabled) {
+         const costStr = cb.dataset.cost;
+         if (costStr && costStr !== 'null') {
+           totalCost += parseCostVal(costStr);
+           repairableCount++;
+         }
+      }
+    });
+    
+    if (repairableCount > 0) {
+      btn.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = "Fix Selected ";
+      btn.appendChild(el('span', { className: 'maintain-cost', textContent: formatCostVal(totalCost) }));
+    } else {
+      btn.classList.add('hidden');
+      btn.disabled = true;
+    }
+  }
+
   async function buildFacilityPanel(facilityNames) {
     const prefs = await new Promise(resolve => {
       chrome.storage.local.get(['igp_hq_prefs'], res => {
@@ -854,24 +848,21 @@ function updateBulkRepair() {
       console.error("Failed to parse hq-json", err);
     }
 
-    const panel = document.createElement("div");
-    panel.id = 'condensed-hq-igplus';
+    const panel = el('div', { id: 'condensed-hq-igplus' });
 
-    const header = document.createElement("div");
-    header.className = "hq-panel-header";
-    header.innerHTML = `
-      <span class="hq-panel-title">HQ Controls</span>
-      <div class="hq-panel-actions">
-        <button class="btn-fix-selected hidden"></button>
-        <button class="btn-panel-settings" title="Toggle visibility">⚙️</button>
-      </div>
-    `;
+    const header = el('div', { className: 'hq-panel-header' },
+      el('span', { className: 'hq-panel-title', textContent: 'HQ Controls' }),
+      el('div', { className: 'hq-panel-actions' },
+        el('button', { className: 'btn-fix-selected hidden' }),
+        el('button', { className: 'btn-panel-settings', title: 'Toggle visibility', textContent: '⚙️' })
+      )
+    );
 
     // Attach Bulk Repair execution logic
     header.querySelector('.btn-fix-selected').addEventListener('click', async () => {
       const btn = header.querySelector('.btn-fix-selected');
       btn.disabled = true;
-      btn.innerHTML = 'Fixing...';
+      btn.textContent = 'Fixing...';
       
       const cards = document.querySelectorAll('.fac-card');
       for (const card of cards) {
@@ -889,11 +880,8 @@ function updateBulkRepair() {
       }
     });
 
-    const settingsMenu = document.createElement("div");
-    settingsMenu.className = "hq-settings-menu hidden";
-
-    const cardsContainer = document.createElement("div");
-    cardsContainer.className = "hq-cards-container";
+    const settingsMenu = el('div', { className: 'hq-settings-menu hidden' });
+    const cardsContainer = el('div', { className: 'hq-cards-container' });
 
     panel.appendChild(header);
     panel.appendChild(settingsMenu);
@@ -906,13 +894,12 @@ function updateBulkRepair() {
     let draggedLabel = null;
     let draggedItem = null;
 
-
     document.addEventListener('pointermove', (e) => {
       if (!draggedItem) return;
       e.preventDefault();
 
-      const el = document.elementFromPoint(e.clientX, e.clientY);
-      const target = el?.closest?.('.hq-setting-item');
+      const elementFound = document.elementFromPoint(e.clientX, e.clientY);
+      const target = elementFound?.closest?.('.hq-setting-item');
 
       [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
         if (item === target && item !== draggedItem) {
@@ -927,183 +914,120 @@ function updateBulkRepair() {
       });
     });
 
-document.addEventListener('pointerup', (e) => {
-  if (!draggedItem) return;
-  e.preventDefault();
-
-  const el = document.elementFromPoint(e.clientX, e.clientY);
-  const target = el?.closest?.('.hq-setting-item');
-
-  draggedItem.classList.remove('is-dragging');
-  [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
-    item.classList.remove('is-dragover', 'is-dragover-top', 'is-dragover-bottom');
-  });
-
-  if (target && target !== draggedItem && target.parentElement === settingsMenu) {
-    const rect = target.getBoundingClientRect();
-    const isLowerHalf = e.clientY > rect.top + rect.height / 2;
-    const insertRef = isLowerHalf ? target.nextElementSibling : target;
-
-    if (insertRef) {
-      settingsMenu.insertBefore(draggedItem, insertRef);
-    } else {
-      settingsMenu.appendChild(draggedItem);
-    }
-
-    const newOrder = [...settingsMenu.querySelectorAll('.hq-setting-item')].map(c => c.dataset.facName);
-    prefs.order = newOrder;
-    chrome.storage.local.set({ igp_hq_prefs: prefs });
-
-    newOrder.forEach(name => {
-      const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
-      if (card) cardsContainer.appendChild(card);
-    });
-  }
-
-  draggedLabel = null;
-  draggedItem = null;
-});
-
-  const sortedNames = [...facilityNames].sort((a, b) => {
-    const indexA = prefs.order.indexOf(a);
-    const indexB = prefs.order.indexOf(b);
-    if (indexA === -1 && indexB === -1) return 0;
-    if (indexA === -1) return 1;
-    if (indexB === -1) return -1;
-    return indexA - indexB;
-  });
-
-  const { fetchBuildingInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
-  
-  for (const name of sortedNames) {
-    const facilityId = facility_map[name];
-    const hqObj = hqMap[String(facilityId)];
-
-    const isHidden = prefs.hidden[name];
-    const itemContainer = document.createElement("div");
-    itemContainer.className = "hq-setting-item";
-    itemContainer.dataset.facName = name;
-
-    const label = document.createElement("label");
-    label.className = "hq-setting-label";
-
-    // NEW: Make the label draggable and store the name in the dataset
-    label.dataset.facName = name;
-
-    // NEW: Added a drag handle (☰) icon
-    label.innerHTML = `
-      <span class="drag-handle">☰</span>
-      <span class="label-text" style="text-transform: capitalize;">${name}</span>
-    `;
-
-    // Create visibility button separately
-    const visibilityBtn = document.createElement('button');
-    visibilityBtn.className = 'btn-visibility';
-    visibilityBtn.type = 'button';
-    visibilityBtn.title = 'Toggle visibility';
-    visibilityBtn.textContent = isHidden ? '🚫' : '👁️';
-
-    // Pointer events for touch-compatible dragging
-    label.addEventListener('pointerdown', (e) => {
+    document.addEventListener('pointerup', (e) => {
+      if (!draggedItem) return;
       e.preventDefault();
-      draggedLabel = label;
-      draggedItem = itemContainer;
-      itemContainer.classList.add('is-dragging');
+
+      // Release the pointer capture
+      if (draggedLabel && e.pointerId) {
+        try { draggedLabel.releasePointerCapture(e.pointerId); } catch(err) {}
+      }
+
+      const elementFound = document.elementFromPoint(e.clientX, e.clientY);
+      const target = elementFound?.closest?.('.hq-setting-item');
+
+      draggedItem.classList.remove('is-dragging');
+      [...settingsMenu.querySelectorAll('.hq-setting-item')].forEach(item => {
+        item.classList.remove('is-dragover', 'is-dragover-top', 'is-dragover-bottom');
+      });
+
+      if (target && target !== draggedItem && target.parentElement === settingsMenu) {
+        const rect = target.getBoundingClientRect();
+        const isLowerHalf = e.clientY > rect.top + rect.height / 2;
+        const insertRef = isLowerHalf ? target.nextElementSibling : target;
+
+        if (insertRef) {
+          settingsMenu.insertBefore(draggedItem, insertRef);
+        } else {
+          settingsMenu.appendChild(draggedItem);
+        }
+
+        const newOrder = [...settingsMenu.querySelectorAll('.hq-setting-item')].map(c => c.dataset.facName);
+        prefs.order = newOrder;
+        chrome.storage.local.set({ igp_hq_prefs: prefs });
+
+        newOrder.forEach(name => {
+          const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
+          if (card) cardsContainer.appendChild(card);
+        });
+      }
+
+      draggedLabel = null;
+      draggedItem = null;
     });
 
-    visibilityBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      const isNowHidden = !prefs.hidden[name];
-      prefs.hidden[name] = isNowHidden;
-      chrome.storage.local.set({ igp_hq_prefs: prefs });
-      const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
-      if (card) card.style.display = isNowHidden ? "none" : "block";
-      visibilityBtn.textContent = isNowHidden ? '🚫' : '👁️';
+    const sortedNames = [...facilityNames].sort((a, b) => {
+      const indexA = prefs.order.indexOf(a);
+      const indexB = prefs.order.indexOf(b);
+      if (indexA === -1 && indexB === -1) return 0;
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
     });
 
-    itemContainer.appendChild(label);
-    itemContainer.appendChild(visibilityBtn);
+    const { fetchBuildingInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
+    
+    for (const name of sortedNames) {
+      const facilityId = facility_map[name];
+      const hqObj = hqMap[String(facilityId)];
+      const isHidden = prefs.hidden[name];
 
-    label.querySelector("input")?.addEventListener("change", (e) => {
-      prefs.hidden[name] = !e.target.checked;
-      chrome.storage.local.set({ igp_hq_prefs: prefs });
-      const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
-      if (card) card.style.display = e.target.checked ? "block" : "none";
-    });
-    settingsMenu.appendChild(itemContainer);
+      const label = el('label', { className: 'hq-setting-label', dataset: { facName: name },style: { touchAction: 'none', userSelect: 'none' } },
+        el('span', { className: 'drag-handle', textContent: '☰' }),
+        el('span', { className: 'label-text', style: { textTransform: 'capitalize' }, textContent: name })
+      );
 
-    if (hqObj && hqObj.state === 0) continue; 
+      const visibilityBtn = el('button', {
+        className: 'btn-visibility',
+        type: 'button',
+        title: 'Toggle visibility',
+        textContent: isHidden ? '🚫' : '👁️'
+      });
 
-    const data = await fetchBuildingInfo(facilityId);
-    if (data && data.vars) {
-      data.vars.collectBubbleHtml = hqObj ? hqObj.collectBubble : "";
-      const isAutoFix = !!prefs.autoFix[name];
-      const card = makeFacilityCard(data.vars, name, isAutoFix); 
-      
-      if (isHidden) card.style.display = 'none';
-      cardsContainer.appendChild(card);
+      const itemContainer = el('div', { className: 'hq-setting-item', dataset: { facName: name } }, label, visibilityBtn);
+
+      label.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (e.pointerId) {
+          label.setPointerCapture(e.pointerId);
+        }
+        draggedLabel = label;
+        draggedItem = itemContainer;
+        itemContainer.classList.add('is-dragging');
+      });
+
+      visibilityBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const isNowHidden = !prefs.hidden[name];
+        prefs.hidden[name] = isNowHidden;
+        chrome.storage.local.set({ igp_hq_prefs: prefs });
+        const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
+        if (card) card.style.display = isNowHidden ? "none" : "block";
+        visibilityBtn.textContent = isNowHidden ? '🚫' : '👁️';
+      });
+
+      label.querySelector("input")?.addEventListener("change", (e) => {
+        prefs.hidden[name] = !e.target.checked;
+        chrome.storage.local.set({ igp_hq_prefs: prefs });
+        const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
+        if (card) card.style.display = e.target.checked ? "block" : "none";
+      });
+      settingsMenu.appendChild(itemContainer);
+
+      if (hqObj && hqObj.state === 0) continue; 
+
+      const data = await fetchBuildingInfo(facilityId);
+      if (data && data.vars) {
+        data.vars.collectBubbleHtml = hqObj ? hqObj.collectBubble : "";
+        const isAutoFix = !!prefs.autoFix[name];
+        const card = makeFacilityCard(data.vars, name, isAutoFix); 
+        
+        if (isHidden) card.style.display = 'none';
+        cardsContainer.appendChild(card);
+      }
     }
-  }
     setTimeout(updateBulkRepair, 100);
     return panel;
   }
-
-
-  // Parses "1.9m" to 1900000, "100k" to 100000
-function parseCostVal(costStr) {
-  if (!costStr) return 0;
-  const str = costStr.toLowerCase().replace(/[^0-9.km]/g, '');
-  let val = parseFloat(str);
-  if (str.includes('m')) val *= 1000000;
-  else if (str.includes('k')) val *= 1000;
-  return isNaN(val) ? 0 : val;
-}
-
-// Formats 1900000 to "1.9m"
-function formatCostVal(val) {
-  if (val === 0) return '';
-  if (val >= 1000000) return (val / 1000000).toFixed(1).replace('.0', '') + 'm';
-  if (val >= 1000) return (val / 1000).toFixed(0) + 'k';
-  return val.toString();
-}
-
-function updateBulkRepair() {
-  const btn = document.querySelector('.btn-fix-selected');
-  if (!btn) return;
-  
-  const cards = document.querySelectorAll('.fac-card');
-  let totalCost = 0;
-  let repairableCount = 0;
-  
-  cards.forEach(card => {
-    const cb = card.querySelector('.cb-fix-select');
-    const maintainBtn = card.querySelector('.btn-maintain');
-    
-    // THE FIX:
-    // 1. cb.checked -> Does the user WANT to fix this building automatically?
-    // 2. !maintainBtn.disabled -> DOES the building actually need fixing right now?
-    // (If the building is at 100%, the game disables this button automatically)
-    if (cb && cb.checked && maintainBtn && !maintainBtn.disabled) {
-       // Only add cost if it's a valid string (not "null" or empty)
-       const costStr = cb.dataset.cost;
-       if (costStr && costStr !== 'null') {
-         totalCost += parseCostVal(costStr);
-         repairableCount++;
-       }
-    }
-  });
-  
-  // Only show the bulk button if there's at least one building 
-  // that is both SELECTED by the user and DEGRADED.
-  if (repairableCount > 0) {
-    btn.classList.remove('hidden');
-    btn.disabled = false;
-    btn.innerHTML = `Fix Selected <span class="maintain-cost">${formatCostVal(totalCost)}</span>`;
-  } else {
-    btn.classList.add('hidden');
-    btn.disabled = true;
-  }
-}
-
 })();
