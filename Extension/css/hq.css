@@ -1,8 +1,10 @@
 #hq-boost-container{
   z-index: 4;
 }
+
 #repair-all-bar{
- top:20%!important;
+  top: auto;
+    bottom: 80px;
 }
 
 /* ── Tabs Styling ── */
@@ -507,6 +509,7 @@
 
 /* ── Settings Item Container ── */
 .hq-setting-item {
+   touch-action: none;
   display: flex;
   align-items: center;
   gap: 8px;
