@@ -2,7 +2,7 @@
   z-index: 4;
 }
 #repair-all-bar{
- top:87%!important;
+ top:20%!important;
 }
 
 /* ── Tabs Styling ── */
@@ -547,6 +547,7 @@
   border: none;
   background: none;
   font: inherit;
+  touch-action: none;
 }
 
 .hq-setting-label:hover {

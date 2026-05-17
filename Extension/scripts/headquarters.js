@@ -671,11 +671,10 @@
       if (type === 11) {
         const nameRaw = infoCell.textContent.replace(/\s+/g, " ").trim();
         const name = nameRaw.split(/\d+yrs/)[0].trim();
-
-        const statsMatch = nameRaw.match(/(\d+)yrs\s+(\d+)cm\s+(\d+)kg/);
-        const age = statsMatch ? statsMatch[1] : null;
-        const height = statsMatch ? `${statsMatch[2]}cm` : null;
-        const weight = statsMatch ? `${statsMatch[3]}kg` : null;
+        const statsMatch = nameRaw.match(/(?<age>\d+)yrs\s+(?<height>(?:[\d.]+(?:cm|m))|(?:\d+ft\s*\d+in))\s+(?<weight>\d+)(?<weightUnit>kg|lbs)/i);
+        const age = statsMatch ? statsMatch.groups.age : null;
+        const height = statsMatch ? `${statsMatch.groups.height}` : null;
+        const weight = statsMatch ? `${statsMatch.groups.weight}${statsMatch.groups.weightUnit}` : null;
 
         const talentCell = row.querySelector("td:nth-child(2)");
         const talent = talentCell?.textContent.replace(/\s+/g, " ").trim() ?? "";
@@ -910,6 +909,7 @@ function updateBulkRepair() {
 
     document.addEventListener('pointermove', (e) => {
       if (!draggedItem) return;
+      e.preventDefault();
 
       const el = document.elementFromPoint(e.clientX, e.clientY);
       const target = el?.closest?.('.hq-setting-item');
@@ -929,6 +929,7 @@ function updateBulkRepair() {
 
 document.addEventListener('pointerup', (e) => {
   if (!draggedItem) return;
+  e.preventDefault();
 
   const el = document.elementFromPoint(e.clientX, e.clientY);
   const target = el?.closest?.('.hq-setting-item');
@@ -1004,6 +1005,7 @@ document.addEventListener('pointerup', (e) => {
 
     // Pointer events for touch-compatible dragging
     label.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
       draggedLabel = label;
       draggedItem = itemContainer;
       itemContainer.classList.add('is-dragging');
