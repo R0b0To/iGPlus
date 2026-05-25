@@ -3,7 +3,7 @@
 }
 
 #repair-all-bar{
-  top: auto;
+  top: auto!important;
     bottom: 80px;
 }
 
