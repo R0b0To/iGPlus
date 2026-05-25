@@ -297,9 +297,13 @@
         return [baseTxt];
       })()
     );
-    facLevelBtn.addEventListener("click", () => {
-      if (canUpgrade && fType) doUpgrade(fType, name, card);
-    });
+facLevelBtn.addEventListener("click", () => {
+  const confirmed = confirm("Are you sure you want to upgrade?");
+
+  if (confirmed && canUpgrade && fType) {
+    doUpgrade(fType, name, card);
+  }
+});
 
     const btnMaintain = el('button', { className: 'btn-maintain', disabled: !canMaintain },
       "Fix",
