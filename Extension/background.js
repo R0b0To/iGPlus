@@ -278,10 +278,6 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
 api.runtime.onInstalled.addListener(details => {
   const CURRENT_VERSION = api.runtime.getManifest().version;
 
-  if (details.reason === 'update') {
-    api.storage.local.remove('tyreFuelModel');
-  }
-
   if (details.reason === 'install') {
     api.storage.local.set({ script: scriptDefaults });
   }
