@@ -14,10 +14,12 @@ export async function getActiveCircuits() {
 
   return customCircuits;
 }
-export async function saveCircuitSetup(tier, circuitCode, setup) {
+
+//not used anywhere
+export async function saveCircuitSetup(circuitCode, setup) {
   const current = await getActiveCircuits();
-  if (!current[tier]) current[tier] = {};
-  current[tier][circuitCode] = setup;
+  if (!current) current = {};
+  current[circuitCode] = setup;
   await chrome.storage.local.set({ customCircuits: current });
 }
 
@@ -29,9 +31,10 @@ export async function getSettings() {
   };
 }
 
+//not used anywhere
 export function getScaleAdjustment(scale, driverHeight, tier) {
   const heightKey = Object.keys(scale)
     .sort((a, b) => b - a)
     .find((k) => +k <= driverHeight);
-  return heightKey ? scale[heightKey][tier] : 0;
+  return heightKey ? scale[heightKey] : 0;
 }
