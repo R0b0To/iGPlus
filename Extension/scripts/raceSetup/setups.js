@@ -21,7 +21,7 @@ function calculateHeightAdjustment(driverHeight, scale, tier) {
   return heightKey ? scale[heightKey][tier] : 0;
 }
 
-/
+
 function calculateWingModifier(driverRaw) {
   if (!driverRaw) return 0;
   const parts = driverRaw.split(',');
