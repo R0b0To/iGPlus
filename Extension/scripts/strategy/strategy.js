@@ -251,7 +251,8 @@
       }
 
       // Open Popup
-      if (target.closest('.popup-save-btn')) {
+      const saveBtn = target.closest('.popup-save-btn');
+      if (saveBtn && !saveBtn.classList.contains('popup-save')) {
         const carIndex = target.closest('.strategy-container').id.replace('strategyRoot', '');
         openStrategyPopup(+carIndex, STATE.CAR_STRATEGY[carIndex - 1].strategyData);
         return;
