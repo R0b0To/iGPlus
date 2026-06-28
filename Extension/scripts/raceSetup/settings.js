@@ -32,7 +32,7 @@ export async function getSettings() {
 }
 
 //not used anywhere
-export function getScaleAdjustment(scale, driverHeight, tier) {
+export function getScaleAdjustment(scale, driverHeight) {
   const heightKey = Object.keys(scale)
     .sort((a, b) => b - a)
     .find((k) => +k <= driverHeight);
