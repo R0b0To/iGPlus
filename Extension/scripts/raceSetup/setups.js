@@ -1,4 +1,3 @@
-
 /**
  * INITIALIZATION
  */
@@ -20,6 +19,33 @@ function calculateHeightAdjustment(driverHeight, scale, tier) {
     .sort((a, b) => b - a)
     .find((k) => +k <= driverHeight);
   return heightKey ? scale[heightKey][tier] : 0;
+}
+
+/
+function calculateWingModifier(driverRaw) {
+  if (!driverRaw) return 0;
+  const parts = driverRaw.split(',');
+  if (parts.length < 12) return 0;
+
+  // Attributes: composure(6), stamina(11), fast_corners(2), slow_corners(3), focus(8), defending(4), morale(9), attacking(5), knowledge(10)
+  const targetIndices = [6, 11, 2, 3, 8, 4, 9, 5, 10];
+  const skills = targetIndices
+    .map(idx => parseFloat(parts[idx]))
+    .filter(val => !isNaN(val) && val !== null)
+    .map(val => (val / 40) * 100);
+
+  if (skills.length === 0) return 0;
+
+  const L = skills.reduce((sum, val) => sum + val, 0) / skills.length;
+  return Math.floor((75 - L) / 5);
+}
+
+// Full suggested wing algorithm
+function calculateSuggestedAero(driverRaw, circuits, circuitCode) {
+  const modifier = calculateWingModifier(driverRaw);
+  const wingBase = circuits[1][circuitCode]?.wing ?? 1;
+
+  return Math.max(1, wingBase + modifier);
 }
 
 /**
@@ -65,13 +91,19 @@ async function addSetupSuggestionsForDrivers() {
   // 4. Update placeholders with actual data
   driversData.forEach((node, index) => {
     const driverIndex = index + 1;
-    const driverHeight = node.dataset.driver.split(',')[13];
+    const driverRaw = node.dataset.driver;
+    if (!driverRaw) return;
+
+    const driverHeight = driverRaw.split(',')[13];
     const heightAdjustment = calculateHeightAdjustment(driverHeight, scale, leagueTier);
+    const finalWing = calculateSuggestedAero(driverRaw, circuits, circuitCode);
 
     updateSetupUI({
       baseTrackSetup,
       heightAdjustment,
+      finalWing,
       driverHeight,
+      driverRaw,
       driverIndex,
       circuitCode,
       leagueTier,
@@ -107,7 +139,7 @@ function createSetupPlaceholder(setupForm) {
   setupForm.classList.add('withSuggestion');
 }
 
-function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitCode, leagueTier, circuits, driverHeight }) {
+function injectSetupUI({ baseTrackSetup, heightAdjustment, finalWing, driverIndex, circuitCode, leagueTier, circuits, driverHeight, driverRaw }) {
   const setupForm = document.querySelector(`#d${driverIndex}setup`);
   if (!setupForm || setupForm.classList.contains('withSuggestion')) return;
 
@@ -132,7 +164,6 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   };
 
   const finalRide = Math.max(1, baseTrackSetup.ride + heightAdjustment);
-  const finalWing = Math.max(1, baseTrackSetup.wing);
 
   createSuggestion('Suspension', baseTrackSetup.suspension, true);
   createSuggestion('Ride', finalRide);
@@ -144,7 +175,9 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   editBtn.onclick = () => openPersonalizeModal({
     baseTrackSetup,
     heightAdjustment,
+    finalWing,
     driverHeight,
+    driverRaw,
     circuitCode,
     leagueTier,
     circuits
@@ -154,12 +187,11 @@ function injectSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   setupForm.classList.add('withSuggestion');
 }
 
-function updateSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitCode, leagueTier, circuits, driverHeight }) {
+function updateSetupUI({ baseTrackSetup, heightAdjustment, finalWing, driverIndex, circuitCode, leagueTier, circuits, driverHeight, driverRaw }) {
   const setupForm = document.querySelector(`#d${driverIndex}setup`);
   if (!setupForm) return;
 
   const finalRide = Math.max(1, baseTrackSetup.ride + heightAdjustment);
-  const finalWing = Math.max(1, baseTrackSetup.wing);
 
   const updateOrCreateSuggestion = (parentId, value, isSuspension = false) => {
     const container = setupForm.querySelector(`#d${driverIndex}${parentId}`)?.firstChild;
@@ -199,7 +231,9 @@ function updateSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
     editBtn.onclick = () => openPersonalizeModal({
       baseTrackSetup,
       heightAdjustment,
+      finalWing,
       driverHeight,
+      driverRaw,
       circuitCode,
       leagueTier,
       circuits
@@ -207,11 +241,11 @@ function updateSetupUI({ baseTrackSetup, heightAdjustment, driverIndex, circuitC
   }
 }
 
-function openPersonalizeModal({ baseTrackSetup, heightAdjustment, driverHeight, circuitCode, leagueTier, circuits }) {
-  // Calculate the current adjusted values
+function openPersonalizeModal({ baseTrackSetup, heightAdjustment, finalWing, driverHeight, driverRaw, circuitCode, leagueTier, circuits }) {
+  // Calculate current display values (adjusted)
   const currentRide = baseTrackSetup.ride + heightAdjustment;
   const currentSuspension = baseTrackSetup.suspension;
-  const currentWing = baseTrackSetup.wing;
+  const currentWing = finalWing;
 
   const modal = document.createElement('div');
   modal.id = 'setup-modal-overlay';
@@ -240,35 +274,47 @@ function openPersonalizeModal({ baseTrackSetup, heightAdjustment, driverHeight, 
 
   document.body.appendChild(modal);
 
-
   const existingFlag = document.getElementsByClassName(`f-${circuitCode.toLowerCase()}`)[0];
   if (existingFlag) {
     const flagClone = existingFlag.cloneNode(true);
-    // Add some styling to make it look good next to the text
     flagClone.style.marginRight = "10px";
     flagClone.style.verticalAlign = "middle";
     
     const titleElement = modal.querySelector('#modal-title');
-    titleElement.prepend(flagClone); // Places it before the circuit code text
+    titleElement.prepend(flagClone);
   }
 
+  const wingModifier = calculateWingModifier(driverRaw);
 
-  // Update the base value preview as user types
+  // Update Ride Height base preview on change
   const rideInput = document.getElementById('edit-ride');
   rideInput.oninput = () => {
     const enteredValue = parseInt(rideInput.value) || 0;
     const baseValue = enteredValue - heightAdjustment;
-    document.getElementById('base-ride').innerText = baseValue;
+    const previewEl = document.getElementById('base-ride');
+    if (previewEl) previewEl.innerText = baseValue;
+  };
+
+  // Update Wing base preview on change
+  const wingInput = document.getElementById('edit-wing');
+  wingInput.oninput = () => {
+    const enteredValue = parseInt(wingInput.value) || 0;
+    const baseValue = enteredValue - wingModifier;
+    const previewEl = document.getElementById('base-wing');
+    if (previewEl) previewEl.innerText = baseValue;
   };
 
   document.getElementById('save-setup').onclick = async () => {
     const enteredRide = parseInt(rideInput.value) || 0;
     const baseRide = enteredRide - heightAdjustment;
 
+    const enteredWing = parseInt(wingInput.value) || 0;
+    const baseWing = enteredWing - wingModifier;
+
     circuits[leagueTier][circuitCode] = {
       ...baseTrackSetup,
       ride: baseRide,
-      wing: parseInt(document.getElementById('edit-wing').value),
+      wing: baseWing,
       suspension: parseInt(document.getElementById('edit-susp').value)
     };
 
@@ -316,7 +362,7 @@ function showTableHint(table, text) {
   setTimeout(() => hint.remove(), 1500);
 }
 
-// NOT WORKING, PRACTICE TABLE IS NOW A BUTTON, NEEDS REWORK IF WE WANT TO KEEP THIS FEATURE
+// NOTE: Since the practice table is currently a button, this is retained for compatibility but may require separate UI listener rewrites depending on layout changes.
 function makePracticeTableCopiable() {
   document.querySelectorAll('.acp[id*="Laps"]').forEach((table) => {
     table.tHead.addEventListener('click', copyAllPracticeData);
