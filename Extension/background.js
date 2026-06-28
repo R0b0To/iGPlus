@@ -275,10 +275,19 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
+// Unified installation and update listener
 api.runtime.onInstalled.addListener(details => {
   const CURRENT_VERSION = api.runtime.getManifest().version;
 
   if (details.reason === 'install') {
     api.storage.local.set({ script: scriptDefaults });
+  } else if (details.reason === 'update') {
+    api.storage.local.remove('customCircuits', () => {
+      if (api.runtime.lastError) {
+        console.error('Failed to remove customCircuits:', api.runtime.lastError);
+      } else {
+        console.log('Successfully removed "customCircuits" storage on update.');
+      }
+    });
   }
 });
