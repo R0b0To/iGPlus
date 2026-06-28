@@ -18,7 +18,7 @@ function calculateHeightAdjustment(driverHeight, scale, tier) {
   const heightKey = Object.keys(scale)
     .sort((a, b) => b - a)
     .find((k) => +k <= driverHeight);
-  return heightKey ? scale[heightKey][tier] : 0;
+  return heightKey ? scale[heightKey]: 0;
 }
 
 
@@ -43,7 +43,7 @@ function calculateWingModifier(driverRaw) {
 // Full suggested wing algorithm
 function calculateSuggestedAero(driverRaw, circuits, circuitCode) {
   const modifier = calculateWingModifier(driverRaw);
-  const wingBase = circuits[1][circuitCode]?.wing ?? 1;
+  const wingBase = circuits[circuitCode]?.wing ?? 1;
 
   return Math.max(1, wingBase + modifier);
 }
@@ -85,7 +85,7 @@ async function addSetupSuggestionsForDrivers() {
     .querySelectorAll('.hoverData');
 
   // Get the base setup for this track
-  const baseTrackSetup = circuits[leagueTier][circuitCode];
+  const baseTrackSetup = circuits[circuitCode];
   if (!baseTrackSetup) return;
 
   // 4. Update placeholders with actual data
@@ -311,7 +311,7 @@ function openPersonalizeModal({ baseTrackSetup, heightAdjustment, finalWing, dri
     const enteredWing = parseInt(wingInput.value) || 0;
     const baseWing = enteredWing - wingModifier;
 
-    circuits[leagueTier][circuitCode] = {
+    circuits[circuitCode] = {
       ...baseTrackSetup,
       ride: baseRide,
       wing: baseWing,

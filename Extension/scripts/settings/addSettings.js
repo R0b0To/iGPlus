@@ -395,8 +395,8 @@ if (container) {
     // --- SETUPS DROPDOWN ---
     const [{getActiveCircuits, getActiveScale }] = await Promise.all([import(chrome.runtime.getURL('scripts/raceSetup/settings.js'))]);
     const setupsData = await getActiveCircuits();
-    if (setupsData && setupsData["1"]) {
-      const setupKeys =['0', ...Object.keys(setupsData["1"])];
+    if (setupsData) {
+      const setupKeys =['0', ...Object.keys(setupsData)];
       
       // Build the Pseudo-Select for Setups
       if (setupKeys.length > 1) {
@@ -461,10 +461,9 @@ if (container) {
 
 
     } else {
-      const tier = "1"; // Only interested in showing Tier 1
       
-      if (setupsData[tier] && setupsData[tier][track]) {
-        const setup = setupsData[tier][track];
+      if (setupsData && setupsData[track]) {
+        const setup = setupsData[track];
 
         // 1. Create the Main Wrapper matching your structure
         const modalContent = document.createElement('div');
@@ -496,9 +495,9 @@ if (container) {
 
         const updateStorage = async () => {
           const freshData = await storage.get('customCircuits');
-          freshData[tier][track].ride = Number(rideInput.value);
-          freshData[tier][track].suspension = Number(suspInput.value);
-          freshData[tier][track].wing = Number(wingInput.value);
+          freshData[track].ride = Number(rideInput.value);
+          freshData[track].suspension = Number(suspInput.value);
+          freshData[track].wing = Number(wingInput.value);
           await storage.set({ customCircuits: freshData });
         };
 
@@ -512,7 +511,7 @@ if (container) {
   }
 
   // --- DEDICATED SETUP DOWNLOAD / DELETE LOGIC ---
-  async function downloadSetup(track, tier = null) {
+  async function downloadSetup(track) {
     const setupsData = await storage.get('customCircuits');
     if (!setupsData) return;
 
@@ -522,9 +521,9 @@ if (container) {
     if (track === '0') {
       dataToDownload = setupsData; 
       filename = 'setups_all';
-    } else if (tier) {
-      dataToDownload = { [tier]: { [track]: setupsData[tier][track] } };
-      filename = `setup_${track}_${tier}`;
+    } else if (null) {
+      dataToDownload = { [track]: setupsData[track] };
+      filename = `setup_${track}`;
     }
 
     const blob = new Blob([JSON.stringify({ customCircuits: dataToDownload })], { type: 'application/json' });
@@ -580,9 +579,9 @@ async function handleFileUpload(event) {
             
             // Deep merge so uploading a single track doesn't erase the others
             Object.keys(obj.customCircuits).forEach(tier => {
-              if (!existingData[tier]) existingData[tier] = {};
-              Object.keys(obj.customCircuits[tier]).forEach(track => {
-                existingData[tier][track] = obj.customCircuits[tier][track];
+              if (!existingData) existingData = {};
+              Object.keys(obj.customCircuits).forEach(track => {
+                existingData[track] = obj.customCircuits[track];
               });
             });
 
