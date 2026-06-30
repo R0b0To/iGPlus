@@ -1,45 +1,9 @@
 (async () => {
-  // Safe DOM Element builder to replace innerHTML assignments
-  function el(tag, attrs = {}, ...children) {
-    const element = document.createElement(tag);
-    for (const [key, value] of Object.entries(attrs)) {
-      if (value === null || value === undefined) continue;
-
-      if (key === 'className') {
-        element.className = value;
-      } else if (key === 'dataset') {
-        for (const [dKey, dVal] of Object.entries(value)) {
-          element.dataset[dKey] = dVal;
-        }
-      } else if (key === 'style') {
-        if (typeof value === 'object') {
-          Object.assign(element.style, value);
-        } else {
-          element.style.cssText = value;
-        }
-      } else if (key === 'htmlFor') {
-        element.htmlFor = value;
-      } else if (['textContent', 'id', 'type', 'title', 'checked', 'disabled', 'value'].includes(key)) {
-        element[key] = value;
-      } else {
-        element.setAttribute(key, value);
-      }
-    }
-
-    for (const child of children) {
-      if (child === null || child === undefined) continue;
-      if (typeof child === 'string' || typeof child === 'number') {
-        element.appendChild(document.createTextNode(String(child)));
-      } else if (Array.isArray(child)) {
-        child.forEach(c => {
-          if (c) element.appendChild(c instanceof Node ? c : document.createTextNode(String(c)));
-        });
-      } else if (child instanceof Node) {
-        element.appendChild(child);
-      }
-    }
-    return element;
-  }
+  // Shared DOM element builder — see common/dom.js (previously a local
+  // copy of this exact function lived here; consolidated as part of the
+  // tech-debt cleanup so a single implementation is shared by
+  // headquarters.js, settingsHTML.js, and addSettings.js).
+  const { el } = await import(chrome.runtime.getURL('common/dom.js'));
 
   let cachedCsrfName = null;
   let cachedCsrfToken = null;

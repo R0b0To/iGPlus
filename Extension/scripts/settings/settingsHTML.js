@@ -1,21 +1,10 @@
+import { el } from '../../common/dom.js';
+
 /**
- * Utility to easily build DOM elements
- * Usage: el('div', { id: 'myId', className: 'text' }, el('span', { textContent: 'Hello' }))
+ * Utility to easily build DOM elements.
+ * (Previously a local copy of `el()` lived in this file — see common/dom.js
+ * for the canonical version.)
  */
-function el(tag, attrs = {}, ...children) {
-  const element = document.createElement(tag);
-  for (const [key, value] of Object.entries(attrs)) {
-    if (key === 'dataset') {
-      Object.entries(value).forEach(([dataKey, dataVal]) => element.dataset[dataKey] = dataVal);
-    } else if (key in element) {
-      element[key] = value;
-    } else {
-      element.setAttribute(key, value);
-    }
-  }
-  element.append(...children.filter(Boolean));
-  return element;
-}
 
 // Reusable Components
 const createDescription = (desc, locTipKey) => el('span', { 
@@ -84,48 +73,6 @@ export function injectIGPlusOptions() {
       const forceSyncBtn = el('span', { id: 'forceSync', className: 'btn', textContent: 'Sync Now', style: 'display:none;' });
       const cloudStorage = createScriptCheckbox({ id: 'gdrive', name: 'Cloud Sync (Dropbox)', desc: 'test', locTipKey: 'gdriveHelp' });
       cloudStorage.append(forceSyncBtn);
-      const logoffBtn = document.createElement('button');
-      logoffBtn.classList.add('btn2','logoff-igplus');
-      logoffBtn.id = 'gdrive-logoff';
-      logoffBtn.textContent = 'Logout';
-
-
-// 3. Append the button inside the gdrive container
-//cloudStorage.appendChild(logoffBtn);
-
-// 4. Handle the Logoff Click
-/*logoffBtn.addEventListener('click', async (e) => {
-  e.preventDefault();
-  
-  // UX: Show that it's processing
-  logoffBtn.disabled = true;
-  logoffBtn.textContent = 'Logging off...';
-
-  try {
-    // Send message to background.js to revoke the token
-    const response = await chrome.runtime.sendMessage({ action: 'revokeToken' });
-    
-    if (response && response.success) {
-      // Uncheck the checkbox and hide the logoff button
-      const checkbox = document.querySelector('#gdrive input');
-      if (checkbox) checkbox.checked = false;
-      logoffBtn.style.display = 'none';
-      
-      // OPTIONAL: Update your chrome.storage so the extension remembers it's turned off
-      chrome.storage.local.get(['script'], function(data) {
-         const scriptSettings = data.script || {};
-         scriptSettings.gdrive = false;
-         chrome.storage.local.set({ script: scriptSettings });
-      });
-    }
-  } catch (err) {
-    console.error("Failed to revoke token:", err);
-  } finally {
-    // Reset button state
-    logoffBtn.disabled = false;
-    logoffBtn.textContent = 'Log out account';
-  }
-});*/
 
       const prefsLegend = el('legend', { id: 'preferences', textContent: 'iGPlus preferences', dataset: { locText: 'preferences' } });
       const prefsContainer = el('fieldset', {}, prefsLegend, cloudStorage, ...PREFERENCES.map(createScriptCheckbox), separatorContainer);
@@ -154,7 +101,7 @@ export function injectIGPlusOptions() {
           el('div', { className: 'exportContainer' },
             el('label', { textContent: 'Upload', htmlFor: `myFile_${title}`, className: 'upload btn4 pushBtn' }),
             el('input', { type: 'file', id: `myFile_${title}`, className: 'myFile', dataset: { uploadType: title } }),
-            el('div', { id: `exportSave_${title}`, className: 'exportSave' }) // <-- Added Unique ID here
+            el('div', { id: `exportSave_${title}`, className: 'exportSave' })
           )
         );
       };

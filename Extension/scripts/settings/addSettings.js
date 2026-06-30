@@ -1,18 +1,3 @@
-function el(tag, attrs = {}, ...children) {
-  const element = document.createElement(tag);
-  for (const [key, value] of Object.entries(attrs)) {
-    if (key === 'dataset') {
-      Object.entries(value).forEach(([dataKey, dataVal]) => element.dataset[dataKey] = dataVal);
-    } else if (key in element) {
-      element[key] = value;
-    } else {
-      element.setAttribute(key, value);
-    }
-  }
-  element.append(...children.filter(Boolean));
-  return element;
-}
-
 (async () => {
   if (!document.getElementById('iGPlus')) {
     const { injectIGPlusOptions } = await import(chrome.runtime.getURL('scripts/settings/settingsHTML.js'));
@@ -22,6 +7,7 @@ function el(tag, attrs = {}, ...children) {
 })();
 
 async function initializeSettingsLogic() {
+  const { el } = await import(chrome.runtime.getURL('common/dom.js'));
   const { fetchManagerData } = await import(chrome.runtime.getURL('common/fetcher.js'));
   const { language } = await import(chrome.runtime.getURL('common/localization.js'));
   const { scriptDefaults } = await import(chrome.runtime.getURL('common/config.js'));
@@ -84,27 +70,20 @@ async function initializeSettingsLogic() {
     // Restore Checkboxes
     const scripts = await storage.get('script') || scriptDefaults;
   
-  const checkboxes = document.querySelectorAll(
-  '.checkbox-wrapper input[type="checkbox"]'
-);
+    const checkboxes = document.querySelectorAll(
+      '.checkbox-wrapper input[type="checkbox"]'
+    );
 
-//const logoffBtn = document.getElementById('gdrive-logoff');
+    for (const checkbox of checkboxes) {
+      const id = checkbox.parentElement.id;
 
-for (const checkbox of checkboxes) {
-  const id = checkbox.parentElement.id;
-
-  checkbox.checked =
-    id === 'raceSign'
-      ? raceSign
-      : id === 'overSign'
-        ? overSign
-        : !!scripts[id];
-
-  // only touch DOM once if needed
-  /*if (id === 'gdrive' && logoffBtn) {
-    logoffBtn.hidden = !checkbox.checked;
-  }*/
-}
+      checkbox.checked =
+        id === 'raceSign'
+          ? raceSign
+          : id === 'overSign'
+            ? overSign
+            : !!scripts[id];
+    }
     handleDependentCheckboxes('strategy', ['sliderS', 'editS']);
     updateLastSyncTime(scripts.gdrive);
     setupExportDropdowns();
@@ -158,7 +137,7 @@ for (const checkbox of checkboxes) {
   });
 
 
-  // --- 3. HELPER FUNCTIONS (Update these 2 functions) --- //
+  // --- 3. HELPER FUNCTIONS --- //
 
   function handleDependentCheckboxes(parentId, childIds) {
     const parentInput = document.getElementById(parentId)?.querySelector('input[type="checkbox"]');
@@ -201,7 +180,6 @@ for (const checkbox of checkboxes) {
 
   async function updateLastSyncTime(isGDriveEnabled) {
     if (isGDriveEnabled) {
-      //UI.forceSyncBtn.classList.add('visibleSync');
       const syncDate = (await storage.get('syncDate')) || 'Never';
       let syncText = document.getElementById('syncDateObj');
       if (!syncText) {
@@ -215,66 +193,60 @@ for (const checkbox of checkboxes) {
     }
   }
 
-async function checkAuth() {
-  const checkbox = document.querySelector('#gdrive input');
-  //const logoffBtn = document.getElementById('gdrive-logoff'); // Get our new button
-  
-  // If the user is unchecking the box to simply PAUSE sync, 
-  // we just return early. (They aren't logging out, just pausing).
-  if (!checkbox.checked) {
-    return; 
-  }
+  async function checkAuth() {
+    const checkbox = document.querySelector('#gdrive input');
 
-  // 1. Disable the checkbox so they can't click it again quickly
-  checkbox.disabled = true; 
-
-  // 2. Create or find the loader element
-  let loader = document.getElementById('gdrive-loader');
-  if (!loader) {
-    loader = document.createElement('span');
-    loader.id = 'gdrive-loader';
-    loader.className = 'gdrive-loader';
-    checkbox.parentNode.append(loader);
-  }
-  
-  // 3. Show the loader
-  loader.style.display = 'inline-block';
-
-  try {
-    const response = await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove:true });
-    
-    if (!response || response.error || !response.token) {
-      // Revert if failed or canceled
-      checkbox.checked = false;
-    } else {
-      // SUCCESS! 
-      // Show the Log off button now that they are authenticated
-      //if (logoffBtn) logoffBtn.style.display = 'inline-block'; 
-      
-      const token = response.token;
-      
-      // 4. Wrap the sync message in a Promise
-      await new Promise((resolve) => {
-        chrome.runtime.sendMessage({ type: 'syncData', direction: false, token: token.access_token }, syncResponse => {
-          if (syncResponse && syncResponse.done) {
-            // Assuming restoreOptions is defined elsewhere
-            if (typeof restoreOptions === 'function') restoreOptions();
-          }
-          resolve(); 
-        });
-      });
+    // If the user is unchecking the box to simply PAUSE sync,
+    // we just return early. (They aren't logging out, just pausing).
+    if (!checkbox.checked) {
+      return;
     }
-  } catch (err) {
-    console.error("Auth or Sync failed:", err);
-    checkbox.checked = false;
-  } finally {
-    // 5. Clean up
-    if (loader) loader.style.display = 'none';
-    checkbox.disabled = false; 
-  }
-}
 
-function buildPseudoSelect(elementId, keys, changeCallback) {
+    // 1. Disable the checkbox so they can't click it again quickly
+    checkbox.disabled = true;
+
+    // 2. Create or find the loader element
+    let loader = document.getElementById('gdrive-loader');
+    if (!loader) {
+      loader = document.createElement('span');
+      loader.id = 'gdrive-loader';
+      loader.className = 'gdrive-loader';
+      checkbox.parentNode.append(loader);
+    }
+
+    // 3. Show the loader
+    loader.style.display = 'inline-block';
+
+    try {
+      const response = await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove: true });
+
+      if (!response || response.error || !response.token) {
+        // Revert if failed or canceled
+        checkbox.checked = false;
+      } else {
+        const token = response.token;
+
+        // 4. Wrap the sync message in a Promise
+        await new Promise((resolve) => {
+          chrome.runtime.sendMessage({ type: 'syncData', direction: false, token: token.access_token }, syncResponse => {
+            if (syncResponse && syncResponse.done) {
+              if (typeof restoreOptions === 'function') restoreOptions();
+            }
+            resolve();
+          });
+        });
+      }
+    } catch (err) {
+      console.error("Auth or Sync failed:", err);
+      checkbox.checked = false;
+    } finally {
+      // 5. Clean up
+      if (loader) loader.style.display = 'none';
+      checkbox.disabled = false;
+    }
+  }
+
+  function buildPseudoSelect(elementId, keys, changeCallback) {
     const oldElement = document.getElementById(elementId);
     if (!oldElement) return;
 
@@ -356,7 +328,7 @@ function buildPseudoSelect(elementId, keys, changeCallback) {
   }
 
 
-async function setupExportDropdowns() {
+  async function setupExportDropdowns() {
     // --- STRATEGIES DROPDOWN ---
     const strategiesData = await storage.get('save');
     if (strategiesData && Object.keys(strategiesData).length > 0) {
@@ -371,25 +343,25 @@ async function setupExportDropdowns() {
       if (strategyKeys.length > 1) {
         buildPseudoSelect('exportSave_Strategies', strategyKeys, displayPreview);
       }
-    }else{
+    } else {
       const container = document.getElementById('exportSave_Strategies');
 
-if (container) {
-  container.innerHTML = '';
+      if (container) {
+        container.innerHTML = '';
 
-  let next = container.nextElementSibling;
-  while (next) {
-    const current = next;
-    next = next.nextElementSibling;
+        let next = container.nextElementSibling;
+        while (next) {
+          const current = next;
+          next = next.nextElementSibling;
 
-    if (
-      current.classList.contains('igplus-download') ||
-      current.classList.contains('igplus-delete')
-    ) {
-      current.remove();
-    }
-  }
-}
+          if (
+            current.classList.contains('igplus-download') ||
+            current.classList.contains('igplus-delete')
+          ) {
+            current.remove();
+          }
+        }
+      }
     }
 
     // --- SETUPS DROPDOWN ---
@@ -465,13 +437,13 @@ if (container) {
       if (setupsData && setupsData[track]) {
         const setup = setupsData[track];
 
-        // 1. Create the Main Wrapper matching your structure
+        // 1. Create the Main Wrapper
         const modalContent = document.createElement('div');
         modalContent.className = 'setup-modal-content';
         modalContent.dataset.protonpassForm = "";
 
 
-        // 3. Create the Input Rows
+        // 2. Create the Input Rows
         const rideRow = document.createElement('div');
         rideRow.className = 'setup-row';
         rideRow.innerHTML = `<label>Ride Height</label><input type="number" id="edit-ride" value="${setup.ride}" min="1">`;
@@ -485,10 +457,10 @@ if (container) {
         wingRow.innerHTML = `<label>Wing</label><input type="number" id="edit-wing" value="${setup.wing}">`;
 
 
-        // 5. Append everything to the main card
+        // 3. Append everything to the main card
         modalContent.append(rideRow, suspRow, wingRow);
 
-        // 6. Setup auto-saving on value changes
+        // 4. Setup auto-saving on value changes
         const rideInput = rideRow.querySelector('input');
         const suspInput = suspRow.querySelector('input');
         const wingInput = wingRow.querySelector('input');
@@ -562,7 +534,7 @@ if (container) {
     });
   }
 
-async function handleFileUpload(event) {
+  async function handleFileUpload(event) {
     const input = event.target;
     const file = input.files[0]; 
     const uploadType = input.dataset.uploadType; // Will be 'Strategies' or 'Setups'
@@ -660,60 +632,60 @@ async function handleFileUpload(event) {
     document.body.removeChild(link);
   }
 
-async function deleteSave(e) {
-  const track = document.getElementById('exportSave_Strategies').querySelector('span').textContent.toLocaleLowerCase();
-  const scripts = await storage.get('script') || {};
-  let token = false;
+  async function deleteSave(e) {
+    const track = document.getElementById('exportSave_Strategies').querySelector('span').textContent.toLocaleLowerCase();
+    const scripts = await storage.get('script') || {};
+    let token = false;
 
-  // Check if Google Drive Sync is enabled to sync deletions
-  if (scripts.gdrive) {
-    try {
-      // Send message to background script to get the token silently
-      const response = await chrome.runtime.sendMessage({ action: 'getTokenSilent' });
-      
-      if (response && response.token) {
-        token = response.token; // This is the { access_token: "..." } object
-      } else {
-        console.warn('Could not get token for deletion sync:', response?.error);
+    // Check if Google Drive Sync is enabled to sync deletions
+    if (scripts.gdrive) {
+      try {
+        // Send message to background script to get the token silently
+        const response = await chrome.runtime.sendMessage({ action: 'getTokenSilent' });
+        
+        if (response && response.token) {
+          token = response.token; // This is the { access_token: "..." } object
+        } else {
+          console.warn('Could not get token for deletion sync:', response?.error);
+        }
+      } catch (err) {
+        console.error('Messaging error while getting token:', err);
       }
-    } catch (err) {
-      console.error('Messaging error while getting token:', err);
     }
+
+    if (track === 'all') {
+      // Delete ALL strategies
+      await chrome.storage.local.remove('save');
+      console.log('iGPlus | Removing all saves');
+      
+      if (token) {
+        chrome.runtime.sendMessage({
+          type: 'deleteFile',
+          data: { type: 'strategies', track: 0, name: 'delete_strategies' },
+          token: token.access_token
+        });
+      }
+    } else {
+      // Delete a specific strategy
+      const saveID = e.target.closest('tr').id;
+      const savesData = await storage.get('save');
+
+      if (savesData && savesData[track] && savesData[track][saveID]) {
+        delete savesData[track][saveID];
+        await storage.set({ save: savesData });
+      }
+
+      if (token) {
+        chrome.runtime.sendMessage({
+          type: 'deleteFile',
+          data: { type: 'strategies', track: track, name: saveID },
+          token: token.access_token
+        });
+      }
+    }
+
+    // Refresh the dropdown and table UI
+    setupExportDropdowns();
   }
-
-  if (track === 'all') {
-    // Delete ALL strategies
-    await chrome.storage.local.remove('save');
-    console.log('iGPlus | Removing all saves');
-    
-    if (token) {
-      chrome.runtime.sendMessage({
-        type: 'deleteFile',
-        data: { type: 'strategies', track: 0, name: 'delete_strategies' },
-        token: token.access_token
-      });
-    }
-  } else {
-    // Delete a specific strategy
-    const saveID = e.target.closest('tr').id;
-    const savesData = await storage.get('save');
-
-    if (savesData && savesData[track] && savesData[track][saveID]) {
-      delete savesData[track][saveID];
-      await storage.set({ save: savesData });
-    }
-
-    if (token) {
-      chrome.runtime.sendMessage({
-        type: 'deleteFile',
-        data: { type: 'strategies', track: track, name: saveID },
-        token: token.access_token
-      });
-    }
-  }
-
-  // Refresh the dropdown and table UI
-  setupExportDropdowns();
-}
 
 }

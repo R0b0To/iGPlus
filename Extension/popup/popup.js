@@ -1,14 +1,15 @@
 document.addEventListener('DOMContentLoaded', async function() {
   const { addData, getAllData, clearData, getElementById,deleteElementById  } = await import(chrome.runtime.getURL('common/database.js'));
   const { language } = await import(chrome.runtime.getURL('common/localization.js'));
-  const isSyncEnabled = await chrome.storage.local.get({script:false}) ?? await browser.storage.local.get({script:false});
-  const data = await chrome.storage.local.get({separator:','}) ?? await browser.storage.local.get({separator:','}) ?? false;
-  const  separator =  data.separator;
+  const { get: storageGet } = await import(chrome.runtime.getURL('common/storage.js'));
+
+  const isSyncEnabled = await storageGet({ script: false });
+  const data = await storageGet({ separator: ',' });
+  const separator = data.separator;
 
   const startOvertakes = document.getElementById('start');
   const deleteButton = document.getElementById('delete');
   const select = document.getElementById('select');
-  //const newButton = document.getElementById('new');
   const recapButton = document.getElementById('recap');
   const averageButton = document.getElementById('average');
   const pitButton = document.getElementById('pit');
@@ -19,7 +20,6 @@ document.addEventListener('DOMContentLoaded', async function() {
   const csv = document.getElementById('CSV');
   const pitstops = document.getElementById('PitStops');
   let saveName = "report";
-  //const syncToggle = document.getElementById('sync-cloud');
 
 
   let driver = 0;
@@ -37,7 +37,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       recapButton.textContent = language[code].popupText.raceRecap;
       startOvertakes.textContent = language[code].popupText.startOvertakes;
       deleteButton.textContent = language[code].popupText.delete;
-      //newButton.textContent = language[code].popupText.newRace;
       pitLossButton.textContent = language[code].popupText.pitStopTimeLoss;
       averageButton.textContent = language[code].popupText.heatMap;
       pitButton.textContent = language[code].popupText.PitReport;
@@ -111,7 +110,7 @@ document.addEventListener('DOMContentLoaded', async function() {
   if(valid_saves.length > 0) 
   {
 
-    const option_data = await chrome.storage.local.get({'active_option':valid_saves[0].id}) ?? await browser.storage.local.get({'active_option':valid_saves[0].id});
+    const option_data = await storageGet({ active_option: valid_saves[0].id });
     let active;
     //generate selection menu with stored data
     for(let i = 0; i < valid_saves.length; i++)
@@ -133,7 +132,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       select.appendChild(option);
     }
     (active.length == 0) ? disableButton(true) : disableButton(false);
-    // await chrome.storage.local.set({'active_option':option_data.active_option});
   }
   else 
   {
@@ -143,8 +141,6 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.warn(error);
   }
  
-
-  //syncToggle.addEventListener('change', (e) => chrome.storage.local.set({ script: { gdrive: e.target.checked } }));
 
   //-------------------------------------------------------------------------------copy button-------------------------------------------
   copyButton.addEventListener('click',function(){
@@ -294,23 +290,6 @@ document.addEventListener('DOMContentLoaded', async function() {
       disableButton(false);
 
     driver = report.data;
-    //get state before the select was changed
-    /* chrome.storage.local.get(['active','active_option',opt],function(data){
-      //save the active data in the previous option
-      chrome.storage.local.set({[data['active_option']]:report.id});
-      //update the active data with the new selected option and save option state
-      chrome.storage.local.set({'active_option':opt,'active':report.data},function(d)
-      {
-        if(data[opt] == 0)
-          disableButton(true);
-        else
-          disableButton(false);
-
-        driver = data[opt];
-      });
-
-
-    });*/
 
 
   });
@@ -333,7 +312,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
 
       let race_timings = separator;  // time position
-      //race_recap = ","; // track position
 
       //getting the max number of laps completed
       let temp_max = sortQuali[0].rank.length;
@@ -350,26 +328,20 @@ document.addEventListener('DOMContentLoaded', async function() {
         race_timings += separator + i;
 
       race_timings += '\n';
-      //lap_timings = race_timings;
 
       for(let i = 0; i < sortQuali.length; i++)
       {
         if(sortQuali[i].rank[sortQuali[i].rank.length - 1] <= 10)
         {
           race_timings += 'Top 10';
-          //lap_timings+="Top 10";
         }
-        //race_recap +=","+sortQuali[i].name +","+ sortQuali[i].race_replay+ "<br>";
 
         race_timings += separator + sortQuali[i].name + separator + ((isChecked) ? sortQuali[i].race_time.map(str => str.replace(/\+/g, '-')) : sortQuali[i].race_time).join(separator) + '\n';
-        //lap_timings +=","+sortQuali[i].name +","+ sortQuali[i].lap_time+ "\n";
 
       }
 
       saveName = "race_result";
-      //reporttext.textContent=race_timings;
       setText(race_timings);
-      // downloadFile(race_timings,"race_recap");
 
     });
 
@@ -419,7 +391,6 @@ document.addEventListener('DOMContentLoaded', async function() {
 
       saveName = "laps_in_position";
       setText(string);
-      // downloadFile(string,"lap_trend");
     });
 
   });
@@ -446,44 +417,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     });
 
 
-    // downloadFile(string,"lap_trend");
-
-
   });
-
-  //------------------------------------------------------------------------------new race----------------------------------------------
- /* newButton.addEventListener('click', function(){
-
-    const reportName = prompt('enter report name');
-
-    if(reportName == null || reportName == '')
-    {
-      return;
-    }
-
-    const leagueNameId = reportName; //LRID is to avoid naming conflicts
-
-    toggleText(false);
-    //save before creating new data
-
-    addData('reports',{id:leagueNameId,data:[]})
-      .then((id) => {
-        console.log('Data added with ID:', id);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-
-
-    const option = document.createElement('option');
-    option.textContent = reportName;
-    option.selected = true;
-    select.appendChild(option);
-    disableButton(true);
-    chrome.storage.local.set({'active_option':leagueNameId,'active':[]});
-
-
-  });*/
 
   //------------------------------------------------------------------------------delete----------------------------------------------
   deleteButton.addEventListener('click', function(){
@@ -515,7 +449,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     else {
       disableButton(true);
       return;
-    }  //alert('nothing to delete');
+    }
 
     
 
@@ -523,8 +457,3 @@ document.addEventListener('DOMContentLoaded', async function() {
   });
 
 });
-
-
-
-
-
