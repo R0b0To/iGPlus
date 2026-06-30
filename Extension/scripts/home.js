@@ -2,26 +2,29 @@
 whenLockedSetup();
 
 
-async function whenLockedSetup(){
+async function whenLockedSetup() {
   const { delay } = await import(chrome.runtime.getURL('common/utility.js'));
-  //const raceID = document.getElementById('mRace').href.replace(/^\D+/g, '');
+  const { safeQuery } = await import(chrome.runtime.getURL('common/safeQuery.js'));
+
   await delay(500);
-  //const is_live = document.getElementsByClassName('pulse').length > 0;
-  const countdown = document.getElementsByClassName('countdown')[0].textContent;
-  const timeLeft = convertToSeconds(countdown);
 
-  if (timeLeft < 600)
+  const countdownEl = safeQuery('.countdown', 'home: race countdown');
+  if (!countdownEl) return;
+
+  const timeLeft = convertToSeconds(countdownEl.textContent);
+
+  if (timeLeft < 600) {
     enableStrategy();
-  else {
+  } else {
     setTimeout(enableStrategy, (timeLeft - 600) * 1000);
-  return;
-}
+  }
 }
 
-async function enableStrategy(){
-
- const strategyButton = document.querySelector('a[href="p=race"]');
- strategyButton.classList.remove('disabled');
+async function enableStrategy() {
+  const { safeQuery } = await import(chrome.runtime.getURL('common/safeQuery.js'));
+  const strategyButton = safeQuery('a[href="p=race"]', 'home: strategy button');
+  if (!strategyButton) return;
+  strategyButton.classList.remove('disabled');
 }
 
 

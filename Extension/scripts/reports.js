@@ -1,11 +1,10 @@
 (async () => {
   const MAX_RETRIES = 3;
   const RETRY_DELAY_MS = 200;
- 
+
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-         manager = [];        // clear previous race's data
-    progressStatus = 0;
+      state.reset(); 
       injectUI();
       return;
     } catch (err) {
@@ -13,18 +12,33 @@
       await sleep(RETRY_DELAY_MS);
     }
   }
- 
+
   console.error('Failed to inject UI after all retries.');
 })();
 
 
+// ─── Race State ───────────────────────────────────────────────────────────────
+//
+// Previously `manager` and `progressStatus` were bare globals mutated by every
+// function in the file. They are now owned by this object. All functions read
+// and write through `state` so a fresh extraction always starts clean.
+
+var state = state || {
+  manager: [],
+  progressStatus: 0,
+
+  reset() {
+    this.manager = [];
+    this.progressStatus = 0;
+  }
+};
 
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-function getTrackCode()
-{
-    return document.querySelector('.flag').classList[1].substring(2);
+function getTrackCode() {
+  return document.querySelector('.flag').classList[1].substring(2);
 }
+
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -58,57 +72,57 @@ function downloadCSV(data, filename) {
 }
 
 function getTyreCode(tyreLabel) {
-    const TYRE_CODES = {
-  // English
-  'Full wet tyres':         'ts-W',
-  'Intermediate wet tyres': 'ts-I',
-  'Hard tyres':             'ts-H',
-  'Medium tyres':           'ts-M',
-  'Soft tyres':             'ts-S',
-  'Super soft tyres':       'ts-SS',
-  // Italian
-  'Pneumatici da bagnato':  'ts-W',
-  'Pneumatici intermedi':   'ts-I',
-  'Pneumatici duri':        'ts-H',
-  'Pneumatici medi':        'ts-M',
-  'Pneumatici morbidi':     'ts-S',
-  'Pneumatici super morbidi': 'ts-SS',
-  // Spanish
-  'Neumáticos de Lluvia':   'ts-W',
-  'Neumáticos Intermedios': 'ts-I',
-  'Neumáticos Duros':       'ts-H',
-  'Neumáticos Medios':      'ts-M',
-  'Neumáticos Blandos':     'ts-S',
-  'Neumáticos Súper Blandos': 'ts-SS',
-  // German
-  'Vollregen-Reifen':       'ts-W',
-  'Intermediate Reifen':    'ts-I',
-  'Hart Reifen':            'ts-H',
-  'Medium Reifen':          'ts-M',
-  'Soft Reifen':            'ts-S',
-  'Super Soft Reifen':      'ts-SS',
-  // Portuguese
-  'Pneus de chuva':         'ts-W',
-  'Pneus intermediários':   'ts-I',
-  'Pneus duros':            'ts-H',
-  'Pneus médios':           'ts-M',
-  'Pneus macios':           'ts-S',
-  'Pneus super macios':     'ts-SS',
-  // Russian
-  'Дождевые шины':          'ts-W',
-  'Промежуточные шины':     'ts-I',
-  'Твердые шины':           'ts-H',
-  'Средние шины':           'ts-M',
-  'Мягкие шины':            'ts-S',
-  'Супермягкие шины':       'ts-SS',
-  // French
-  'Pneus pluie':            'ts-W',
-  'Pneus intermédiaires humides': 'ts-I',
-  'Pneus durs':             'ts-H',
-  'Pneus moyens':           'ts-M',
-  'Pneus tendres':          'ts-S',
-  'Pneus super tendres':    'ts-SS',
-};
+  const TYRE_CODES = {
+    // English
+    'Full wet tyres':         'ts-W',
+    'Intermediate wet tyres': 'ts-I',
+    'Hard tyres':             'ts-H',
+    'Medium tyres':           'ts-M',
+    'Soft tyres':             'ts-S',
+    'Super soft tyres':       'ts-SS',
+    // Italian
+    'Pneumatici da bagnato':  'ts-W',
+    'Pneumatici intermedi':   'ts-I',
+    'Pneumatici duri':        'ts-H',
+    'Pneumatici medi':        'ts-M',
+    'Pneumatici morbidi':     'ts-S',
+    'Pneumatici super morbidi': 'ts-SS',
+    // Spanish
+    'Neumáticos de Lluvia':   'ts-W',
+    'Neumáticos Intermedios': 'ts-I',
+    'Neumáticos Duros':       'ts-H',
+    'Neumáticos Medios':      'ts-M',
+    'Neumáticos Blandos':     'ts-S',
+    'Neumáticos Súper Blandos': 'ts-SS',
+    // German
+    'Vollregen-Reifen':       'ts-W',
+    'Intermediate Reifen':    'ts-I',
+    'Hart Reifen':            'ts-H',
+    'Medium Reifen':          'ts-M',
+    'Soft Reifen':            'ts-S',
+    'Super Soft Reifen':      'ts-SS',
+    // Portuguese
+    'Pneus de chuva':         'ts-W',
+    'Pneus intermediários':   'ts-I',
+    'Pneus duros':            'ts-H',
+    'Pneus médios':           'ts-M',
+    'Pneus macios':           'ts-S',
+    'Pneus super macios':     'ts-SS',
+    // Russian
+    'Дождевые шины':          'ts-W',
+    'Промежуточные шины':     'ts-I',
+    'Твердые шины':           'ts-H',
+    'Средние шины':           'ts-M',
+    'Мягкие шины':            'ts-S',
+    'Супермягкие шины':       'ts-SS',
+    // French
+    'Pneus pluie':            'ts-W',
+    'Pneus intermédiaires humides': 'ts-I',
+    'Pneus durs':             'ts-H',
+    'Pneus moyens':           'ts-M',
+    'Pneus tendres':          'ts-S',
+    'Pneus super tendres':    'ts-SS',
+  };
   return TYRE_CODES[tyreLabel] ?? 'ts-M';
 }
 
@@ -134,9 +148,8 @@ function injectUI() {
     className: 'export_container',
   });
   exportContainer.append(extractBtn, sheetIconBtn);
-  //.classList.add('close-fix');
   header.append(exportContainer);
-  
+
   injectCSVButtons(header);
 }
 
@@ -151,7 +164,7 @@ function createExtractButton() {
   });
   btn.setAttribute('style', 'position:relative; left:10px; cursor:pointer;border: none;');
   btn.append(spinner);
-  btn.onclick =  onExtractClick;
+  btn.onclick = onExtractClick;
   return btn;
 }
 
@@ -167,7 +180,7 @@ function createSheetIconButton() {
   });
   btn.setAttribute('style', 'position:relative;margin-left:10px; background-color:transparent; vertical-align:middle; cursor:pointer; border:none;');
   btn.append(img);
-  btn.onclick = openSheetImportDialog ;
+  btn.onclick = openSheetImportDialog;
   return btn;
 }
 
@@ -197,7 +210,7 @@ function injectCSVButtons(header) {
   const buttonsContainer = Object.assign(document.createElement('div'), {
     className: 'inj_container f_right',
   });
-  buttonsContainer.append(podiumBtn,qualiBtn,raceBtn);
+  buttonsContainer.append(podiumBtn, qualiBtn, raceBtn);
   header.append(buttonsContainer);
 }
 
@@ -217,9 +230,9 @@ function createProgressBar() {
 }
 
 function updateProgressBar() {
-  progressStatus += 100 / manager.length;
+  state.progressStatus += 100 / state.manager.length;
   const bar = document.getElementById('bar');
-  if (bar) bar.style.width = `${progressStatus}%`;
+  if (bar) bar.style.width = `${state.progressStatus}%`;
 }
 
 // ─── Podium Copy ──────────────────────────────────────────────────────────────
@@ -243,13 +256,13 @@ async function onPodiumCopy() {
 
   function buildStrategyString(strategyDiv) {
     const TYRE_EMOJI = {
-  'ts-M':  '⚪',
-  'ts-H':  '🟠',
-  'ts-S':  '🟡',
-  'ts-SS': '🔴',
-  'ts-W':  '🔵',
-  'ts-I':  '🟢',
-};
+      'ts-M':  '⚪',
+      'ts-H':  '🟠',
+      'ts-S':  '🟡',
+      'ts-SS': '🔴',
+      'ts-W':  '🔵',
+      'ts-I':  '🟢',
+    };
     if (!strategyDiv) return '';
     return [...strategyDiv.querySelectorAll('td')]
       .map(td => {
@@ -299,88 +312,81 @@ async function onPodiumCopy() {
 // ─── Google Sheets Import ─────────────────────────────────────────────────────
 
 async function openSheetImportDialog() {
-  const { createDeleteButton } = await import(chrome.runtime.getURL('scripts/strategy/utility.js'));
-  // Always create fresh or check existence
   if (!document.getElementById('sheetDialog')) createSheetDialog();
 
   const token =
     (await chrome.runtime.sendMessage({ action: 'getTokenSilent' }))?.token ||
-    (await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove:false }))?.token;
- 
+    (await chrome.runtime.sendMessage({ action: 'getFirstToken', forceReapprove: false }))?.token;
+
   const { get_sheets } = await import(chrome.runtime.getURL('auth/dropbox_handler.js'));
   const { access_gSheet, create_new_csv, delete_csv } = await import(chrome.runtime.getURL('auth/csv_handler.js'));
-  
+
   const sheets = await get_sheets(token.access_token);
 
   const listContainer = document.getElementById('sheetList');
   const selectBtn = document.getElementById('selectSheetBtn');
   const createBtn = document.getElementById('createNewSheetBtn');
   const newSheetInput = document.getElementById('newSheetName');
-  
+
   listContainer.innerHTML = '';
   selectBtn.disabled = true;
 
-  // Helper function to dynamically add a sheet to the list
   function appendSheetItem(sheet, autoSelect = false) {
-  const item = document.createElement('label');
-  item.className = 'sheetStyle';
-  item.innerHTML = `
-    <input type="radio" name="sheetRadio" id="${sheet.id}" value="${sheet.id}">
-    <span class="sheet-name">${sheet.name}</span>
-    <button class="deleteSheetBtn trash btn3" title="Delete file" data-path="${sheet.id}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path fill-rule="evenodd" clip-rule="evenodd" d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z" fill="currentColor"/>
-    <path d="M9 9H11V17H9V9Z" fill="currentColor"/>
-    <path d="M13 9H15V17H13V9Z" fill="currentColor"/>
-  </svg></button>
-  `;
+    const item = document.createElement('label');
+    item.className = 'sheetStyle';
+    item.innerHTML = `
+      <input type="radio" name="sheetRadio" id="${sheet.id}" value="${sheet.id}">
+      <span class="sheet-name">${sheet.name}</span>
+      <button class="deleteSheetBtn trash btn3" title="Delete file" data-path="${sheet.id}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path fill-rule="evenodd" clip-rule="evenodd" d="M17 5V4C17 2.89543 16.1046 2 15 2H9C7.89543 2 7 2.89543 7 4V5H4C3.44772 5 3 5.44772 3 6C3 6.55228 3.44772 7 4 7H5V18C5 19.6569 6.34315 21 8 21H16C17.6569 21 19 19.6569 19 18V7H20C20.5523 7 21 6.55228 21 6C21 5.44772 20.5523 5 20 5H17ZM15 4H9V5H15V4ZM17 7H7V18C7 18.5523 7.44772 19 8 19H16C16.5523 19 17 18.5523 17 18V7Z" fill="currentColor"/>
+      <path d="M9 9H11V17H9V9Z" fill="currentColor"/>
+      <path d="M13 9H15V17H13V9Z" fill="currentColor"/>
+    </svg></button>
+    `;
 
-  const radio = item.querySelector('input');
-  radio.addEventListener('change', () => {
-    document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
-    item.classList.add('selected_radio');
-    selectBtn.disabled = false;
-  });
+    const radio = item.querySelector('input');
+    radio.addEventListener('change', () => {
+      document.querySelectorAll('.sheetStyle').forEach(el => el.classList.remove('selected_radio'));
+      item.classList.add('selected_radio');
+      selectBtn.disabled = false;
+    });
 
-  // Delete button — stop propagation so it doesn't select the radio
-  const deleteBtn = item.querySelector('.deleteSheetBtn');
-  deleteBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    const deleteBtn = item.querySelector('.deleteSheetBtn');
+    deleteBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    if (!confirm(`Delete "${sheet.name}"? This cannot be undone.`)) return;
+      if (!confirm(`Delete "${sheet.name}"? This cannot be undone.`)) return;
 
-    deleteBtn.disabled = true;
-    deleteBtn.textContent = '⏳';
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = '⏳';
 
-    try {
-      await delete_csv(sheet.id, token.access_token);
-      item.remove();
+      try {
+        await delete_csv(sheet.id, token.access_token);
+        item.remove();
 
-      // If the deleted item was selected, disable the export button
-      if (!document.querySelector('input[name="sheetRadio"]:checked')) {
-        selectBtn.disabled = true;
+        if (!document.querySelector('input[name="sheetRadio"]:checked')) {
+          selectBtn.disabled = true;
+        }
+      } catch (err) {
+        console.error("Failed to delete file", err);
+        alert("Failed to delete file. Check console.");
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = '🗑️';
       }
-    } catch (err) {
-      console.error("Failed to delete file", err);
-      alert("Failed to delete file. Check console.");
-      deleteBtn.disabled = false;
-      deleteBtn.textContent = '🗑️';
+    });
+
+    if (autoSelect) {
+      listContainer.prepend(item);
+      radio.checked = true;
+      radio.dispatchEvent(new Event('change'));
+    } else {
+      listContainer.appendChild(item);
     }
-  });
-
-  if (autoSelect) {
-    listContainer.prepend(item);
-    radio.checked = true;
-    radio.dispatchEvent(new Event('change'));
-  } else {
-    listContainer.appendChild(item);
   }
-}
 
-  // Populate existing sheets
   sheets.forEach(sheet => appendSheetItem(sheet));
 
-  // Logic for creating a new file
   createBtn.onclick = async () => {
     const fileName = newSheetInput.value.trim();
     if (!fileName) return;
@@ -391,8 +397,8 @@ async function openSheetImportDialog() {
 
     try {
       const newSheet = await create_new_csv(fileName, token.access_token);
-      appendSheetItem(newSheet, true); // Add to list and select it automatically
-      newSheetInput.value = ''; // clear input
+      appendSheetItem(newSheet, true);
+      newSheetInput.value = '';
     } catch (err) {
       console.error("Failed to create file", err);
       alert("Failed to create new file. Check console.");
@@ -404,11 +410,9 @@ async function openSheetImportDialog() {
 
   document.getElementById('sheetDialog').showModal();
 
-  // The logic inside the export click handler
   selectBtn.onclick = async () => {
     const selectedId = document.querySelector('input[name="sheetRadio"]:checked').id;
-    
-    // 1. UI: Show loading state
+
     const originalText = selectBtn.textContent;
     selectBtn.disabled = true;
     selectBtn.innerHTML = `<div class="spinner"></div> <span>Exporting...</span>`;
@@ -416,43 +420,41 @@ async function openSheetImportDialog() {
     try {
       const raceId = getRaceId();
 
-      const qualiRows = exportQuali(false).split('\n').map(row =>[raceId, 'Q', ...row.split(',')]);
-      let raceRows = exportRace(false).split('\n').map(row =>[raceId, 'R', ...row.split(',')]);
+      const qualiRows = exportQuali(false).split('\n').map(row => [raceId, 'Q', ...row.split(',')]);
+      let raceRows = exportRace(false).split('\n').map(row => [raceId, 'R', ...row.split(',')]);
 
       const noticeEls = document.getElementsByClassName('notice');
       const raceDate = noticeEls[1]?.textContent ?? 'error';
       const trackCode = getTrackCode();
-      const rules =[
+      const rules = [
         `⛽${getRuleActive(noticeEls[0], '#igp-fuel')}`,
         `🛞${getRuleActive(noticeEls[0], '#igp-tyre')}`,
         `⏱️${getRuleActive(noticeEls[0], '#md-stopwatch')}`,
       ].join(',');
 
       if (document.getElementById('alldrivers')) {
-        manager.sort((a, b) => a.race_finish - b.race_finish);
+        state.manager.sort((a, b) => a.race_finish - b.race_finish);
         raceRows[0].push('Strategy', 'Pit Stops Time', 'Time Lost', 'Rank');
         raceRows = [
           raceRows[0],
           ...raceRows.slice(1).map((row, i) => [
             ...row,
-            manager[i].pit_stop,
-            manager[i].pitStopTimes.join(','),
-            manager[i].pitTimeLoss.join(','),
-            manager[i].rank.join(','),
+            state.manager[i].pit_stop,
+            state.manager[i].pitStopTimes.join(','),
+            state.manager[i].pitTimeLoss.join(','),
+            state.manager[i].rank.join(','),
           ]),
         ];
       }
 
-      // 2. IMPORTANT: AWAIT the handler
       await access_gSheet(selectedId, token.access_token, [...qualiRows, ...raceRows], {
         race_date: raceDate,
         track_code: trackCode,
         rules,
       });
 
-      // 3. Close only AFTER the await is finished
       closeSheetDialog();
-      
+
     } catch (err) {
       console.error("Export failed", err);
       alert("Failed to export. Check console.");
@@ -506,7 +508,7 @@ function closeSheetDialog() {
   const dialog = document.getElementById('sheetDialog');
   if (dialog) {
     dialog.close();
-    dialog.remove(); 
+    dialog.remove();
   }
 }
 
@@ -642,12 +644,12 @@ function buildManagerTemplate(row, index, raceId, noticeEls) {
 }
 
 function collectQualiData() {
-  manager = [];
+  state.reset();
   const qualiBody = document.querySelector('#qualifying table').tBodies[0];
   const noticeEls = document.getElementsByClassName('notice');
   const raceId = getRaceId();
   for (let i = 0; i < qualiBody.childElementCount; i++) {
-    manager.push(buildManagerTemplate(qualiBody.rows[i], i, raceId, noticeEls));
+    state.manager.push(buildManagerTemplate(qualiBody.rows[i], i, raceId, noticeEls));
   }
 }
 
@@ -663,9 +665,7 @@ function linkRaceResults() {
       console.log('No report URL (likely a DNF)');
     }
 
-    const entry = manager.find(m => m.id === driverId);
-
-    
+    const entry = state.manager.find(m => m.id === driverId);
     if (entry) {
       entry.race = reportUrl;
       entry.report_id = reportUrl.replace(/\D/g, '');
@@ -688,9 +688,8 @@ function onExtractClick() {
   extractBtn.childNodes[1].style.display = 'inline-block';
 
   document.getElementsByClassName('dialog')[0].prepend(createProgressBar());
-  progressStatus = 0;
 
-  collectQualiData();
+  collectQualiData();   // resets state.manager and state.progressStatus
   linkRaceResults();
   fetchAllReports();
 }
@@ -700,13 +699,15 @@ function onExtractClick() {
 async function fetchAllReports() {
   const { fetchRaceReportInfo } = await import(chrome.runtime.getURL('common/fetcher.js'));
 
-  for (let i = 0; i < manager.length; i++) {
-    if (!manager[i].report_id) continue;
-    const result = await fetchRaceReportInfo(manager[i].report_id);
+  // Create an array of promises to run in parallel
+  const reportPromises = state.manager.map(async (driver, i) => {
+    if (!driver.report_id) return;
+    const result = await fetchRaceReportInfo(driver.report_id);
     const table = parseReportHTML(result);
-    parseReportData(table, i);
-  }
+    parseReportData(table, i); // Ensure parseReportData is thread-safe (it is, since it uses index)
+  });
 
+  await Promise.all(reportPromises);
   await persistAndSyncReports();
   renderStrategyPreviews();
 
@@ -731,12 +732,12 @@ async function persistAndSyncReports() {
   const active_option = `${race_id}_${trackCode}`;
 
   chrome.storage.local.get('active', async ({ active }) => {
-    chrome.runtime.sendMessage({ type: 'addRaceReportToDB', data: { id:active_option , data: active } });
+    chrome.runtime.sendMessage({ type: 'addRaceReportToDB', data: { id: active_option, data: active } });
 
     const { script: syncSettings = false } = await chrome.storage.local.get('script');
     if (!syncSettings?.gdrive) return;
 
-    const { getAccessToken } = await import(chrome.runtime.getURL('auth/dropboxAuth.js')); //send to background? not needed in popup
+    const { getAccessToken } = await import(chrome.runtime.getURL('auth/dropboxAuth.js'));
     const token = await getAccessToken();
     if (!token) return;
 
@@ -747,8 +748,7 @@ async function persistAndSyncReports() {
     });
   });
 
-  chrome.storage.local.set({'active_option':active_option});
-
+  chrome.storage.local.set({ 'active_option': active_option });
 }
 
 // ─── Report Parsing ───────────────────────────────────────────────────────────
@@ -757,11 +757,11 @@ function parseReportData(table, index) {
   const rows = table.tBodies[0].rows;
   const totalRows = rows.length;
 
-  manager[index].pit_stop = table.rows[1].cells[1].childNodes[0].textContent;
-  manager[index].driver_result.lap.push(table.rows[1].cells[0].textContent);
-  manager[index].driver_result.rank.push(manager[index].quali);
-  manager[index].driver_result.time.push(table.rows[1].cells[1].textContent);
-  ['gap_to_lead', 'average'].forEach(key => manager[index].driver_result[key].push(''));
+  state.manager[index].pit_stop = table.rows[1].cells[1].childNodes[0].textContent;
+  state.manager[index].driver_result.lap.push(table.rows[1].cells[0].textContent);
+  state.manager[index].driver_result.rank.push(state.manager[index].quali);
+  state.manager[index].driver_result.time.push(table.rows[1].cells[1].textContent);
+  ['gap_to_lead', 'average'].forEach(key => state.manager[index].driver_result[key].push(''));
 
   let lastPitLap = 0;
   const pitTimes = [];
@@ -772,19 +772,19 @@ function parseReportData(table, index) {
     const isNonLap = isNaN(lapCell);
 
     const rank = row.cells[4]?.textContent ?? '';
-    manager[index].driver_result.lap.push(row.cells[0].textContent);
-    manager[index].driver_result.time.push(row.cells[1].textContent);
-    manager[index].driver_result.gap_to_lead.push(row.cells[2].textContent);
-    manager[index].driver_result.average.push(row.cells[3].textContent);
-    manager[index].driver_result.rank.push(rank);
+    state.manager[index].driver_result.lap.push(row.cells[0].textContent);
+    state.manager[index].driver_result.time.push(row.cells[1].textContent);
+    state.manager[index].driver_result.gap_to_lead.push(row.cells[2].textContent);
+    state.manager[index].driver_result.average.push(row.cells[3].textContent);
+    state.manager[index].driver_result.rank.push(rank);
 
     if (isNonLap) {
       const pitTime = parseFloat(row.childNodes[1].textContent.split('/')[0]);
-      manager[index].pitStopTimes.push(pitTime);
+      state.manager[index].pitStopTimes.push(pitTime);
 
       const pitLap = parseInt(table.rows[i - 1].childNodes[0].textContent);
       const tyreName = row.childNodes[1].childNodes[2].textContent;
-      manager[index].pit_stop += `,${pitLap - lastPitLap},${tyreName}`;
+      state.manager[index].pit_stop += `,${pitLap - lastPitLap},${tyreName}`;
       lastPitLap = pitLap;
 
       if (i + 2 < totalRows) {
@@ -796,30 +796,30 @@ function parseReportData(table, index) {
         if (a && b && c && d) {
           const loss = (a + b - c - d) / 1000;
           pitTimes.push(loss);
-          manager[index].pitTimeLoss.push(loss);
+          state.manager[index].pitTimeLoss.push(loss);
         } else {
-          manager[index].pitTimeLoss.push('');
+          state.manager[index].pitTimeLoss.push('');
         }
       }
     } else {
-      manager[index].rank.push(row.childNodes[4].innerHTML);
-      manager[index].lap_time.push(row.childNodes[1].innerHTML);
-      manager[index].race_time.push(
+      state.manager[index].rank.push(row.childNodes[4].innerHTML);
+      state.manager[index].lap_time.push(row.childNodes[1].innerHTML);
+      state.manager[index].race_time.push(
         row.childNodes[2].innerHTML === '-' ? '0' : row.childNodes[2].innerHTML
       );
     }
   }
 
   const lastLap = parseInt(table.rows[table.tBodies[0].rows.length].childNodes[0].innerHTML);
-  manager[index].pit_stop += `,${lastLap - lastPitLap}`;
+  state.manager[index].pit_stop += `,${lastLap - lastPitLap}`;
 
   const avgPitLoss = pitTimes.length
     ? pitTimes.reduce((a, b) => a + b, 0) / pitTimes.length
     : 0;
-  manager[index].pitTimeLoss.push(avgPitLoss);
+  state.manager[index].pitTimeLoss.push(avgPitLoss);
 
   updateProgressBar();
-  chrome.storage.local.set({ active: manager });
+  chrome.storage.local.set({ active: state.manager });
 }
 
 // ─── Strategy Preview Rendering ───────────────────────────────────────────────
@@ -876,4 +876,3 @@ function createTyreCell(tyreLabel) {
   td.className = getTyreCode(tyreLabel);
   return td;
 }
-

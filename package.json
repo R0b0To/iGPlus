@@ -4,13 +4,14 @@
   "description": "Extension for igpmanager game. Chrome and Firefox compatibility",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "run:ff": "web-ext run --source-dir ./Extension",
     "lint:ff": "web-ext lint --source-dir ./Extension",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "swapManifest": "./swapManifest.sh",
-    "androidFirefox":"web-ext run -t firefox-android --android-device=ZY22GSD5HZ --firefox-apk org.mozilla.firefox_beta --source-dir ./Extension",
-    "chromeFirefoxSwapManifest-win":"cd ./Extension && IF EXIST manifest-ff.json (REN manifest.json manifest-c.json & REN manifest-ff.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-ff.json & REN manifest-c.json manifest.json)",
-    "chromeEdgeSwapManifest-win":"cd ./Extension && IF EXIST manifest-e.json (REN manifest.json manifest-c.json & REN manifest-e.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-e.json & REN manifest-c.json manifest.json)"
+    "androidFirefox": "web-ext run -t firefox-android --android-device=ZY22GSD5HZ --firefox-apk org.mozilla.firefox_beta --source-dir ./Extension",
+    "chromeFirefoxSwapManifest-win": "cd ./Extension && IF EXIST manifest-ff.json (REN manifest.json manifest-c.json & REN manifest-ff.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-ff.json & REN manifest-c.json manifest.json)",
+    "chromeEdgeSwapManifest-win": "cd ./Extension && IF EXIST manifest-e.json (REN manifest.json manifest-c.json & REN manifest-e.json manifest.json) ELSE IF EXIST manifest-c.json (REN manifest.json manifest-e.json & REN manifest-c.json manifest.json)"
   },
   "repository": {
     "type": "git",
@@ -32,6 +33,7 @@
   "homepage": "https://github.com/R0b0To/iGPlus#readme",
   "devDependencies": {
     "eslint": "^8.34.0",
+    "vitest": "^4.1.9",
     "web-ext": "^7.5.0"
   }
 }

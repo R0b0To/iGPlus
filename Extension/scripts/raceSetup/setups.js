@@ -3,35 +3,36 @@
  */
 (async () => {
   try {
+
 /**
  * SHARED HELPERS
  */
 
+const { DRIVER_FIELD, WING_MODIFIER_FIELDS } =
+    await import(chrome.runtime.getURL('common/driverFields.js'));
 // Centralized parsing of the circuit code from the UI
-function getCircuitCode() {
-  const flag = document.querySelector('.flag');
+async function getCircuitCode() {
+  const { safeQuery } = await import(chrome.runtime.getURL('common/safeQuery.js'));
+  const flag = safeQuery('.flag', 'setup: circuit flag');
   return flag ? flag.className.split("-")[1].split(" ")[0] : null;
 }
 
 // Logic to calculate adjustment based on scale and height
-function calculateHeightAdjustment(driverHeight, scale, tier) {
+function calculateHeightAdjustment(driverHeight, scale) {
   const heightKey = Object.keys(scale)
     .sort((a, b) => b - a)
     .find((k) => +k <= driverHeight);
-  return heightKey ? scale[heightKey]: 0;
+  return heightKey ? scale[heightKey] : 0;
 }
-
 
 function calculateWingModifier(driverRaw) {
   if (!driverRaw) return 0;
   const parts = driverRaw.split(',');
   if (parts.length < 12) return 0;
 
-  // Attributes: composure(6), stamina(11), fast_corners(2), slow_corners(3), focus(8), defending(4), morale(9), attacking(5), knowledge(10)
-  const targetIndices = [6, 11, 2, 3, 8, 4, 9, 5, 10];
-  const skills = targetIndices
+  const skills = WING_MODIFIER_FIELDS
     .map(idx => parseFloat(parts[idx]))
-    .filter(val => !isNaN(val) && val !== null)
+    .filter(val => !isNaN(val))
     .map(val => (val / 40) * 100);
 
   if (skills.length === 0) return 0;
@@ -40,11 +41,9 @@ function calculateWingModifier(driverRaw) {
   return Math.floor((75 - L) / 5);
 }
 
-// Full suggested wing algorithm
 function calculateSuggestedAero(driverRaw, circuits, circuitCode) {
   const modifier = calculateWingModifier(driverRaw);
   const wingBase = circuits[circuitCode]?.wing ?? 1;
-
   return Math.max(1, wingBase + modifier);
 }
 
@@ -57,15 +56,17 @@ async function addSetupSuggestionsForDrivers() {
   const [
     { getActiveCircuits, getActiveScale },
     { fetchManagerData },
-    { cleanHtml }
+    { cleanHtml },
+    { safeQuery, safeQueryAll }
   ] = await Promise.all([
     import(chrome.runtime.getURL('scripts/raceSetup/settings.js')),
     import(chrome.runtime.getURL('common/fetcher.js')),
-    import(chrome.runtime.getURL('scripts/strategy/utility.js'))
+    import(chrome.runtime.getURL('scripts/strategy/utility.js')),
+    import(chrome.runtime.getURL('common/safeQuery.js'))
   ]);
 
   // 2. Create placeholders immediately for all existing setup forms
-  const setupForms = document.querySelectorAll('[id*="setup"] .igpForm');
+  const setupForms = safeQueryAll('[id*="setup"] .igpForm', 'setup: setup forms');
   setupForms.forEach((setupForm) => {
     if (!setupForm.classList.contains('withSuggestion')) {
       createSetupPlaceholder(setupForm);
@@ -80,11 +81,12 @@ async function addSetupSuggestionsForDrivers() {
     getCircuitCode()
   ]);
 
+  if (!circuitCode) return;
+
   const leagueTier = allInfo.team._tier;
   const driversData = cleanHtml(allInfo.vars.drivers ?? allInfo.preCache["p=staff"].vars.drivers)
     .querySelectorAll('.hoverData');
 
-  // Get the base setup for this track
   const baseTrackSetup = circuits[circuitCode];
   if (!baseTrackSetup) return;
 
@@ -94,8 +96,8 @@ async function addSetupSuggestionsForDrivers() {
     const driverRaw = node.dataset.driver;
     if (!driverRaw) return;
 
-    const driverHeight = driverRaw.split(',')[13];
-    const heightAdjustment = calculateHeightAdjustment(driverHeight, scale, leagueTier);
+    const driverHeight = driverRaw.split(',')[DRIVER_FIELD.height];
+    const heightAdjustment = calculateHeightAdjustment(driverHeight, scale);
     const finalWing = calculateSuggestedAero(driverRaw, circuits, circuitCode);
 
     updateSetupUI({
@@ -115,14 +117,12 @@ async function addSetupSuggestionsForDrivers() {
 function createSetupPlaceholder(setupForm) {
   if (setupForm.classList.contains('withSuggestion')) return;
 
-  // Add loading gear icon
   const editBtn = document.createElement('div');
   editBtn.className = 'setup-edit-icon setup-edit-icon--loading';
   editBtn.innerHTML = '⚙️';
-  if(!setupForm.querySelector('.setup-edit-icon'))
-  setupForm.prepend(editBtn);
+  if (!setupForm.querySelector('.setup-edit-icon'))
+    setupForm.prepend(editBtn);
 
-  // Add skeleton suggestions
   const driverId = setupForm.id.match(/d(\d+)setup/)?.[1];
   if (!driverId) return;
 
@@ -136,54 +136,6 @@ function createSetupPlaceholder(setupForm) {
     }
   });
 
-  setupForm.classList.add('withSuggestion');
-}
-
-function injectSetupUI({ baseTrackSetup, heightAdjustment, finalWing, driverIndex, circuitCode, leagueTier, circuits, driverHeight, driverRaw }) {
-  const setupForm = document.querySelector(`#d${driverIndex}setup`);
-  if (!setupForm || setupForm.classList.contains('withSuggestion')) return;
-
-  const createSuggestion = (parentId, value, isSuspension = false) => {
-    const container = setupForm.querySelector(`#d${driverIndex}${parentId}`).firstChild;
-    if (isSuspension) container.id = 'suggestedSetup';
-
-    const span = document.createElement('span');
-    span.className = 'suggestedSetup';
-    span.textContent = value;
-    span.style.cursor = 'pointer';
-
-    span.onclick = () => {
-      const input = container.querySelector('.setupSlider-input');
-      if (input) {
-        input.value = value;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-        input.dispatchEvent(new Event('change', { bubbles: true }));
-      }
-    };
-    container.append(span);
-  };
-
-  const finalRide = Math.max(1, baseTrackSetup.ride + heightAdjustment);
-
-  createSuggestion('Suspension', baseTrackSetup.suspension, true);
-  createSuggestion('Ride', finalRide);
-  createSuggestion('Aerodynamics', finalWing);
-
-  const editBtn = document.createElement('div');
-  editBtn.className = 'setup-edit-icon';
-  editBtn.innerHTML = '⚙️';
-  editBtn.onclick = () => openPersonalizeModal({
-    baseTrackSetup,
-    heightAdjustment,
-    finalWing,
-    driverHeight,
-    driverRaw,
-    circuitCode,
-    leagueTier,
-    circuits
-  });
-
-  //setupForm.prepend(editBtn);
   setupForm.classList.add('withSuggestion');
 }
 
@@ -236,13 +188,12 @@ function updateSetupUI({ baseTrackSetup, heightAdjustment, finalWing, driverInde
       driverRaw,
       circuitCode,
       leagueTier,
-      circuits
+      circuits,
     });
   }
 }
 
 function openPersonalizeModal({ baseTrackSetup, heightAdjustment, finalWing, driverHeight, driverRaw, circuitCode, leagueTier, circuits }) {
-  // Calculate current display values (adjusted)
   const currentRide = baseTrackSetup.ride + heightAdjustment;
   const currentSuspension = baseTrackSetup.suspension;
   const currentWing = finalWing;
@@ -267,8 +218,8 @@ function openPersonalizeModal({ baseTrackSetup, heightAdjustment, finalWing, dri
         <input type="number" id="edit-wing" value="${currentWing}">
       </div>
       <div class="modal-actions">
-        <button id="save-setup" class="btn-save">Save Setup</button>
-        <button id="close-modal" class="btn-cancel">Cancel</button>
+        <button id="save-setup" class="btn btn-save">Save Setup</button>
+        <button id="close-modal" class="btn3 btn-cancel">Cancel</button>
       </div>
     </div>`;
 
@@ -279,37 +230,26 @@ function openPersonalizeModal({ baseTrackSetup, heightAdjustment, finalWing, dri
     const flagClone = existingFlag.cloneNode(true);
     flagClone.style.marginRight = "10px";
     flagClone.style.verticalAlign = "middle";
-    
-    const titleElement = modal.querySelector('#modal-title');
-    titleElement.prepend(flagClone);
+    modal.querySelector('#modal-title').prepend(flagClone);
   }
 
   const wingModifier = calculateWingModifier(driverRaw);
 
-  // Update Ride Height base preview on change
   const rideInput = document.getElementById('edit-ride');
   rideInput.oninput = () => {
-    const enteredValue = parseInt(rideInput.value) || 0;
-    const baseValue = enteredValue - heightAdjustment;
     const previewEl = document.getElementById('base-ride');
-    if (previewEl) previewEl.innerText = baseValue;
+    if (previewEl) previewEl.innerText = (parseInt(rideInput.value) || 0) - heightAdjustment;
   };
 
-  // Update Wing base preview on change
   const wingInput = document.getElementById('edit-wing');
   wingInput.oninput = () => {
-    const enteredValue = parseInt(wingInput.value) || 0;
-    const baseValue = enteredValue - wingModifier;
     const previewEl = document.getElementById('base-wing');
-    if (previewEl) previewEl.innerText = baseValue;
+    if (previewEl) previewEl.innerText = (parseInt(wingInput.value) || 0) - wingModifier;
   };
 
   document.getElementById('save-setup').onclick = async () => {
-    const enteredRide = parseInt(rideInput.value) || 0;
-    const baseRide = enteredRide - heightAdjustment;
-
-    const enteredWing = parseInt(wingInput.value) || 0;
-    const baseWing = enteredWing - wingModifier;
+    const baseRide = (parseInt(rideInput.value) || 0) - heightAdjustment;
+    const baseWing = (parseInt(wingInput.value) || 0) - wingModifier;
 
     circuits[circuitCode] = {
       ...baseTrackSetup,
@@ -334,7 +274,7 @@ async function copyPracticeRow(row, toClipboard = true) {
   const tyre = row.childNodes[0].className.split('-')[1];
   const fuelLap = row.childNodes[4].textContent;
   const wear = row.childNodes[5].textContent;
-  
+
   const { separator = ',' } = await chrome.storage.local.get('separator');
   const data = [tyre, fuelLap, wear].join(separator);
 
@@ -348,7 +288,6 @@ async function copyAllPracticeData() {
   const table = this.closest('table');
   const rows = Array.from(table.querySelectorAll('tbody tr'));
   const dataList = await Promise.all(rows.map(row => copyPracticeRow(row, false)));
-
   navigator.clipboard.writeText(dataList.join('\n')).then(() => {
     showTableHint(table, 'All rows data copied!');
   });
@@ -362,19 +301,16 @@ function showTableHint(table, text) {
   setTimeout(() => hint.remove(), 1500);
 }
 
-// NOTE: Since the practice table is currently a button, this is retained for compatibility but may require separate UI listener rewrites depending on layout changes.
 function makePracticeTableCopiable() {
   document.querySelectorAll('.acp[id*="Laps"]').forEach((table) => {
     table.tHead.addEventListener('click', copyAllPracticeData);
     table.tBodies[0].addEventListener('click', (e) => copyPracticeRow(e.target.closest('tr')));
-    
-    // UI Feedback
     table.tHead.style.cursor = 'pointer';
     table.tHead.addEventListener('mouseenter', () => table.classList.add('highlighted'));
     table.tHead.addEventListener('mouseleave', () => table.classList.remove('highlighted'));
   });
 }
-    
+
     if (!document.getElementById('suggestedSetup')) {
       await addSetupSuggestionsForDrivers();
       makePracticeTableCopiable();

@@ -129,17 +129,39 @@ function fetchProgressInfo() {
   return getData('action=fetch&d=progress')
 }
 
+const managerUrl = 'action=fireUp&addon=igp&ajax=1&jsReply=fireUp&uwv=false';
 
 /**
- * @returns {Promise<{Object}|null>}
+ * Fetches the manager's data via a GET request.
+ * @returns {Promise<Object|null>}
  */
-function fetchManagerData(option) {
-  const managerUrl = 'action=fireUp&addon=igp&ajax=1&jsReply=fireUp&uwv=false';
-  if(option == 1)
+function fetchManagerDataGet() {
   return getData(managerUrl);
-  else
+}
+
+/**
+ * Fetches the manager's data via a POST request.
+ * @returns {Promise<Object|null>}
+ */
+function fetchManagerDataPost() {
   return getPostData(managerUrl);
 }
+
+/**
+ * @deprecated Use fetchManagerDataGet() or fetchManagerDataPost() instead.
+ * Kept temporarily for backward compatibility with any external callers;
+ * the previous `option` parameter (1 = GET, anything else = POST) was an
+ * undocumented boolean-as-integer API. New code should call the named
+ * functions above directly.
+ *
+ * @param {1|2|undefined} option - 1 selects GET; any other value (including
+ *   omitted) selects POST. Preserved exactly as before for compatibility.
+ * @returns {Promise<Object|null>}
+ */
+function fetchManagerData(option) {
+  return option === 1 ? fetchManagerDataGet() : fetchManagerDataPost();
+}
+
 function fetchCarData(){
   return getData('action=fetch&p=cars');
 }
@@ -158,6 +180,8 @@ export {
   fetchBuildingInfo,
   fetchLeagueData,
   fetchManagerData,
+  fetchManagerDataGet,
+  fetchManagerDataPost,
   fetchNextRace,
   fetchIGPRaceWeather,
   fetchStaffInfo,

@@ -92,4 +92,4 @@ function calculateWear(laps, wear, push, diff) {
 // EXPORTS
 // ============================================================
 
-export { fuel_calc, get_wear };
+export { fuel_calc, get_wear, convertToCelsius, getPushDecay, calculateWear };
