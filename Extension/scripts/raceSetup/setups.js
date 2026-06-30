@@ -55,7 +55,7 @@ async function addSetupSuggestionsForDrivers() {
   // 1. Centralized Imports
   const [
     { getActiveCircuits, getActiveScale },
-    { fetchManagerData },
+    { fetchManagerDataGet },
     { cleanHtml },
     { safeQuery, safeQueryAll }
   ] = await Promise.all([
@@ -75,7 +75,7 @@ async function addSetupSuggestionsForDrivers() {
 
   // 3. Fetch data in parallel
   const [allInfo, circuits, scale, circuitCode] = await Promise.all([
-    fetchManagerData(1),
+    fetchManagerDataGet(),
     getActiveCircuits(),
     getActiveScale(),
     getCircuitCode()

@@ -86,7 +86,7 @@
 
       weatherContainer.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:300px;"><div style="text-align:center;"><div style="display:inline-block;width:40px;height:40px;border:4px solid rgba(255,255,255,.3);border-top:4px solid #fff;border-radius:50%;animation:weather-spin 1s linear infinite;margin-bottom:10px;"></div><p style="margin:10px 0 0 0;opacity:.7;">Loading weather data...</p></div></div>';
 
-      const { fetchNextRace, fetchManagerData, fetchIGPRaceWeather, fetchIGPRaceWeatherNow } = await import(
+      const { fetchNextRace, fetchManagerDataPost, fetchIGPRaceWeather, fetchIGPRaceWeatherNow } = await import(
         chrome.runtime.getURL('common/fetcher.js')
       );
       const { raceTrackCoords } = await import(chrome.runtime.getURL('scripts/race/const.js'));
@@ -97,7 +97,7 @@
         return;
       }
 
-      const { manager } = await fetchManagerData();
+      const { manager } = await fetchManagerDataPost();
       const { nextLeagueRaceTime } = await fetchNextRace();
       const trackID = new URLSearchParams(weatherBadge.href).get('id');
       const params = {

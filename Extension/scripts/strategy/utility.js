@@ -207,8 +207,8 @@ function cleanHtml(string) {
  * @returns {Promise<1|2|3>} 1 = Rookie, 3 = Elite
  */
 async function findCurrentTier() {
-  const { fetchManagerData } = await import(chrome.runtime.getURL('common/fetcher.js'));
-  const { team } = await fetchManagerData(2);
+  const { fetchManagerDataPost } = await import(chrome.runtime.getURL('common/fetcher.js'));
+  const { team } = await fetchManagerDataPost();
   return team._tier || 3;
 }
 
