@@ -1072,7 +1072,7 @@ async function injectCircuitMap() {
               }).join('')}
             </div>
           </div>
-          <div class="modal-actions"><span class="btn3 modal-cancel">✕</span><span class="btn modal-confirm">✔</span></div>
+          <div class="modal-actions"><span class="btn modal-confirm">✔</span><span class="btn3 modal-cancel">✕</span></div>
         </div>
       </div>
     `);
