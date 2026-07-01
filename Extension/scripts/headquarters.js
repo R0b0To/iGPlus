@@ -1,12 +1,9 @@
 (async () => {
-  // Shared DOM element builder — see common/dom.js (previously a local
-  // copy of this exact function lived here; consolidated as part of the
-  // tech-debt cleanup so a single implementation is shared by
-  // headquarters.js, settingsHTML.js, and addSettings.js).
+  // Shared DOM element builder — see common/dom.js
   const { el } = await import(chrome.runtime.getURL('common/dom.js'));
+  // Shared game action client — owns CSRF headers and token refresh
+  const { gameApiFetch, gameAction } = await import(chrome.runtime.getURL('common/gameActions.js'));
 
-  let cachedCsrfName = null;
-  let cachedCsrfToken = null;
   const facility_map = {
     manufacturing: 1,
     offices: 2,
@@ -48,42 +45,34 @@
   if(!document.getElementById('hq-tab-switcher')){
     // 3. Insert Tabs above the 3D map
     parent.insertBefore(tabSwitcher, hqContainer);
-  } else return
+  } else return;
 
   // 4. Build and insert the Condensed Panel as a sibling
   const facilityNames = Object.keys(facility_map);
   const panel = await buildFacilityPanel(facilityNames);
   hqContainer.insertAdjacentElement('afterend', panel);
 
- // 5. Tab Click Logic
+  // 5. Tab Click Logic
   const btns = tabSwitcher.querySelectorAll('.hq-tab-btn');
   btns.forEach(btn => {
     btn.addEventListener('click', () => {
       const targetId = btn.getAttribute('data-target');
       
-      // Update active button styling
       btns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      // Grab the repair-all-bar dynamically in case the game re-renders it
       const repairAllBar = document.getElementById('repair-all-bar');
 
-      // Toggle visibility
       if (targetId === 'hq-container') {
-        hqContainer.style.display = ''; // Restores native layout
+        hqContainer.style.display = '';
         panel.style.display = 'none';
-        
-        // Show the native repair bar
-        if (repairAllBar) repairAllBar.style.display = ''; 
+        if (repairAllBar) repairAllBar.style.display = '';
       } else {
         hqContainer.style.display = 'none';
-        panel.style.display = 'flex'; // Use flex for our custom layout
-        
-        // Hide the native repair bar so it doesn't get in the way
-        if (repairAllBar) repairAllBar.style.display = 'none'; 
+        panel.style.display = 'flex';
+        if (repairAllBar) repairAllBar.style.display = 'none';
       }
 
-      // Save preference so it survives page reloads
       prefs.activeTab = targetId;
       chrome.storage.local.set({ igp_hq_prefs: prefs });
     });
@@ -227,7 +216,6 @@
     const condClass = condition >= 80 ? "green" : condition >= 40 ? "amber" : "red";
     const optionsEl = (isConstructing || level === "0") ? null : parseOptions(data);
     
-    // Build controls safely
     const cbFix = el('input', {
       type: 'checkbox',
       id: `cb-fix-${rawName}`,
@@ -261,20 +249,20 @@
         return [baseTxt];
       })()
     );
-facLevelBtn.addEventListener("click", () => {
-  const confirmed = confirm("Are you sure you want to upgrade?");
 
-  if (confirmed && canUpgrade && fType) {
-    doUpgrade(fType, name, card);
-  }
-});
+    facLevelBtn.addEventListener("click", () => {
+      const confirmed = confirm("Are you sure you want to upgrade?");
+      if (confirmed && canUpgrade && fType) {
+        doUpgrade(fType, name, card);
+      }
+    });
 
     const btnMaintain = el('button', { className: 'btn-maintain', disabled: !canMaintain },
       "Fix",
       repairCost ? el('span', { className: 'maintain-cost', textContent: ` ${repairCost}` }) : null
     );
     btnMaintain.addEventListener("click", () => {
-     if (canMaintain && fId) doMaintain(fId, name, card);
+      if (canMaintain && fId) doMaintain(fId, name, card);
     });
 
     const collectBtn = (collectUrl && collectContentDesc) ? el('button', { className: 'btn-collect' },
@@ -327,42 +315,16 @@ facLevelBtn.addEventListener("click", () => {
     return match ? match[1] : null;
   }
 
-  function getCsrfTokens() {
-    return {
-      name:  cachedCsrfName ?? window.csrfName  ?? document.getElementById('cmsCsrfName')?.value,
-      token: cachedCsrfToken ?? window.csrfToken ?? document.getElementById('cmsCsrfToken')?.value,
-    };
-  }
+  // ─── Action Functions (use shared gameApiFetch / gameAction) ─────────────────
 
   async function doUpgrade(fType, name, cardEl) {
     const levelBtn = cardEl.querySelector(".fac-level");
     if (levelBtn) levelBtn.disabled = true;
 
-    const { name: csrfName, token: csrfToken } = getCsrfTokens();
-
     try {
-      const res = await fetch(
-        `https://igpmanager.com/index.php?action=send&type=build&fType=${fType}`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "accept": "application/json, text/javascript, */*; q=0.01",
-            "x-requested-with": "XMLHttpRequest",
-            ...(csrfName  && { "x-csrf-name":  csrfName  }),
-            ...(csrfToken && { "x-csrf-token": csrfToken }),
-          },
-        }
-      );
-      
-      const data = await res.json();
-      
-      if (data.hqFacilityPatch) {
-        if (data.csrf && data.csrf.name && data.csrf.token) {
-          cachedCsrfName = data.csrf.name;
-          cachedCsrfToken = data.csrf.token;
-        }
+      const data = await gameAction(`action=send&type=build&fType=${fType}`);
 
+      if (data?.hqFacilityPatch) {
         if (levelBtn) {
           levelBtn.classList.remove("can-upgrade");
           const endEcma = data.hqFacilityPatch.endEcma;
@@ -371,12 +333,10 @@ facLevelBtn.addEventListener("click", () => {
 
         const panel = document.getElementById("condensed-hq-igplus");
         if (panel) {
-          const otherUpgradeBtns = panel.querySelectorAll(".fac-level.can-upgrade");
-          otherUpgradeBtns.forEach(btn => {
+          panel.querySelectorAll(".fac-level.can-upgrade").forEach(btn => {
             btn.classList.remove("can-upgrade");
             btn.disabled = true;
-            const costSpan = btn.querySelector(".upgrade-cost");
-            if (costSpan) costSpan.remove();
+            btn.querySelector(".upgrade-cost")?.remove();
           });
         }
       } else {
@@ -391,33 +351,11 @@ facLevelBtn.addEventListener("click", () => {
     const btn = cardEl.querySelector(".btn-collect");
     if (btn) btn.disabled = true;
 
-    const { name: csrfName, token: csrfToken } = getCsrfTokens();
-
     try {
-      const res = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "accept": "application/json, text/javascript, */*; q=0.01",
-          "x-requested-with": "XMLHttpRequest",
-          ...(csrfName  && { "x-csrf-name":  csrfName  }),
-          ...(csrfToken && { "x-csrf-token": csrfToken }),
-        },
-      });
-      
-      const text = await res.text();
-      let data = {};
-      try { data = JSON.parse(text); } catch(e) { data = { success: true, raw: text }; }
-
-      if (data.csrf && data.csrf.name && data.csrf.token) {
-        cachedCsrfName = data.csrf.name;
-        cachedCsrfToken = data.csrf.token;
-      }
+      await gameApiFetch(url);
 
       const nativeBtn = document.querySelector(`.collectLink[data-href*="${url}"]`);
-      if (nativeBtn && nativeBtn.parentElement) {
-        nativeBtn.parentElement.style.display = "none";
-      }
+      if (nativeBtn?.parentElement) nativeBtn.parentElement.style.display = "none";
 
       if (btn) {
         btn.textContent = "Collected!";
@@ -447,48 +385,26 @@ facLevelBtn.addEventListener("click", () => {
     const maintainBtn = cardEl.querySelector(".btn-maintain");
     if (maintainBtn) maintainBtn.disabled = true;
 
-    const { name: csrfName, token: csrfToken } = getCsrfTokens();
-
     try {
-      const res = await fetch(
-        `https://igpmanager.com/index.php?action=send&type=hqRepair&fId=${fId}`,
-        {
-          method: "GET",
-          credentials: "include",
-          headers: {
-            "accept": "application/json, text/javascript, */*; q=0.01",
-            "x-requested-with": "XMLHttpRequest",
-            ...(csrfName  && { "x-csrf-name":  csrfName  }),
-            ...(csrfToken && { "x-csrf-token": csrfToken }),
-          },
-        }
-      );
-      const data = await res.json();
-      
-      if (data.success) {
-        if (data.csrf && data.csrf.name && data.csrf.token) {
-          cachedCsrfName = data.csrf.name;
-          cachedCsrfToken = data.csrf.token;
-        }
+      const data = await gameAction(`action=send&type=hqRepair&fId=${fId}`);
 
+      if (data?.success) {
         const condFill = cardEl.querySelector(".cond-fill");
-        const condPct = cardEl.querySelector(".cond-pct");
+        const condPct  = cardEl.querySelector(".cond-pct");
 
         if (condFill) {
           condFill.style.width = "100%";
           condFill.classList.remove("amber", "red");
           condFill.classList.add("green");
         }
-
         if (condPct) {
           condPct.textContent = "100%";
           condPct.classList.remove("amber", "red");
           condPct.classList.add("green");
         }
-      
         if (maintainBtn) {
-          maintainBtn.textContent = "Fix"; 
-          maintainBtn.disabled = true; 
+          maintainBtn.textContent = "Fix";
+          maintainBtn.disabled = true;
         }
 
         updateBulkRepair();
@@ -499,6 +415,8 @@ facLevelBtn.addEventListener("click", () => {
       if (maintainBtn) maintainBtn.disabled = false;
     }
   }
+
+  // ─── Options Parsers ──────────────────────────────────────────────────────────
 
   function parseOptions(data) {
     const type = parseInt(data.type);
@@ -603,7 +521,6 @@ facLevelBtn.addEventListener("click", () => {
       flexShrink: 0
     });
 
-    // Safely parse SVG string
     const parser = new DOMParser();
     const doc = parser.parseFromString(iconsSVG[skill], 'image/svg+xml');
     const innerSvg = doc.documentElement;
@@ -748,7 +665,6 @@ facLevelBtn.addEventListener("click", () => {
     return h > 0 ? `${h}h ${m}m` : `${m}m`;
   }
   
-  // Parses "1.9m" to 1900000, "100k" to 100000
   function parseCostVal(costStr) {
     if (!costStr) return 0;
     const str = costStr.toLowerCase().replace(/[^0-9.km]/g, '');
@@ -758,7 +674,6 @@ facLevelBtn.addEventListener("click", () => {
     return isNaN(val) ? 0 : val;
   }
 
-  // Formats 1900000 to "1.9m"
   function formatCostVal(val) {
     if (val === 0) return '';
     if (val >= 1000000) return (val / 1000000).toFixed(1).replace('.0', '') + 'm';
@@ -805,6 +720,7 @@ facLevelBtn.addEventListener("click", () => {
       });
     });
     if (!prefs.autoFix) prefs.autoFix = {};
+
     let hqMap = {};
     try {
       const hqJsonEl = document.getElementById('hq-json');
@@ -826,7 +742,6 @@ facLevelBtn.addEventListener("click", () => {
       )
     );
 
-    // Attach Bulk Repair execution logic
     header.querySelector('.btn-fix-selected').addEventListener('click', async () => {
       const btn = header.querySelector('.btn-fix-selected');
       btn.disabled = true;
@@ -837,7 +752,6 @@ facLevelBtn.addEventListener("click", () => {
         const cb = card.querySelector('.cb-fix-select');
         const maintainBtn = card.querySelector('.btn-maintain');
         
-        // Execute ONLY if user opted-in AND the facility is degraded
         if (cb && cb.checked && maintainBtn && !maintainBtn.disabled) {
           const fId = cb.dataset.fid;
           const name = card.dataset.facName;
@@ -886,7 +800,6 @@ facLevelBtn.addEventListener("click", () => {
       if (!draggedItem) return;
       e.preventDefault();
 
-      // Release the pointer capture
       if (draggedLabel && e.pointerId) {
         try { draggedLabel.releasePointerCapture(e.pointerId); } catch(err) {}
       }
@@ -940,7 +853,7 @@ facLevelBtn.addEventListener("click", () => {
       const hqObj = hqMap[String(facilityId)];
       const isHidden = prefs.hidden[name];
 
-      const label = el('label', { className: 'hq-setting-label', dataset: { facName: name },style: { touchAction: 'none', userSelect: 'none' } },
+      const label = el('label', { className: 'hq-setting-label', dataset: { facName: name }, style: { touchAction: 'none', userSelect: 'none' } },
         el('span', { className: 'drag-handle', textContent: '☰' }),
         el('span', { className: 'label-text', style: { textTransform: 'capitalize' }, textContent: name })
       );
@@ -981,21 +894,24 @@ facLevelBtn.addEventListener("click", () => {
         const card = cardsContainer.querySelector(`.fac-card[data-fac-name="${name}"]`);
         if (card) card.style.display = e.target.checked ? "block" : "none";
       });
+
       settingsMenu.appendChild(itemContainer);
 
-      if (hqObj && hqObj.state === 0) continue; 
+      if (hqObj && hqObj.state === 0) continue;
 
       const data = await fetchBuildingInfo(facilityId);
       if (data && data.vars) {
         data.vars.collectBubbleHtml = hqObj ? hqObj.collectBubble : "";
         const isAutoFix = !!prefs.autoFix[name];
-        const card = makeFacilityCard(data.vars, name, isAutoFix); 
+        const card = makeFacilityCard(data.vars, name, isAutoFix);
         
         if (isHidden) card.style.display = 'none';
         cardsContainer.appendChild(card);
       }
     }
+
     setTimeout(updateBulkRepair, 100);
     return panel;
   }
+
 })();
