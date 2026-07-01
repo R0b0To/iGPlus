@@ -33,6 +33,7 @@
   "homepage": "https://github.com/R0b0To/iGPlus#readme",
   "devDependencies": {
     "eslint": "^8.34.0",
+    "jsdom": "^29.1.1",
     "vitest": "^4.1.9",
     "web-ext": "^7.5.0"
   }
