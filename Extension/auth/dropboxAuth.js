@@ -1,8 +1,7 @@
 const ext = globalThis.browser || globalThis.chrome;
 
 const hasIdentityAPI = typeof ext?.identity !== 'undefined';
-console.log(hasIdentityAPI);
-const DROPBOX_CLIENT_ID = '3r2ckkoixravmqt'; // Your app key — this is fine, it's public
+const DROPBOX_CLIENT_ID = '3r2ckkoixravmqt';
 
 // --- PKCE Helpers ---
 

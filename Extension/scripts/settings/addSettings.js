@@ -482,7 +482,7 @@ async function initializeSettingsLogic() {
     }
   }
 
-  // --- DEDICATED SETUP DOWNLOAD / DELETE LOGIC ---
+// --- DEDICATED SETUP DOWNLOAD / DELETE LOGIC ---
   async function downloadSetup(track) {
     const setupsData = await storage.get('customCircuits');
     if (!setupsData) return;
@@ -491,11 +491,13 @@ async function initializeSettingsLogic() {
     let filename;
 
     if (track === '0') {
-      dataToDownload = setupsData; 
+      dataToDownload = setupsData;
       filename = 'setups_all';
-    } else if (null) {
+    } else if (setupsData[track]) {
       dataToDownload = { [track]: setupsData[track] };
       filename = `setup_${track}`;
+    } else {
+      return;
     }
 
     const blob = new Blob([JSON.stringify({ customCircuits: dataToDownload })], { type: 'application/json' });

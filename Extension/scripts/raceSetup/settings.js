@@ -17,7 +17,7 @@ export async function getActiveCircuits() {
 
 //not used anywhere
 export async function saveCircuitSetup(circuitCode, setup) {
-  const current = await getActiveCircuits();
+  let current = await getActiveCircuits();
   if (!current) current = {};
   current[circuitCode] = setup;
   await chrome.storage.local.set({ customCircuits: current });
