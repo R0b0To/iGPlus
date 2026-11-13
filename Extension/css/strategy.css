@@ -467,7 +467,6 @@ td.dropzone{
   cursor: pointer;
   opacity: 0.85;
   transition: opacity 0.15s ease, transform 0.15s ease;
-filter: invert(0.7);
 height: 28px;
 width:30px;
 background-size: 28px;
