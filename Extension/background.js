@@ -275,19 +275,24 @@ api.runtime.onMessage.addListener((request, sender, sendResponse) => {
   return true;
 });
 
-// Unified installation and update listener
-api.runtime.onInstalled.addListener(details => {
-  const CURRENT_VERSION = api.runtime.getManifest().version;
 
+const MIGRATION_FLAG = 'customCircuitsReset_v1_done';
+
+api.runtime.onInstalled.addListener(details => {
   if (details.reason === 'install') {
     api.storage.local.set({ script: scriptDefaults });
   } else if (details.reason === 'update') {
-    api.storage.local.remove('customCircuits', () => {
-      if (api.runtime.lastError) {
-        console.error('Failed to remove customCircuits:', api.runtime.lastError);
-      } else {
-        console.log('Successfully removed "customCircuits" storage on update.');
-      }
+    api.storage.local.get({ [MIGRATION_FLAG]: false }, (data) => {
+      if (data[MIGRATION_FLAG]) return; // already migrated once — do nothing
+
+      api.storage.local.remove('customCircuits', () => {
+        if (api.runtime.lastError) {
+          console.error('Failed to remove customCircuits:', api.runtime.lastError);
+          return; // don't mark as done if it failed; retry on next update
+        }
+        console.log('iGPlus | One-time migration: cleared legacy customCircuits.');
+        api.storage.local.set({ [MIGRATION_FLAG]: true });
+      });
     });
   }
 });

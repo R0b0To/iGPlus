@@ -205,6 +205,11 @@ async function deleteElement(type, data, accessToken) {
       delete fileData[key];
       changed = true;
     }
+  } else if (fileName === 'setups.json') {
+    if (fileData[data.track]) {
+      delete fileData[data.track];
+      changed = true;
+    }
   }
 
   if (changed) {

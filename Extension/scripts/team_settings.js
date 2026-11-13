@@ -7,7 +7,9 @@ function update(){
 }
 
 function addCustom(){
-  
+
+    if (document.getElementsByClassName('custom-color').length > 0) return;
+
     const colorPicker = document.getElementById('teamColour');
     const parent = colorPicker.parentElement;
     parent.classList.add('custom-color-container');
@@ -19,7 +21,6 @@ function addCustom(){
             
             colorPicker.style.display= "none";
 
-    if(document.getElementsByClassName('custom-color').length>0)return;
     parent.append(new_colorPicker);  
     const device = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
