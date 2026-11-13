@@ -5,6 +5,7 @@ export const scale = {
   175:  -2,
   170:  0,
   165:  2,
+  160:  4,
 };
 
 // [soft, neutral, firm] - index in array
