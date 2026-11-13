@@ -36,7 +36,9 @@
       CAR_STRATEGY:[],
       RULES: null,
       DEFAULT_TYRE_COEFFICIENTS: defaultCoeffs,
-      TYRE_COEFFICIENTS: structuredClone(defaultCoeffs)
+      TYRE_COEFFICIENTS: structuredClone(defaultCoeffs),
+      DEFAULT_TYRE_WEAR_MODEL: null,
+      TYRE_WEAR_MODEL: null
     };
   }
 
@@ -62,8 +64,13 @@
       const [carData, nextRaceSave, storageData] = await Promise.all([
         fetchCarData(),
         fetchNextRace(),
-        chrome.storage.local.get({ tyreFuelModel: STATE.TYRE_COEFFICIENTS })
+        chrome.storage.local.get({
+          tyreFuelModel: STATE.TYRE_COEFFICIENTS,
+          tyreWearModel: STATE.DEFAULT_TYRE_WEAR_MODEL
+        })
       ]);
+
+      STATE.TYRE_WEAR_MODEL = normalizeTyreWearModel(storageData.tyreWearModel);
 
       const carAttributes = cleanHtml(carData.vars.carAttributes);
       const flagElem = document.querySelector('.flag');
@@ -292,12 +299,17 @@
       // Settings Modal Actions
       const modal = document.getElementById('strategySettings');
       if (modal && modal.contains(target)) {
-        if (target.classList.contains('modal-close') || target.classList.contains('modal-cancel')) {
+        if (target.closest('.modal-close, .modal-cancel')) {
           modal.remove();
-        } else if (target.classList.contains('modal-confirm')) {
+        } else if (target.closest('.modal-confirm')) {
           saveSettingsData(modal);
+        } else if (target.closest('.wear-reset-defaults')) {
+          resetWearModelInputs(modal);
         } else if (target.closest('.toggle-header')) {
-          modal.querySelector('#tyreFuelSection').classList.toggle('collapsed');
+          const header = target.closest('.toggle-header');
+          const section = header.closest('.fuel-model-section');
+          section.classList.toggle('collapsed');
+          header.setAttribute('aria-expanded', String(!section.classList.contains('collapsed')));
         } else if (target.closest('.feLabel')) {
           const feInput = modal.querySelector('[data-id=fe] input');
           feInput.value = parseInt(STATE.CAR_ECONOMY.originalFe);
@@ -345,7 +357,7 @@
       }
       
       if (target.closest('#strategySettings')) {
-        if (target.matches('.tyre-coef, .tyre-exp')) {
+        if (target.matches('.tyre-coef, .tyre-exp, .wear-model-input')) {
           let v = target.value.replace(/[^\d.-]/g, '');
           const parts = v.split('.');
           if (parts.length > 2) v = parts.shift() + '.' + parts.join('');
@@ -360,6 +372,13 @@
       if (e.target.matches('.tyre-coef, .tyre-exp')) {
         e.target.value = isNaN(parseFloat(e.target.value)) ? '' : parseFloat(e.target.value);
         updateAllFuelPreviews();
+      } else if (e.target.matches('.wear-model-input')) {
+        const value = parseFloat(e.target.value);
+        const allowsNegative = ['tyreEconomyExponent', 'temperatureSensitivity', 'pushSensitivity']
+          .includes(e.target.dataset.wearKey);
+        e.target.value = Number.isFinite(value) && (allowsNegative || value >= 0)
+          ? String(value)
+          : String(getWearModelValue(STATE.DEFAULT_TYRE_WEAR_MODEL, e.target.dataset.wearKey));
       }
     }, true);
   }
@@ -901,8 +920,22 @@ async function injectCircuitMap() {
   }
 
   // 8. STINT EDITOR LOGIC
+  function getPushLevel(push) {
+    const value = Number(push);
+    if (PUSH_KEYS.includes(value)) return value;
+    return ({ 1: 100, 2: 80, 3: 60, 4: 40, 5: 20 })[value] ?? 60;
+  }
+
   function calculateWearPreview({ tyre, push, laps, fuel }) {
-    return getWearFn(tyre, laps, STATE.TRACK_INFO, STATE.CAR_ECONOMY, STATE.TRACK_INFO.raceLength);
+    return getWearFn(
+      tyre,
+      laps,
+      STATE.TRACK_INFO,
+      STATE.CAR_ECONOMY,
+      STATE.TRACK_INFO.raceLength,
+      STATE.TYRE_WEAR_MODEL,
+      getPushLevel(push)
+    );
   }
 
   function updateWearPreview() {
@@ -1000,6 +1033,66 @@ async function injectCircuitMap() {
   }
 
   // 9. SETTINGS MODAL LOGIC
+  function getWearModelValue(model, path) {
+    return path.split('.').reduce((value, key) => value?.[key], model);
+  }
+
+  function setWearModelValue(model, path, value) {
+    const keys = path.split('.');
+    const lastKey = keys.pop();
+    const parent = keys.reduce((target, key) => target[key], model);
+    parent[lastKey] = value;
+  }
+
+  function normalizeTyreWearModel(model) {
+    const defaults = STATE.DEFAULT_TYRE_WEAR_MODEL;
+    const source = model && typeof model === 'object' ? model : {};
+    const numberOrDefault = (value, fallback, allowNegative = false) => {
+      const number = Number(value);
+      return Number.isFinite(number) && (allowNegative || number >= 0) ? number : fallback;
+    };
+    const compoundFactors = {};
+    const raceLengthMultipliers = {};
+
+    TYRES.forEach(tyre => {
+      compoundFactors[tyre] = numberOrDefault(source.compoundFactors?.[tyre], defaults.compoundFactors[tyre]);
+    });
+    Object.keys(defaults.raceLengthMultipliers).forEach(key => {
+      raceLengthMultipliers[key] = numberOrDefault(
+        source.raceLengthMultipliers?.[key],
+        defaults.raceLengthMultipliers[key]
+      );
+    });
+
+    return {
+      compoundFactors,
+      tyreEconomyCoefficient: numberOrDefault(source.tyreEconomyCoefficient, defaults.tyreEconomyCoefficient),
+      tyreEconomyExponent: numberOrDefault(source.tyreEconomyExponent, defaults.tyreEconomyExponent, true),
+      trackWearCoefficient: numberOrDefault(source.trackWearCoefficient, defaults.trackWearCoefficient),
+      trackWearBase: numberOrDefault(source.trackWearBase, defaults.trackWearBase),
+      degradationScale: numberOrDefault(source.degradationScale, defaults.degradationScale),
+      temperatureSensitivity: numberOrDefault(source.temperatureSensitivity, defaults.temperatureSensitivity, true),
+      pushSensitivity: numberOrDefault(source.pushSensitivity, defaults.pushSensitivity, true),
+      raceLengthMultipliers
+    };
+  }
+
+  function createWearModelInput(key, label, value, step = '0.0001') {
+    const compound = key.startsWith('compoundFactors.') ? key.split('.')[1] : '';
+    return `
+      <label class="wear-field"${compound ? ` data-compound="${compound}"` : ''}>
+        <span>${label}</span>
+        <input type="text" inputmode="decimal" aria-label="${label}" class="wear-model-input" data-wear-key="${key}" value="${value}" step="${step}">
+      </label>
+    `;
+  }
+
+  function resetWearModelInputs(modal) {
+    modal.querySelectorAll('.wear-model-input').forEach(input => {
+      input.value = getWearModelValue(STATE.DEFAULT_TYRE_WEAR_MODEL, input.dataset.wearKey);
+    });
+  }
+
   function createStepperHTML(id, value, step, min, max) {
     return `
       <div class="stepper" data-id="${id}">
@@ -1037,42 +1130,129 @@ async function injectCircuitMap() {
     if (document.getElementById('strategySettings')) return;
 
     const pushMap = await getPushValues();
-    const { tyreFuelModel } = await chrome.storage.local.get({ tyreFuelModel: STATE.DEFAULT_TYRE_COEFFICIENTS });
+    const { tyreFuelModel, tyreWearModel } = await chrome.storage.local.get({
+      tyreFuelModel: STATE.DEFAULT_TYRE_COEFFICIENTS,
+      tyreWearModel: STATE.DEFAULT_TYRE_WEAR_MODEL
+    });
+    STATE.TYRE_WEAR_MODEL = normalizeTyreWearModel(tyreWearModel);
     const lapLength = STATE.TRACK_INFO.length;
     const tempFuel = getFuelFn(STATE.CAR_ECONOMY.fe, tyreFuelModel);
 
     document.body.insertAdjacentHTML('beforeend', `
       <div id="strategySettings" class="strategy-modal">
-        <div class="modal-content">
-          <div class="modal-section">
-            ${PUSH_KEYS.map(k => `<div class="stepper-row"><span class="push-symbol" data-push="${k}"></span>${createStepperHTML(`push-${k}`, pushMap[k], 0.001, -0.1, 0.1)}</div>`).join('')}
-          </div>
-          <hr class="modal-separator">
-          <div class="modal-section-fuel">
-             <span class="fuel-symbol feLabel"></span><span>FE</span>
-            ${createStepperHTML('fe', STATE.CAR_ECONOMY.fe, 1, 1, 300)}
-          </div>
-          <hr class="modal-separator">
-          <div class="modal-section fuel-model-section collapsed" id="tyreFuelSection">
-            <div class="section-title toggle-header">
-              <span class="chevron">▶</span> Fuel Model <span class="formula-preview">C × FE<sup>E</sup> = L / km</span>
+        <div class="modal-content strategy-settings-card">
+          <header class="modal-topbar">
+            <div class="modal-topbar-copy">
+              <span class="modal-eyebrow">IGPLUS · RACE STRATEGY</span>
+              <h2>Strategy settings</h2>
+              <p>Fine-tune push, fuel and tyre-wear calculations.</p>
             </div>
-            <div class="toggle-body">
-              <div class="tyre-header-row"><span class="col-title">Coefficient (C)</span><span class="col-title">Exponent (E)</span><span>One Lap</span></div>
+            <button type="button" class="modal-close" aria-label="Close settings">×</button>
+          </header>
+
+          <div class="modal-scroll-body" role="region" aria-label="Strategy settings options" tabindex="0">
+          <section class="modal-panel push-panel">
+            <div class="modal-panel-heading">
+              <div>
+                <h3>Push levels</h3>
+                <p>Adjust the fuel correction for each driving mode.</p>
+              </div>
+            </div>
+            <div class="modal-section push-settings-grid">
+              ${PUSH_KEYS.map(k => `<div class="stepper-row"><span class="push-symbol" data-push="${k}" aria-hidden="true"></span><span class="push-level-label">${k}%</span>${createStepperHTML(`push-${k}`, pushMap[k], 0.001, -0.1, 0.1)}</div>`).join('')}
+            </div>
+          </section>
+
+          <section class="modal-panel fuel-economy-panel">
+            <div class="modal-section-fuel">
+              <div class="fuel-setting-copy">
+                <span class="fuel-symbol feLabel" title="Reset fuel economy to the original value"></span>
+                <div><strong>Fuel economy</strong><small>Base car efficiency</small></div>
+              </div>
+              <div class="fuel-setting-control">
+                <span class="fuel-value-label">FE</span>
+                ${createStepperHTML('fe', STATE.CAR_ECONOMY.fe, 1, 1, 300)}
+              </div>
+            </div>
+          </section>
+
+          <section class="modal-panel fuel-model-section collapsed" id="tyreFuelSection">
+            <button type="button" class="section-title toggle-header" aria-expanded="false" aria-controls="tyreFuelBody">
+              <span class="chevron">▶</span>
+              <span class="section-title-copy"><strong>Fuel model</strong><small>Compound-specific fuel consumption</small></span>
+              <span class="formula-preview">C × FE<sup>E</sup></span>
+            </button>
+            <div class="toggle-body" id="tyreFuelBody">
+              <div class="tyre-header-row"><span class="col-title">Compound</span><span class="col-title">Coefficient (C)</span><span class="col-title">Exponent (E)</span><span>One lap</span></div>
               ${TYRES.map(t => {
                 const[defC, defE] = STATE.DEFAULT_TYRE_COEFFICIENTS[t];
                 const[curC, curE] = tyreFuelModel[t];
                 return `
                   <div class="tyre-row" data-tyre="${t}">
-                    <input type="text" placeholder="default" class="tyre-coef" inputmode="decimal" value="${curC === defC ? '' : curC}">
-                    <input type="text" placeholder="default" class="tyre-exp" inputmode="decimal" value="${curE === defE ? '' : curE}">
-                    <div class="customTyre custom${t}">${((parseFloat(tempFuel[t]) + parseFloat(STATE.CAR_ECONOMY.push["60"])) * lapLength).toFixed(2)}</div>
+                    <span class="tyre-compound-label tyre-compound-${t}">${t}</span>
+                    <input type="text" placeholder="Default" aria-label="${t} fuel coefficient" class="tyre-coef" inputmode="decimal" value="${curC === defC ? '' : curC}">
+                    <input type="text" placeholder="Default" aria-label="${t} fuel exponent" class="tyre-exp" inputmode="decimal" value="${curE === defE ? '' : curE}">
+                    <div class="customTyre custom${t}" title="Fuel per lap">${((parseFloat(tempFuel[t]) + parseFloat(STATE.CAR_ECONOMY.push["60"])) * lapLength).toFixed(2)}</div>
                   </div>
                 `;
               }).join('')}
             </div>
+          </section>
+
+          <section class="modal-panel fuel-model-section wear-model-section collapsed" id="tyreWearSection">
+            <button type="button" class="section-title toggle-header" aria-expanded="false" aria-controls="tyreWearBody">
+              <span class="chevron">▶</span>
+              <span class="section-title-copy"><strong>Tyre wear model</strong><small>Calibrate predicted tyre life and degradation</small></span>
+              <span class="formula-preview">e<sup>−rate × laps</sup></span>
+            </button>
+            <div class="toggle-body" id="tyreWearBody">
+              <div class="wear-subsection">
+                <div class="wear-group-heading"><strong>Compound factors</strong><small>Relative wear by tyre compound</small></div>
+                <div class="wear-compound-grid">
+                  ${TYRES.map(t => createWearModelInput(`compoundFactors.${t}`, t, STATE.TYRE_WEAR_MODEL.compoundFactors[t], '0.01')).join('')}
+                </div>
+              </div>
+              <div class="wear-subsection">
+                <div class="wear-group-heading"><strong>Tyre economy (TE)</strong><small>How tyre economy changes the wear rate</small></div>
+                <div class="wear-parameter-grid">
+                  ${createWearModelInput('tyreEconomyCoefficient', 'Coefficient', STATE.TYRE_WEAR_MODEL.tyreEconomyCoefficient)}
+                  ${createWearModelInput('tyreEconomyExponent', 'Exponent', STATE.TYRE_WEAR_MODEL.tyreEconomyExponent)}
+                </div>
+              </div>
+              <div class="wear-subsection">
+                <div class="wear-group-heading"><strong>Track & overall wear</strong><small>Track influence and global scaling</small></div>
+                <div class="wear-parameter-grid wear-track-grid">
+                  ${createWearModelInput('trackWearCoefficient', 'Track sensitivity', STATE.TYRE_WEAR_MODEL.trackWearCoefficient)}
+                  ${createWearModelInput('trackWearBase', 'Base offset', STATE.TYRE_WEAR_MODEL.trackWearBase)}
+                  ${createWearModelInput('degradationScale', 'Wear strength', STATE.TYRE_WEAR_MODEL.degradationScale)}
+                </div>
+              </div>
+              <div class="wear-subsection">
+                <div class="wear-group-heading"><strong>Optional corrections</strong><small>Set to 0 to leave the original calculation unchanged</small></div>
+                <div class="wear-parameter-grid">
+                  ${createWearModelInput('temperatureSensitivity', 'Temperature / °C', STATE.TYRE_WEAR_MODEL.temperatureSensitivity)}
+                  ${createWearModelInput('pushSensitivity', 'Push / 40 points', STATE.TYRE_WEAR_MODEL.pushSensitivity)}
+                </div>
+                <div class="wear-model-note">Temperature: 1 + sensitivity × (°C − 25). Push: 1 + sensitivity × ((push − 60) / 40).</div>
+              </div>
+              <div class="wear-subsection">
+                <div class="wear-group-heading"><strong>Race-length multipliers</strong><small>Scale wear for shorter race distances</small></div>
+                <div class="wear-race-grid">
+                  ${[100, 75, 50, 25].map(k => createWearModelInput(`raceLengthMultipliers.${k}`, `${k}% race`, STATE.TYRE_WEAR_MODEL.raceLengthMultipliers[k], '0.01')).join('')}
+                </div>
+              </div>
+              <button type="button" class="wear-reset-defaults">↺ <span>Reset tyre wear defaults</span></button>
+            </div>
+          </section>
           </div>
-          <div class="modal-actions"><span class="modal-cancel">✕</span><span class="modal-confirm">✔</span></div>
+
+          <footer class="modal-actions">
+            <span class="modal-actions-note">Changes apply to all strategy previews.</span>
+            <div class="modal-action-buttons">
+              <button type="button" class="modal-cancel">Cancel</button>
+              <button type="button" class="modal-confirm">Save &amp; apply</button>
+            </div>
+          </footer>
         </div>
       </div>
     `);
@@ -1096,15 +1276,35 @@ async function injectCircuitMap() {
       updated[row.dataset.tyre] = getTyreCoefficient(row);
     });
 
+    const updatedWearModel = structuredClone(STATE.DEFAULT_TYRE_WEAR_MODEL);
+    modal.querySelectorAll('.wear-model-input').forEach(input => {
+      const parsed = Number.parseFloat(input.value);
+      const allowsNegative = ['tyreEconomyExponent', 'temperatureSensitivity', 'pushSensitivity']
+        .includes(input.dataset.wearKey);
+      const value = Number.isFinite(parsed) && (allowsNegative || parsed >= 0)
+        ? parsed
+        : getWearModelValue(STATE.DEFAULT_TYRE_WEAR_MODEL, input.dataset.wearKey);
+      setWearModelValue(updatedWearModel, input.dataset.wearKey, value);
+    });
+
     STATE.TYRE_COEFFICIENTS = updated;
+    STATE.TYRE_WEAR_MODEL = normalizeTyreWearModel(updatedWearModel);
     STATE.CAR_ECONOMY.push = newPushMap;
     STATE.CAR_ECONOMY.fe = fe;
     STATE.CAR_ECONOMY.fuel = getFuelFn(fe, STATE.TYRE_COEFFICIENTS);
 
-    await chrome.storage.local.set({ tyreFuelModel: updated });
+    await chrome.storage.local.set({
+      tyreFuelModel: updated,
+      tyreWearModel: STATE.TYRE_WEAR_MODEL
+    });
     modal.remove();
 
-    STATE.CAR_STRATEGY.forEach(({ carIndex, strategyData }) => makeCustomStrategy(carIndex, strategyData));
+    STATE.CAR_STRATEGY.forEach(({ carIndex, strategyData }) => {
+      strategyData.stints.forEach(stint => {
+        stint.wear = calculateWearPreview(stint);
+      });
+      makeCustomStrategy(carIndex, strategyData);
+    });
   }
 
   // 10. SAVING & POPUP LOGIC
@@ -1347,6 +1547,8 @@ async function injectCircuitMap() {
         const mod = await import(chrome.runtime.getURL('scripts/strategy/strategyMath.js'));
         getFuelFn = mod.fuel_calc;
         getWearFn = mod.get_wear;
+        STATE.DEFAULT_TYRE_WEAR_MODEL ||= structuredClone(mod.DEFAULT_TYRE_WEAR_MODEL);
+        STATE.TYRE_WEAR_MODEL ||= structuredClone(STATE.DEFAULT_TYRE_WEAR_MODEL);
       }
 
       if (!document.getElementById('igplus_strategy')) {
